@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="lib" path="resources/lib/commons-io-2.0.1.jar"/>
+	<classpathentry kind="lib" path="resources/lib/dom4j-1.6.1.jar"/>
+	<classpathentry kind="lib" path="resources/lib/jaxen-1.1-beta-6.jar"/>
+	<classpathentry kind="lib" path="resources/lib/org-netbeans-swing-outline-RELEASE73.jar"/>
+	<classpathentry kind="lib" path="resources/lib/commons-net-3.2.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.7"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>

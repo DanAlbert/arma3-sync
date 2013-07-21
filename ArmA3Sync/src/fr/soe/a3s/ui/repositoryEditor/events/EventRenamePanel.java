@@ -1,0 +1,55 @@
+package fr.soe.a3s.ui.repositoryEditor.events;
+
+import java.awt.Color;
+import java.awt.Font;
+import java.util.List;
+
+import javax.swing.JOptionPane;
+
+import fr.soe.a3s.dto.EventDTO;
+import fr.soe.a3s.exception.RepositoryException;
+import fr.soe.a3s.ui.Facade;
+
+public class EventRenamePanel extends EventEditPanel {
+
+	private String eventName;
+
+	public EventRenamePanel(Facade facade, String repositoryName) {
+		super(facade, repositoryName);
+
+	}
+
+	public void init(String eventName) {
+		setTitle("Edit event");
+		textFieldEventName.setText(eventName);
+		this.eventName = eventName;
+		textFieldEventName.requestFocus();
+		textFieldEventName.selectAll();
+	}
+
+	@Override
+	public void buttonOKPerformed(String newEventName) {
+		
+		try {
+			// No duplicate event name
+			List<EventDTO> eventDTOs = repositoryService
+					.getEvents(repositoryName);
+			for (EventDTO eventDTO:eventDTOs){
+				if (eventDTO.equals(newEventName)){
+					labelWarning.setText("duplicate name!");
+					labelWarning.setFont(new Font("Tohama", Font.ITALIC, 11));
+					labelWarning.setForeground(Color.RED);
+					return;
+				}
+			}
+			
+			repositoryService.renameEvent(repositoryName, eventName,
+					newEventName);
+			facade.getEventsPanel().updateListEvents();
+			this.dispose();
+		} catch (RepositoryException e) {
+			JOptionPane.showMessageDialog(facade.getMainPanel(),
+					e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+		}
+	}
+}
