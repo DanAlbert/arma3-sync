@@ -92,11 +92,14 @@ public abstract class EventEditPanel extends JDialog implements UIConstants {
 				menuExitPerformed();
 			}
 		});
+		
 	}
 
+	
 	public abstract void buttonOKPerformed(String newEventName);
 
-	private void menuExitPerformed(){
+	private void menuExitPerformed() {
 		this.dispose();
 	}
+
 }

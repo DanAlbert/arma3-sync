@@ -34,7 +34,6 @@ import javax.swing.tree.TreeSelectionModel;
 import fr.soe.a3s.dto.EventDTO;
 import fr.soe.a3s.dto.TreeDirectoryDTO;
 import fr.soe.a3s.dto.TreeNodeDTO;
-import fr.soe.a3s.dto.sync.SyncTreeDirectoryDTO;
 import fr.soe.a3s.exception.RepositoryException;
 import fr.soe.a3s.service.FtpService;
 import fr.soe.a3s.service.RepositoryService;
@@ -46,8 +45,6 @@ import fr.soe.a3s.ui.mainEditor.tree.MyRenderer2;
 import fr.soe.a3s.ui.repositoryEditor.events.EventAddPanel;
 import fr.soe.a3s.ui.repositoryEditor.events.EventRenamePanel;
 import fr.soe.a3s.ui.repositoryEditor.tree.AddonSyncTreeModel;
-import fr.soe.a3s.ui.repositoryEditor.tree.CheckTreeCellRendererRepository;
-import fr.soe.a3s.ui.repositoryEditor.tree.MyRendererRepository;
 
 public class EventsPanel extends JPanel implements UIConstants {
 
