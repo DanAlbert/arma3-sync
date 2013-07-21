@@ -78,8 +78,12 @@ public class ArmA3Sync {
 			System.out.println("Minimize mode = Normal");
 		}
 
+		// Check ArmA 3 executable location
+		mainPanel.checkWellcomeDialog();
+		
 		// Check for updates
 		mainPanel.checkForUpdate(false);
+		
 	}
 	
 	private static boolean lockInstance() {

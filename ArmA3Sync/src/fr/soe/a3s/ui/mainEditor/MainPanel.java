@@ -72,11 +72,12 @@ public class MainPanel extends JFrame implements UIConstants {
 	private static final String TAB_TITLE_EXTENAL_APPS = "External Apps";
 	private static final String TAB_TITLE_SYNC = "Repositories";
 	private JMenuBar menuBar;
-	private JMenu menuProfiles, menuHelp, menuTools,menuItemAutoConfig;
+	private JMenu menuProfiles, menuHelp, menuTools, menuItemAutoConfig;
 	private JMenuItem menuItemEdit, menuItemHelp, menuItemuUpdates,
 			menuItemAbout, menuItemPreferences, menuItemACREwizard,
 			menuItemRPTviewer, menuItemAiAwizard, menuItemServerTuner,
-			menuItemBISforum,menuItemAutoConfigImport,menuItemAutoConfigExport;
+			menuItemBISforum, menuItemAutoConfigImport,
+			menuItemAutoConfigExport;
 	private JTabbedPane tabbedPane;
 	private JPanel infoPanel, launchPanel;
 	private ConfigurationService configurationService = new ConfigurationService();
@@ -408,7 +409,7 @@ public class MainPanel extends JFrame implements UIConstants {
 	}
 
 	private void menuItemHelpPerformed() {
-	
+
 		CommonService commonService = new CommonService();
 		String urlValue = commonService.getWiki();
 		try {
@@ -423,7 +424,7 @@ public class MainPanel extends JFrame implements UIConstants {
 					JOptionPane.ERROR_MESSAGE);
 			e.printStackTrace();
 		}
-		
+
 	}
 
 	private void menuItemBISforumPerformed() {
@@ -436,15 +437,17 @@ public class MainPanel extends JFrame implements UIConstants {
 		preferencesPanel.init();
 		preferencesPanel.setVisible(true);
 	}
-	
+
 	private void menuItemAutoConfigImportPerformed() {
-		AutoConfigImportPanel autoConfigImportPanel = new AutoConfigImportPanel(facade);
+		AutoConfigImportPanel autoConfigImportPanel = new AutoConfigImportPanel(
+				facade);
 		autoConfigImportPanel.setVisible(true);
 	}
-	
+
 	private void menuItemAutoConfigExportPerformed() {
-		
-		AutoConfigExportPanel autoConfigExportPanel = new AutoConfigExportPanel(facade);
+
+		AutoConfigExportPanel autoConfigExportPanel = new AutoConfigExportPanel(
+				facade);
 		autoConfigExportPanel.init();
 		autoConfigExportPanel.setVisible(true);
 	}
@@ -621,6 +624,21 @@ public class MainPanel extends JFrame implements UIConstants {
 		facade.getAddonsPanel().expandAddonGroups();
 		facade.getLaunchOptionsPanel().updateRunParameters();
 		facade.getLaunchOptionsPanel().updateAdditionalParameters();
+	}
+
+	public void checkWellcomeDialog() {
+
+		String path = configurationService.getLauncherOptions()
+				.getArma3ExePath();
+		if (path == null || "".equals(path)) {
+			try {
+				Thread.sleep(500);
+			} catch (InterruptedException e) {
+			}
+			 WellcomePanel wellcomePanel = new WellcomePanel(facade);
+			 wellcomePanel.toFront();
+			 wellcomePanel.setVisible(true);
+		}
 	}
 
 	public void updateRepositoriesStatus() {
