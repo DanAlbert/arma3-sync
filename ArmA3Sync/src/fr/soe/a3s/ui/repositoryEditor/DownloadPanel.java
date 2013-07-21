@@ -620,7 +620,7 @@ public class DownloadPanel extends JPanel implements UIConstants {
 
 		if (totalFilesSelected == 0) {
 			JOptionPane.showMessageDialog(facade.getMainPanel(),
-					"There is no file selected.", "Download",
+					"There is no addon selected.", "Download",
 					JOptionPane.INFORMATION_MESSAGE);
 			return;
 		}
@@ -640,7 +640,7 @@ public class DownloadPanel extends JPanel implements UIConstants {
 
 		if (comBoxDestinationFolder.getSelectedItem() == null) {
 			JOptionPane.showMessageDialog(facade.getMainPanel(),
-					"A default destination folder must be set.", "Download",
+					"A default destination folder must be set. \n Please checkout Addon Option panel.", "Download",
 					JOptionPane.WARNING_MESSAGE);
 			return;
 		} else {
