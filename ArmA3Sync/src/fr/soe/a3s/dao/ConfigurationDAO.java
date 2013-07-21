@@ -39,7 +39,7 @@ public class ConfigurationDAO implements DataAccessConstants {
 				File setupFile = new File("setup.txt");
 				if (setupFile.exists()){
 					BufferedReader reader = new BufferedReader(new FileReader(setupFile));
-					String arma3ExePath = reader.readLine();
+					String arma3ExePath = reader.readLine().trim();
 					if (arma3ExePath != null) {
 						configuration.getLauncherOptions().setArma3ExePath(
 								arma3ExePath);
