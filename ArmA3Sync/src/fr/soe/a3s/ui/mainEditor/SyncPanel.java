@@ -7,6 +7,7 @@ import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -271,10 +272,11 @@ public class SyncPanel extends JPanel implements UIConstants {
 
 		isModifying = true;
 		tableRepositories.setRowSelectionAllowed(false);
-		List<RepositoryDTO> repositoriesDTO = repositoryService
+		List<RepositoryDTO> repositoryDTOs = repositoryService
 				.getRepositories();
-		model.setDataSize(repositoriesDTO.size());
-		Iterator<RepositoryDTO> iter = repositoriesDTO.iterator();
+		Collections.sort(repositoryDTOs);
+		model.setDataSize(repositoryDTOs.size());
+		Iterator<RepositoryDTO> iter = repositoryDTOs.iterator();
 		int i = 0;
 		eventNames = new ArrayList<String>();
 		mapEvents = new LinkedHashMap<Integer, String>();
@@ -329,7 +331,9 @@ public class SyncPanel extends JPanel implements UIConstants {
 
 	public void refresh() {
 		init();
+		isModifying = true;
 		model.fireTableDataChanged();
+		isModifying = false;
 		scrollPane1.updateUI();
 		scrollPane2.updateUI();
 	}

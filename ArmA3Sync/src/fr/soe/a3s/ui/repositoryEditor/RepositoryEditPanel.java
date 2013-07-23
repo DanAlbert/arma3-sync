@@ -392,8 +392,6 @@ public class RepositoryEditPanel extends JDialog implements UIConstants {
 					EncryptionMode.getEnum(encryption));
 			repositoryService.write(name);
 			this.dispose();
-			FtpService ftpService = new FtpService();
-			ftpService.checkRepository(name);
 			facade.getSyncPanel().refresh();
 		} catch (CheckException e) {
 			JOptionPane.showMessageDialog(this, e.getMessage(), "Error",
@@ -402,13 +400,7 @@ public class RepositoryEditPanel extends JDialog implements UIConstants {
 			JOptionPane.showMessageDialog(this,
 					"An error occured. \n Failded to write repository.",
 					"Error", JOptionPane.ERROR_MESSAGE);
-		} catch (FtpException e) {
-			JOptionPane.showMessageDialog(this, e.getMessage(), "Error",
-					JOptionPane.WARNING_MESSAGE);
-		} catch (RepositoryException e) {
-			JOptionPane.showMessageDialog(this, e.getMessage(), "Error",
-					JOptionPane.WARNING_MESSAGE);
-		}
+		} 
 	}
 
 	private void checkBoxAnonymousPerformed() {
