@@ -82,7 +82,6 @@ public class SyncTreeLeaf implements SyncTreeNode,Serializable{
 
 	@Override
 	public int compareTo(Object other) {
-		
 		String name =  ((SyncTreeLeaf) other).getName();
 		int result = 1;
 		if (name.compareToIgnoreCase(getName()) > 0)
