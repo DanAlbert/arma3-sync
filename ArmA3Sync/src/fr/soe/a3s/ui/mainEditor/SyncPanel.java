@@ -296,7 +296,7 @@ public class SyncPanel extends JPanel implements UIConstants {
 					if (repositoryDTO.getRevision() == serverInfoDTO
 							.getRevision()) {
 						status = RepositoryStatus.OK.getDescription();
-					} else {
+					} else if (repositoryDTO.getRevision()!=0) {
 						status = RepositoryStatus.UPDATED.getDescription();
 					}
 				}
@@ -419,7 +419,7 @@ public class SyncPanel extends JPanel implements UIConstants {
 
 		if (repositoryName != null) {
 			ConnectionPanel connectionPanel = new ConnectionPanel(facade,
-					repositoryName,null);
+					repositoryName, null);
 			connectionPanel.setVisible(true);
 			connectionPanel.init();
 		}
@@ -432,7 +432,7 @@ public class SyncPanel extends JPanel implements UIConstants {
 			String eventName = eventNames.get(index);
 			String repositoryName = mapEvents.get(index);
 			ConnectionPanel connectionPanel = new ConnectionPanel(facade,
-					repositoryName,eventName);
+					repositoryName, eventName);
 			connectionPanel.setVisible(true);
 			connectionPanel.init();
 		}
