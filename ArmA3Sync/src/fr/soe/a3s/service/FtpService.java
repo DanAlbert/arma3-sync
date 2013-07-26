@@ -271,7 +271,7 @@ public class FtpService implements DataAccessConstants {
 		String port = repository.getProtocole().getPort();
 		String login = repository.getProtocole().getLogin();
 		String password = repository.getProtocole().getPassword();
-		ftpClient.setConnectTimeout(5000);// 5 sec
+		ftpClient.setConnectTimeout(15000);// 15 sec
 		ftpClient.connect(hostname, Integer.parseInt(port));
 		ftpClient.login(login, password);
 		ftpClient.setFileType(FTP.BINARY_FILE_TYPE);
