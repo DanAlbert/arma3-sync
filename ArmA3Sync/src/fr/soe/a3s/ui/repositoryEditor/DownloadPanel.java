@@ -109,6 +109,7 @@ public class DownloadPanel extends JPanel implements UIConstants {
 	private JCheckBox checkBoxSelectAll;
 	private JCheckBox checkBoxExpandAll;
 	private JCheckBox checkBoxUpdated;
+	private String eventName;
 
 	public DownloadPanel(Facade facade) {
 
@@ -499,6 +500,7 @@ public class DownloadPanel extends JPanel implements UIConstants {
 
 	public void init(String repositoryName, String eventName) {
 		this.repositoryName = repositoryName;
+		this.eventName = eventName;
 		updateDefaultFolderDestination();
 		// Lock user action on addons tree
 		arbre.setEnabled(false);
@@ -555,7 +557,7 @@ public class DownloadPanel extends JPanel implements UIConstants {
 		facade.getSyncPanel().init();
 
 		// Check addons repository
-		addonsChecker = new AddonsChecker(facade, repositoryName,null);
+		addonsChecker = new AddonsChecker(facade, repositoryName,eventName);
 		addonsChecker.start();
 	}
 
