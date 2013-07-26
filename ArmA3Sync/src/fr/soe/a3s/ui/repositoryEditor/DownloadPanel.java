@@ -423,34 +423,13 @@ public class DownloadPanel extends JPanel implements UIConstants {
 					}
 				}
 
-				/*
-				 * if (syncTreeNodeDTO.isLeaf() &&
-				 * !syncTreeNodeDTO.isSelected()) { SyncTreeDirectoryDTO
-				 * syncTreeDirectoryDTO = syncTreeNodeDTO.getParent();
-				 * //syncTreeDirectoryDTO.setSelected(false);
-				 * unselectAllAscending(syncTreeDirectoryDTO);
-				 * 
-				 * } else if (syncTreeNodeDTO.isLeaf() &&
-				 * syncTreeNodeDTO.isSelected()) { SyncTreeDirectoryDTO
-				 * syncTreeDirectoryDTO = syncTreeNodeDTO.getParent();
-				 * selectAllAscending(syncTreeDirectoryDTO); // int nbNodes =
-				 * syncTreeDirectoryDTO.getList().size(); // int nbSelectedNodes
-				 * = 0; // for (SyncTreeNodeDTO treDto : syncTreeDirectoryDTO //
-				 * .getList()) { // if (treDto.isSelected()) { //
-				 * nbSelectedNodes++; // } // } // if (nbNodes ==
-				 * nbSelectedNodes) { // syncTreeDirectoryDTO.setSelected(true);
-				 * // } } else if (!syncTreeNodeDTO.isLeaf()) {
-				 * SyncTreeDirectoryDTO treeDirectoryDTO =
-				 * (SyncTreeDirectoryDTO) syncTreeNodeDTO;
-				 * selectAllAscending(syncTreeNodeDTO);
-				 * selectAllDescending(treeDirectoryDTO); }
-				 */
-				// refreshArbre();
-				// labelTotalFilesSizeValue.setText("");
-				totalFilesSize = 0;
-				compute(racine);
-				labelTotalFilesSizeValue.setText(UnitConverter
-						.convertSize(totalFilesSize));
+				if(!repositoryService.isDownloading()){
+					totalFilesSize = 0;
+					compute(racine);
+					labelTotalFilesSizeValue.setText(UnitConverter
+							.convertSize(totalFilesSize));
+				}
+				
 				SwingUtilities.invokeLater(new Runnable() {
 					@Override
 					public void run() {
