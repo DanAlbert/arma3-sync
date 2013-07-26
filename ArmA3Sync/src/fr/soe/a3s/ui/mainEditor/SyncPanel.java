@@ -74,6 +74,8 @@ public class SyncPanel extends JPanel implements UIConstants {
 	private JPanel containerPanel1, containerPanel2;
 	/** List of event names */
 	private List<String> eventNames;
+	/** List of event name+description*/
+	private List<String> eventTexts;
 	/** Event index in eventNames list, Repository name */
 	private Map<Integer, String> mapEvents;
 
@@ -279,6 +281,7 @@ public class SyncPanel extends JPanel implements UIConstants {
 		Iterator<RepositoryDTO> iter = repositoryDTOs.iterator();
 		int i = 0;
 		eventNames = new ArrayList<String>();
+		eventTexts = new ArrayList<String>();
 		mapEvents = new LinkedHashMap<Integer, String>();
 		while (iter.hasNext()) {
 			RepositoryDTO repositoryDTO = iter.next();
@@ -296,7 +299,7 @@ public class SyncPanel extends JPanel implements UIConstants {
 					if (repositoryDTO.getRevision() == serverInfoDTO
 							.getRevision()) {
 						status = RepositoryStatus.OK.getDescription();
-					} else if (repositoryDTO.getRevision()!=0) {
+					} else if (repositoryDTO.getRevision() != 0) {
 						status = RepositoryStatus.UPDATED.getDescription();
 					}
 				}
@@ -305,6 +308,8 @@ public class SyncPanel extends JPanel implements UIConstants {
 				if (eventDTOs != null) {
 					for (EventDTO eventDTO : eventDTOs) {
 						eventNames.add(eventDTO.getName());
+						eventTexts.add(eventDTO.getName() + " - "
+								+ eventDTO.getDescription());
 						mapEvents.put(eventNames.size() - 1, name);
 					}
 				}
@@ -321,7 +326,7 @@ public class SyncPanel extends JPanel implements UIConstants {
 
 		String[] tab = new String[eventNames.size()];
 		for (int j = 0; j < tab.length; j++) {
-			tab[j] = eventNames.get(j);
+			tab[j] = eventTexts.get(j);
 		}
 		listEvents.setListData(tab);
 
@@ -436,13 +441,12 @@ public class SyncPanel extends JPanel implements UIConstants {
 			connectionPanel.setVisible(true);
 			connectionPanel.init();
 		}
-
 	}
 
 	public JButton getButtonSync() {
 		return buttonSync;
 	}
-
+	
 	class MyTableModel extends AbstractTableModel {
 		private String[] columnNames = { "Name", "Notify", "Status" };
 		private Object[][] data = {};

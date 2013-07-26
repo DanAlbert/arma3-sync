@@ -14,6 +14,19 @@ import fr.soe.a3s.service.RepositoryService;
 import fr.soe.a3s.ui.Facade;
 import fr.soe.a3s.ui.UIConstants;
 
+
+/**
+* This code was edited or generated using CloudGarden's Jigloo
+* SWT/Swing GUI Builder, which is free for non-commercial
+* use. If Jigloo is being used commercially (ie, by a corporation,
+* company or business for any purpose whatever) then you
+* should purchase a license for each developer using Jigloo.
+* Please visit www.cloudgarden.com for details.
+* Use of Jigloo implies acceptance of these licensing terms.
+* A COMMERCIAL LICENSE HAS NOT BEEN PURCHASED FOR
+* THIS MACHINE, SO JIGLOO OR THIS CODE CANNOT BE USED
+* LEGALLY FOR ANY CORPORATE OR COMMERCIAL PURPOSE.
+*/
 public abstract class EventEditPanel extends JDialog implements UIConstants {
 
 	protected Facade facade;
@@ -22,6 +35,8 @@ public abstract class EventEditPanel extends JDialog implements UIConstants {
 	private JButton buttonOK;
 	private JButton buttonCancel;
 	private JLabel labelEventName;
+	private JLabel labelEventDescription;
+	protected JTextField textFieldDescription;
 	protected JLabel labelWarning;
 	protected RepositoryService repositoryService = new RepositoryService();
 
@@ -31,7 +46,7 @@ public abstract class EventEditPanel extends JDialog implements UIConstants {
 		this.repositoryName = repositoryName;
 		setLocationRelativeTo(facade.getMainPanel());
 		this.setResizable(false);
-		this.setSize(393, 130);
+		this.setSize(310, 185);
 		setIconImage(ICON);
 		this.setLocation(
 				(int) facade.getMainPanel().getLocation().getX()
@@ -46,31 +61,42 @@ public abstract class EventEditPanel extends JDialog implements UIConstants {
 			textFieldEventName = new JTextField();
 			this.add(textFieldEventName);
 			textFieldEventName.requestFocusInWindow();
-			textFieldEventName.setBounds(11, 35, 364, 23);
+			textFieldEventName.setBounds(6, 35, 286, 23);
 		}
 		{
 			buttonOK = new JButton();
 			getContentPane().add(buttonOK);
 			buttonOK.setText("OK");
-			buttonOK.setBounds(239, 64, 67, 25);
+			buttonOK.setBounds(153, 124, 67, 25);
 			getRootPane().setDefaultButton(buttonOK);
 		}
 		{
 			buttonCancel = new JButton();
 			getContentPane().add(buttonCancel);
 			buttonCancel.setText("Cancel");
-			buttonCancel.setBounds(311, 64, 65, 25);
+			buttonCancel.setBounds(225, 124, 65, 25);
 		}
 		{
 			labelEventName = new JLabel();
 			getContentPane().add(labelEventName);
 			labelEventName.setText("Event name");
-			labelEventName.setBounds(12, 12, 77, 17);
+			labelEventName.setBounds(6, 18, 79, 17);
 		}
 		{
 			labelWarning = new JLabel();
 			getContentPane().add(labelWarning);
 			labelWarning.setBounds(95, 12, 119, 17);
+		}
+		{
+			labelEventDescription = new JLabel();
+			getContentPane().add(labelEventDescription);
+			labelEventDescription.setBounds(6, 70, 131, 19);
+			labelEventDescription.setText("Event description");
+		}
+		{
+			textFieldDescription = new JTextField();
+			getContentPane().add(textFieldDescription);
+			textFieldDescription.setBounds(6, 89, 286, 23);
 		}
 
 		// Add Listeners
@@ -82,8 +108,9 @@ public abstract class EventEditPanel extends JDialog implements UIConstants {
 		buttonOK.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent evt) {
 				String newEventName = textFieldEventName.getText().trim();
+				String description = textFieldDescription.getText().trim();
 				if (!newEventName.isEmpty()) {
-					buttonOKPerformed(newEventName);
+					buttonOKPerformed(newEventName,description);
 				}
 			}
 		});
@@ -96,7 +123,7 @@ public abstract class EventEditPanel extends JDialog implements UIConstants {
 	}
 
 	
-	public abstract void buttonOKPerformed(String newEventName);
+	public abstract void buttonOKPerformed(String newEventName, String description);
 
 	private void menuExitPerformed() {
 		this.dispose();

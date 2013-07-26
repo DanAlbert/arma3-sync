@@ -35,6 +35,7 @@ import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 
 import fr.soe.a3s.dto.TreeDirectoryDTO;
+import fr.soe.a3s.dto.TreeLeafDTO;
 import fr.soe.a3s.dto.TreeNodeDTO;
 import fr.soe.a3s.service.AddonService;
 import fr.soe.a3s.service.ConfigurationService;
@@ -83,6 +84,7 @@ public class AddonsPanel extends JPanel implements UIConstants {
 	private TreePath arbre2NewTreePath;
 	private JCheckBox checkBoxSelectAll;
 	private JCheckBox checkBoxExpandAll;
+	private JButton buttonEvents;
 
 	public AddonsPanel(final Facade facade) {
 		this.facade = facade;
@@ -112,8 +114,12 @@ public class AddonsPanel extends JPanel implements UIConstants {
 
 		checkBoxSelectAll = new JCheckBox("Select All");
 		checkBoxExpandAll = new JCheckBox("Expand All");
+		buttonEvents = new JButton("Events");
+		ImageIcon checkIcon = new ImageIcon(CHECK);
+		buttonEvents.setIcon(checkIcon);
 		controlPanel2.add(checkBoxSelectAll);
 		controlPanel2.add(checkBoxExpandAll);
+		controlPanel2.add(buttonEvents);
 
 		this.add(controlPanel, BorderLayout.NORTH);
 
@@ -338,6 +344,13 @@ public class AddonsPanel extends JPanel implements UIConstants {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
 				checkBoxExpandAllPerformed();
+			}
+		});
+		buttonEvents.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				buttonEventsPerformed();
 			}
 		});
 
@@ -679,6 +692,34 @@ public class AddonsPanel extends JPanel implements UIConstants {
 				arbre2.collapsePath(treePath);
 			}
 		}
+	}
+	
+	private void buttonEventsPerformed() {
+		
+		EventSelectionPanel eventSelectionPanel = new EventSelectionPanel(facade);
+		eventSelectionPanel.init();
+		eventSelectionPanel.setVisible(true);
+	}
+	
+	public void createGroupFromEvent(String name, List<String> listAddonNames) {
+		
+		TreeDirectoryDTO directory = new TreeDirectoryDTO();
+		directory.setName(name);
+		directory.setParent(racine2);
+		racine2.addTreeNode(directory);
+		for (String addonName:listAddonNames){
+			TreeLeafDTO leaf = new TreeLeafDTO();
+			leaf.setName(addonName);
+			leaf.setParent(directory);
+			leaf.setSelected(true);
+			directory.addTreeNode(leaf);
+		}
+		directory.setSelected(true);
+		
+		saveAddonGroups();
+		highlightMissingAddons();
+		refreshViewArbre2();
+		expandAddonGroups();
 	}
 
 	private void getPathDirectories(TreePath path, Set<TreePath> paths) {

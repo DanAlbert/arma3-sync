@@ -77,8 +77,6 @@ public class EventsPanel extends JPanel implements UIConstants {
 		this.add(vertBox1, BorderLayout.CENTER);
 		{
 			JPanel listEventsPanel = new JPanel();
-			listEventsPanel.setBorder(BorderFactory.createTitledBorder(
-					BorderFactory.createEmptyBorder(), ""));
 			listEventsPanel.setLayout(new BorderLayout());
 			{
 				Box hBox = Box.createHorizontalBox();
@@ -99,7 +97,6 @@ public class EventsPanel extends JPanel implements UIConstants {
 				ImageIcon saveUploadIcon = new ImageIcon(UPLOAD);
 				buttonSaveUpload.setIcon(saveUploadIcon);
 				hBox.add(buttonSaveUpload);
-
 			}
 			{
 				listEvents = new JList();
@@ -289,7 +286,7 @@ public class EventsPanel extends JPanel implements UIConstants {
 			
 			EventRenamePanel eventRenamePanel = new EventRenamePanel(facade,
 					repositoryName);
-			eventRenamePanel.init(eventDTOs.get(index).getName());
+			eventRenamePanel.init(eventDTOs.get(index).getName(),eventDTOs.get(index).getDescription());
 			eventRenamePanel.setVisible(true);
 			updateListEvents();
 		}
@@ -309,15 +306,19 @@ public class EventsPanel extends JPanel implements UIConstants {
 				repositoryService.removeEvent(repositoryName,
 						eventDTOs.get(index).getName());
 				updateListEvents();
+				uploadInformations();
 			} catch (RepositoryException e) {
 				JOptionPane.showMessageDialog(facade.getMainPanel(),
 						e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
 			}
 		}
 	}
-
+	
 	private void buttonUploadPerformed() {
-
+		uploadInformations();
+	}
+	
+	private void uploadInformations(){
 		try {
 			boolean response = ftpService.upLoadEvents(repositoryName);
 			if (response == false) {
@@ -330,6 +331,9 @@ public class EventsPanel extends JPanel implements UIConstants {
 				JOptionPane.showMessageDialog(facade.getMainPanel(),
 						"Events informatons have been uploaded to repository.",
 						"Error", JOptionPane.INFORMATION_MESSAGE);
+				SynchronizingPanel synchronizingPanel = new SynchronizingPanel(facade);
+				synchronizingPanel.setVisible(true);
+				synchronizingPanel.init();
 			}
 		} catch (RepositoryException e) {
 			JOptionPane.showMessageDialog(facade.getMainPanel(),
@@ -342,14 +346,14 @@ public class EventsPanel extends JPanel implements UIConstants {
 		try {
 			eventDTOs = this.repositoryService.getEvents(repositoryName);
 			if (eventDTOs != null) {
-				String[] eventNames = new String[eventDTOs.size()];
+				String[] eventTexts = new String[eventDTOs.size()];
 				int i = 0;
 				for (EventDTO eventDTO : eventDTOs) {
-					eventNames[i] = eventDTO.getName();
+					eventTexts[i] = eventDTO.getName() + " - " + eventDTO.getDescription();
 					i++;
 				}
 				listEvents.clearSelection();
-				listEvents.setListData(eventNames);
+				listEvents.setListData(eventTexts);
 				int numberLigneShown = eventDTOs.size();
 				listEvents.setVisibleRowCount(numberLigneShown);
 				listEvents.setPreferredSize(listEvents

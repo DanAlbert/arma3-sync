@@ -20,7 +20,7 @@ public class EventAddPanel extends EventEditPanel {
 		setTitle("New event");
 	}
 
-	public void buttonOKPerformed(String newEventName) {
+	public void buttonOKPerformed(String newEventName, String description) {
 
 		try {
 			// No duplicate event name
@@ -39,6 +39,7 @@ public class EventAddPanel extends EventEditPanel {
 
 			EventDTO eventDTO = new EventDTO();
 			eventDTO.setName(newEventName);
+			eventDTO.setDescription(description);
 			repositoryService.addEvent(repositoryName, eventDTO);
 			facade.getEventsPanel().updateListEvents();
 			this.dispose();

@@ -623,7 +623,7 @@ public class RepositoryService {
 	}
 
 	public void renameEvent(String repositoryName, String eventName,
-			String newEventName) throws RepositoryException {
+			String newEventName, String description) throws RepositoryException {
 
 		Repository repository = repositoryDAO.getMap().get(repositoryName);
 		if (repository != null) {
@@ -632,6 +632,7 @@ public class RepositoryService {
 				for (Event event : events.getList()) {
 					if (event.getName().equals(eventName)) {
 						event.setName(newEventName);
+						event.setDescription(description);
 					}
 				}
 			}
@@ -909,6 +910,7 @@ public class RepositoryService {
 	private Event transformDTO2Event(EventDTO eventDTO) {
 
 		final Event event = new Event(eventDTO.getName());
+		event .setDescription(eventDTO.getDescription());
 		List<String> addonNames = eventDTO.getAddonNames();
 		for (String addonName : addonNames) {
 			event.getAddonNames().add(addonName);
@@ -920,6 +922,7 @@ public class RepositoryService {
 
 		final EventDTO eventDTO = new EventDTO();
 		eventDTO.setName(event.getName());
+		eventDTO.setDescription(event.getDescription());
 		List<String> addonNames = event.getAddonNames();
 		for (String addonName : addonNames) {
 			eventDTO.getAddonNames().add(addonName);
@@ -957,5 +960,4 @@ public class RepositoryService {
 		treeLeafDTO.setSelected(treeLeaf.isSelected());
 		return treeLeafDTO;
 	}
-
 }

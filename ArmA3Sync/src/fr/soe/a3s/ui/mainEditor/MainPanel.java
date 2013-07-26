@@ -474,7 +474,7 @@ public class MainPanel extends JFrame implements UIConstants {
 
 	private void menuExitPerformed() {
 
-		/* write configuration and profiles */
+		/* Write configuration and profiles. */
 		try {
 			commonService.saveAllParameters();
 		} catch (WritingException e) {

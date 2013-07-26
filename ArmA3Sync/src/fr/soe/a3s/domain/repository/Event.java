@@ -11,6 +11,7 @@ public class Event  implements Serializable {
 	 */
 	private static final long serialVersionUID = 7456226002765813117L;
 	private String name;
+	private String description;
 	private List<String> addonNames = new ArrayList<String>();
 
 	public Event(String name) {
@@ -23,6 +24,14 @@ public class Event  implements Serializable {
 	
 	public void setName(String name) {
 		this.name = name;
+	}
+
+	public String getDescription() {
+		return description;
+	}
+
+	public void setDescription(String description) {
+		this.description = description;
 	}
 
 	public List<String> getAddonNames() {

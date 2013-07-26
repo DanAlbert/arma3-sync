@@ -14,37 +14,41 @@ public class EventRenamePanel extends EventEditPanel {
 
 	private String eventName;
 
+	private String description;
+
 	public EventRenamePanel(Facade facade, String repositoryName) {
 		super(facade, repositoryName);
 
 	}
 
-	public void init(String eventName) {
+	public void init(String eventName, String description) {
 		setTitle("Edit event");
 		textFieldEventName.setText(eventName);
+		textFieldDescription.setText(description);
 		this.eventName = eventName;
+		this.description = description;
 		textFieldEventName.requestFocus();
 		textFieldEventName.selectAll();
 	}
 
 	@Override
-	public void buttonOKPerformed(String newEventName) {
-		
+	public void buttonOKPerformed(String newEventName, String description) {
+
 		try {
 			// No duplicate event name
 			List<EventDTO> eventDTOs = repositoryService
 					.getEvents(repositoryName);
-			for (EventDTO eventDTO:eventDTOs){
-				if (eventDTO.equals(newEventName)){
+			for (EventDTO eventDTO : eventDTOs) {
+				if (eventDTO.equals(newEventName)) {
 					labelWarning.setText("duplicate name!");
 					labelWarning.setFont(new Font("Tohama", Font.ITALIC, 11));
 					labelWarning.setForeground(Color.RED);
 					return;
 				}
 			}
-			
+
 			repositoryService.renameEvent(repositoryName, eventName,
-					newEventName);
+					newEventName, description);
 			facade.getEventsPanel().updateListEvents();
 			this.dispose();
 		} catch (RepositoryException e) {
@@ -52,4 +56,5 @@ public class EventRenamePanel extends EventEditPanel {
 					e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
 		}
 	}
+
 }
