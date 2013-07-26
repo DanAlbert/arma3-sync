@@ -717,9 +717,12 @@ public class AddonsPanel extends JPanel implements UIConstants {
 		directory.setSelected(true);
 		
 		saveAddonGroups();
+		updateAddonGroups();
 		highlightMissingAddons();
 		refreshViewArbre2();
 		expandAddonGroups();
+		facade.getAddonOptionsPanel().updateAddonPriorities();
+		facade.getLaunchOptionsPanel().updateRunParameters();
 	}
 
 	private void getPathDirectories(TreePath path, Set<TreePath> paths) {
