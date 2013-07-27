@@ -100,7 +100,17 @@ public class AddonService {
 
 		for (TreeNodeDTO treeNodeDTO : treeDirectoryDTO.getList()) {
 			if (treeNodeDTO.isLeaf()) {
-				newTreeDirectoryDTO.addTreeNode(treeNodeDTO);
+				if (newTreeDirectoryDTO.getList().isEmpty()) {
+					newTreeDirectoryDTO.addTreeNode(treeNodeDTO);
+				} else {
+					List<String> leafNames = new ArrayList<String>();
+					for (TreeNodeDTO n : newTreeDirectoryDTO.getList()) {
+						leafNames.add(n.getName());
+					}
+					if (!leafNames.contains(treeNodeDTO.getName())){
+						newTreeDirectoryDTO.addTreeNode(treeNodeDTO);
+					}
+				}
 			} else {
 				generateTreeList((TreeDirectoryDTO) treeNodeDTO,
 						newTreeDirectoryDTO);
@@ -190,7 +200,7 @@ public class AddonService {
 			return addon.getPath();
 		}
 	}
-	
+
 	/* Business methods */
 
 	public void transformTreeDirectory2DTO(TreeDirectory treeDirectory,
