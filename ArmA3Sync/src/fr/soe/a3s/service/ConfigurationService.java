@@ -268,8 +268,20 @@ public class ConfigurationService {
 
 	public String getTS3installationFodler() {
 
-		String path = configurationDAO.determineTS3path();
-		return path;
+		String ts3Path = configurationDAO.getConfiguration().getAcreOptions()
+				.getTs3Path();
+
+		if (ts3Path != null) {
+			return ts3Path;
+		} else {
+			String path = configurationDAO.determineTS3path();
+			return path;
+		}
+	}
+	
+	public void setTS3installationFodler(String ts3Path) {
+		
+		configurationDAO.getConfiguration().getAcreOptions().setTs3Path(ts3Path);
 	}
 
 	public String getTS3version(String ts3InstallationDirectoryPath) {

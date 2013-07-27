@@ -21,8 +21,9 @@ public class Configuration implements Serializable {
 	private LauncherOptions launcherOptions = new LauncherOptions();
 	private List<FavoriteServer> favoriteServers = new ArrayList<FavoriteServer>();
 	private List<ExternalApplication> externalApplications = new ArrayList<ExternalApplication>();
+	private AcreOptions acreOptions = new AcreOptions();
 	private AiAOptions aiaOptions = new AiAOptions();
-
+	
 	public String getProfileName() {
 		return profileName;
 	}
@@ -91,4 +92,12 @@ public class Configuration implements Serializable {
 		}
 		return aiaOptions;
 	}
+
+	public AcreOptions getAcreOptions() {
+		if (acreOptions==null){
+			acreOptions = new AcreOptions();
+		}
+		return acreOptions;
+	}
+
 }

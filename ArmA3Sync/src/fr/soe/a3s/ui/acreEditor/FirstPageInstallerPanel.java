@@ -418,6 +418,7 @@ public class FirstPageInstallerPanel extends AcreInstallerPanel implements
 		} else {
 			textFieldTS3InstallationDirectory.setText("");
 		}
+		configurationService.setTS3installationFodler(textFieldTS3InstallationDirectory.getText());
 		determineSystemSpecs();
 	}
 
@@ -466,6 +467,11 @@ public class FirstPageInstallerPanel extends AcreInstallerPanel implements
 			message = "ACRE userconfig directory is missing.";
 		} else if (labelTS3Value.equals("Unknown")) {
 			message = "Can't determine between TS3 32/64 bit.";
+		}
+		
+		String ts3PluginsFoler = textFieldTS3InstallationDirectory.getText() + "/plugins";
+		if (!new File(ts3PluginsFoler).exists()){
+			message = "TS3 installation directory is missing \\plugins folder";
 		}
 		
 		String acrePlugin = textFieldACREPluginInstallationDirectory.getText() + "/" + labelACREpluginValue.getText();
