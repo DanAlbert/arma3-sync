@@ -701,10 +701,16 @@ public class AddonsPanel extends JPanel implements UIConstants {
 		eventSelectionPanel.setVisible(true);
 	}
 	
-	public void createGroupFromEvent(String name, List<String> listAddonNames) {
+	public void createGroupFromEvent(String eventName, List<String> listAddonNames) {
+		
+		for (TreeNodeDTO node:racine2.getList()){
+			if (node.getName().equals(eventName)){
+				return;
+			}
+		}
 		
 		TreeDirectoryDTO directory = new TreeDirectoryDTO();
-		directory.setName(name);
+		directory.setName(eventName);
 		directory.setParent(racine2);
 		racine2.addTreeNode(directory);
 		for (String addonName:listAddonNames){
