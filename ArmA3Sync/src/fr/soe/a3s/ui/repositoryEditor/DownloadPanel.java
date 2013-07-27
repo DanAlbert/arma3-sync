@@ -754,6 +754,8 @@ public class DownloadPanel extends JPanel implements UIConstants {
 				arbre.updateUI();
 			}
 		});
+		checkBoxExpandAll.setSelected(false);
+		checkBoxSelectAll.setSelected(false);
 	}
 
 	private void compute(SyncTreeNodeDTO syncTreeNodeDTO) {
