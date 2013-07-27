@@ -424,13 +424,13 @@ public class DownloadPanel extends JPanel implements UIConstants {
 					}
 				}
 
-				if(!repositoryService.isDownloading()){
+				if (!repositoryService.isDownloading()) {
 					totalFilesSize = 0;
 					compute(racine);
 					labelTotalFilesSizeValue.setText(UnitConverter
 							.convertSize(totalFilesSize));
 				}
-				
+
 				SwingUtilities.invokeLater(new Runnable() {
 					@Override
 					public void run() {
@@ -505,7 +505,7 @@ public class DownloadPanel extends JPanel implements UIConstants {
 		// Lock user action on addons tree
 		arbre.setEnabled(false);
 		// Check addons repository
-		addonsChecker = new AddonsChecker(facade, repositoryName,eventName);
+		addonsChecker = new AddonsChecker(facade, repositoryName, eventName);
 		addonsChecker.start();
 	}
 
@@ -557,7 +557,7 @@ public class DownloadPanel extends JPanel implements UIConstants {
 		facade.getSyncPanel().init();
 
 		// Check addons repository
-		addonsChecker = new AddonsChecker(facade, repositoryName,eventName);
+		addonsChecker = new AddonsChecker(facade, repositoryName, eventName);
 		addonsChecker.start();
 	}
 
@@ -620,9 +620,11 @@ public class DownloadPanel extends JPanel implements UIConstants {
 		}
 
 		if (comBoxDestinationFolder.getSelectedItem() == null) {
-			JOptionPane.showMessageDialog(facade.getMainPanel(),
-					"A default destination folder must be set. \n Please checkout Addon Option panel.", "Download",
-					JOptionPane.WARNING_MESSAGE);
+			JOptionPane
+					.showMessageDialog(
+							facade.getMainPanel(),
+							"A default destination folder must be set. \n Please checkout Addon Option panel.",
+							"Download", JOptionPane.WARNING_MESSAGE);
 			return;
 		} else {
 			String defaultDownloadLocation = (String) comBoxDestinationFolder
@@ -645,6 +647,7 @@ public class DownloadPanel extends JPanel implements UIConstants {
 			addonsDownloader = null;
 			repositoryService.setDownloading(repositoryName, false);
 		}
+		buttonDownloadStart.setEnabled(true);
 	}
 
 	private void buttonDownloadCancelPerformed() {
@@ -654,6 +657,10 @@ public class DownloadPanel extends JPanel implements UIConstants {
 			addonsDownloader.interrupt();
 			addonsDownloader = null;
 			repositoryService.setDownloading(repositoryName, false);
+		}else {
+			facade.getDownloadPanel().getLabelDownloadStatus()
+					.setText("Canceled!");
+			repositoryService.saveDownloadParameters(repositoryName,0,0,false);
 		}
 	}
 
@@ -661,7 +668,7 @@ public class DownloadPanel extends JPanel implements UIConstants {
 
 		if (racine == null) {
 			JOptionPane.showMessageDialog(facade.getMainPanel(),
-					"There is no file to download.", "Advanced configuration",
+					"Please check for addons first.", "Advanced configuration",
 					JOptionPane.WARNING_MESSAGE);
 			return;
 		}
