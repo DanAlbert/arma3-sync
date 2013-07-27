@@ -262,10 +262,10 @@ public class EventsPanel extends JPanel implements UIConstants {
 	}
 
 	private void buttonNewPerformed() {
-		
+
 		listEvents.clearSelection();
 		deselectAllDescending(racine1);
-		
+
 		// Desable selection
 		arbre.setEnabled(false);
 
@@ -280,13 +280,14 @@ public class EventsPanel extends JPanel implements UIConstants {
 
 		if (index != -1) {
 			listEvents.clearSelection();
-			
+
 			// Desable selection
 			arbre.setEnabled(false);
-			
+
 			EventRenamePanel eventRenamePanel = new EventRenamePanel(facade,
 					repositoryName);
-			eventRenamePanel.init(eventDTOs.get(index).getName(),eventDTOs.get(index).getDescription());
+			eventRenamePanel.init(eventDTOs.get(index).getName(), eventDTOs
+					.get(index).getDescription());
 			eventRenamePanel.setVisible(true);
 			updateListEvents();
 		}
@@ -299,10 +300,10 @@ public class EventsPanel extends JPanel implements UIConstants {
 		if (index != -1) {
 			try {
 				deselectAllDescending(racine1);
-				
+
 				// Desable selection
 				arbre.setEnabled(false);
-				
+
 				repositoryService.removeEvent(repositoryName,
 						eventDTOs.get(index).getName());
 				updateListEvents();
@@ -313,32 +314,16 @@ public class EventsPanel extends JPanel implements UIConstants {
 			}
 		}
 	}
-	
+
 	private void buttonUploadPerformed() {
 		uploadInformations();
 	}
-	
-	private void uploadInformations(){
-		try {
-			boolean response = ftpService.upLoadEvents(repositoryName);
-			if (response == false) {
-				JOptionPane
-						.showMessageDialog(
-								facade.getMainPanel(),
-								"Failed to upload events informations. \n Please checkout FTP server permissions.",
-								"Error", JOptionPane.ERROR_MESSAGE);
-			} else {
-				JOptionPane.showMessageDialog(facade.getMainPanel(),
-						"Events informatons have been uploaded to repository.",
-						"Error", JOptionPane.INFORMATION_MESSAGE);
-				SynchronizingPanel synchronizingPanel = new SynchronizingPanel(facade);
-				synchronizingPanel.setVisible(true);
-				synchronizingPanel.init();
-			}
-		} catch (RepositoryException e) {
-			JOptionPane.showMessageDialog(facade.getMainPanel(),
-					e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-		}
+
+	private void uploadInformations() {
+
+		UploadPanel uploadPanel = new UploadPanel(facade, repositoryName);
+		uploadPanel.setVisible(true);
+		uploadPanel.init();
 	}
 
 	public void updateListEvents() {
@@ -349,7 +334,8 @@ public class EventsPanel extends JPanel implements UIConstants {
 				String[] eventTexts = new String[eventDTOs.size()];
 				int i = 0;
 				for (EventDTO eventDTO : eventDTOs) {
-					eventTexts[i] = eventDTO.getName() + " - " + eventDTO.getDescription();
+					eventTexts[i] = eventDTO.getName() + " - "
+							+ eventDTO.getDescription();
 					i++;
 				}
 				listEvents.clearSelection();

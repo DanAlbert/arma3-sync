@@ -235,7 +235,7 @@ public class FtpService implements DataAccessConstants {
 	// }
 
 	public boolean upLoadEvents(String repositoryName)
-			throws RepositoryException {
+			throws RepositoryException, FtpException {
 
 		Repository repository = repositoryDAO.getMap().get(repositoryName);
 		if (repository == null) {
@@ -252,6 +252,7 @@ public class FtpService implements DataAccessConstants {
 			ftpClient.disconnect();
 		} catch (Exception e) {
 			e.printStackTrace();
+			throw new FtpException(e.getMessage());
 		}
 		return response;
 	}
