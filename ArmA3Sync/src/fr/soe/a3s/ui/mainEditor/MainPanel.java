@@ -209,13 +209,21 @@ public class MainPanel extends JFrame implements UIConstants {
 		menuItemACREwizard.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
-				menuItemACREwizardPerformed();
+				SwingUtilities.invokeLater(new Runnable() {
+					public void run() {
+						menuItemACREwizardPerformed();
+					}
+				});
 			}
 		});
 		menuItemAiAwizard.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
-				menuItemAiAwizardPerformed();
+				SwingUtilities.invokeLater(new Runnable() {
+					public void run() {
+						menuItemAiAwizardPerformed();
+					}
+				});
 			}
 		});
 		menuItemRPTviewer.addActionListener(new ActionListener() {
@@ -635,9 +643,9 @@ public class MainPanel extends JFrame implements UIConstants {
 				Thread.sleep(500);
 			} catch (InterruptedException e) {
 			}
-			 WellcomePanel wellcomePanel = new WellcomePanel(facade);
-			 wellcomePanel.toFront();
-			 wellcomePanel.setVisible(true);
+			WellcomePanel wellcomePanel = new WellcomePanel(facade);
+			wellcomePanel.toFront();
+			wellcomePanel.setVisible(true);
 		}
 	}
 
