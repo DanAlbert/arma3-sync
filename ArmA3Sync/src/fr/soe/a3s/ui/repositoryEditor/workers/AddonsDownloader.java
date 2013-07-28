@@ -2,7 +2,9 @@ package fr.soe.a3s.ui.repositoryEditor.workers;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.swing.JOptionPane;
 
@@ -10,6 +12,7 @@ import fr.soe.a3s.controller.ObserverFileSize;
 import fr.soe.a3s.controller.ObserverFilesNumber;
 import fr.soe.a3s.controller.ObserverSpeed;
 import fr.soe.a3s.dao.FileAccessMethods;
+import fr.soe.a3s.dto.EventDTO;
 import fr.soe.a3s.dto.sync.SyncTreeDirectoryDTO;
 import fr.soe.a3s.dto.sync.SyncTreeLeafDTO;
 import fr.soe.a3s.dto.sync.SyncTreeNodeDTO;
@@ -42,13 +45,17 @@ public class AddonsDownloader extends Thread {
 	private boolean canceled = false;
 	private boolean paused = false;
 	private long offset;
+	private String eventName;
+	private SyncTreeDirectoryDTO parent;
+	private boolean found;
 
 	public AddonsDownloader(Facade facade, String repositoryName,
-			SyncTreeDirectoryDTO racine, long totalFilesSize) {
+			SyncTreeDirectoryDTO racine, long totalFilesSize, String eventName) {
 		this.facade = facade;
 		this.racine = racine;
 		this.repositoryName = repositoryName;
 		this.totalFilesSize = totalFilesSize;
+		this.eventName = eventName;
 	}
 
 	public void run() {
@@ -262,7 +269,10 @@ public class AddonsDownloader extends Thread {
 
 		FtpService ftpService = new FtpService();
 		ftpService.getSync(repositoryName);
-		SyncTreeDirectoryDTO parent = repositoryService.getSync(repositoryName);
+		parent = repositoryService.getSync(repositoryName);
+		if (eventName != null) {
+			setEventAddonSelection();
+		}
 		facade.getDownloadPanel().updateAddons(parent);
 		facade.getDownloadPanel().getButtonCheckForAddonsStart()
 				.setEnabled(true);
@@ -305,5 +315,126 @@ public class AddonsDownloader extends Thread {
 	public long getIncrementedFilesSize() {
 		return incrementedFilesSize;
 	}
+	
 
+	private void setEventAddonSelection() {
+		
+		try {
+			List<EventDTO> eventDTOs = repositoryService
+					.getEvents(this.repositoryName);
+			Map<String, Boolean> addonNames = new HashMap<String, Boolean>();
+			if (eventDTOs != null) {
+				for (EventDTO eventDTO : eventDTOs) {
+					if (eventDTO.getName().equals(eventName)) {
+						addonNames = eventDTO.getAddonNames();
+						break;
+					}
+				}
+			}
+
+			SyncTreeDirectoryDTO newRacine = new SyncTreeDirectoryDTO();
+			newRacine.setName(parent.getName());
+			newRacine.setParent(null);
+			refine(parent, newRacine, addonNames);
+			parent = newRacine;
+		} catch (RepositoryException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	private void refine(SyncTreeDirectoryDTO oldSyncTreeDirectoryDTO,
+			SyncTreeDirectoryDTO newSyncTreeDirectoryDTO,
+			Map<String, Boolean> addonNames) {
+
+		for (SyncTreeNodeDTO nodeDTO : oldSyncTreeDirectoryDTO.getList()) {
+			if (!nodeDTO.isLeaf()) {
+				SyncTreeDirectoryDTO directoryDTO = (SyncTreeDirectoryDTO) nodeDTO;
+				if (directoryDTO.isMarkAsAddon()
+						&& addonNames.containsKey(nodeDTO.getName())) {
+					SyncTreeDirectoryDTO newDirectory = new SyncTreeDirectoryDTO();
+					newDirectory.setName(directoryDTO.getName());
+					newDirectory.setDestinationPath(directoryDTO
+							.getDestinationPath());
+					newDirectory.setParent(newSyncTreeDirectoryDTO);
+					newDirectory.setMarkAsAddon(true);
+					boolean optional = addonNames.get(nodeDTO.getName());
+					if (optional) {
+						newDirectory.setOptional(true);
+						newDirectory.setSelected(false);
+					} else {
+						newDirectory.setOptional(false);
+						newDirectory.setSelected(true);
+						selectAllAscending(newDirectory);
+					}
+					newSyncTreeDirectoryDTO.addTreeNode(newDirectory);
+					fill(directoryDTO, newDirectory);
+				} else if (!directoryDTO.isMarkAsAddon()){
+					found = false;
+					seek(directoryDTO,addonNames);
+					if (found){
+						SyncTreeDirectoryDTO newDirectory = new SyncTreeDirectoryDTO();
+						newDirectory.setName(directoryDTO.getName());
+						newSyncTreeDirectoryDTO.addTreeNode(newDirectory);
+						newDirectory.setParent(newSyncTreeDirectoryDTO);
+						refine(directoryDTO, newDirectory, addonNames);
+					}
+				}
+			}
+		}
+	}
+	
+	private void fill(SyncTreeDirectoryDTO directoryDTO,
+			SyncTreeDirectoryDTO newDirectoryDTO) {
+
+		for (SyncTreeNodeDTO nodeDTO : directoryDTO.getList()) {
+			if (nodeDTO.isLeaf()) {
+				SyncTreeLeafDTO leafDTO = (SyncTreeLeafDTO) nodeDTO;
+				SyncTreeLeafDTO newLeafDTO = new SyncTreeLeafDTO();
+				newLeafDTO.setName(leafDTO.getName());
+				newLeafDTO.setParent(newDirectoryDTO);
+				newLeafDTO.setDeleted(leafDTO.isDeleted());
+				newLeafDTO.setUpdated(leafDTO.isUpdated());
+				newLeafDTO.setSelected(newDirectoryDTO.isSelected());
+				newLeafDTO.setSize(leafDTO.getSize());
+				newLeafDTO.setDestinationPath(leafDTO.getDestinationPath());
+				newDirectoryDTO.addTreeNode(newLeafDTO);
+			} else {
+				SyncTreeDirectoryDTO dDTO = (SyncTreeDirectoryDTO) nodeDTO;
+				SyncTreeDirectoryDTO newdDTO = new SyncTreeDirectoryDTO();
+				newdDTO.setName(dDTO.getName());
+				newdDTO.setParent(newDirectoryDTO);
+				newdDTO.setUpdated(dDTO.isUpdated());
+				newdDTO.setDeleted(dDTO.isDeleted());
+				newdDTO.setSelected(newDirectoryDTO.isSelected());
+				newdDTO.setDestinationPath(dDTO.getDestinationPath());
+				newdDTO.setMarkAsAddon(dDTO.isMarkAsAddon());
+				newDirectoryDTO.addTreeNode(newdDTO);
+				fill(dDTO, newdDTO);
+			}
+		}
+	}
+	
+	private void seek(SyncTreeDirectoryDTO seakDirectory,
+			Map<String, Boolean> addonNames) {
+		
+		for (SyncTreeNodeDTO nodeDTO : seakDirectory.getList()) {
+			if (!nodeDTO.isLeaf()) {
+				SyncTreeDirectoryDTO directoryDTO = (SyncTreeDirectoryDTO) nodeDTO;
+				if (directoryDTO.isMarkAsAddon()
+						&& addonNames.containsKey(nodeDTO.getName())) {
+					found = true;
+				}else {
+					seek(directoryDTO, addonNames);
+				}
+			}
+		}
+	}
+	
+	private void selectAllAscending(SyncTreeNodeDTO syncTreeNodeDTO) {
+		if (syncTreeNodeDTO != null) {
+			syncTreeNodeDTO.setSelected(true);
+			SyncTreeNodeDTO parent = syncTreeNodeDTO.getParent();
+			selectAllAscending(parent);
+		}
+	}
 }
