@@ -662,6 +662,7 @@ public class DownloadPanel extends JPanel implements UIConstants {
 					.setText("Canceled!");
 			repositoryService.saveDownloadParameters(repositoryName,0,0,false);
 		}
+		buttonDownloadStart.setEnabled(true);
 	}
 
 	private void buttonAdvancedConfigurationPerformed() {
