@@ -19,6 +19,7 @@ public class TreeDirectory implements TreeNode,Serializable{
 	private TreeDirectory parent;
 	private List<TreeNode> list = new ArrayList<TreeNode>();
 	private boolean marked = false;
+	private boolean optional = false;
 	
 	public TreeDirectory(String name,TreeDirectory parent){
 		this.name = name;
@@ -110,4 +111,13 @@ public class TreeDirectory implements TreeNode,Serializable{
 		return name;
 	}
 
+	@Override
+	public void setOptional(boolean value) {
+		this.optional = value;
+	}
+
+	@Override
+	public boolean isOptional() {
+		return this.optional;
+	}
 }

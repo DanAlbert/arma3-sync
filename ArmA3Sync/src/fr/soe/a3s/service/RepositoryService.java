@@ -610,7 +610,7 @@ public class RepositoryService {
 		Repository repository = repositoryDAO.getMap().get(repositoryName);
 		if (repository != null) {
 			Events events = repository.getEvents();
-			if (events==null){
+			if (events == null) {
 				events = new Events();
 				repository.setEvents(events);
 			}
@@ -628,7 +628,7 @@ public class RepositoryService {
 		Repository repository = repositoryDAO.getMap().get(repositoryName);
 		if (repository != null) {
 			Events events = repository.getEvents();
-			if (events!=null){
+			if (events != null) {
 				for (Event event : events.getList()) {
 					if (event.getName().equals(eventName)) {
 						event.setName(newEventName);
@@ -648,7 +648,7 @@ public class RepositoryService {
 		Repository repository = repositoryDAO.getMap().get(repositoryName);
 		if (repository != null) {
 			Events events = repository.getEvents();
-			if (events!=null){
+			if (events != null) {
 				Event eventFound = null;
 				for (Event event : events.getList()) {
 					if (event.getName().equals(eventName)) {
@@ -672,9 +672,9 @@ public class RepositoryService {
 		Repository repository = repositoryDAO.getMap().get(repositoryName);
 		if (repository != null) {
 			SyncTreeDirectory parentSyncTreeDirectory = repository.getSync();
-			if (parentSyncTreeDirectory==null){
+			if (parentSyncTreeDirectory == null) {
 				return null;
-			}else {
+			} else {
 				TreeDirectory parentTreeDirectory = new TreeDirectory(
 						parentSyncTreeDirectory.getName(), null);
 				extractAddons(parentSyncTreeDirectory, parentTreeDirectory);
@@ -729,7 +729,7 @@ public class RepositoryService {
 				if (syncTreeDirectory2.isMarkAsAddon()) {
 					treeDirectory.addTreeNode(treeDirectory2);
 					markRecursively(treeDirectory2);
-				}else {
+				} else {
 					treeDirectory.addTreeNode(treeDirectory2);
 					extractAddons(syncTreeDirectory2, treeDirectory2);
 				}
@@ -747,23 +747,26 @@ public class RepositoryService {
 	}
 
 	public void saveEvent(String repositoryName, EventDTO eventDTO) {
-		
+
 		Repository repository = repositoryDAO.getMap().get(repositoryName);
 		if (repository != null) {
 			Events events = repository.getEvents();
-			if (events!=null){
+			if (events != null) {
 				for (Event event : events.getList()) {
 					if (event.getName().equals(eventDTO.getName())) {
 						event.getAddonNames().clear();
-						for (String  addoName:eventDTO.getAddonNames()){
-							event.getAddonNames().add(addoName);
+						for (Iterator<String> iter = eventDTO.getAddonNames()
+								.keySet().iterator(); iter.hasNext();) {
+							String key = iter.next();
+							boolean value = eventDTO.getAddonNames().get(key);
+							event.getAddonNames().put(key, value);
 						}
 					}
 				}
 			}
 		}
 	}
-	
+
 	private Cipher getEncryptionCipher() throws NoSuchAlgorithmException,
 			NoSuchPaddingException, InvalidKeyException {
 		Cipher cipher = Cipher.getInstance("AES");
@@ -910,10 +913,12 @@ public class RepositoryService {
 	private Event transformDTO2Event(EventDTO eventDTO) {
 
 		final Event event = new Event(eventDTO.getName());
-		event .setDescription(eventDTO.getDescription());
-		List<String> addonNames = eventDTO.getAddonNames();
-		for (String addonName : addonNames) {
-			event.getAddonNames().add(addonName);
+		event.setDescription(eventDTO.getDescription());
+		for (Iterator<String> iter = eventDTO.getAddonNames()
+				.keySet().iterator(); iter.hasNext();) {
+			String key = iter.next();
+			boolean value = eventDTO.getAddonNames().get(key);
+			event.getAddonNames().put(key, value);
 		}
 		return event;
 	}
@@ -923,9 +928,11 @@ public class RepositoryService {
 		final EventDTO eventDTO = new EventDTO();
 		eventDTO.setName(event.getName());
 		eventDTO.setDescription(event.getDescription());
-		List<String> addonNames = event.getAddonNames();
-		for (String addonName : addonNames) {
-			eventDTO.getAddonNames().add(addonName);
+		for (Iterator<String> iter = event.getAddonNames()
+				.keySet().iterator(); iter.hasNext();) {
+			String key = iter.next();
+			boolean value = event.getAddonNames().get(key);
+			eventDTO.getAddonNames().put(key, value);
 		}
 		return eventDTO;
 	}

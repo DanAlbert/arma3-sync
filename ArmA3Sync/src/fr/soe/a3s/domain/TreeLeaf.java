@@ -12,6 +12,7 @@ public class TreeLeaf implements TreeNode,Serializable{
 	private static final long serialVersionUID = 8681722025933532378L;
 	private String name;
 	private boolean selected = false;
+	private boolean optional = false;
 	private TreeDirectory parent;
 	
 	public TreeLeaf(String name, TreeDirectory parent){
@@ -73,4 +74,13 @@ public class TreeLeaf implements TreeNode,Serializable{
 		return name;
 	}
 
+	@Override
+	public void setOptional(boolean value) {
+		this.optional = value;
+	}
+
+	@Override
+	public boolean isOptional() {
+		return this.optional;
+	}
 }

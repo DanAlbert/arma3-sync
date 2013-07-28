@@ -9,6 +9,7 @@ public class TreeDirectoryDTO  implements TreeNodeDTO {
 	private String name;
 	private boolean selected = false;
 	private boolean missing = false;
+	private boolean optional = false;
 	private TreeDirectoryDTO parent;
 	private List<TreeNodeDTO> list = new ArrayList<TreeNodeDTO>();
 
@@ -97,6 +98,16 @@ public class TreeDirectoryDTO  implements TreeNodeDTO {
 
 	public boolean isMissing() {
 		return missing;
+	}
+
+	@Override
+	public void setOptional(boolean value) {
+		this.optional = value;		
+	}
+
+	@Override
+	public boolean isOptional() {
+		return optional;
 	}
 	
 }

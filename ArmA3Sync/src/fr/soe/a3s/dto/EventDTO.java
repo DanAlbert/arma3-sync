@@ -1,13 +1,16 @@
 package fr.soe.a3s.dto;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class EventDTO {
 
 	private String name;
 	private String description;
-	private List<String> addonNames = new ArrayList<String>();
+	//private List<String> addonNames = new ArrayList<String>();
+	private Map<String,Boolean> addonNames = new HashMap<String,Boolean>();
 
 	public String getName() {
 		return name;
@@ -25,8 +28,14 @@ public class EventDTO {
 		this.description = description;
 	}
 
-	public List<String> getAddonNames() {
+	public Map<String, Boolean> getAddonNames() {
 		return addonNames;
 	}
+
+//	public List<String> getAddonNames() {
+//		return addonNames;
+//	}
+	
+	
 
 }

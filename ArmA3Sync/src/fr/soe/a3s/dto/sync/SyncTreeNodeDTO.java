@@ -16,5 +16,7 @@ public interface SyncTreeNodeDTO extends java.lang.Comparable {
 	public void setDestinationPath(String destinationPath);
 	public void setDeleted(boolean value);
 	public boolean isDeleted();
+	public void setOptional(boolean value);
+	public boolean isOptional();
 
 }

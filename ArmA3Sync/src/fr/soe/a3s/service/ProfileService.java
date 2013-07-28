@@ -341,6 +341,7 @@ public class ProfileService {
 		TreeLeafDTO treeLeafDTO = new TreeLeafDTO();
 		treeLeafDTO.setName(treeLeaf.getName());
 		treeLeafDTO.setSelected(treeLeaf.isSelected());
+		treeLeafDTO.setOptional(treeLeaf.isOptional());
 		return treeLeafDTO;
 	}
 
@@ -371,6 +372,7 @@ public class ProfileService {
 		TreeLeaf treeLeaf = new TreeLeaf();
 		treeLeaf.setName(treeLeafDTO.getName());
 		treeLeaf.setSelected(treeLeafDTO.isSelected());
+		treeLeaf.setOptional(treeLeafDTO.isOptional());
 		return treeLeaf;
 	}
 

@@ -1,11 +1,14 @@
 package fr.soe.a3s.dto;
 
+import javax.print.attribute.standard.MediaSize.ISO;
+
 
 public class TreeLeafDTO  implements TreeNodeDTO{
 
 	private String name;
 	private boolean selected = false;
 	private boolean missing = false;
+	private boolean optional = false;
 	private TreeDirectoryDTO parent;
 
 	@Override
@@ -55,7 +58,11 @@ public class TreeLeafDTO  implements TreeNodeDTO{
 	}
 	
 	public String toString(){
-		return name;
+		if (optional){
+			return name + " (optional)";
+		}else {
+			return name;
+		}
 	}
 
 	public boolean isMissing() {
@@ -64,6 +71,16 @@ public class TreeLeafDTO  implements TreeNodeDTO{
 
 	public void setMissing(boolean missing) {
 		this.missing = missing;
+	}
+
+	@Override
+	public void setOptional(boolean value) {
+		this.optional = value;
+	}
+
+	@Override
+	public boolean isOptional() {
+		return optional;
 	}
 
 }

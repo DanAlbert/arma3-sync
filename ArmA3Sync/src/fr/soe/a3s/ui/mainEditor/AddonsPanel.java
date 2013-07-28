@@ -10,7 +10,9 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.swing.BorderFactory;
@@ -701,7 +703,7 @@ public class AddonsPanel extends JPanel implements UIConstants {
 		eventSelectionPanel.setVisible(true);
 	}
 	
-	public void createGroupFromEvent(String eventName, List<String> listAddonNames) {
+	public void createGroupFromEvent(String eventName, Map<String, Boolean> addonNames) {
 		
 		for (TreeNodeDTO node:racine2.getList()){
 			if (node.getName().equals(eventName)){
@@ -709,13 +711,18 @@ public class AddonsPanel extends JPanel implements UIConstants {
 			}
 		}
 		
+		deselectAllDescending(racine2);
+		
 		TreeDirectoryDTO directory = new TreeDirectoryDTO();
 		directory.setName(eventName);
 		directory.setParent(racine2);
 		racine2.addTreeNode(directory);
-		for (String addonName:listAddonNames){
+		for (Iterator<String> iter = addonNames.keySet().iterator() ; iter.hasNext() ; ){
+			String name = iter.next();
+			boolean optional = addonNames.get(name);
 			TreeLeafDTO leaf = new TreeLeafDTO();
-			leaf.setName(addonName);
+			leaf.setName(name);
+			leaf.setOptional(optional);
 			leaf.setParent(directory);
 			leaf.setSelected(true);
 			directory.addTreeNode(leaf);
@@ -726,6 +733,7 @@ public class AddonsPanel extends JPanel implements UIConstants {
 		updateAddonGroups();
 		highlightMissingAddons();
 		refreshViewArbre2();
+		//arbre2.expandPath(new TreePath(arbre2.getModel().getRoot()).pathByAddingChild(directory));
 		expandAddonGroups();
 		facade.getAddonOptionsPanel().updateAddonPriorities();
 		facade.getLaunchOptionsPanel().updateRunParameters();

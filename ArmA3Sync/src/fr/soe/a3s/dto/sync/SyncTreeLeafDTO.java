@@ -10,6 +10,7 @@ public class SyncTreeLeafDTO implements SyncTreeNodeDTO {
 	private long size;
 	private String destinationPath;
 	private boolean deleted;
+	private boolean optional;
 
 	@Override
 	public String getName() {
@@ -71,11 +72,11 @@ public class SyncTreeLeafDTO implements SyncTreeNodeDTO {
 
 	@Override
 	public int compareTo(Object other) {
-		String name = ((SyncTreeLeafDTO) other).toString();
+		String name = ((SyncTreeLeafDTO) other).getName();
 		int result = 1;
-		if (name.compareToIgnoreCase(toString()) > 0)
+		if (name.compareToIgnoreCase(getName()) > 0)
 			result = -1;
-		else if (name.compareToIgnoreCase(toString()) == 0)
+		else if (name.compareToIgnoreCase(getName()) == 0)
 			result = 0;
 		return result;
 	}
@@ -96,6 +97,16 @@ public class SyncTreeLeafDTO implements SyncTreeNodeDTO {
 	@Override
 	public boolean isDeleted() {
 		return deleted;
+	}
+
+	@Override
+	public void setOptional(boolean value) {
+		this.optional = value;
+	}
+
+	@Override
+	public boolean isOptional() {
+		return this.optional;
 	}
 
 }

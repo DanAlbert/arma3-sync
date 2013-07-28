@@ -1,7 +1,8 @@
 package fr.soe.a3s.ui.repositoryEditor.workers;
 
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.swing.JOptionPane;
 
@@ -96,7 +97,7 @@ public class AddonsChecker extends Thread {
 		try {
 			List<EventDTO> eventDTOs = repositoryService
 					.getEvents(this.repositoryName);
-			List<String> addonNames = new ArrayList<String>();
+			Map<String, Boolean> addonNames = new HashMap<String, Boolean>();
 			if (eventDTOs != null) {
 				for (EventDTO eventDTO : eventDTOs) {
 					if (eventDTO.getName().equals(eventName)) {
@@ -117,17 +118,25 @@ public class AddonsChecker extends Thread {
 
 	private void refine(SyncTreeDirectoryDTO oldSyncTreeDirectoryDTO,
 			SyncTreeDirectoryDTO newSyncTreeDirectoryDTO,
-			List<String> addonNames) {
+			Map<String, Boolean> addonNames) {
 
 		for (SyncTreeNodeDTO nodeDTO : oldSyncTreeDirectoryDTO.getList()) {
 			if (!nodeDTO.isLeaf()) {
 				SyncTreeDirectoryDTO directoryDTO = (SyncTreeDirectoryDTO) nodeDTO;
 				if (directoryDTO.isMarkAsAddon()
-						&& addonNames.contains(nodeDTO.getName())) {
+						&& addonNames.containsKey(nodeDTO.getName())) {
 					SyncTreeDirectoryDTO newDirectory = new SyncTreeDirectoryDTO();
 					newDirectory.setName(directoryDTO.getName());
 					newDirectory.setParent(newSyncTreeDirectoryDTO);
 					newDirectory.setMarkAsAddon(true);
+					boolean optional = addonNames.get(nodeDTO.getName());
+					if (optional){
+						newDirectory.setSelected(false);
+						newDirectory.setOptional(true);
+					}else {
+						newDirectory.setSelected(true);
+						newDirectory.setOptional(false);
+					}
 					newSyncTreeDirectoryDTO.addTreeNode(newDirectory);
 					fill(directoryDTO, newDirectory);
 				} else {
@@ -148,6 +157,7 @@ public class AddonsChecker extends Thread {
 				newLeafDTO.setParent(newDirectoryDTO);
 				newLeafDTO.setDeleted(leafDTO.isDeleted());
 				newLeafDTO.setUpdated(leafDTO.isUpdated());
+				newLeafDTO.setSelected(newDirectoryDTO.isSelected());
 				newLeafDTO.setSize(leafDTO.getSize());
 				newLeafDTO.setDestinationPath(leafDTO.getDestinationPath());
 				newDirectoryDTO.addTreeNode(newLeafDTO);
@@ -158,6 +168,7 @@ public class AddonsChecker extends Thread {
 				newdDTO.setParent(newDirectoryDTO);
 				newdDTO.setUpdated(dDTO.isUpdated());
 				newdDTO.setDeleted(dDTO.isDeleted());
+				newdDTO.setSelected(newDirectoryDTO.isSelected());
 				newdDTO.setDestinationPath(dDTO.getDestinationPath());
 				newdDTO.setMarkAsAddon(dDTO.isMarkAsAddon());
 				newDirectoryDTO.addTreeNode(newdDTO);

@@ -6,14 +6,18 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.List;
+import java.util.Map;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JList;
+import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTree;
@@ -64,7 +68,10 @@ public class EventsPanel extends JPanel implements UIConstants {
 	private TreeDirectoryDTO racine1;
 	private AddonTreeModel addonTreeModel1;
 	private JButton buttonSaveUpload;
-	private Object arbreTreePath;
+	private TreePath arbreTreePath;
+	private JPopupMenu popup;
+	private JMenuItem menuItemSetRequired;
+	private JMenuItem menuItemSetOptional;
 
 	public EventsPanel(Facade facade) {
 
@@ -140,6 +147,47 @@ public class EventsPanel extends JPanel implements UIConstants {
 			flattenSplitPane(splitPane);
 			vertBox1.add(splitPane);
 		}
+
+		/* Right clic menu */
+		popup = new JPopupMenu();
+
+		menuItemSetRequired = new JMenuItem("Set reqired");
+		menuItemSetRequired.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent evt) {
+				popupActionPerformed(evt);
+			}
+		});
+		menuItemSetRequired.setActionCommand("Set reqired");
+		popup.add(menuItemSetRequired);
+
+		menuItemSetOptional = new JMenuItem("Set optional");
+		menuItemSetOptional.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent evt) {
+				popupActionPerformed(evt);
+			}
+		});
+		menuItemSetOptional.setActionCommand("Set optional");
+		popup.add(menuItemSetOptional);
+
+		// popup.addPopupMenuListener(new PopupMenuListener() {
+		//
+		// @Override
+		// public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
+		// menuItemSetRequired.setEnabled(true);
+		// menuItemSetOptional.setEnabled(true);
+		// }
+		//
+		// @Override
+		// public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
+		//
+		// }
+		//
+		// @Override
+		// public void popupMenuCanceled(PopupMenuEvent e) {
+		//
+		// }
+		// });
+
 		buttonNew.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
@@ -181,8 +229,9 @@ public class EventsPanel extends JPanel implements UIConstants {
 			}
 		});
 		arbre.addMouseListener(new MouseAdapter() {
-			public void mouseClicked(MouseEvent e) {
 
+			public void mouseClicked(MouseEvent e) {
+				
 				if (arbreTreePath == null) {
 					return;
 				}
@@ -217,6 +266,12 @@ public class EventsPanel extends JPanel implements UIConstants {
 				}
 				saveSelection();
 				refreshViewArbre();
+			}
+
+			public void mouseReleased(MouseEvent e) {
+				if (e.isPopupTrigger()) {
+					popup.show((JComponent) e.getSource(), e.getX(), e.getY());
+				}
 			}
 		});
 		arbre.addTreeExpansionListener(new TreeExpansionListener() {
@@ -390,26 +445,29 @@ public class EventsPanel extends JPanel implements UIConstants {
 		if (index != -1) {
 			arbre.setEnabled(true);
 			EventDTO eventDTO = eventDTOs.get(index);
-			List<String> list = eventDTO.getAddonNames();
+			//List<String> list = eventDTO.getAddonNames();
+			Map<String,Boolean> map = eventDTO.getAddonNames();
 			deselectAllDescending(racine1);
-			setSelection(racine1, list);
+			setSelection(racine1, map);
 			refreshViewArbre();
 		}
 	}
 
-	private void setSelection(TreeNodeDTO treeNodeDTO, List<String> addonNames) {
+	private void setSelection(TreeNodeDTO treeNodeDTO, Map<String,Boolean> map) {
 
 		if (treeNodeDTO.isLeaf()) {
-			if (addonNames.contains(treeNodeDTO.getName())) {
+			if (map.containsKey(treeNodeDTO.getName())) {
 				treeNodeDTO.setSelected(true);
 				selectAllAscending(treeNodeDTO);
+				boolean optional = map.get(treeNodeDTO.getName());
+				treeNodeDTO.setOptional(optional);
 			} else {
 				treeNodeDTO.setSelected(false);
 			}
 		} else {
 			TreeDirectoryDTO treeDirectoryDTO = (TreeDirectoryDTO) treeNodeDTO;
 			for (TreeNodeDTO n : treeDirectoryDTO.getList()) {
-				setSelection(n, addonNames);
+				setSelection(n, map);
 			}
 		}
 	}
@@ -420,27 +478,24 @@ public class EventsPanel extends JPanel implements UIConstants {
 
 		if (index != -1) {
 			EventDTO eventDTO = eventDTOs.get(index);
-			List<String> list = eventDTO.getAddonNames();
-			list.clear();
-			// TreeDirectoryDTO treeDirectoryDTO = repositoryService
-			// .getEventAddonSelection(repositoryName);
-			getSelection(racine1, list);
+			Map<String,Boolean> map = eventDTO.getAddonNames();
+			map.clear();
+			getSelection(racine1,  map);
 			repositoryService.saveEvent(repositoryName, eventDTO);
-
 		}
 	}
 
-	private void getSelection(TreeNodeDTO treeNodeDTO, List<String> addonNames) {
+	private void getSelection(TreeNodeDTO treeNodeDTO, Map<String,Boolean> map) {
 
 		if (treeNodeDTO.isLeaf()) {
 			if (treeNodeDTO.isSelected()
-					&& !addonNames.contains(treeNodeDTO.getName())) {
-				addonNames.add(treeNodeDTO.getName());
+					&& !map.containsKey(treeNodeDTO.getName())) {
+				map.put(treeNodeDTO.getName(),treeNodeDTO.isOptional());
 			}
 		} else {
 			TreeDirectoryDTO treeDirectoryDTO = (TreeDirectoryDTO) treeNodeDTO;
 			for (TreeNodeDTO n : treeDirectoryDTO.getList()) {
-				getSelection(n, addonNames);
+				getSelection(n, map);
 			}
 		}
 	}
@@ -504,5 +559,42 @@ public class EventsPanel extends JPanel implements UIConstants {
 		arbre.setPreferredSize(arbre.getPreferredScrollableViewportSize());
 		scrollPane1.updateUI();
 		arbre.setSelectionPath(null);
+	}
+
+	private void popupActionPerformed(ActionEvent evt) {
+
+		if (evt.getActionCommand().equals("Set reqired")) {
+			setRequired();
+		} else if (evt.getActionCommand().equals("Set optional")) {
+			setOptional();
+		}
+	}
+
+	private void setRequired() {
+
+		TreeNodeDTO treeNodeDTO = (TreeNodeDTO) arbreTreePath
+				.getLastPathComponent();
+
+		if (treeNodeDTO != null) {
+			treeNodeDTO.setSelected(true);
+			selectAllAscending(treeNodeDTO);
+			treeNodeDTO.setOptional(false); 
+		}
+		saveSelection();
+		refreshViewArbre();
+	}
+
+	private void setOptional() {
+
+		TreeNodeDTO treeNodeDTO = (TreeNodeDTO) arbreTreePath
+				.getLastPathComponent();
+
+		if (treeNodeDTO != null) {
+			treeNodeDTO.setSelected(true);
+			selectAllAscending(treeNodeDTO);
+			treeNodeDTO.setOptional(true); 
+		}
+		saveSelection();
+		refreshViewArbre();
 	}
 }

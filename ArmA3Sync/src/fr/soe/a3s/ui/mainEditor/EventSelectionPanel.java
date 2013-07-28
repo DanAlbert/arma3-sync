@@ -1,12 +1,12 @@
 package fr.soe.a3s.ui.mainEditor;
 
 import java.awt.BorderLayout;
-import java.awt.Component;
 import java.awt.Container;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -142,8 +142,11 @@ public class EventSelectionPanel extends JDialog implements UIConstants {
 			this.dispose();
 		}else {
 			EventDTO eventDTO = mapEvents.get(index);
-			List<String> listAddonNames = eventDTO.getAddonNames();
-			facade.getAddonsPanel().createGroupFromEvent(eventDTO.getName(),listAddonNames);
+			//List<String> listAddonNames = eventDTO.getAddonNames();
+//			for (Iterator<String> iter = eventDTO.getAddonNames().keySet().iterator() ; iter.hasNext() ; ){
+//				
+//			}
+			facade.getAddonsPanel().createGroupFromEvent(eventDTO.getName(),eventDTO.getAddonNames());
 			this.dispose();
 		}
 	}
