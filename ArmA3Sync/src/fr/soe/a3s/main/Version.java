@@ -8,7 +8,7 @@ public class Version {
 	
 	private static final int MINOR = 0;
 	
-	private static final int BUILD = 16;
+	private static final int BUILD = 17;
 	
 	private static final String YEAR = "2013";
 	
