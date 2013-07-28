@@ -44,7 +44,7 @@ public class CreditsPanel extends JDialog implements ActionListener,UIConstants 
 	public CreditsPanel(Facade facade) {
 		super(facade.getMainPanel(), "Credits", true);
 
-		this.setSize(385, 290);
+		this.setSize(385, 310);
 		setResizable(false);
 		setIconImage(ICON);
 		this.setLocation((int) facade.getMainPanel().getLocation().getX()
@@ -58,12 +58,12 @@ public class CreditsPanel extends JDialog implements ActionListener,UIConstants 
 		jButtonClose = new JButton();
 		getContentPane().add(jButtonClose, "North");
 		jButtonClose.setText("Close");
-		jButtonClose.setBounds(287, 224, 76, 27);
+		jButtonClose.setBounds(287, 244, 76, 27);
 		jButtonClose.addActionListener(this);
 
 		jPanel1 = new JPanel();
 		getContentPane().add(jPanel1);
-		jPanel1.setBounds(15, 11, 348, 207);
+		jPanel1.setBounds(15, 11, 348, 227);
 		jPanel1.setLayout(null);
 		jPanel1
 				.setBorder(BorderFactory
@@ -81,9 +81,9 @@ public class CreditsPanel extends JDialog implements ActionListener,UIConstants 
 		{
 			jTextArea1 = new JTextArea();
 			jPanel1.add(jTextArea1);
-			jTextArea1.setBounds(15, 19, 188, 173);
+			jTextArea1.setBounds(15, 19, 188, 194);
 			
-			jTextArea1.setText("Software development\n" +"[S.o.E] Major_Shepard\n" +"\nGraphical design\n" +"[S.o.E] Matt2507\n" + "\nTesting\n" + "[S.o.E] Team Members\n" + "\nInspired from \n" + "ArmA II Game Launcher\n" + "by SpiritedMachine.");
+			jTextArea1.setText("Software development\n" +"[S.o.E] Major_Shepard\n" +"\nGraphical design\n" +"[S.o.E] Matt2507\n" + "\nTesting\n" + "[S.o.E],[F27],[BWF]\nTeam Members\n" + "\nInspired from \n" + "ArmA II Game Launcher\n" + "by SpiritedMachine.");
 			jTextArea1.setFont(new java.awt.Font("Tahoma",0,11));
 			jTextArea1.setEditable(false);
 
