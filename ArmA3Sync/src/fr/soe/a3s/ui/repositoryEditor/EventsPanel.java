@@ -231,7 +231,7 @@ public class EventsPanel extends JPanel implements UIConstants {
 		arbre.addMouseListener(new MouseAdapter() {
 
 			public void mouseClicked(MouseEvent e) {
-				
+
 				if (arbreTreePath == null) {
 					return;
 				}
@@ -389,8 +389,14 @@ public class EventsPanel extends JPanel implements UIConstants {
 				String[] eventTexts = new String[eventDTOs.size()];
 				int i = 0;
 				for (EventDTO eventDTO : eventDTOs) {
-					eventTexts[i] = eventDTO.getName() + " - "
-							+ eventDTO.getDescription();
+					if (eventDTO.getDescription() == null) {
+						eventTexts[i] = eventDTO.getName();
+					} else if (eventDTO.getDescription().isEmpty()) {
+						eventTexts[i] = eventDTO.getName();
+					} else {
+						eventTexts[i] = eventDTO.getName() + " - "
+								+ eventDTO.getDescription();
+					}
 					i++;
 				}
 				listEvents.clearSelection();
@@ -445,15 +451,14 @@ public class EventsPanel extends JPanel implements UIConstants {
 		if (index != -1) {
 			arbre.setEnabled(true);
 			EventDTO eventDTO = eventDTOs.get(index);
-			//List<String> list = eventDTO.getAddonNames();
-			Map<String,Boolean> map = eventDTO.getAddonNames();
+			Map<String, Boolean> map = eventDTO.getAddonNames();
 			deselectAllDescending(racine1);
 			setSelection(racine1, map);
 			refreshViewArbre();
 		}
 	}
 
-	private void setSelection(TreeNodeDTO treeNodeDTO, Map<String,Boolean> map) {
+	private void setSelection(TreeNodeDTO treeNodeDTO, Map<String, Boolean> map) {
 
 		if (treeNodeDTO.isLeaf()) {
 			if (map.containsKey(treeNodeDTO.getName())) {
@@ -478,19 +483,19 @@ public class EventsPanel extends JPanel implements UIConstants {
 
 		if (index != -1) {
 			EventDTO eventDTO = eventDTOs.get(index);
-			Map<String,Boolean> map = eventDTO.getAddonNames();
+			Map<String, Boolean> map = eventDTO.getAddonNames();
 			map.clear();
-			getSelection(racine1,  map);
+			getSelection(racine1, map);
 			repositoryService.saveEvent(repositoryName, eventDTO);
 		}
 	}
 
-	private void getSelection(TreeNodeDTO treeNodeDTO, Map<String,Boolean> map) {
+	private void getSelection(TreeNodeDTO treeNodeDTO, Map<String, Boolean> map) {
 
 		if (treeNodeDTO.isLeaf()) {
 			if (treeNodeDTO.isSelected()
 					&& !map.containsKey(treeNodeDTO.getName())) {
-				map.put(treeNodeDTO.getName(),treeNodeDTO.isOptional());
+				map.put(treeNodeDTO.getName(), treeNodeDTO.isOptional());
 			}
 		} else {
 			TreeDirectoryDTO treeDirectoryDTO = (TreeDirectoryDTO) treeNodeDTO;
@@ -578,7 +583,7 @@ public class EventsPanel extends JPanel implements UIConstants {
 		if (treeNodeDTO != null) {
 			treeNodeDTO.setSelected(true);
 			selectAllAscending(treeNodeDTO);
-			treeNodeDTO.setOptional(false); 
+			treeNodeDTO.setOptional(false);
 		}
 		saveSelection();
 		refreshViewArbre();
@@ -592,7 +597,7 @@ public class EventsPanel extends JPanel implements UIConstants {
 		if (treeNodeDTO != null) {
 			treeNodeDTO.setSelected(true);
 			selectAllAscending(treeNodeDTO);
-			treeNodeDTO.setOptional(true); 
+			treeNodeDTO.setOptional(true);
 		}
 		saveSelection();
 		refreshViewArbre();
