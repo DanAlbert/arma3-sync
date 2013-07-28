@@ -53,10 +53,12 @@ public class AdvancedConfigurationPanel extends JFrame implements UIConstants {
 	private OutlineModel outlineModel;
 	private Outline outline;
 	private ConfigurationService configurationService = new ConfigurationService();
+	private String defaultDestinationPath;// may be null
 
-	public AdvancedConfigurationPanel(Facade facade, SyncTreeDirectoryDTO racine) {
+	public AdvancedConfigurationPanel(Facade facade, SyncTreeDirectoryDTO racine, String defaultDestinationPath) {
 		this.facade = facade;
 		this.racine = racine;
+		this.defaultDestinationPath = defaultDestinationPath;
 		this.setTitle("Advanced configuration");
 		this.setResizable(true);
 		this.setMinimumSize(new Dimension(DEFAULT_WIDTH, 400));
@@ -256,16 +258,14 @@ public class AdvancedConfigurationPanel extends JFrame implements UIConstants {
 					return null;
 				}
 
-				File parentFile = new File(currentFolderPath).getParentFile();
-				
-				JFileChooser fc = new JFileChooser(parentFile);
+				JFileChooser fc = new JFileChooser(defaultDestinationPath);
 				fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
 				int returnVal = fc
 						.showOpenDialog(AdvancedConfigurationPanel.this);
 
 				if (returnVal == JFileChooser.APPROVE_OPTION) {
 					File file = fc.getSelectedFile();
-					String newPath = file.getAbsolutePath();
+					String newPath = file.getAbsolutePath().toLowerCase();
 					node.setDestinationPath(newPath);
 					setDestinationPath(node);
 					outlineModel.setValueAt(newPath, index, 1);

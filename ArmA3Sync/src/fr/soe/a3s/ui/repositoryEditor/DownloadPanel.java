@@ -674,8 +674,10 @@ public class DownloadPanel extends JPanel implements UIConstants {
 			return;
 		}
 
+		String defaultDestinationPath = repositoryService.getDefaultDownloadLocation(repositoryName);
+		
 		AdvancedConfigurationPanel advancedConfigurationPanel = new AdvancedConfigurationPanel(
-				facade, racine);
+				facade, racine,defaultDestinationPath);
 		advancedConfigurationPanel.setVisible(true);
 		buttonAdvancedConfigurationPerformed.setEnabled(false);
 	}
