@@ -1,0 +1,5 @@
+Manifest-Version: 1.0
+Ant-Version: Apache Ant 1.7.0
+Created-By: 11.3-b02 (Sun Microsystems Inc.)
+Main-Class: fr.soe.a3sUpdater.main.ArmA3SyncUpdater
+Class-Path: ./resources/lib/dom4j-1.6.1.jar ./resources/lib/jaxen-1.1-beta-6.jar ./resources/lib/commons-net-3.2.jar ./resources/lib/commons-io-2.0.1.jar
