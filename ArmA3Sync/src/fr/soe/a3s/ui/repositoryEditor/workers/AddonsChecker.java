@@ -1,5 +1,6 @@
 package fr.soe.a3s.ui.repositoryEditor.workers;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -24,6 +25,7 @@ public class AddonsChecker extends Thread {
 	private String eventName;
 	private RepositoryService repositoryService = new RepositoryService();
 	private SyncTreeDirectoryDTO parent;
+	private boolean found;
 
 	public AddonsChecker(Facade facade, String repositoryName, String eventName) {
 		this.facade = facade;
@@ -106,15 +108,72 @@ public class AddonsChecker extends Thread {
 					}
 				}
 			}
+
+			//List<SyncTreeDirectoryDTO> retrievedList = new ArrayList<SyncTreeDirectoryDTO>();
+			//retieve(parent, retrievedList, addonNames);
 			SyncTreeDirectoryDTO newRacine = new SyncTreeDirectoryDTO();
 			newRacine.setName(parent.getName());
 			newRacine.setParent(null);
+			//build(parent, newRacine, retrievedList);
 			refine(parent, newRacine, addonNames);
 			parent = newRacine;
 		} catch (RepositoryException e) {
 			e.printStackTrace();
 		}
 	}
+
+	private void retieve(SyncTreeDirectoryDTO syncTreeDirectoryDTO,
+			List<SyncTreeDirectoryDTO> retrievedList,
+			Map<String, Boolean> addonNames) {
+
+		for (SyncTreeNodeDTO nodeDTO : syncTreeDirectoryDTO.getList()) {
+			if (!nodeDTO.isLeaf()) {
+				SyncTreeDirectoryDTO directoryDTO = (SyncTreeDirectoryDTO) nodeDTO;
+				if (directoryDTO.isMarkAsAddon()
+						&& addonNames.containsKey(nodeDTO.getName())) {
+					boolean optional = addonNames.get(nodeDTO.getName());
+					if (optional) {
+						directoryDTO.setSelected(false);
+						directoryDTO.setOptional(true);
+					} else {
+						directoryDTO.setSelected(true);
+						directoryDTO.setOptional(false);
+					}
+					retrievedList.add(directoryDTO);
+				} else {
+					retieve(directoryDTO, retrievedList, addonNames);
+				}
+			}
+		}
+	}
+
+//	private void build(SyncTreeDirectoryDTO syncTreeDirectoryDTO,
+//			SyncTreeDirectoryDTO newSyncTreeDirectoryDTO,
+//			List<SyncTreeDirectoryDTO> retrievedList) {
+//
+//		for (SyncTreeNodeDTO nodeDTO : retrievedList) {
+//			if (nodeDTO.getParent().getName().contains("racine")) {
+//				newSyncTreeDirectoryDTO.addTreeNode(nodeDTO);
+//				nodeDTO.setParent(newSyncTreeDirectoryDTO);
+//			} else {
+//				SyncTreeDirectoryDTO newParent = new SyncTreeDirectoryDTO();
+//				newParent.setName(nodeDTO.getParent().getName());
+//				SyncTreeDirectoryDTO p = nodeDTO.getParent().getParent();
+//				SyncTreeDirectoryDTO previousParent = newParent;
+//				while (!p.getName().contains("racine")) {
+//					SyncTreeDirectoryDTO newP = new SyncTreeDirectoryDTO();
+//					newP.setName(p.getName());
+//					previousParent.setParent(newP);
+//					newP.addTreeNode(previousParent);
+//					previousParent = newP;
+//					p = p.getParent();
+//				}
+//				newSyncTreeDirectoryDTO.addTreeNode(previousParent);
+//				newParent.addTreeNode(nodeDTO);
+//				nodeDTO.setParent(newParent);
+//			}
+//		}
+//	}
 
 	private void refine(SyncTreeDirectoryDTO oldSyncTreeDirectoryDTO,
 			SyncTreeDirectoryDTO newSyncTreeDirectoryDTO,
@@ -127,20 +186,31 @@ public class AddonsChecker extends Thread {
 						&& addonNames.containsKey(nodeDTO.getName())) {
 					SyncTreeDirectoryDTO newDirectory = new SyncTreeDirectoryDTO();
 					newDirectory.setName(directoryDTO.getName());
+					newDirectory.setDestinationPath(directoryDTO
+							.getDestinationPath());
 					newDirectory.setParent(newSyncTreeDirectoryDTO);
 					newDirectory.setMarkAsAddon(true);
 					boolean optional = addonNames.get(nodeDTO.getName());
-					if (optional){
-						newDirectory.setSelected(false);
+					if (optional) {
 						newDirectory.setOptional(true);
-					}else {
-						newDirectory.setSelected(true);
+						newDirectory.setSelected(false);
+					} else {
 						newDirectory.setOptional(false);
+						newDirectory.setSelected(true);
+						selectAllAscending(newDirectory);
 					}
 					newSyncTreeDirectoryDTO.addTreeNode(newDirectory);
 					fill(directoryDTO, newDirectory);
-				} else {
-					refine(directoryDTO, newSyncTreeDirectoryDTO, addonNames);
+				} else if (!directoryDTO.isMarkAsAddon()){
+					found = false;
+					seek(directoryDTO,addonNames);
+					if (found){
+						SyncTreeDirectoryDTO newDirectory = new SyncTreeDirectoryDTO();
+						newDirectory.setName(directoryDTO.getName());
+						newSyncTreeDirectoryDTO.addTreeNode(newDirectory);
+						newDirectory.setParent(newSyncTreeDirectoryDTO);
+						refine(directoryDTO, newDirectory, addonNames);
+					}
 				}
 			}
 		}
@@ -162,7 +232,7 @@ public class AddonsChecker extends Thread {
 				newLeafDTO.setDestinationPath(leafDTO.getDestinationPath());
 				newDirectoryDTO.addTreeNode(newLeafDTO);
 			} else {
-				SyncTreeDirectoryDTO dDTO = (SyncTreeDirectoryDTO)nodeDTO;
+				SyncTreeDirectoryDTO dDTO = (SyncTreeDirectoryDTO) nodeDTO;
 				SyncTreeDirectoryDTO newdDTO = new SyncTreeDirectoryDTO();
 				newdDTO.setName(dDTO.getName());
 				newdDTO.setParent(newDirectoryDTO);
@@ -172,8 +242,32 @@ public class AddonsChecker extends Thread {
 				newdDTO.setDestinationPath(dDTO.getDestinationPath());
 				newdDTO.setMarkAsAddon(dDTO.isMarkAsAddon());
 				newDirectoryDTO.addTreeNode(newdDTO);
-				fill(dDTO,newdDTO);
+				fill(dDTO, newdDTO);
 			}
+		}
+	}
+	
+	private void seek(SyncTreeDirectoryDTO seakDirectory,
+			Map<String, Boolean> addonNames) {
+		
+		for (SyncTreeNodeDTO nodeDTO : seakDirectory.getList()) {
+			if (!nodeDTO.isLeaf()) {
+				SyncTreeDirectoryDTO directoryDTO = (SyncTreeDirectoryDTO) nodeDTO;
+				if (directoryDTO.isMarkAsAddon()
+						&& addonNames.containsKey(nodeDTO.getName())) {
+					found = true;
+				}else {
+					seek(directoryDTO, addonNames);
+				}
+			}
+		}
+	}
+	
+	private void selectAllAscending(SyncTreeNodeDTO syncTreeNodeDTO) {
+		if (syncTreeNodeDTO != null) {
+			syncTreeNodeDTO.setSelected(true);
+			SyncTreeNodeDTO parent = syncTreeNodeDTO.getParent();
+			selectAllAscending(parent);
 		}
 	}
 }
