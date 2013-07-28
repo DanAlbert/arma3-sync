@@ -74,7 +74,7 @@ public class SyncPanel extends JPanel implements UIConstants {
 	private JPanel containerPanel1, containerPanel2;
 	/** List of event names */
 	private List<String> eventNames;
-	/** List of event name+description*/
+	/** List of event name+description */
 	private List<String> eventTexts;
 	/** Event index in eventNames list, Repository name */
 	private Map<Integer, String> mapEvents;
@@ -308,12 +308,17 @@ public class SyncPanel extends JPanel implements UIConstants {
 				if (eventDTOs != null) {
 					for (EventDTO eventDTO : eventDTOs) {
 						eventNames.add(eventDTO.getName());
-						eventTexts.add(eventDTO.getName() + " - "
-								+ eventDTO.getDescription());
+						if (eventDTO.getDescription() == null) {
+							eventTexts.add(eventDTO.getName());
+						} else if (eventDTO.getDescription().isEmpty()) {
+							eventTexts.add(eventDTO.getName());
+						} else {
+							eventTexts.add(eventDTO.getName() + " - "
+									+ eventDTO.getDescription());
+						}
 						mapEvents.put(eventNames.size() - 1, name);
 					}
 				}
-
 			} catch (RepositoryException e) {
 				e.printStackTrace();
 			}
@@ -446,7 +451,7 @@ public class SyncPanel extends JPanel implements UIConstants {
 	public JButton getButtonSync() {
 		return buttonSync;
 	}
-	
+
 	class MyTableModel extends AbstractTableModel {
 		private String[] columnNames = { "Name", "Notify", "Status" };
 		private Object[][] data = {};
