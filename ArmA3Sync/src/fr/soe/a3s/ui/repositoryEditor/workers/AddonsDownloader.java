@@ -186,10 +186,12 @@ public class AddonsDownloader extends Thread {
 						.setText("Paused");
 			}
 		} catch (Exception e) {
-			JOptionPane.showMessageDialog(facade.getMainPanel(),
-					e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-			facade.getDownloadPanel().getLabelDownloadStatus()
-					.setText("Error!");
+			if (!canceled && !paused) {
+				JOptionPane.showMessageDialog(facade.getMainPanel(),
+						e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+				facade.getDownloadPanel().getLabelDownloadStatus()
+						.setText("Error!");
+			}
 		} finally {
 			facade.getDownloadPanel().getButtonCheckForAddonsStart()
 					.setEnabled(true);
