@@ -67,14 +67,14 @@ public class AutoConfigImportPanel extends JDialog implements UIConstants {
 			buttonOK = new JButton();
 			getContentPane().add(buttonOK);
 			buttonOK.setText("OK");
-			buttonOK.setBounds(171, 64, 67, 25);
+			buttonOK.setBounds(155, 64, 75, 25);
 			getRootPane().setDefaultButton(buttonOK);
 		}
 		{
 			buttonCancel = new JButton();
 			getContentPane().add(buttonCancel);
 			buttonCancel.setText("Cancel");
-			buttonCancel.setBounds(243, 64, 67, 25);
+			buttonCancel.setBounds(235, 64, 75, 25);
 		}
 		{
 			labelImportAutoConfig = new JLabel();
@@ -87,7 +87,7 @@ public class AutoConfigImportPanel extends JDialog implements UIConstants {
 			buttonSelect = new JButton();
 			getContentPane().add(buttonSelect);
 			buttonSelect.setText("Select");
-			buttonSelect.setBounds(316, 34, 67, 25);
+			buttonSelect.setBounds(316, 34,75, 25);
 		}
 		buttonOK.addActionListener(new ActionListener() {
 			@Override

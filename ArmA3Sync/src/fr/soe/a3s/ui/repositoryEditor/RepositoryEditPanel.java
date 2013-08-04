@@ -117,7 +117,7 @@ public class RepositoryEditPanel extends JDialog implements UIConstants {
 				{
 					labelRepositoryName = new JLabel();
 					repositoryPanel.add(labelRepositoryName);
-					labelRepositoryName.setBounds(18, 67, 89, 22);
+					labelRepositoryName.setBounds(18, 67, 126, 22);
 					labelRepositoryName.setText("Repository name");
 				}
 				{
@@ -145,7 +145,7 @@ public class RepositoryEditPanel extends JDialog implements UIConstants {
 				{
 					labelConnection = new JLabel();
 					repositoryPanel.add(labelConnection);
-					labelConnection.setBounds(144, 21, 160, 21);
+					labelConnection.setBounds(144, 21, 147, 21);
 				}
 			}
 			{
@@ -205,7 +205,7 @@ public class RepositoryEditPanel extends JDialog implements UIConstants {
 					checkBoxAnonymous = new JCheckBox();
 					connectionPanel.add(checkBoxAnonymous);
 					checkBoxAnonymous.setText("Anonymous");
-					checkBoxAnonymous.setBounds(280, 91, 86, 24);
+					checkBoxAnonymous.setBounds(280, 91, 93, 24);
 				}
 			}
 			{

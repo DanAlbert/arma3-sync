@@ -57,7 +57,7 @@ public class ProfilePanel extends JDialog implements UIConstants {
 		this.facade = facade;
 		this.facade.setProfilePanel(this);
 		this.setResizable(false);
-		this.setSize(276, 256);
+		this.setSize(285, 256);
 		setIconImage(ICON);
 		this.setLocation((int) facade.getMainPanel().getLocation().getX()
 				+ facade.getMainPanel().getWidth() / 2 - this.getWidth() / 2,
@@ -88,26 +88,26 @@ public class ProfilePanel extends JDialog implements UIConstants {
 			{
 				buttonNew = new JButton("New");
 				centerPanel.add(buttonNew);
-				buttonNew.setBounds(183, 5, 79, 23);
+				buttonNew.setBounds(183, 5, 87, 25);
 				centerPanel.add(buttonNew);
 			}
 			{
 				buttonDuplicate = new JButton();
 				centerPanel.add(buttonDuplicate);
 				buttonDuplicate.setText("Duplicate");
-				buttonDuplicate.setBounds(183, 32, 79, 23);
+				buttonDuplicate.setBounds(183, 32, 87, 25);
 			}
 			{
 				buttonEdit = new JButton();
 				centerPanel.add(buttonEdit);
 				buttonEdit.setText("Edit");
-				buttonEdit.setBounds(183, 61, 79, 23);
+				buttonEdit.setBounds(183, 61, 87, 25);
 			}
 			{
 				buttonRemove = new JButton();
 				centerPanel.add(buttonRemove);
 				buttonRemove.setText("Remove");
-				buttonRemove.setBounds(183, 88, 79, 23);
+				buttonRemove.setBounds(183, 88, 87, 25);
 			}
 			this.add(centerPanel, BorderLayout.CENTER);
 			centerPanel.setPreferredSize(new java.awt.Dimension(269, 182));

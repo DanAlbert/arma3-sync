@@ -190,7 +190,7 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener {
 							Integer.toString(MaxMemoryValues.MEDIUM.getValue()),
 							Integer.toString(MaxMemoryValues.MAX.getValue()) });
 			comboBoxMaxMemory.setModel(maxMemoryModel);
-			comboBoxMaxMemory.setPreferredSize(new Dimension(90, 8));
+			comboBoxMaxMemory.setPreferredSize(new Dimension(95, 8));
 			Box hBox = Box.createHorizontalBox();
 			hBox.add(checkBoxMaxMemory);
 			hBox.add(comboBoxMaxMemory);
@@ -209,7 +209,7 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener {
 			}
 			ComboBoxModel cpuCountModel = new DefaultComboBoxModel(tab);
 			comboBoxCpuCount.setModel(cpuCountModel);
-			comboBoxCpuCount.setPreferredSize(new Dimension(90, 8));
+			comboBoxCpuCount.setPreferredSize(new Dimension(95, 8));
 			Box hBox = Box.createHorizontalBox();
 			hBox.add(checkBoxCpuCount);
 			hBox.add(comboBoxCpuCount);

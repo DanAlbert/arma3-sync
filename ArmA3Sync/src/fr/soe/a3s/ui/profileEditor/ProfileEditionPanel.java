@@ -76,7 +76,7 @@ public class ProfileEditionPanel extends JDialog implements UIConstants {
 				labelProfileName = new JLabel();
 				centerPanel.add(labelProfileName);
 				labelProfileName.setText("Profile Name");
-				labelProfileName.setBounds(18, 12, 60, 15);
+				labelProfileName.setBounds(18, 12, 149, 15);
 			}
 			{
 				textFieldProfileName = new JTextField();

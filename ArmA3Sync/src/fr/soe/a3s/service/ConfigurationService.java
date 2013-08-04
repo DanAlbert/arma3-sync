@@ -279,8 +279,23 @@ public class ConfigurationService {
 		}
 	}
 	
-	public void setTS3installationFodler(String ts3Path) {
+	public String getRptPath() {
 		
+		String rptPath = configurationDAO.getConfiguration().getRptOptions().getRptPath();
+		
+		if (rptPath!=null){
+			return rptPath;
+		}else {
+			String path = configurationDAO.determineRptPath();
+			return path;
+		}
+	}
+	
+	public void setRptPath(String rptPath) {
+		configurationDAO.getConfiguration().getRptOptions().setRptPath(rptPath);
+	}
+	
+	public void setTS3installationFodler(String ts3Path) {
 		configurationDAO.getConfiguration().getAcreOptions().setTs3Path(ts3Path);
 	}
 
@@ -450,4 +465,5 @@ public class ConfigurationService {
 		aiaOptionsDTO.setAllinArmaPath(aiaOptions.getAllinArmaPath());
 		return aiaOptionsDTO;
 	}
+
 }

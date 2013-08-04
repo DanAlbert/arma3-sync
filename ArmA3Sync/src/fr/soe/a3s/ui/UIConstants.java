@@ -7,7 +7,7 @@ public interface UIConstants {
 
 	String APPLICATION_NAME = "ArmA3Sync";
 	int DEFAULT_HEIGHT = 650;
-	int DEFAULT_WIDTH = 550;
+	int DEFAULT_WIDTH = 580;
 	int DEFAULT_DOWNLOAD_TABLE_WIDTH = 800;
 	
 	Image ICON = Toolkit

@@ -101,7 +101,7 @@ public class AiaInstallerPanel extends JDialog implements UIConstants {
 		{
 			JPanel controlPanel = new JPanel();
 			buttonOK = new JButton("OK");
-			buttonOK.setPreferredSize(new Dimension(75, 25));
+			buttonOK.setPreferredSize(new Dimension(80, 25));
 			FlowLayout flowLayout = new FlowLayout(FlowLayout.RIGHT);
 			controlPanel.setLayout(flowLayout);
 			controlPanel.add(buttonOK);
@@ -140,7 +140,7 @@ public class AiaInstallerPanel extends JDialog implements UIConstants {
 					buttonSelectArmA2OAInstallationDirectory = new JButton(
 							"Select");
 					buttonSelectArmA2OAInstallationDirectory
-							.setPreferredSize(new Dimension(65, 23));
+							.setPreferredSize(new Dimension(75, 25));
 					textFieldArmA2OAInstallationDirectory.setEditable(false);
 					textFieldArmA2OAInstallationDirectory
 							.setBackground(Color.WHITE);
@@ -171,7 +171,7 @@ public class AiaInstallerPanel extends JDialog implements UIConstants {
 					buttonSelectArmA2InstallationDirectory = new JButton(
 							"Select");
 					buttonSelectArmA2InstallationDirectory
-							.setPreferredSize(new Dimension(65, 23));
+							.setPreferredSize(new Dimension(75, 25));
 					textFieldArmA2InstallationDirectory.setEditable(false);
 					textFieldArmA2InstallationDirectory
 							.setBackground(Color.WHITE);
@@ -201,7 +201,7 @@ public class AiaInstallerPanel extends JDialog implements UIConstants {
 					buttonSelectArmAInstallationDirectory = new JButton(
 							"Select");
 					buttonSelectArmAInstallationDirectory
-							.setPreferredSize(new Dimension(65, 23));
+							.setPreferredSize(new Dimension(75, 25));
 					textFieldArmAInstallationDirectory.setEditable(false);
 					textFieldArmAInstallationDirectory
 							.setBackground(Color.WHITE);
@@ -229,7 +229,7 @@ public class AiaInstallerPanel extends JDialog implements UIConstants {
 					textFieldTOHInstallationDirectory = new JTextField();
 					buttonSelectTOHInstallationDirectory = new JButton("Select");
 					buttonSelectTOHInstallationDirectory
-							.setPreferredSize(new Dimension(65, 23));
+							.setPreferredSize(new Dimension(75, 25));
 					textFieldTOHInstallationDirectory.setEditable(false);
 					textFieldTOHInstallationDirectory
 							.setBackground(Color.WHITE);
@@ -264,7 +264,7 @@ public class AiaInstallerPanel extends JDialog implements UIConstants {
 					// .setPreferredSize(new Dimension(65, 23));
 					textFieldAllInArmAInstallationDirectory.setEditable(false);
 					textFieldAllInArmAInstallationDirectory
-							.setPreferredSize(new Dimension(65, 23));
+							.setPreferredSize(new Dimension(75, 25));
 					textFieldAllInArmAInstallationDirectory
 							.setBackground(Color.WHITE);
 					allInArmAInstallationDirectoryPanel.add(

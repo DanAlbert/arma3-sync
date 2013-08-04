@@ -98,7 +98,7 @@ public class PreferencesPanel extends JDialog implements UIConstants {
 				checkBoxGameLaunch = new JCheckBox();
 				launcherPanel.add(checkBoxGameLaunch);
 				checkBoxGameLaunch.setText("At game launch");
-				checkBoxGameLaunch.setBounds(18, 23, 102, 25);
+				checkBoxGameLaunch.setBounds(18, 23, 118, 25);
 				checkBoxGameLaunch.setSelected(true);
 				checkBoxGameLaunch.setFocusable(false);
 			}
@@ -111,6 +111,7 @@ public class PreferencesPanel extends JDialog implements UIConstants {
 							MinimizationType.TRAY.getDescription() };
 		        } else {
 		        	tab = new String[] {
+		        			MinimizationType.NOTHING.getDescription(),
 							MinimizationType.TASK_BAR.getDescription() };
 		        }
 				
@@ -125,7 +126,7 @@ public class PreferencesPanel extends JDialog implements UIConstants {
 				checkBoxLauncherMinimized = new JCheckBox();
 				launcherPanel.add(checkBoxLauncherMinimized);
 				checkBoxLauncherMinimized.setText("When minimized");
-				checkBoxLauncherMinimized.setBounds(18, 61, 108, 20);
+				checkBoxLauncherMinimized.setBounds(18, 61, 119, 20);
 				checkBoxLauncherMinimized.setSelected(true);
 				checkBoxLauncherMinimized.setFocusable(false);
 			}

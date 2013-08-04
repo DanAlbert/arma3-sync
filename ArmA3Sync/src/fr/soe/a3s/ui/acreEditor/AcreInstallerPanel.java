@@ -65,9 +65,9 @@ public abstract class AcreInstallerPanel extends JDialog implements UIConstants{
 		{
 			JPanel controlPanel = new JPanel();
 			buttonFist = new JButton();
-			buttonFist.setPreferredSize(new Dimension(75,25));
+			buttonFist.setPreferredSize(new Dimension(80,25));
 			buttonSecond = new JButton();
-			buttonSecond.setPreferredSize(new Dimension(75,25));
+			buttonSecond.setPreferredSize(new Dimension(80,25));
 			FlowLayout flowLayout = new FlowLayout(FlowLayout.RIGHT);
 			controlPanel.setLayout(flowLayout);
 			controlPanel.add(buttonFist);

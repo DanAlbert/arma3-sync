@@ -67,14 +67,14 @@ public abstract class EventEditPanel extends JDialog implements UIConstants {
 			buttonOK = new JButton();
 			getContentPane().add(buttonOK);
 			buttonOK.setText("OK");
-			buttonOK.setBounds(153, 124, 67, 25);
+			buttonOK.setBounds(153, 124, 75, 25);
 			getRootPane().setDefaultButton(buttonOK);
 		}
 		{
 			buttonCancel = new JButton();
 			getContentPane().add(buttonCancel);
 			buttonCancel.setText("Cancel");
-			buttonCancel.setBounds(225, 124, 65, 25);
+			buttonCancel.setBounds(225, 124, 75, 25);
 		}
 		{
 			labelEventName = new JLabel();
@@ -85,7 +85,7 @@ public abstract class EventEditPanel extends JDialog implements UIConstants {
 		{
 			labelWarning = new JLabel();
 			getContentPane().add(labelWarning);
-			labelWarning.setBounds(95, 12, 119, 17);
+			labelWarning.setBounds(95, 12, 153, 17);
 		}
 		{
 			labelEventDescription = new JLabel();

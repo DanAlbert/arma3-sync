@@ -98,7 +98,7 @@ public class FirstPageInstallerPanel extends AcreInstallerPanel implements
 					buttonSelectArmA3InstallationDirectory = new JButton(
 							"Select");
 					buttonSelectArmA3InstallationDirectory
-							.setPreferredSize(new Dimension(65, 23));
+							.setPreferredSize(new Dimension(70, 25));
 					textFieldArmA3InstallationDirectory.setEditable(false);
 					textFieldArmA3InstallationDirectory
 							.setBackground(Color.WHITE);
@@ -126,7 +126,7 @@ public class FirstPageInstallerPanel extends AcreInstallerPanel implements
 					textFieldTS3InstallationDirectory = new JTextField();
 					buttonSelectTS3InstallationDirectory = new JButton("Select");
 					buttonSelectTS3InstallationDirectory
-							.setPreferredSize(new Dimension(65, 23));
+							.setPreferredSize(new Dimension(70, 25));
 					textFieldTS3InstallationDirectory.setEditable(false);
 					textFieldTS3InstallationDirectory
 							.setBackground(Color.WHITE);
@@ -157,7 +157,7 @@ public class FirstPageInstallerPanel extends AcreInstallerPanel implements
 					buttonSelectACREPluginInstallationDirectory = new JButton(
 							"Select");
 					buttonSelectACREPluginInstallationDirectory
-							.setPreferredSize(new Dimension(65, 23));
+							.setPreferredSize(new Dimension(70, 25));
 					textFieldACREPluginInstallationDirectory.setEditable(false);
 					textFieldACREPluginInstallationDirectory
 							.setBackground(Color.WHITE);
@@ -188,7 +188,7 @@ public class FirstPageInstallerPanel extends AcreInstallerPanel implements
 					buttonSelectACREUserconfigInstallationDirectory = new JButton(
 							"Select");
 					buttonSelectACREUserconfigInstallationDirectory
-							.setPreferredSize(new Dimension(65, 23));
+							.setPreferredSize(new Dimension(70, 25));
 					textFieldACREUserconfigInstallationDirectory
 							.setEditable(false);
 					textFieldACREUserconfigInstallationDirectory
@@ -351,8 +351,8 @@ public class FirstPageInstallerPanel extends AcreInstallerPanel implements
 		} else {
 			String ts3Version = configurationService
 					.getTS3version(textFieldTS3InstallationDirectory.getText());
-			if (ts3Version==null){
-				ts3Version= "Unknown";
+			if (ts3Version == null) {
+				ts3Version = "Unknown";
 			}
 			is64bit = configurationService
 					.isTS364bit(textFieldTS3InstallationDirectory.getText());
@@ -383,13 +383,13 @@ public class FirstPageInstallerPanel extends AcreInstallerPanel implements
 
 		JFileChooser fc = null;
 		String arma3Path = configurationService.determineArmA3Path();
-		if (arma3Path==null){
+		if (arma3Path == null) {
 			fc = new JFileChooser();
-		}else {
+		} else {
 			File arma3Folder = new File(arma3Path);
-			if (arma3Folder.exists()){
+			if (arma3Folder.exists()) {
 				fc = new JFileChooser(arma3Path);
-			}else {
+			} else {
 				fc = new JFileChooser();
 			}
 		}
@@ -418,7 +418,9 @@ public class FirstPageInstallerPanel extends AcreInstallerPanel implements
 		} else {
 			textFieldTS3InstallationDirectory.setText("");
 		}
-		configurationService.setTS3installationFodler(textFieldTS3InstallationDirectory.getText());
+		configurationService
+				.setTS3installationFodler(textFieldTS3InstallationDirectory
+						.getText());
 		determineSystemSpecs();
 	}
 
@@ -454,7 +456,16 @@ public class FirstPageInstallerPanel extends AcreInstallerPanel implements
 
 	@Override
 	public void buttonFistPerformed() {
+
 		String message = "";
+
+		String osName = System.getProperty("os.name");
+		if (!osName.contains("Windows")) {
+			message = "This feature is not supported for your system";
+			JOptionPane.showMessageDialog(this, message, "ACRE installer",
+					JOptionPane.WARNING_MESSAGE);
+			return;
+		}
 
 		if (textFieldArmA3InstallationDirectory.getText().isEmpty()) {
 			message = "ArmA 3 installation directory is missing.";
@@ -468,15 +479,22 @@ public class FirstPageInstallerPanel extends AcreInstallerPanel implements
 		} else if (labelTS3Value.equals("Unknown")) {
 			message = "Can't determine between TS3 32/64 bit.";
 		}
-		
-		String ts3PluginsFoler = textFieldTS3InstallationDirectory.getText() + "/plugins";
-		if (!new File(ts3PluginsFoler).exists()){
+
+		String ts3PluginsFoler = textFieldTS3InstallationDirectory.getText()
+				+ "/plugins";
+		if (!new File(ts3PluginsFoler).exists()) {
 			message = "TS3 installation directory is missing \\plugins folder";
 		}
-		
-		String acrePlugin = textFieldACREPluginInstallationDirectory.getText() + "/" + labelACREpluginValue.getText();
-		if (!new File(acrePlugin).exists()){
-			message = "ACRE plugin " + labelACREpluginValue.getText() + " is missing.";
+
+		String acrePlugin = textFieldACREPluginInstallationDirectory.getText()
+				+ "/" + labelACREpluginValue.getText();
+		if (!new File(acrePlugin).exists()) {
+			if (labelACREpluginValue.getText().equals("Unknown")) {
+				message = "ACRE plugin is missing.";
+			} else {
+				message = "ACRE plugin " + labelACREpluginValue.getText()
+						+ " is missing.";
+			}
 		}
 
 		LaunchService launchService = new LaunchService();

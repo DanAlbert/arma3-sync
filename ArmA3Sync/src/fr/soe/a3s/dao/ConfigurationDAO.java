@@ -62,6 +62,11 @@ public class ConfigurationDAO implements DataAccessConstants {
 
 	public String determineSteamPath() {
 
+		String osName = System.getProperty("os.name");
+		if (!osName.contains("Windows")) {
+			return null;
+		}
+		
 		String steamPath = null;
 
 		try {
@@ -101,6 +106,11 @@ public class ConfigurationDAO implements DataAccessConstants {
 	public String determineArmA3Path() {
 
 		String arma3Path = null;
+		
+		String osName = System.getProperty("os.name");
+		if (!osName.contains("Windows")) {
+			return null;
+		}
 
 		try {
 			String QUERY = "\"HKLM\\SOFTWARE\\Wow6432Node\\Bohemia Interactive\\Arma 3\" /v MAIN";
@@ -132,6 +142,11 @@ public class ConfigurationDAO implements DataAccessConstants {
 	public String determineTS3path() {
 
 		String ts3Path = null;
+		
+		String osName = System.getProperty("os.name");
+		if (!osName.contains("Windows")) {
+			return null;
+		}
 
 		try {
 			String QUERY = "\"HKCU\\Software\\TeamSpeak 3 Client\" /ve";// default
@@ -200,6 +215,11 @@ public class ConfigurationDAO implements DataAccessConstants {
 	public String determineArmA2Path() {
 
 		String arma2Path = null;
+		
+		String osName = System.getProperty("os.name");
+		if (!osName.contains("Windows")) {
+			return null;
+		}
 
 		try {
 			String QUERY = "\"HKLM\\SOFTWARE\\Wow6432Node\\Bohemia Interactive Studio\\ArmA 2\" /v MAIN";
@@ -231,6 +251,11 @@ public class ConfigurationDAO implements DataAccessConstants {
 	public String determineArmA2OAPath() {
 
 		String arma2OAPath = null;
+		
+		String osName = System.getProperty("os.name");
+		if (!osName.contains("Windows")) {
+			return null;
+		}
 
 		try {
 			String QUERY = "\"HKLM\\SOFTWARE\\Wow6432Node\\Bohemia Interactive Studio\\ArmA 2 OA\" /v MAIN";
@@ -262,6 +287,11 @@ public class ConfigurationDAO implements DataAccessConstants {
 	public String determineArmAPath() {
 
 		String armaPath = null;
+		
+		String osName = System.getProperty("os.name");
+		if (!osName.contains("Windows")) {
+			return null;
+		}
 
 		try {
 			String QUERY = "\"HKLM\\SOFTWARE\\Wow6432Node\\Bohemia Interactive Studio\\ArmA\" /v MAIN";
@@ -293,6 +323,11 @@ public class ConfigurationDAO implements DataAccessConstants {
 	public String determineTOHPath() {
 
 		String tohPath = null;
+		
+		String osName = System.getProperty("os.name");
+		if (!osName.contains("Windows")) {
+			return null;
+		}
 
 		try {
 			String QUERY = "\"HKLM\\SOFTWARE\\Wow6432Node\\Bohemia Interactive Studio\\Take On Helicopters\" /v MAIN";
@@ -319,5 +354,21 @@ public class ConfigurationDAO implements DataAccessConstants {
 			tohPath = null;
 		}
 		return tohPath;
+	}
+
+	public String determineRptPath() {
+		
+		String arma3RPTfolderPath = null;
+		
+		String osName = System.getProperty("os.name");
+		if (osName.contains("Windows")) {
+			String appDataFolderPath = System.getenv("APPDATA");// AppDATA\Roaming
+			if (appDataFolderPath != null) {
+				arma3RPTfolderPath = new File(appDataFolderPath)
+						.getParentFile().getAbsolutePath()
+						+ "\\Local\\Arma 3 Alpha";
+			}
+		}
+		return arma3RPTfolderPath;
 	}
 }

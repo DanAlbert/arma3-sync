@@ -22,6 +22,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTree;
 import javax.swing.ListSelectionModel;
+import javax.swing.SwingUtilities;
 import javax.swing.border.BevelBorder;
 import javax.swing.border.Border;
 import javax.swing.event.ListSelectionEvent;
@@ -269,7 +270,12 @@ public class EventsPanel extends JPanel implements UIConstants {
 			}
 
 			public void mouseReleased(MouseEvent e) {
+//				if (e.isPopupTrigger()) {
+//					popup.show((JComponent) e.getSource(), e.getX(), e.getY());
+//				}
 				if (e.isPopupTrigger()) {
+					popup.show((JComponent) e.getSource(), e.getX(), e.getY());
+				} else if (SwingUtilities.isRightMouseButton(e)) {
 					popup.show((JComponent) e.getSource(), e.getX(), e.getY());
 				}
 			}

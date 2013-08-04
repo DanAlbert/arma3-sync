@@ -28,18 +28,20 @@ public class ProfileDAO implements DataAccessConstants {
 		File directory = new File(PROFILES_FOLDER_PATH);
 		File[] subfiles = directory.listFiles();
 		boolean error = false;
-		for (File file : subfiles) {
-			try {
-				ObjectInputStream fRo = new ObjectInputStream(
-						new GZIPInputStream(new FileInputStream(file)));
-				Profile profile = (Profile) fRo.readObject();
-				fRo.close();
-				if (profile != null) {
-					mapProfiles.put(profile.getName(), profile);
+		if (subfiles!=null){
+			for (File file : subfiles) {
+				try {
+					ObjectInputStream fRo = new ObjectInputStream(
+							new GZIPInputStream(new FileInputStream(file)));
+					Profile profile = (Profile) fRo.readObject();
+					fRo.close();
+					if (profile != null) {
+						mapProfiles.put(profile.getName(), profile);
+					}
+				} catch (Exception e) {
+					error = true;
+					e.printStackTrace();
 				}
-			} catch (Exception e) {
-				error = true;
-				e.printStackTrace();
 			}
 		}
 

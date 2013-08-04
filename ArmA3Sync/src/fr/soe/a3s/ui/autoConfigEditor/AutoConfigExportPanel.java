@@ -134,6 +134,7 @@ public class AutoConfigExportPanel extends JDialog implements UIConstants {
 			{
 				textFieldDestinationDirectory = new JTextField();
 				buttonSelect = new JButton("Select");
+				buttonSelect.setPreferredSize(new Dimension(75, 25));
 				textFieldDestinationDirectory.setEditable(false);
 				textFieldDestinationDirectory.setBackground(Color.WHITE);
 				destinationPanel.add(textFieldDestinationDirectory,

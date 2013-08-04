@@ -26,6 +26,7 @@ import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JTree;
+import javax.swing.SwingUtilities;
 import javax.swing.border.BevelBorder;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
@@ -292,7 +293,12 @@ public class AddonsPanel extends JPanel implements UIConstants {
 			}
 
 			public void mouseReleased(MouseEvent e) {
+				// if (e.isPopupTrigger()) {
+				// popup.show((JComponent) e.getSource(), e.getX(), e.getY());
+				// }
 				if (e.isPopupTrigger()) {
+					popup.show((JComponent) e.getSource(), e.getX(), e.getY());
+				} else if (SwingUtilities.isRightMouseButton(e)) {
 					popup.show((JComponent) e.getSource(), e.getX(), e.getY());
 				}
 			}
@@ -664,6 +670,7 @@ public class AddonsPanel extends JPanel implements UIConstants {
 		updateAddonGroups();
 		highlightMissingAddons();
 		expandAddonGroups();
+		facade.getLaunchOptionsPanel().updateRunParameters();
 	}
 
 	private void checkBoxSelectAllPerformed() {
@@ -695,29 +702,32 @@ public class AddonsPanel extends JPanel implements UIConstants {
 			}
 		}
 	}
-	
+
 	private void buttonEventsPerformed() {
-		
-		EventSelectionPanel eventSelectionPanel = new EventSelectionPanel(facade);
+
+		EventSelectionPanel eventSelectionPanel = new EventSelectionPanel(
+				facade);
 		eventSelectionPanel.init();
 		eventSelectionPanel.setVisible(true);
 	}
-	
-	public void createGroupFromEvent(String eventName, Map<String, Boolean> addonNames) {
-		
-		for (TreeNodeDTO node:racine2.getList()){
-			if (node.getName().equals(eventName)){
+
+	public void createGroupFromEvent(String eventName,
+			Map<String, Boolean> addonNames) {
+
+		for (TreeNodeDTO node : racine2.getList()) {
+			if (node.getName().equals(eventName)) {
 				return;
 			}
 		}
-		
+
 		deselectAllDescending(racine2);
-		
+
 		TreeDirectoryDTO directory = new TreeDirectoryDTO();
 		directory.setName(eventName);
 		directory.setParent(racine2);
 		racine2.addTreeNode(directory);
-		for (Iterator<String> iter = addonNames.keySet().iterator() ; iter.hasNext() ; ){
+		for (Iterator<String> iter = addonNames.keySet().iterator(); iter
+				.hasNext();) {
 			String name = iter.next();
 			boolean optional = addonNames.get(name);
 			TreeLeafDTO leaf = new TreeLeafDTO();
@@ -728,12 +738,13 @@ public class AddonsPanel extends JPanel implements UIConstants {
 			directory.addTreeNode(leaf);
 		}
 		directory.setSelected(true);
-		
+
 		saveAddonGroups();
 		updateAddonGroups();
 		highlightMissingAddons();
 		refreshViewArbre2();
-		//arbre2.expandPath(new TreePath(arbre2.getModel().getRoot()).pathByAddingChild(directory));
+		// arbre2.expandPath(new
+		// TreePath(arbre2.getModel().getRoot()).pathByAddingChild(directory));
 		expandAddonGroups();
 		facade.getAddonOptionsPanel().updateAddonPriorities();
 		facade.getLaunchOptionsPanel().updateRunParameters();

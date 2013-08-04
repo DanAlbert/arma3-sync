@@ -122,7 +122,7 @@ public class DownloadPanel extends JPanel implements UIConstants {
 		JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,
 				panel1, panel2);
 		splitPane.setOneTouchExpandable(false);
-		splitPane.setDividerLocation(180);
+		splitPane.setDividerLocation(190);
 		flattenSplitPane(splitPane);
 		this.add(splitPane, BorderLayout.CENTER);
 		panel1.setLayout(new BorderLayout());

@@ -19,6 +19,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.border.BevelBorder;
 
+import fr.soe.a3s.service.ConfigurationService;
 import fr.soe.a3s.ui.Facade;
 import fr.soe.a3s.ui.UIConstants;
 import fr.soe.a3s.ui.mainEditor.LauncherOptionsPanel;
@@ -56,7 +57,7 @@ public class RptViewerPanel extends JFrame implements UIConstants {
 			menuFile.add(menuItemSelectRPT);
 			menuFile.add(menuItemExit);
 			setJMenuBar(menuBar);
-			
+
 			textArea = new JTextArea();
 			textArea.setFont(new Font("Courier New", Font.ROMAN_BASELINE, 13));
 			textArea.setLineWrap(true);
@@ -85,38 +86,38 @@ public class RptViewerPanel extends JFrame implements UIConstants {
 				menuItemExitPerformed();
 			}
 		});
-		
 	}
-	
+
 	private void menuItemSelectRPTPerformed() {
+
+		ConfigurationService configurationService = new ConfigurationService();
 		
-		/* WARNING Windows */
-		String appDataFolderPath = System.getenv("APPDATA");//AppDATA\Roaming
-		if (appDataFolderPath!=null){
-			String arma3RPTfolderPath = new File(appDataFolderPath).getParentFile().getAbsolutePath() + "\\Local\\Arma 3 Alpha";
+		String arma3RPTfolderPath = configurationService.getRptPath();
+
+		JFileChooser fc = null;
+		if (arma3RPTfolderPath != null) {
 			File file = new File(arma3RPTfolderPath);
-			JFileChooser fc = null;
-			if (file.exists()){
+			if (file.exists()) {
 				fc = new JFileChooser(arma3RPTfolderPath);
-			}else {
-				fc = new JFileChooser();
 			}
-			fc.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
-			int returnVal = fc.showOpenDialog(RptViewerPanel.this);
-			if (returnVal == JFileChooser.APPROVE_OPTION) {
-				File rpt = fc.getSelectedFile();
-				if (rpt!=null){
-					this.setTitle("RPT Viewer - Reading " + rpt.getName());
-					tail = new Tail(rpt,textArea);
-					tail.start();
-					
-				}
+		} else {
+			fc = new JFileChooser();
+		}
+		fc.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
+		int returnVal = fc.showOpenDialog(RptViewerPanel.this);
+		if (returnVal == JFileChooser.APPROVE_OPTION) {
+			File rpt = fc.getSelectedFile();
+			configurationService.setRptPath(rpt.getAbsolutePath());
+			if (rpt != null) {
+				this.setTitle("RPT Viewer - Reading " + rpt.getName());
+				tail = new Tail(rpt, textArea);
+				tail.start();
 			}
 		}
 	}
-	
+
 	private void menuItemExitPerformed() {
-		if (tail!=null){
+		if (tail != null) {
 			tail.stop();
 		}
 		this.dispose();

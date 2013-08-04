@@ -75,7 +75,7 @@ public class LaunchPanel extends JPanel implements UIConstants {
 		startButton = new JButton("Start Game");
 		startButton.setFont(new Font("Tohama", Font.BOLD, 11));
 		this.add(startButton);
-		startButton.setPreferredSize(new java.awt.Dimension(100, 27));
+		startButton.setPreferredSize(new java.awt.Dimension(110, 27));
 
 		startButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {

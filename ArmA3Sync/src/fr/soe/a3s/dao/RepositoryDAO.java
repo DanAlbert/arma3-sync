@@ -34,9 +34,11 @@ public class RepositoryDAO implements DataAccessConstants {
 		Repository repository = mapRepositories.get(repositoryName);
 		String concatName = repository.getName().replaceAll(" ", "");
 		File[] subfiles = directory.listFiles();
-		for (File file : subfiles) {
-			if (file.getName().contains(concatName)) {
-				FileAccessMethods.deleteFile(file);
+		if (subfiles!=null){
+			for (File file : subfiles) {
+				if (file.getName().contains(concatName)) {
+					FileAccessMethods.deleteFile(file);
+				}
 			}
 		}
 	}
@@ -47,22 +49,25 @@ public class RepositoryDAO implements DataAccessConstants {
 		File[] subfiles = directory.listFiles();
 		boolean error = false;
 		mapRepositories.clear();
-		for (File file : subfiles) {
-			try {
-				ObjectInputStream fRo = new ObjectInputStream(
-						new GZIPInputStream(new FileInputStream(file)));
-				SealedObject sealedObject = (SealedObject) fRo.readObject();
-				Repository repository = (Repository) sealedObject
-						.getObject(cipher);
-				fRo.close();
-				if (repository != null) {
-					mapRepositories.put(repository.getName(), repository);
+		if (subfiles!=null){
+			for (File file : subfiles) {
+				try {
+					ObjectInputStream fRo = new ObjectInputStream(
+							new GZIPInputStream(new FileInputStream(file)));
+					SealedObject sealedObject = (SealedObject) fRo.readObject();
+					Repository repository = (Repository) sealedObject
+							.getObject(cipher);
+					fRo.close();
+					if (repository != null) {
+						mapRepositories.put(repository.getName(), repository);
+					}
+				} catch (Exception e) {
+					error = true;
+					e.printStackTrace();
 				}
-			} catch (Exception e) {
-				error = true;
-				e.printStackTrace();
 			}
 		}
+
 		if (error) {
 			throw new LoadingException();
 		}

@@ -187,17 +187,20 @@ public class MainPanel extends JFrame implements UIConstants {
 		// menuProfiles.addMenuListener(new ProfilesMenuListener());
 		// menuProfiles.setActionCommand("Profiles");
 
-		/* Tray Icon */
-		trayIcon = new TrayIcon(TRAYICON, "ArmA3Sync");
-		tray = SystemTray.getSystemTray();
-		popup = new PopupMenu();
-		trayIcon.setPopupMenu(popup);
-		launchItem = new MenuItem("ArmA3Sync");
-		exitItem = new MenuItem("Exit");
-		popup.add(launchItem);
-		popup.addSeparator();
-		popup.add(exitItem);
-
+		if (SystemTray.isSupported()) {
+			/* Tray Icon */
+			trayIcon = new TrayIcon(TRAYICON, "ArmA3Sync");
+			tray = SystemTray.getSystemTray();
+			popup = new PopupMenu();
+			trayIcon.setPopupMenu(popup);
+			launchItem = new MenuItem("ArmA3Sync");
+			exitItem = new MenuItem("Exit");
+			popup.add(launchItem);
+			popup.addSeparator();
+			popup.add(exitItem);
+		} else {
+			System.out.println("System Tray is not supported by your system.");
+		}
 		this.pack();
 
 		menuItemEdit.addActionListener(new ActionListener() {
@@ -274,24 +277,30 @@ public class MainPanel extends JFrame implements UIConstants {
 				menuItemAboutPerformed();
 			}
 		});
-		trayIcon.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent arg0) {
-				trayIconPerformed();
-			}
-		});
-		launchItem.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				launchTrayItemPerformed();
-			}
-		});
-		exitItem.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent arg0) {
-				exitTrayItemPerformed();
-			}
-		});
+		if (trayIcon != null) {
+			trayIcon.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent arg0) {
+					trayIconPerformed();
+				}
+			});
+		}
+		if (launchItem != null) {
+			launchItem.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					launchTrayItemPerformed();
+				}
+			});
+		}
+		if (exitItem != null) {
+			exitItem.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent arg0) {
+					exitTrayItemPerformed();
+				}
+			});
+		}
 		// Add Listeners
 		this.addWindowListener(new WindowListener() {
 			@Override
@@ -325,7 +334,6 @@ public class MainPanel extends JFrame implements UIConstants {
 			public void windowOpened(WindowEvent e) {
 			}
 		});
-
 	}
 
 	public void init() {
@@ -496,21 +504,27 @@ public class MainPanel extends JFrame implements UIConstants {
 	}
 
 	private void trayIconPerformed() {
-		tray.remove(trayIcon);
-		this.setState(JFrame.NORMAL);
-		this.setVisible(true);
-		this.toFront();
+		if (SystemTray.isSupported()){
+			tray.remove(trayIcon);
+			this.setState(JFrame.NORMAL);
+			this.setVisible(true);
+			this.toFront();
+		}
 	}
 
 	private void exitTrayItemPerformed() {
-		tray.remove(trayIcon);
-		System.exit(0);
+		if (SystemTray.isSupported()){
+			tray.remove(trayIcon);
+			System.exit(0);
+		}
 	}
 
 	private void launchTrayItemPerformed() {
-		this.setVisible(true);
-		this.setState(JFrame.NORMAL);
-		tray.remove(trayIcon);
+		if (SystemTray.isSupported()){
+			this.setVisible(true);
+			this.setState(JFrame.NORMAL);
+			tray.remove(trayIcon);
+		}
 	}
 
 	public void setToTaskBar() {
@@ -518,11 +532,14 @@ public class MainPanel extends JFrame implements UIConstants {
 	}
 
 	public void setToTray() {
-		try {
-			tray.add(trayIcon);
-		} catch (AWTException e) {
-			System.out.println("TrayIcon could not be added.");
-			return;
+		if (SystemTray.isSupported()){
+			try {
+				tray.add(trayIcon);
+			} catch (AWTException e) {
+				System.out.println("TrayIcon could not be added.");
+				this.setState(JFrame.ICONIFIED);
+				return;
+			}
 		}
 	}
 

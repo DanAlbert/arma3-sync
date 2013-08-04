@@ -40,17 +40,17 @@ import fr.soe.a3s.ui.UIConstants;
 public class WellcomePanel extends JDialog implements UIConstants {
 
 	Facade facade;
-	private JButton buttonOK;
 	private JTextField textField;
 	private JButton buttonSelect;
 	private ConfigurationService configurationService = new ConfigurationService();
 	private AddonService addonService = new AddonService();
+	private JButton buttonOK;
 
 	public WellcomePanel(Facade facade) {
 		super(facade.getMainPanel(),"Configuration",true);
 		this.facade = facade;
 		setResizable(false);
-		this.setSize(345, 130);
+		this.setMinimumSize(new Dimension(345,120));
 		setIconImage(ICON);
 		this.setLocation(
 				(int) facade.getMainPanel().getLocation().getX()
@@ -60,15 +60,6 @@ public class WellcomePanel extends JDialog implements UIConstants {
 						+ facade.getMainPanel().getHeight() / 2
 						- this.getHeight() / 2);
 		this.setLayout(new BorderLayout());
-		{
-			JPanel controlPanel = new JPanel();
-			buttonOK = new JButton("OK");
-			controlPanel.setLayout(null);
-			controlPanel.add(buttonOK);
-			buttonOK.setBounds(254, 0, 75, 25);
-			this.add(controlPanel, BorderLayout.SOUTH);
-			controlPanel.setPreferredSize(new java.awt.Dimension(339, 30));
-		}
 		{
 			JPanel eastPanel = new JPanel();
 			this.add(eastPanel, BorderLayout.EAST);
@@ -95,7 +86,6 @@ public class WellcomePanel extends JDialog implements UIConstants {
 				JPanel panel = new JPanel();
 				panel.setLayout(new BorderLayout());
 				textField = new JTextField();
-				
 				buttonSelect = new JButton("Select");
 				buttonSelect.setPreferredSize(new Dimension(75, 25));
 				textField.setEditable(false);
@@ -104,17 +94,27 @@ public class WellcomePanel extends JDialog implements UIConstants {
 				panel.add(buttonSelect, BorderLayout.EAST);
 				vBox.add(panel);
 			}
-		}
-		buttonOK.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				buttonOKPerformed();
+			{
+				JPanel panel = new JPanel();
+				panel.setLayout(new BorderLayout());
+				buttonOK = new JButton("OK");
+				buttonOK.setPreferredSize(new Dimension(75, 25));
+				panel.add(buttonOK, BorderLayout.EAST);
+				vBox.add(Box.createVerticalStrut(5));
+				vBox.add(panel);
 			}
-		});
+			
+		}
 		buttonSelect.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				buttonSelectPerformed();
+			}
+		});
+		buttonOK.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				buttonOKPerformed();
 			}
 		});
 	}

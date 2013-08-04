@@ -157,7 +157,7 @@ public class AdminPanel extends JPanel implements UIConstants {
 			locationPanel.setLayout(new BorderLayout());
 			textFieldftpSharedFolderLocation = new JTextField();
 			buttonSelectFTPfolderPath = new JButton("Select");
-			buttonSelectFTPfolderPath.setPreferredSize(new Dimension(65, 23));
+			buttonSelectFTPfolderPath.setPreferredSize(new Dimension(75, 25));
 			textFieldftpSharedFolderLocation.setEditable(false);
 			textFieldftpSharedFolderLocation.setBackground(Color.WHITE);
 			locationPanel.add(textFieldftpSharedFolderLocation,
@@ -178,7 +178,7 @@ public class AdminPanel extends JPanel implements UIConstants {
 			buildPanel.setLayout(new BorderLayout());
 			buildProgressBar = new JProgressBar();
 			buttonBuild = new JButton("Build");
-			buttonBuild.setPreferredSize(new Dimension(65, 23));
+			buttonBuild.setPreferredSize(new Dimension(75, 25));
 			buildPanel.add(buildProgressBar, BorderLayout.CENTER);
 			buildPanel.add(buttonBuild, BorderLayout.EAST);
 			vBox.add(buildPanel);
@@ -197,7 +197,7 @@ public class AdminPanel extends JPanel implements UIConstants {
 			autoConfigURLPanel.setLayout(new BorderLayout());
 			textFieldAutoConfigURL = new JTextField();
 			buttonCopyAutoConfigURL = new JButton("Copy");
-			buttonCopyAutoConfigURL.setPreferredSize(new Dimension(65, 23));
+			buttonCopyAutoConfigURL.setPreferredSize(new Dimension(75, 25));
 			textFieldAutoConfigURL.setEditable(false);
 			textFieldAutoConfigURL.setBackground(Color.WHITE);
 			autoConfigURLPanel.add(textFieldAutoConfigURL, BorderLayout.CENTER);
@@ -218,7 +218,7 @@ public class AdminPanel extends JPanel implements UIConstants {
 			checkPanel.setLayout(new BorderLayout());
 			checkProgressBar = new JProgressBar();
 			buttonCheck = new JButton("Check");
-			buttonCheck.setPreferredSize(new Dimension(65, 23));
+			buttonCheck.setPreferredSize(new Dimension(75, 25));
 			checkPanel.add(checkProgressBar, BorderLayout.CENTER);
 			checkPanel.add(buttonCheck, BorderLayout.EAST);
 			vBox.add(checkPanel);

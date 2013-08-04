@@ -23,6 +23,7 @@ public class Configuration implements Serializable {
 	private List<ExternalApplication> externalApplications = new ArrayList<ExternalApplication>();
 	private AcreOptions acreOptions = new AcreOptions();
 	private AiAOptions aiaOptions = new AiAOptions();
+	private RptOptions rptOptions = new RptOptions();
 	
 	public String getProfileName() {
 		return profileName;
@@ -100,4 +101,10 @@ public class Configuration implements Serializable {
 		return acreOptions;
 	}
 
+	public RptOptions getRptOptions() {
+		if (rptOptions==null){
+			rptOptions = new RptOptions();
+		}
+		return rptOptions;
+	}
 }
