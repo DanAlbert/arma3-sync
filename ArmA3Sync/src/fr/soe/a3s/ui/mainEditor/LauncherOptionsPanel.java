@@ -435,8 +435,8 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener {
 		checkBoxWindowMode
 				.setToolTipText("Display the game windowed instead of full screen");
 		// checkBoxRunBeta.setToolTipText("Run the game with beta patch");
-		comboBoxMaxMemory.setToolTipText("Defines memory allocation limit");
-		comboBoxCpuCount.setToolTipText("Defines number of cores used");
+		comboBoxMaxMemory.setToolTipText("Restricts memory allocation");
+		comboBoxCpuCount.setToolTipText("Restricts number of cores used");
 		checkBoxNoSplashScreen.setToolTipText("Disables splash screens");
 		checkBoxDefaultWorld.setToolTipText("No world loaded at game startup");
 	}
