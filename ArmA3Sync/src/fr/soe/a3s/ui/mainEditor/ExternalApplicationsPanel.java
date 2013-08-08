@@ -133,7 +133,8 @@ public class ExternalApplicationsPanel extends JPanel implements UIConstants {
 	private void setContextualHelp() {
 		
 		buttonAdd.setToolTipText("Add a new application");
-		buttonDelete.setToolTipText("Delete the selected application");
+		buttonEdit.setToolTipText("Edit");
+		buttonDelete.setToolTipText("Delete");
 		buttonEnable.setToolTipText("Set the selected application to run at game launch");
 	}
 
