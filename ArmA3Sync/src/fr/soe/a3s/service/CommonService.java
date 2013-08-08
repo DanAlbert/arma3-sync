@@ -57,7 +57,8 @@ public class CommonService {
 		for (String repositoryName : listSelectedRepositoryNames) {
 			Repository repository = repositoryDAO.getMap().get(repositoryName);
 			if (repository != null) {
-				autoConfig.getRepositories().add(repository);
+			    Repository clonedRepository = new Repository(repository.getName(), repository.getProtocole());
+				autoConfig.getRepositories().add(clonedRepository);
 			}
 		}
 
