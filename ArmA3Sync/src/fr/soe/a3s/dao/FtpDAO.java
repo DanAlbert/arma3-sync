@@ -231,6 +231,9 @@ public class FtpDAO implements DataAccessConstants, ObservableFilesNumber,
 			if (fos != null) {
 				fos.close();
 			}
+	        if (dos != null) {
+	            dos.close();
+	        }
 		} else {// directory
 			file.mkdir();
 			found = ftpClient.changeWorkingDirectory(file.getName());
