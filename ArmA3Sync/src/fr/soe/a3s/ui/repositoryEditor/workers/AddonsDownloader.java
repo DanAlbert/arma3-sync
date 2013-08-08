@@ -180,7 +180,7 @@ public class AddonsDownloader extends Thread {
 				facade.getDownloadPanel().getLabelDownloadStatus()
 						.setText("Canceled!");
 				/* Check for Addons */
-				checkForAddons();
+			    checkForAddons();
 			} else if (paused) {
 				facade.getDownloadPanel().getLabelDownloadStatus()
 						.setText("Paused");
@@ -207,7 +207,6 @@ public class AddonsDownloader extends Thread {
 			facade.getDownloadPanel().getLabelSpeedValue().setText("");
 			facade.getDownloadPanel().getLabelRemainingTimeValue().setText("");
 			repositoryService.setDownloading(repositoryName, false);
-			System.gc();// Required for unlocking files!
 		}
 	}
 

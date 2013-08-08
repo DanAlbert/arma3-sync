@@ -266,6 +266,7 @@ public class FileAccessMethods {
 					(mdbytes[i] & 0xff) + 0x100, 16).substring(
 					1));
 		}
+		fis.close();
 		return sb.toString();
 	}
 

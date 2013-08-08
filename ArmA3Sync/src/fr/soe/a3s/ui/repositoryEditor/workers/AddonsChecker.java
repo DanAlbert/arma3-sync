@@ -90,7 +90,6 @@ public class AddonsChecker extends Thread {
 			facade.getDownloadPanel().getArbre().setEnabled(true);
 			facade.getAdminPanel().init(repositoryName);
 			facade.getSyncPanel().init();
-			System.gc();// Required for unlocking files!
 		}
 	}
 
