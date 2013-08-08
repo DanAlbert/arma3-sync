@@ -542,6 +542,15 @@ public class DownloadPanel extends JPanel implements UIConstants {
 	}
 
 	private void buttonCheckForAddonsStartPerformed() {
+	    
+	    if (comBoxDestinationFolder.getSelectedItem() == null) {
+	            JOptionPane
+	                    .showMessageDialog(
+	                            facade.getMainPanel(),
+	                            "A default destination folder must be set. \n Please checkout Addon Options panel.",
+	                            "Download", JOptionPane.WARNING_MESSAGE);
+	            return;
+	     }
 
 		// Lock user action on addons tree
 		arbre.setEnabled(false);
@@ -623,7 +632,7 @@ public class DownloadPanel extends JPanel implements UIConstants {
 			JOptionPane
 					.showMessageDialog(
 							facade.getMainPanel(),
-							"A default destination folder must be set. \n Please checkout Addon Option panel.",
+							"A default destination folder must be set. \n Please checkout Addon Options panel.",
 							"Download", JOptionPane.WARNING_MESSAGE);
 			return;
 		} else {
