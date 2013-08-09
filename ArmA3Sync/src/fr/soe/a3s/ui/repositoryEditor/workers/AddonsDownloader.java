@@ -207,6 +207,8 @@ public class AddonsDownloader extends Thread {
 			facade.getDownloadPanel().getLabelSpeedValue().setText("");
 			facade.getDownloadPanel().getLabelRemainingTimeValue().setText("");
 			repositoryService.setDownloading(repositoryName, false);
+			this.interrupt();
+			System.gc();
 		}
 	}
 
