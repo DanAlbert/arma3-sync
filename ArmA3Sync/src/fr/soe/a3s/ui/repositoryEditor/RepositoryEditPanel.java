@@ -78,7 +78,7 @@ public class RepositoryEditPanel extends JDialog implements UIConstants {
 		this.facade = facade;
 		this.facade.setRepositoryEditPanel(this);
 		this.setResizable(false);
-		this.setSize(405, 400);
+		this.setSize(405, 350);
 		setIconImage(ICON);
 		this.setLocation(
 				(int) facade.getMainPanel().getLocation().getX()
@@ -229,7 +229,7 @@ public class RepositoryEditPanel extends JDialog implements UIConstants {
 			vertBox.add(connectionPanel);
 			vertBox.add(Box.createVerticalStrut(5));
 			connectionPanel.setPreferredSize(new java.awt.Dimension(384, 71));
-			vertBox.add(protocolePanel);
+			//vertBox.add(protocolePanel);
 			{
 				ComboBoxModel comboBoxEncryptionModel = new DefaultComboBoxModel(
 						new String[] {
