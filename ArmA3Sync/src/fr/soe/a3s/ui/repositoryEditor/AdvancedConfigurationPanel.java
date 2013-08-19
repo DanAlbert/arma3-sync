@@ -124,8 +124,8 @@ public class AdvancedConfigurationPanel extends JFrame implements UIConstants {
 		TableCellRenderer tableCellRenderer = new ButtonRenderer();
 		col2.setCellRenderer(tableCellRenderer);
 		col2.setCellEditor(new ButtonEditor(new JCheckBox()));
-		col2.setMinWidth(100);
-		col2.setMaxWidth(100);
+		col2.setMinWidth(120);
+		col2.setMaxWidth(120);
 
 		TableColumn col1 = outline.getColumnModel().getColumn(1);
 		col1.setMinWidth(100);

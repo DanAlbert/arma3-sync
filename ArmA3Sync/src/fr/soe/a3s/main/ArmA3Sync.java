@@ -96,12 +96,6 @@ public class ArmA3Sync {
 			if (arg.contains("-dev")) {
 				devMode = true;
 			}
-			// if (arg.contains("-taskbar")) {
-			// mimimize = MinimizationType.TASK_BAR;
-			// }
-			// if (arg.contains("-systemtray")) {
-			// mimimize = MinimizationType.TRAY;
-			// }
 		}
 
 		if (devMode) {
@@ -117,19 +111,6 @@ public class ArmA3Sync {
 		mainPanel.drawGUI();
 		mainPanel.init();
 		mainPanel.setVisible(true);
-		// if (MinimizationType.TASK_BAR.equals(mimimize)) {
-		// mainPanel.setVisible(false);
-		// mainPanel.setToTaskBar();
-		// mainPanel.setVisible(true);
-		// System.out.println("Minimize mode = Task bar");
-		// } else if (MinimizationType.TRAY.equals(mimimize)) {
-		// mainPanel.setVisible(false);
-		// mainPanel.setToTray();
-		// System.out.println("Minimize mode = System tray");
-		// } else {
-		// mainPanel.setVisible(true);
-		// System.out.println("Minimize mode = Normal");
-		// }
 
 		// Check ArmA 3 executable location
 		mainPanel.checkWellcomeDialog();

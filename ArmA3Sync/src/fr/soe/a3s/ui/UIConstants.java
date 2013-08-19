@@ -6,9 +6,8 @@ import java.awt.Toolkit;
 public interface UIConstants {
 
 	String APPLICATION_NAME = "ArmA3Sync";
-	int DEFAULT_HEIGHT = 650;
-	int DEFAULT_WIDTH = 580;
-	int DEFAULT_DOWNLOAD_TABLE_WIDTH = 800;
+	int DEFAULT_HEIGHT = 660;
+	int DEFAULT_WIDTH = 565;
 	
 	Image ICON = Toolkit
 			.getDefaultToolkit()

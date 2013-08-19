@@ -13,6 +13,8 @@ import fr.soe.a3s.domain.Preferences;
 public class Configuration implements Serializable {
 
 	private static final long serialVersionUID = -8310476744472497506L;
+	private int height=0;
+	private int width=0;
 	private String profileName = DefaultProfileName.DEFAULT.getDescription();
 	private String gameVersion = GameVersions.ARMA3.getDescription();
 	private String serverName;
@@ -107,4 +109,21 @@ public class Configuration implements Serializable {
 		}
 		return rptOptions;
 	}
+
+	public int getHeight() {
+		return height;
+	}
+
+	public void setHeight(int height) {
+		this.height = height;
+	}
+
+	public int getWidth() {
+		return width;
+	}
+
+	public void setWidth(int width) {
+		this.width = width;
+	}
+
 }

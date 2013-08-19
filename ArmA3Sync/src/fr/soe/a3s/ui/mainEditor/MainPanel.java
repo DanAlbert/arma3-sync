@@ -101,7 +101,7 @@ public class MainPanel extends JFrame implements UIConstants {
 		setResizable(true);
 		setIconImage(ICON);
 		setMinimumSize(new Dimension(DEFAULT_WIDTH, DEFAULT_HEIGHT));
-		setPreferredSize(new Dimension(DEFAULT_WIDTH, DEFAULT_HEIGHT));
+		 setPreferredSize(new Dimension(DEFAULT_WIDTH, DEFAULT_HEIGHT));
 		contenu = this.getContentPane();
 		this.setLocationRelativeTo(contenu);
 	}
@@ -201,8 +201,6 @@ public class MainPanel extends JFrame implements UIConstants {
 		} else {
 			System.out.println("System Tray is not supported by your system.");
 		}
-		this.pack();
-
 		menuItemEdit.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
@@ -375,6 +373,14 @@ public class MainPanel extends JFrame implements UIConstants {
 							"Error", JOptionPane.ERROR_MESSAGE);
 		}
 
+		/* Set previous height and width */
+		int height = configurationService.getHeight();
+		int width = configurationService.getWidth();
+		if (height != 0 && width != 0) {
+			this.setPreferredSize(new Dimension(width, height));
+		} 
+		this.pack();
+
 		/* Init active views */
 		this.facade.getInfoPanel().init();
 		this.facade.getAddonsPanel().init();
@@ -490,6 +496,10 @@ public class MainPanel extends JFrame implements UIConstants {
 
 	private void menuExitPerformed() {
 
+		// Save Height and Width
+		configurationService.setHeight(this.getHeight());
+		configurationService.setWidth(this.getWidth());
+
 		/* Write configuration and profiles. */
 		try {
 			commonService.saveAllParameters();
@@ -504,7 +514,7 @@ public class MainPanel extends JFrame implements UIConstants {
 	}
 
 	private void trayIconPerformed() {
-		if (SystemTray.isSupported()){
+		if (SystemTray.isSupported()) {
 			tray.remove(trayIcon);
 			this.setState(JFrame.NORMAL);
 			this.setVisible(true);
@@ -513,14 +523,14 @@ public class MainPanel extends JFrame implements UIConstants {
 	}
 
 	private void exitTrayItemPerformed() {
-		if (SystemTray.isSupported()){
+		if (SystemTray.isSupported()) {
 			tray.remove(trayIcon);
 			System.exit(0);
 		}
 	}
 
 	private void launchTrayItemPerformed() {
-		if (SystemTray.isSupported()){
+		if (SystemTray.isSupported()) {
 			this.setVisible(true);
 			this.setState(JFrame.NORMAL);
 			tray.remove(trayIcon);
@@ -532,7 +542,7 @@ public class MainPanel extends JFrame implements UIConstants {
 	}
 
 	public void setToTray() {
-		if (SystemTray.isSupported()){
+		if (SystemTray.isSupported()) {
 			try {
 				tray.add(trayIcon);
 			} catch (AWTException e) {

@@ -341,16 +341,23 @@ public class AdminPanel extends JPanel implements UIConstants {
 			String ftpFolderName = file.getName();
 			String url = repositoryDTO.getFtpDTO().getUrl();
 			int index = url.lastIndexOf("/");
-			String folderName = url.substring(index + 1);
-			if (!ftpFolderName.equals(folderName)) {
-				JOptionPane.showMessageDialog(
-						facade.getMainPanel(),
-						"The selected FTP shared folder "
-								+ file.getAbsolutePath()
-								+ "\n does not match repository url " + url,
-						"Build repository", JOptionPane.WARNING_MESSAGE);
-				textFieldftpSharedFolderLocation.setText("");
-				textFieldAutoConfigURL.setText("");
+			if (index != -1) {// There is a folder after the root
+				String folderName = url.substring(index + 1);
+				if (!ftpFolderName.equals(folderName)) {
+					JOptionPane
+							.showMessageDialog(
+									facade.getMainPanel(),
+									"The selected FTP shared folder "
+											+ file.getName()
+											+ "\n does not correspond with the repository url "
+											+ url, "Build repository",
+									JOptionPane.WARNING_MESSAGE);
+					textFieldftpSharedFolderLocation.setText("");
+					textFieldAutoConfigURL.setText("");
+				} else {
+					textFieldftpSharedFolderLocation.setText(file
+							.getAbsolutePath());
+				}
 			} else {
 				textFieldftpSharedFolderLocation
 						.setText(file.getAbsolutePath());
@@ -363,8 +370,8 @@ public class AdminPanel extends JPanel implements UIConstants {
 		try {
 			repositoryService.setRepositoryPath(repositoryName,
 					textFieldftpSharedFolderLocation.getText().trim());
-			if (textFieldAutoConfigURL.getText().isEmpty()){
-				repositoryService.setAutoConfigURL(repositoryName,null);
+			if (textFieldAutoConfigURL.getText().isEmpty()) {
+				repositoryService.setAutoConfigURL(repositoryName, null);
 			}
 			repositoryService.write(repositoryName);
 		} catch (Exception e) {
@@ -430,13 +437,14 @@ public class AdminPanel extends JPanel implements UIConstants {
 				repositoryName, path);
 		checker.start();
 	}
-	
+
 	private void buttonViewPerformed() {
-		
-		ChangelogPanel changelogPanel = new ChangelogPanel(facade,repositoryName);
+
+		ChangelogPanel changelogPanel = new ChangelogPanel(facade,
+				repositoryName);
 		changelogPanel.init();
 		changelogPanel.setVisible(true);
-		
+
 	}
 
 	public JProgressBar getBuildProgressBar() {
@@ -466,5 +474,5 @@ public class AdminPanel extends JPanel implements UIConstants {
 	public JButton getButtonView() {
 		return buttonView;
 	}
-	
+
 }

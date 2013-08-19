@@ -278,25 +278,27 @@ public class ConfigurationService {
 			return path;
 		}
 	}
-	
+
 	public String getRptPath() {
-		
-		String rptPath = configurationDAO.getConfiguration().getRptOptions().getRptPath();
-		
-		if (rptPath!=null){
+
+		String rptPath = configurationDAO.getConfiguration().getRptOptions()
+				.getRptPath();
+
+		if (rptPath != null) {
 			return rptPath;
-		}else {
+		} else {
 			String path = configurationDAO.determineRptPath();
 			return path;
 		}
 	}
-	
+
 	public void setRptPath(String rptPath) {
 		configurationDAO.getConfiguration().getRptOptions().setRptPath(rptPath);
 	}
-	
+
 	public void setTS3installationFodler(String ts3Path) {
-		configurationDAO.getConfiguration().getAcreOptions().setTs3Path(ts3Path);
+		configurationDAO.getConfiguration().getAcreOptions()
+				.setTs3Path(ts3Path);
 	}
 
 	public String getTS3version(String ts3InstallationDirectoryPath) {
@@ -377,6 +379,22 @@ public class ConfigurationService {
 		configurationDAO.getConfiguration().getAiaOptions()
 				.setTohPath(aiaOptionsDTO.getTohPath());
 		// Do no set AllinArmA path here!
+	}
+	
+	public int getHeight() {
+		return configurationDAO.getConfiguration().getHeight();
+	}
+
+	public int getWidth() {
+		return configurationDAO.getConfiguration().getWidth();
+	}
+
+	public void setHeight(int height) {
+		configurationDAO.getConfiguration().setHeight(height);
+	}
+
+	public void setWidth(int width) {
+		configurationDAO.getConfiguration().setWidth(width);
 	}
 
 	/* Business Methods */
