@@ -270,24 +270,19 @@ public class AutoConfigExportPanel extends JDialog implements UIConstants {
 		List<String> listSelectedFavoriteServerNames = new ArrayList<String>();
 		List<String> listSelectedRepositoryNames = new ArrayList<String>();
 
-		List<JCheckBox> list1 = checkBoxListProfiles.getSelectedValuesList();
+		List<String> list1 = checkBoxListProfiles.getSelectedItems();
 		for (int i = 0; i < list1.size(); i++) {
-			JCheckBox c = list1.get(i);
-			listSelectedProfileNames.add(c.getText());
+			listSelectedProfileNames.add(list1.get(i));
 		}
 
-		List<JCheckBox> list2 = checkBoxListFavoriteServers
-				.getSelectedValuesList();
+		List<String> list2 = checkBoxListFavoriteServers.getSelectedItems();
 		for (int i = 0; i < list2.size(); i++) {
-			JCheckBox c = list2.get(i);
-			listSelectedFavoriteServerNames.add(c.getText());
+			listSelectedFavoriteServerNames.add(list2.get(i));
 		}
 
-		List<JCheckBox> list3 = checkBoxListRepositories
-				.getSelectedValuesList();
+		List<String> list3 = checkBoxListRepositories.getSelectedItems();
 		for (int i = 0; i < list3.size(); i++) {
-			JCheckBox c = list3.get(i);
-			listSelectedRepositoryNames.add(c.getText());
+			listSelectedRepositoryNames.add(list3.get(i));
 		}
 
 		if (listSelectedProfileNames.isEmpty()
@@ -344,6 +339,19 @@ public class AutoConfigExportPanel extends JDialog implements UIConstants {
 			});
 
 			setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+		}
+
+		public List<String> getSelectedItems() {
+			List<String> list = new ArrayList<>();
+			int size = this.getModel().getSize();
+			for (int i = 0; i < size; i++) {
+				JCheckBox checkbox = (JCheckBox) getModel().getElementAt(i);
+				if (checkbox.isSelected()) {
+					String name = checkbox.getText();
+					list.add(name);
+				}
+			}
+			return list;
 		}
 
 		protected class CellRenderer implements ListCellRenderer {
