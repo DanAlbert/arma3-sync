@@ -710,7 +710,6 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener {
 	public void updateAdditionalParameters() {
 
 		try {
-			additionalParametersTextArea.setText("");
 			String additionalParameters = profileService
 					.getAdditionalParameters();
 			if (additionalParameters != null) {
