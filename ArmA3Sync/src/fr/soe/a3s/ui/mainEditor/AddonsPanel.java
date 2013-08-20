@@ -249,7 +249,7 @@ public class AddonsPanel extends JPanel implements UIConstants {
 			@Override
 			public void valueChanged(TreeSelectionEvent arg0) {
 				arbre2TreePath = arbre2.getSelectionPath();
-				System.out.println(arbre2TreePath);
+				//System.out.println(arbre2TreePath);
 			}
 		});
 		arbre2.addMouseListener(new MouseAdapter() {
