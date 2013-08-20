@@ -184,9 +184,6 @@ public class MainPanel extends JFrame implements UIConstants {
 		launchPanel = new LaunchPanel(facade);
 		contenu.add(launchPanel, BorderLayout.SOUTH);
 
-		// menuProfiles.addMenuListener(new ProfilesMenuListener());
-		// menuProfiles.setActionCommand("Profiles");
-
 		if (SystemTray.isSupported()) {
 			/* Tray Icon */
 			trayIcon = new TrayIcon(TRAYICON, "ArmA3Sync");
@@ -373,7 +370,7 @@ public class MainPanel extends JFrame implements UIConstants {
 							"Error", JOptionPane.ERROR_MESSAGE);
 		}
 
-		/* Set previous height and width */
+		/* Set previous Height and Width */
 		int height = configurationService.getHeight();
 		int width = configurationService.getWidth();
 		if (height != 0 && width != 0) {
@@ -404,7 +401,6 @@ public class MainPanel extends JFrame implements UIConstants {
 	private void menuItemEditPerformed() {
 
 		facade.getAddonsPanel().saveAddonGroups();
-		facade.getLaunchOptionsPanel().setAdditionalParameters();
 		ProfilePanel profilePanel = new ProfilePanel(facade);
 		profilePanel.toFront();
 		profilePanel.setVisible(true);
@@ -642,6 +638,9 @@ public class MainPanel extends JFrame implements UIConstants {
 
 	private void menuItemProfilePerformed(ActionEvent e) {
 
+		// Save current profile
+		facade.getAddonsPanel().saveAddonGroups();
+		
 		int numberMenuItems = menuProfiles.getItemCount();
 
 		for (int i = numberMenuItems - 1; i > 1; i--) {
