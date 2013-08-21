@@ -139,14 +139,14 @@ public class TreeDnD {
 
 		@Override
 		public void dropActionChanged(DragSourceDragEvent dsde) {
-			System.out.println("Action: " + dsde.getDropAction());
-			System.out.println("Target Action: " + dsde.getTargetActions());
-			System.out.println("User Action: " + dsde.getUserAction());
+			//System.out.println("Action: " + dsde.getDropAction());
+			//System.out.println("Target Action: " + dsde.getTargetActions());
+			//System.out.println("User Action: " + dsde.getUserAction());
 		}
 
 		@Override
 		public void dragDropEnd(DragSourceDropEvent dsde) {
-			System.out.println("Drop Action End: " + dsde.getDropAction());
+			//System.out.println("Drop Action End: " + dsde.getDropAction());
 		}
 
 	}
@@ -170,7 +170,7 @@ public class TreeDnD {
 		 */
 		@Override
 		public void dragEnter(DropTargetDragEvent arg0) {
-			System.out.println("drop handler : dragEnter");
+			//System.out.println("drop handler : dragEnter");
 		}
 
 		@Override

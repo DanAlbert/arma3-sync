@@ -699,7 +699,7 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener {
 		String additionalParameters = additionalParametersTextArea.getText()
 				.trim();
 		try {
-			System.out.println(additionalParameters);
+			//System.out.println(additionalParameters);
 			profileService.setAdditionalParameters(additionalParameters);
 		} catch (ProfileException e) {
 			System.out.println(e.getMessage());

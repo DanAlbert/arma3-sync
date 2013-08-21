@@ -22,7 +22,7 @@ public class AfficheurFlux implements Runnable {
 		String ligne = "";
 		try {
 			while ((ligne = br.readLine()) != null) {
-				System.out.println(ligne);
+				//System.out.println(ligne);
 			}
 		} catch (IOException e) {
 			e.printStackTrace();

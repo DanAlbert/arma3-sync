@@ -226,7 +226,7 @@ public class EventsPanel extends JPanel implements UIConstants {
 			@Override
 			public void valueChanged(TreeSelectionEvent arg0) {
 				arbreTreePath = arbre.getSelectionPath();
-				System.out.println(arbreTreePath);
+				//System.out.println(arbreTreePath);
 			}
 		});
 		arbre.addMouseListener(new MouseAdapter() {
