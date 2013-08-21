@@ -72,7 +72,7 @@ public class CreditsPanel extends JDialog implements ActionListener,UIConstants 
 
 		jPanel2 = new ImagePanel();
 		jPanel1.add(jPanel2);
-		jPanel2.setBounds(154, 13, 180, 179);
+		jPanel2.setBounds(159, 14, 165, 171);
 		jPanel2.setBackground(new java.awt.Color(255, 255, 255));
 		ImageIcon imageIcon = new ImageIcon(java.lang.ClassLoader
 				.getSystemResource("resources/pictures/system/soe2.png"));
@@ -81,9 +81,9 @@ public class CreditsPanel extends JDialog implements ActionListener,UIConstants 
 		{
 			jTextArea1 = new JTextArea();
 			jPanel1.add(jTextArea1);
-			jTextArea1.setBounds(15, 19, 188, 194);
+			jTextArea1.setBounds(15, 19, 224, 200);
 			
-			jTextArea1.setText("Software development\n" +"[S.o.E] Major_Shepard\n" +"\nGraphical design\n" +"[S.o.E] Matt2507\n" + "\nTesting\n" + "[S.o.E],[F27],[BWF]\nTeam Members\n" + "\nInspired from \n" + "ArmA II Game Launcher\n" + "by SpiritedMachine.");
+			jTextArea1.setText("Software development\n" +"[S.o.E] Major_Shepard\n" +"\nGraphical design\n" +"[S.o.E] Matt2507\n" + "\nTesting\n" + "[S.o.E],[F27],[BWF]\nTeam Members\n" + "\n\nInspired from \n" + "- ArmA II Game Launcher " + "by SpiritedMachine.\n" + "- AddonSync by Yoma.");
 			jTextArea1.setFont(new java.awt.Font("Tahoma",0,11));
 			jTextArea1.setEditable(false);
 
