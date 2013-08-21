@@ -409,8 +409,8 @@ public class MainPanel extends JFrame implements UIConstants {
 	private void menuItemACREwizardPerformed() {
 
 		FirstPageInstallerPanel firstPage = new FirstPageInstallerPanel(facade);
-		firstPage.setVisible(true);
 		firstPage.init();
+		firstPage.setVisible(true);
 	}
 
 	private void menuItemAiAwizardPerformed() {
