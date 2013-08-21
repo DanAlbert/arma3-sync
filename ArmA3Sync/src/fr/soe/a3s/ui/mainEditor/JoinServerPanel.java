@@ -84,6 +84,8 @@ public class JoinServerPanel extends JDialog implements UIConstants {
 			@Override
 			public void mouseExited(MouseEvent arg0) {
 				l.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+				l.setText(String.format("<HTML><FONT color = \"#0080FF\"><U>%s</U></FONT></HTML>",
+						s));
 			}
 			@Override
 			public void mouseEntered(MouseEvent arg0) {
