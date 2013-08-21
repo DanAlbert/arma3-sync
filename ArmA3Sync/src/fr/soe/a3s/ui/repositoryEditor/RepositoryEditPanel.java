@@ -182,7 +182,7 @@ public class RepositoryEditPanel extends JDialog implements UIConstants {
 					labelLogin = new JLabel();
 					connectionPanel.add(labelLogin);
 					labelLogin.setText("Login");
-					labelLogin.setBounds(18, 68, 36, 24);
+					labelLogin.setBounds(18, 68, 43, 24);
 				}
 				{
 					textFieldLogin = new JTextField();
@@ -192,7 +192,7 @@ public class RepositoryEditPanel extends JDialog implements UIConstants {
 				{
 					labelPassword = new JLabel();
 					connectionPanel.add(labelPassword);
-					labelPassword.setBounds(166, 69, 54, 24);
+					labelPassword.setBounds(166, 69, 63, 24);
 					labelPassword.setText("Password");
 				}
 				{
