@@ -128,7 +128,11 @@ public class LaunchPanel extends JPanel implements UIConstants {
 		if (serverName.isEmpty()) {
 			configurationService.saveServerName(null);
 		} else {
-			configurationService.saveServerName(serverName);
+			//configurationService.saveServerName(serverName);
+			this.joinServerComboBox.setSelectedIndex(0);
+			JoinServerPanel joinServerPanel = new JoinServerPanel(facade);
+			joinServerPanel.setVisible(true);
+			return;
 		}
 		facade.getLaunchOptionsPanel().updateRunParameters();
 	}
