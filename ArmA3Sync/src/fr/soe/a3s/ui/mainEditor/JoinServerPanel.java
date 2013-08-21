@@ -36,7 +36,7 @@ public class JoinServerPanel extends JDialog implements UIConstants {
 		super(facade.getMainPanel(), "Join server", false);
 		this.facade = facade;
 		this.setResizable(false);
-		this.setSize(300, 130);
+		this.setSize(305, 130);
 		setIconImage(ICON);
 		this.setLocation(
 				(int) facade.getMainPanel().getLocation().getX()
@@ -50,7 +50,7 @@ public class JoinServerPanel extends JDialog implements UIConstants {
 			label1 = new JLabel();
 			getContentPane().add(label1);
 			label1.setText("This feature is currently disable due to an ArmA 3 bug.");
-			label1.setBounds(12, 13, 282, 16);
+			label1.setBounds(12, 13, 292, 16);
 		}
 		{
 			label2 = makeHyperLink("ArmA 3 feedback tracker",
