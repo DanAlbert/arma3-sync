@@ -1,15 +1,21 @@
 package fr.soe.a3s.ui.about;
 
+import java.awt.Cursor;
+import java.awt.Desktop;
 import java.awt.Graphics;
 import java.awt.Image;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.net.URI;
 
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JDialog;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextArea;
 import javax.swing.border.BevelBorder;
@@ -126,12 +132,15 @@ public class AboutPanel extends JDialog implements ActionListener,UIConstants {
 				jTextArea4.setEditable(false);
 			}
 			{
-				jTextArea5 = new JTextArea();
-				jPanel1.add(jTextArea5);
-				jTextArea5.setText("www.sonsofexiled.fr");
-				jTextArea5.setBounds(12, 76, 133, 22);
-				jTextArea5.setFont(new java.awt.Font("Tahoma", 1, 11));
-				jTextArea5.setEditable(false);
+//				jTextArea5 = new JTextArea();
+//				jPanel1.add(jTextArea5);
+//				jTextArea5.setText("www.sonsofexiled.fr");
+//				jTextArea5.setBounds(12, 76, 133, 22);
+//				jTextArea5.setFont(new java.awt.Font("Tahoma", 1, 11));
+//				jTextArea5.setEditable(false);
+				JLabel l = makeHyperLink("www.sonsofexiled.fr", "www.sonsofexiled.fr", 12, 76);
+				jPanel1.add(l);
+				l.setBounds(12, 76, 133, 22);
 			}
 		}
 		{
@@ -170,5 +179,37 @@ public class AboutPanel extends JDialog implements ActionListener,UIConstants {
 				g.drawImage(image, 0, 0, width, height, this);
 			}
 		}
+	}
+	
+	public JLabel makeHyperLink(final String s, final String link, int x, int y) {
+		final JLabel l = new JLabel(s);
+		l.setText(String.format("<HTML><FONT color = \"#0080FF\"><U>%s</U></FONT></HTML>",
+				s));
+		l.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseExited(MouseEvent arg0) {
+				l.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+				l.setText(String.format("<HTML><FONT color = \"#0080FF\"><U>%s</U></FONT></HTML>",
+						s));
+			}
+			@Override
+			public void mouseEntered(MouseEvent arg0) {
+				l.setCursor(new Cursor(Cursor.HAND_CURSOR));
+				l.setText(String
+						.format("<HTML><FONT color = \"#000099\"><U>%s</U></FONT></HTML>",
+								s));
+			}
+			@Override
+			public void mouseClicked(MouseEvent arg0) {
+				try {
+					URI uri = new URI(link);
+					if (Desktop.isDesktopSupported())
+						Desktop.getDesktop().browse(uri);
+				} catch (Exception e) {
+				}
+			}
+		});
+		l.setToolTipText(String.format("go to %s", link));
+		return l;
 	}
 }
