@@ -353,6 +353,7 @@ public class RepositoryEditPanel extends JDialog implements UIConstants {
 								.equalsIgnoreCase("anonymous")) {
 							textFieldLogin.setEnabled(false);
 							passwordField.setEnabled(false);
+						checkBoxAnonymous.setSelected(true);
 						}
 					} else {
 						labelConnection.setText("Url is not reachable!");
