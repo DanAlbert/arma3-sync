@@ -716,6 +716,8 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener {
 				additionalParametersTextArea.setText(additionalParameters);
 				additionalParametersTextArea.setCaretPosition(0);
 				additionalParametersTextArea.updateUI();
+			}else {
+				additionalParametersTextArea.setText("");
 			}
 		} catch (ProfileException e) {
 			System.out.println(e.getMessage());
