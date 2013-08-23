@@ -101,7 +101,7 @@ public class MainPanel extends JFrame implements UIConstants {
 		setResizable(true);
 		setIconImage(ICON);
 		setMinimumSize(new Dimension(DEFAULT_WIDTH, DEFAULT_HEIGHT));
-		 setPreferredSize(new Dimension(DEFAULT_WIDTH, DEFAULT_HEIGHT));
+		setPreferredSize(new Dimension(DEFAULT_WIDTH, DEFAULT_HEIGHT));
 		contenu = this.getContentPane();
 		this.setLocationRelativeTo(contenu);
 	}
@@ -375,7 +375,7 @@ public class MainPanel extends JFrame implements UIConstants {
 		int width = configurationService.getWidth();
 		if (height != 0 && width != 0) {
 			this.setPreferredSize(new Dimension(width, height));
-		} 
+		}
 		this.pack();
 
 		/* Init active views */
@@ -640,7 +640,7 @@ public class MainPanel extends JFrame implements UIConstants {
 
 		// Save current profile
 		facade.getAddonsPanel().saveAddonGroups();
-		
+
 		int numberMenuItems = menuProfiles.getItemCount();
 
 		for (int i = numberMenuItems - 1; i > 1; i--) {
@@ -805,6 +805,7 @@ public class MainPanel extends JFrame implements UIConstants {
 				int selectedIndex = tabbedPane.getSelectedIndex();
 				boolean contains = false;
 				String title = null;
+				int indexMap = 0;
 				for (Iterator<String> i = mapTabIndexes.keySet().iterator(); i
 						.hasNext();) {
 					title = i.next();
@@ -813,14 +814,24 @@ public class MainPanel extends JFrame implements UIConstants {
 						contains = true;
 						break;
 					}
+					indexMap++;
 				}
-				if (contains) {
-					boolean isDownloading = repositoryService
-							.isDownloading(title);
-					if (!isDownloading) {
-						mapTabIndexes.remove(title);
-						tabbedPane.remove(tabbedPane.getSelectedComponent());
+
+				boolean isDownloading = repositoryService.isDownloading(title);
+
+				if (contains && !isDownloading) {
+					int count = 0;
+					for (Iterator<String> i = mapTabIndexes.keySet().iterator(); i
+							.hasNext();) {
+						String key = i.next();
+						int value = mapTabIndexes.get(key);
+						if (count > indexMap) {
+							mapTabIndexes.put(key, value - 1);
+						}
+						count++;
 					}
+					mapTabIndexes.remove(title);
+					tabbedPane.remove(tabbedPane.getSelectedComponent());
 				}
 			}
 		};
