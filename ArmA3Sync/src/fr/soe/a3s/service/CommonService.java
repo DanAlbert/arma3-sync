@@ -22,6 +22,7 @@ public class CommonService {
 	private static final RepositoryDAO repositoryDAO = new RepositoryDAO();
 	private static final CommonDAO commonDAO = new CommonDAO();
 	private static String WIKI = "http://www.sonsofexiled.fr/wiki/index.php/1._ArmA3Sync";
+	private static String BIS = "http://forums.bistudio.com/showthread.php?162236-ArmA3Sync-launcher-and-addons-synchronization-software-for-ArmA-3&p=2477805#post2477805";
 
 	public void saveAllParameters() throws WritingException {
 
@@ -107,5 +108,9 @@ public class CommonService {
 
 	public String getWiki() {
 		return WIKI;
+	}
+	
+	public String getBIS(){
+		return BIS;
 	}
 }

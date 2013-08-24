@@ -442,12 +442,24 @@ public class MainPanel extends JFrame implements UIConstants {
 					JOptionPane.ERROR_MESSAGE);
 			e.printStackTrace();
 		}
-
 	}
 
 	private void menuItemBISforumPerformed() {
-		JOptionPane.showMessageDialog(this, "Not implemented yet.", "Help",
-				JOptionPane.INFORMATION_MESSAGE);
+		
+		CommonService commonService = new CommonService();
+		String urlValue = commonService.getBIS();
+		try {
+			URI url = new java.net.URI(urlValue);
+			if (Desktop.isDesktopSupported()) {
+				Desktop desktop = Desktop.getDesktop();
+				desktop.browse(url);
+			}
+		} catch (Exception e) {
+			JOptionPane.showMessageDialog(this,
+					"Can't open system web browser.", "Error",
+					JOptionPane.ERROR_MESSAGE);
+			e.printStackTrace();
+		}
 	}
 
 	private void menuItemPreferencesPerformed() {
