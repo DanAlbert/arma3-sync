@@ -2,9 +2,11 @@ package fr.soe.a3s.service;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.StringTokenizer;
 import java.util.TreeSet;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executor;
@@ -49,15 +51,16 @@ public class LaunchService {
 					"ArmA 3 Executable location is wrong or missing.\n Please checkout Launcher Options panel.");
 		}
 	}
-	
+
 	public void checkAllinArmALocation() throws LaunchException {
-		
-		String allInArmaPath = configurationDAO.getConfiguration().getAiaOptions().getAllinArmaPath();
-		String gameVersion = configurationDAO.getConfiguration().getGameVersion();
-		if (gameVersion.equals(GameVersions.ARMA3_AIA.getDescription())){
-			if (allInArmaPath == null || "".equals(allInArmaPath)){
-				throw new LaunchException(
-						"@AllinArma is missing.");
+
+		String allInArmaPath = configurationDAO.getConfiguration()
+				.getAiaOptions().getAllinArmaPath();
+		String gameVersion = configurationDAO.getConfiguration()
+				.getGameVersion();
+		if (gameVersion.equals(GameVersions.ARMA3_AIA.getDescription())) {
+			if (allInArmaPath == null || "".equals(allInArmaPath)) {
+				throw new LaunchException("@AllinArma is missing.");
 			}
 		}
 	}
@@ -81,9 +84,11 @@ public class LaunchService {
 					if (!launcherDAO.isApplicationRunning(executableName)) {
 						String runParameters = externalApplication
 								.getParameters();
+						List<String> params = new ArrayList<String>();
+						params.add(runParameters.trim());
 						try {
 							Callable<Integer> c = launcherDAO.call(launchPath,
-									runParameters);
+									params);
 							runnables.add(c);
 						} catch (Exception e) {
 							e.printStackTrace();
@@ -146,10 +151,10 @@ public class LaunchService {
 		}
 
 		/* Run Parameters */
-		String runParameters = determineRunParameters();
+		List<String> params = determineRunParameters();
 
 		try {
-			launcherDAO.runArmA3WithSteam(steamLaunchPath, runParameters);
+			launcherDAO.runArmA3WithSteam(steamLaunchPath, params);
 		} catch (Exception e) {
 			e.printStackTrace();
 			throw new LaunchException(e.getMessage());
@@ -163,13 +168,13 @@ public class LaunchService {
 				.getLauncherOptions().getArma3ExePath();
 
 		/* Run Parameters */
-		String runParameters = determineRunParameters();
+		List<String> params = determineRunParameters();
 		launcherDAO = new LauncherDAO();
 
 		// launcherDAO.run(arma3Path, runParameters);
 		List<Callable<Integer>> runnables = new ArrayList<Callable<Integer>>();
 		try {
-			Callable<Integer> c = launcherDAO.call(arma3Path, runParameters);
+			Callable<Integer> c = launcherDAO.call(arma3Path, params);
 			runnables.add(c);
 			ExecutorService executor = Executors.newSingleThreadExecutor();
 			executor.submit(c);
@@ -180,22 +185,12 @@ public class LaunchService {
 		}
 	}
 
-	private String determineRunParameters() {
+	private List<String> determineRunParameters() {
 
-		String runParameters = "";
-		String profileName = configurationDAO.getConfiguration()
-				.getProfileName();
-		Profile profile = (Profile) profileDAO.getMap().get(profileName);
-		if (profile != null) {
-			String additionalParameters = profile.getAdditionalParameters();
-			if (additionalParameters == null) {
-				runParameters = getRunParameters();
-			} else {
-				runParameters = getRunParameters() + " "
-						+ profile.getAdditionalParameters();
-			}
-		}
-		return runParameters;
+		List<String> params = new ArrayList<String>();
+		params.addAll(getRunParameters());
+		params.addAll(getAdditionalParameters());
+		return params;
 	}
 
 	public List<String> getMissingAddons() {
@@ -239,7 +234,9 @@ public class LaunchService {
 		return message;
 	}
 
-	public String getRunParameters() {
+	public List<String> getRunParameters() {
+
+		List<String> params = new ArrayList<String>();
 
 		Configuration configuration = configurationDAO.getConfiguration();
 		String profileName = configuration.getProfileName();
@@ -320,18 +317,24 @@ public class LaunchService {
 			List<Addon> list1 = ordererAddonListByPath.get(i);
 			String path = list1.get(0).getPath();
 			if (path.isEmpty()) {
-				mods = mods + " -mod=";
+				mods = mods + "-mod=";
 			} else {
-				mods = mods + " -mod=" + path + "\\";
+				mods = mods + "-mod=" + path + "\\";
 			}
 			for (Addon addon : list1) {
 				mods = mods + addon.getName() + ";";
 			}
 		}
+		String[] tab = mods.split("-mod=");
+
+		for (int i = 0; i < tab.length; i++) {
+			String param = tab[i].trim();
+			if (!param.isEmpty()){
+				params.add("-mod=" + tab[i]);
+			}
+		}
 
 		/* Build runParameters */
-		String runParameters = mods;
-
 		/* AllinArma */
 		if (configuration.getGameVersion().equals(
 				GameVersions.ARMA3_AIA.getDescription())) {
@@ -361,42 +364,38 @@ public class LaunchService {
 						+ aiAOptions.getArma2OAPath() + "\\Expansion" + ";"
 						+ aiAOptions.getTohPath() + ";" + parentArma3ExePath
 						+ ";" + path + "\\Core" + ";" + path + "\\PostA3" + ";";
-
-				runParameters = runParameters + allInArma;
+				params.add(allInArma);
 			}
 		}
 
 		/* Launcher options */
 		LauncherOptions launcherOptions = configuration.getLauncherOptions();
 		if (launcherOptions.getGameProfile() != null) {
-			runParameters = runParameters + " -name="
-					+ launcherOptions.getGameProfile();
+			params.add("-name=" + launcherOptions.getGameProfile());
 		}
 		if (launcherOptions.isShowScriptErrors()) {
-			runParameters = runParameters + " -showScriptErrors";
+			params.add("-showScriptErrors");
 		}
 		if (launcherOptions.isNoPause()) {
-			runParameters = runParameters + " -noPause";
+			params.add("-noPause");
 		}
 		if (launcherOptions.isWindowMode()) {
-			runParameters = runParameters + " -window";
+			params.add("-window");
 		}
 		if (launcherOptions.isXpCompatibilityMode()) {
-			runParameters = runParameters + " -winxp";
+			params.add("-winxp");
 		}
 		if (launcherOptions.getMaxMemorySelection() != null) {
-			runParameters = runParameters + " -maxMem="
-					+ launcherOptions.getMaxMemorySelection();
+			params.add("-maxMem=" + launcherOptions.getMaxMemorySelection());
 		}
 		if (launcherOptions.getCpuCountSelection() != 0) {
-			runParameters = runParameters + " -cpuCount="
-					+ launcherOptions.getCpuCountSelection();
+			params.add("-cpuCount=" + launcherOptions.getCpuCountSelection());
 		}
 		if (launcherOptions.isNoSplashScreen()) {
-			runParameters = runParameters + " -nosplash";
+			params.add("-nosplash");
 		}
 		if (launcherOptions.isDefaultWorld()) {
-			runParameters = runParameters + " -world=empty";
+			params.add("-world=empty");
 		}
 
 		// Join Server
@@ -407,13 +406,31 @@ public class LaunchService {
 					String ipAddress = s.getIpAddress();
 					int port = s.getPort();
 					String password = s.getPassword();
-					runParameters = runParameters + " -connect=" + ipAddress
-							+ " -port=" + port + " -password=" + password;
+					params.add("-connect=" + ipAddress);
+					params.add("-port=" + port);
+					params.add("-password=" + password);
 				}
 			}
 		}
+		return params;
+	}
 
-		return runParameters.trim();
+	private List<String> getAdditionalParameters() {
+
+		List<String> params = new ArrayList<String>();
+		String profileName = configurationDAO.getConfiguration()
+				.getProfileName();
+		Profile profile = (Profile) profileDAO.getMap().get(profileName);
+		if (profile != null) {
+			String additionalParameters = profile.getAdditionalParameters();
+			StringTokenizer stk = new StringTokenizer(additionalParameters,
+					" -");
+			int nbParameters = stk.countTokens();
+			for (int i = 0; i < nbParameters; i++) {
+				params.add("-" + stk.nextToken().trim());
+			}
+		}
+		return params;
 	}
 
 	private void getSelectedAddonNames(TreeDirectory treeDirectory,

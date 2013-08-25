@@ -1,10 +1,9 @@
 package fr.soe.a3s.dao;
 
 import java.io.BufferedReader;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.List;
 import java.util.StringTokenizer;
 import java.util.concurrent.Callable;
 
@@ -40,17 +39,18 @@ public class LauncherDAO implements DataAccessConstants {
 		return response;
 	}
 
-	public void runArmA3WithSteam(String steamLaunchPath, String runParameters)
+	@Deprecated
+	public void runArmA3WithSteam(String steamLaunchPath, List<String> params)
 			throws IOException, InterruptedException {
 
-		StringTokenizer stk = new StringTokenizer(runParameters.trim(), "-");
-		int nbParameters = stk.countTokens();
-		String[] cmd = new String[2 + nbParameters];
-		cmd[0] = steamLaunchPath;
-		cmd[1] = "-applaunch 107410";
-		for (int i = 0; i < nbParameters; i++) {
-			cmd[2 + i] = "-" + stk.nextToken().trim();
-		}
+		// StringTokenizer stk = new StringTokenizer(runParameters.trim(), "-");
+		// int nbParameters = stk.countTokens();
+		// String[] cmd = new String[2 + nbParameters];
+		// cmd[0] = steamLaunchPath;
+		// cmd[1] = "-applaunch 107410";
+		// for (int i = 0; i < nbParameters; i++) {
+		// cmd[2 + i] = "-" + stk.nextToken().trim();
+		// }
 
 		// String command = cmd[0] + " " + cmd[1];
 		//
@@ -59,19 +59,12 @@ public class LauncherDAO implements DataAccessConstants {
 		// }
 		// Process proc = Runtime.getRuntime().exec(command);
 
-		Process p = Runtime.getRuntime().exec(cmd);
-		AfficheurFlux fluxSortie = new AfficheurFlux(p.getInputStream());
-		AfficheurFlux fluxErreur = new AfficheurFlux(p.getErrorStream());
-
-		new Thread(fluxSortie).start();
-		new Thread(fluxErreur).start();
-
-		// try {
-		// p.waitFor();
-		// } catch (InterruptedException e) {
-		// // TODO Auto-generated catch block
-		// e.printStackTrace();
-		// }
+		// Process p = Runtime.getRuntime().exec(cmd);
+		// AfficheurFlux fluxSortie = new AfficheurFlux(p.getInputStream());
+		// AfficheurFlux fluxErreur = new AfficheurFlux(p.getErrorStream());
+		//
+		// new Thread(fluxSortie).start();
+		// new Thread(fluxErreur).start();
 	}
 
 	public void run(final String exePath, final String runParameters) {
@@ -109,22 +102,18 @@ public class LauncherDAO implements DataAccessConstants {
 		t.start();
 	}
 
-	public Callable<Integer> call(final String exePath, final String runParameters)
-			throws Exception {
+	public Callable<Integer> call(final String exePath,
+			final List<String> params) throws Exception {
 
 		Callable<Integer> c = new Callable<Integer>() {
 			@Override
 			public Integer call() throws Exception {
-
-				StringTokenizer stk = new StringTokenizer(runParameters.trim(),
-						"-");
-				int nbParameters = stk.countTokens();
+				int nbParameters = params.size();
 				String[] cmd = new String[1 + nbParameters];
 				cmd[0] = exePath;
 				for (int i = 0; i < nbParameters; i++) {
-					cmd[1 + i] = "-" + stk.nextToken().trim();
+					cmd[1 + i] = params.get(i).trim();
 				}
-
 				Process p = Runtime.getRuntime().exec(cmd);
 				AfficheurFlux fluxSortie = new AfficheurFlux(p.getInputStream());
 				AfficheurFlux fluxErreur = new AfficheurFlux(p.getErrorStream());
