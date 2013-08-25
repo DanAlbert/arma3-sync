@@ -343,7 +343,7 @@ public class AdminPanel extends JPanel implements UIConstants {
 			int index = url.lastIndexOf("/");
 			if (index != -1) {// There is a folder after the root
 				String folderName = url.substring(index + 1);
-				if (!ftpFolderName.equals(folderName)) {
+				if (!ftpFolderName.equalsIgnoreCase(folderName)) {
 					JOptionPane
 							.showMessageDialog(
 									facade.getMainPanel(),
