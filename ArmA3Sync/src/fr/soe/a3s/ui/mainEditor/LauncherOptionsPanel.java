@@ -121,7 +121,7 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener {
 						File[] subf = file.listFiles();
 						if (subf != null) {
 							for (int i = 0; i < subf.length; i++) {
-								listProfileNames.add(subf[i].getName());
+								listProfileNames.add(subf[i].getName().replaceAll("%20", " "));
 							}
 						}
 					}
