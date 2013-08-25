@@ -329,7 +329,7 @@ public class LaunchService {
 
 		for (int i = 0; i < tab.length; i++) {
 			String param = tab[i].trim();
-			if (!param.isEmpty()){
+			if (!param.isEmpty()) {
 				params.add("-mod=" + tab[i]);
 			}
 		}
@@ -423,11 +423,15 @@ public class LaunchService {
 		Profile profile = (Profile) profileDAO.getMap().get(profileName);
 		if (profile != null) {
 			String additionalParameters = profile.getAdditionalParameters();
-			StringTokenizer stk = new StringTokenizer(additionalParameters,
-					" -");
-			int nbParameters = stk.countTokens();
-			for (int i = 0; i < nbParameters; i++) {
-				params.add("-" + stk.nextToken().trim());
+			if (additionalParameters != null) {
+				if (!additionalParameters.isEmpty()) {
+					StringTokenizer stk = new StringTokenizer(
+							additionalParameters, " -");
+					int nbParameters = stk.countTokens();
+					for (int i = 0; i < nbParameters; i++) {
+						params.add("-" + stk.nextToken().trim());
+					}
+				}
 			}
 		}
 		return params;
