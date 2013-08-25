@@ -9,6 +9,7 @@ import java.awt.FlowLayout;
 import java.awt.MenuItem;
 import java.awt.PopupMenu;
 import java.awt.SystemTray;
+import java.awt.Toolkit;
 import java.awt.TrayIcon;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -100,10 +101,8 @@ public class MainPanel extends JFrame implements UIConstants {
 		setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 		setResizable(true);
 		setIconImage(ICON);
-		setMinimumSize(new Dimension(DEFAULT_WIDTH, DEFAULT_HEIGHT));
-		setPreferredSize(new Dimension(DEFAULT_WIDTH, DEFAULT_HEIGHT));
 		contenu = this.getContentPane();
-		this.setLocationRelativeTo(contenu);
+		this.setLocationRelativeTo(null);
 	}
 
 	public void drawGUI() {
@@ -369,13 +368,20 @@ public class MainPanel extends JFrame implements UIConstants {
 							"An error occured. \n Failded to load on or more repositories.",
 							"Error", JOptionPane.ERROR_MESSAGE);
 		}
-
 		/* Set previous Height and Width */
+
 		int height = configurationService.getHeight();
 		int width = configurationService.getWidth();
 		if (height != 0 && width != 0) {
 			this.setPreferredSize(new Dimension(width, height));
+		} else {
+			setPreferredSize(new Dimension(DEFAULT_WIDTH, DEFAULT_HEIGHT));
 		}
+		setMinimumSize(new Dimension(DEFAULT_WIDTH, DEFAULT_HEIGHT));
+		Dimension dimension = Toolkit.getDefaultToolkit().getScreenSize();
+		int x = (int) ((dimension.getWidth() - this.getPreferredSize().getWidth()) / 2);
+		int y = (int) ((dimension.getHeight() - this.getPreferredSize().getHeight()) / 2);
+		this.setLocation(x, y);
 		this.pack();
 
 		/* Init active views */
@@ -445,7 +451,7 @@ public class MainPanel extends JFrame implements UIConstants {
 	}
 
 	private void menuItemBISforumPerformed() {
-		
+
 		CommonService commonService = new CommonService();
 		String urlValue = commonService.getBIS();
 		try {
