@@ -51,15 +51,17 @@ import fr.soe.a3s.ui.Facade;
 public class LauncherOptionsPanel extends JPanel implements DocumentListener {
 
 	private Facade facade;
-	private JPanel launcherOptionsPanel, performancePanel, armaPanel,steamPanel;
+	private JPanel launcherOptionsPanel, performancePanel, armaPanel,
+			steamPanel;
 	private JTextArea runParametersTextArea, additionalParametersTextArea;
 	private JScrollPane scrollPaneRunParameters, scrollPaneAditionalParameters;
-	private JTextField textFieldArmAExecutableLocation,textFieldSteamExecutableLocation;
-	private JButton buttonSelectArmAExe,buttonSelectSteamExe;
+	private JTextField textFieldArmAExecutableLocation,
+			textFieldSteamExecutableLocation;
+	private JButton buttonSelectArmAExe, buttonSelectSteamExe;
 	private JComboBox comboBoxProfiles, comboBoxMaxMemory, comboBoxCpuCount;
 	private JCheckBox checkBoxProfiles, checkBoxNoPause, checkBoxWindowMode,
-			checkBoxShowScriptErrors, checkBoxRunBeta,checkBoxMaxMemory, checkBoxCpuCount,
-			checkBoxNoSplashScreen, checkBoxDefaultWorld;
+			checkBoxShowScriptErrors, checkBoxRunBeta, checkBoxMaxMemory,
+			checkBoxCpuCount, checkBoxNoSplashScreen, checkBoxDefaultWorld;
 	private ConfigurationService configurationService = new ConfigurationService();
 	private ProfileService profileService = new ProfileService();
 	private AddonService addonService = new AddonService();
@@ -117,7 +119,7 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener {
 					if (name.contains("ARMA 3")
 							&& name.contains("OTHER PROFILES")) {
 						File[] subf = file.listFiles();
-						if (subf!=null){
+						if (subf != null) {
 							for (int i = 0; i < subf.length; i++) {
 								listProfileNames.add(subf[i].getName());
 							}
@@ -290,51 +292,7 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener {
 			}
 			armaPanel.add(vBox);
 		}
-//		{
-//			steamPanel = new JPanel();
-//			steamPanel.setBorder(BorderFactory.createTitledBorder(
-//					BorderFactory.createEtchedBorder(),
-//					"Steam Executable Location"));
-//			southPanel.add(steamPanel);
-//			steamPanel.setLayout(new BorderLayout());
-//			
-//			vBox = Box.createVerticalBox();
-//			{
-//				JPanel panel1 = new JPanel();
-//				panel1.setLayout(new BorderLayout());
-//				textFieldSteamExecutableLocation = new JTextField();
-//				textFieldSteamExecutableLocation.setEditable(false);
-//				buttonSelectSteamExe = new JButton("Select");
-//				panel1.add(textFieldSteamExecutableLocation, BorderLayout.CENTER);
-//				panel1.add(buttonSelectSteamExe, BorderLayout.EAST);
-//				vBox.add(panel1);
-//			}
-//			steamPanel.add(vBox);
-//		}
-		
-		
-		// {
-		// armaoaPanel = new JPanel();
-		// armaoaPanel.setBorder(BorderFactory.createTitledBorder(
-		// BorderFactory.createEtchedBorder(),
-		// "ArmA II - OA Executable Location"));
-		// southPanel.add(armaoaPanel);
-		// armaoaPanel.setLayout(new BorderLayout());
-		//
-		// vBox = Box.createVerticalBox();
-		// {
-		// JPanel panel1 = new JPanel();
-		// panel1.setLayout(new BorderLayout());
-		// textFieldArmAOAExecutableLocation = new JTextField();
-		// textFieldArmAOAExecutableLocation.setEditable(false);
-		// buttonSelectArmAOAExe = new JButton("Select");
-		// panel1.add(textFieldArmAOAExecutableLocation,
-		// BorderLayout.CENTER);
-		// panel1.add(buttonSelectArmAOAExe, BorderLayout.EAST);
-		// vBox.add(panel1);
-		// }
-		// armaoaPanel.add(vBox);
-		// }
+
 		checkBoxProfiles.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -365,12 +323,6 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener {
 				checkBoxWindowModePerformed();
 			}
 		});
-		// checkBoxRunBeta.addActionListener(new ActionListener() {
-		// @Override
-		// public void actionPerformed(ActionEvent e) {
-		// checkBoxRunPerformed();
-		// }
-		// });
 		checkBoxMaxMemory.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -413,14 +365,7 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener {
 				buttonSelectArmAExePerformed();
 			}
 		});
-//		buttonSelectSteamExe.addActionListener(new ActionListener() {
-//			@Override
-//			public void actionPerformed(ActionEvent arg0) {
-//				buttonSelectSteamExePerformed();
-//			}
-//		});
-		
-		
+
 		additionalParametersTextArea.getDocument().addDocumentListener(this);
 		setContextualHelp();
 	}
@@ -434,7 +379,6 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener {
 				.setToolTipText("Don't suspend the game when placed in background");
 		checkBoxWindowMode
 				.setToolTipText("Display the game windowed instead of full screen");
-		// checkBoxRunBeta.setToolTipText("Run the game with beta patch");
 		comboBoxMaxMemory.setToolTipText("Restricts memory allocation");
 		comboBoxCpuCount.setToolTipText("Restricts number of cores used");
 		checkBoxNoSplashScreen.setToolTipText("Disables splash screens");
@@ -457,7 +401,6 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener {
 				.isShowScriptError());
 		checkBoxNoPause.setSelected(launcherOptionsDTO.isNoPause());
 		checkBoxWindowMode.setSelected(launcherOptionsDTO.isWindowMode());
-		// checkBoxRunBeta.setSelected(launcherOptionsDTO.isRunBeta());
 
 		/* Performance */
 		if (launcherOptionsDTO.getMaxMemorySelection() != null) {
@@ -477,11 +420,12 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener {
 		checkBoxDefaultWorld.setSelected(launcherOptionsDTO.isDefaultWorld());
 
 		/* Executable locations */
-		textFieldArmAExecutableLocation.setText(launcherOptionsDTO.getArma3ExePath());
+		textFieldArmAExecutableLocation.setText(launcherOptionsDTO
+				.getArma3ExePath());
 
 		/* Run parameters */
 		updateRunParameters();
-		
+
 		/* Additional Parameters */
 		try {
 			String additionalParameters = profileService
@@ -492,8 +436,6 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener {
 		} catch (ProfileException e) {
 			e.printStackTrace();
 		}
-		
-	
 	}
 
 	/* Components selection */
@@ -604,13 +546,13 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener {
 
 		JFileChooser fc = null;
 		String arma3Path = configurationService.determineArmA3Path();
-		if (arma3Path==null){
+		if (arma3Path == null) {
 			fc = new JFileChooser();
-		}else {
+		} else {
 			File arma3Folder = new File(arma3Path);
-			if (arma3Folder.exists()){
+			if (arma3Folder.exists()) {
 				fc = new JFileChooser(arma3Path);
-			}else {
+			} else {
 				fc = new JFileChooser();
 			}
 		}
@@ -622,7 +564,8 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener {
 			String path = file.getAbsolutePath();
 			String parentPath = file.getParentFile().getAbsolutePath();
 			configurationService.setArmA3ExePath(path);
-			configurationService.getAddonSearchDirectoryPaths().add(parentPath.toLowerCase());
+			configurationService.getAddonSearchDirectoryPaths().add(
+					parentPath.toLowerCase());
 			facade.getAddonOptionsPanel().updateAddonSearchDirectories();
 			addonService.resetAvailableAddonTree();
 			facade.getAddonsPanel().updateAvailableAddons();
@@ -634,9 +577,9 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener {
 			textFieldArmAExecutableLocation.setText("");
 		}
 	}
-	
+
 	private void buttonSelectSteamExePerformed() {
-		
+
 		String steamExePath = configurationService.determineSteamExePath();
 		JFileChooser fc = new JFileChooser(steamExePath);
 		fc.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
@@ -656,40 +599,13 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener {
 	public void updateRunParameters() {
 
 		runParametersTextArea.setText("");
-		String runParameters = launchService.getRunParameters();
-
-		if (runParameters == null) {
-			return;
-		}
-
-		int runParametersRows = 1;
+		List<String> params = launchService.getRunParameters();
 		String txt = "";
-		StringTokenizer st = new StringTokenizer(runParameters, "-");
-		while (st.hasMoreTokens()) {
-			String token = st.nextToken();
-			txt = txt + ("-" + token + "\n");
+		for (String stg : params) {
+			txt = txt + (stg) + "\n";
 		}
 		runParametersTextArea.setText(txt);
-		
-/*		
-		StringTokenizer st1 = new StringTokenizer(runParameters, ";");
-		while (st1.hasMoreTokens()) {
-			String token = st1.nextToken();
-			txt = txt + (token + ";" + "\n");
-		}
-		int endIndex = txt.lastIndexOf("\"");
-		if (endIndex != -1) {
-			String txt1 = txt.substring(0, endIndex);
-			runParametersTextArea.setText(txt1 + "\n");
-		}
-		String txt2 = txt.substring(endIndex + 1, txt.length() - 1);
-		StringTokenizer st2 = new StringTokenizer(txt2, " ");
-		while (st2.hasMoreTokens()) {
-			String token = st2.nextToken();
-			runParametersTextArea.append(token + "\n");
-		}
-*/
-		runParametersTextArea.setRows(runParametersRows);
+		runParametersTextArea.setRows(1);
 		runParametersTextArea.setCaretPosition(0);
 	}
 
@@ -699,7 +615,7 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener {
 		String additionalParameters = additionalParametersTextArea.getText()
 				.trim();
 		try {
-			//System.out.println(additionalParameters);
+			// System.out.println(additionalParameters);
 			profileService.setAdditionalParameters(additionalParameters);
 		} catch (ProfileException e) {
 			System.out.println(e.getMessage());
@@ -716,7 +632,7 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener {
 				additionalParametersTextArea.setText(additionalParameters);
 				additionalParametersTextArea.setCaretPosition(0);
 				additionalParametersTextArea.updateUI();
-			}else {
+			} else {
 				additionalParametersTextArea.setText("");
 			}
 		} catch (ProfileException e) {
