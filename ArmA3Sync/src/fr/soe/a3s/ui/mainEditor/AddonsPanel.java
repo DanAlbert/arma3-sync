@@ -249,12 +249,21 @@ public class AddonsPanel extends JPanel implements UIConstants {
 			@Override
 			public void valueChanged(TreeSelectionEvent arg0) {
 				arbre2TreePath = arbre2.getSelectionPath();
-				//System.out.println(arbre2TreePath);
+				// System.out.println(arbre2TreePath);
 			}
 		});
 		arbre2.addMouseListener(new MouseAdapter() {
 			public void mouseClicked(MouseEvent e) {
 				if (arbre2TreePath == null) {
+					return;
+				}
+
+				int hotspot = new JCheckBox().getPreferredSize().width;
+
+				TreePath path = arbre2.getPathForLocation(e.getX(), e.getY());
+				if (path == null) {
+					return;
+				} else if (e.getX() > arbre2.getPathBounds(path).x + hotspot) {
 					return;
 				}
 

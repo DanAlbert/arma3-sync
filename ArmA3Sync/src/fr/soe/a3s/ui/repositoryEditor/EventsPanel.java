@@ -12,6 +12,7 @@ import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JList;
 import javax.swing.JMenuItem;
@@ -234,6 +235,15 @@ public class EventsPanel extends JPanel implements UIConstants {
 			public void mouseClicked(MouseEvent e) {
 
 				if (arbreTreePath == null) {
+					return;
+				}
+				
+				int hotspot = new JCheckBox().getPreferredSize().width;
+
+				TreePath path = arbre.getPathForLocation(e.getX(), e.getY());
+				if (path == null) {
+					return;
+				} else if (e.getX() > arbre.getPathBounds(path).x + hotspot) {
 					return;
 				}
 

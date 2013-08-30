@@ -394,6 +394,18 @@ public class DownloadPanel extends JPanel implements UIConstants {
 				if (arbreTreePath == null) {
 					return;
 				}
+				if (SwingUtilities.isRightMouseButton(e)){
+					return;
+				}
+				int hotspot = new JCheckBox().getPreferredSize().width;
+
+				TreePath path = arbre.getPathForLocation(e.getX(), e.getY());
+				if (path == null) {
+					return;
+				} else if (e.getX() > arbre.getPathBounds(path).x + hotspot) {
+					return;
+				}
+
 				SyncTreeNodeDTO syncTreeNodeDTO = (SyncTreeNodeDTO) arbre
 						.getLastSelectedPathComponent();
 				syncTreeNodeDTO.setSelected(!syncTreeNodeDTO.isSelected());
