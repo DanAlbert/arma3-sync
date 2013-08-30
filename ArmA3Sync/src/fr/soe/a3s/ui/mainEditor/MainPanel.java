@@ -602,6 +602,13 @@ public class MainPanel extends JFrame implements UIConstants {
 							"Update", JOptionPane.OK_CANCEL_OPTION);
 
 					if (response == 0) {
+						// Save all 
+						try {
+							commonService.saveAllParameters();
+						} catch (WritingException e) {
+							e.printStackTrace();
+						}
+						// Proceed update 
 						String command = "java -jar -Djava.net.preferIPv4Stack=true ArmA3Sync-Updater.jar";
 						if (facade.isDevMode()) {
 							command = command + " -dev";
