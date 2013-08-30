@@ -357,13 +357,37 @@ public class LaunchService {
 				 * 
 				 * @AllInArma\PostA3"
 				 */
-				String allInArma = " -mod=" + path + "\\ProductDummies" + ";"
-						+ aiAOptions.getArmaPath() + "\\DBE1" + ";" + path
-						+ "\\A1Dummies" + ";" + aiAOptions.getArma2Path() + ";"
-						+ aiAOptions.getArma2OAPath() + ";"
-						+ aiAOptions.getArma2OAPath() + "\\Expansion" + ";"
-						+ aiAOptions.getTohPath() + ";" + parentArma3ExePath
+				
+				String allInArma = " -mod=" + path + "\\ProductDummies" + ";";
+				
+				if (aiAOptions.getArmaPath()!=null && !"".equals(aiAOptions.getArmaPath())){
+					allInArma = allInArma + aiAOptions.getArmaPath() + "\\DBE1" + ";";
+				}
+				
+				allInArma = allInArma + path+ "\\A1Dummies" + ";";
+				
+				if (aiAOptions.getArma2Path()!=null && !"".equals(aiAOptions.getArma2Path())){
+					allInArma = allInArma + aiAOptions.getArma2Path() + ";";
+				}
+				
+				if (aiAOptions.getArma2OAPath()!=null && !"".equals(aiAOptions.getArma2OAPath())){
+					allInArma = allInArma + aiAOptions.getArma2OAPath() + ";" + aiAOptions.getArma2OAPath() + "\\Expansion" + ";";
+				}
+				
+				if (aiAOptions.getTohPath()!=null && !"".equals(aiAOptions.getTohPath())){
+					allInArma = allInArma + aiAOptions.getTohPath() + ";";
+				}
+				
+				allInArma = allInArma + "@A1A2ObjectMerge;" + parentArma3ExePath
 						+ ";" + path + "\\Core" + ";" + path + "\\PostA3" + ";";
+				
+//				String allInArma = " -mod=" + path + "\\ProductDummies" + ";"
+//						+ aiAOptions.getArmaPath() + "\\DBE1" + ";" + path
+//						+ "\\A1Dummies" + ";" + aiAOptions.getArma2Path() + ";"
+//						+ aiAOptions.getArma2OAPath() + ";"
+//						+ aiAOptions.getArma2OAPath() + "\\Expansion" + ";"
+//						+ aiAOptions.getTohPath() + ";" + parentArma3ExePath
+//						+ ";" + path + "\\Core" + ";" + path + "\\PostA3" + ";";
 				params.add(allInArma);
 			}
 		}
