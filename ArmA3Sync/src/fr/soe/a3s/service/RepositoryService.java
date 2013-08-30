@@ -831,16 +831,20 @@ public class RepositoryService {
 			if (node.isLeaf()) {
 				SyncTreeLeaf syncTreeLeaf = (SyncTreeLeaf) node;
 				SyncTreeLeafDTO syncTreeLeafDTO = transformSyncTreeLeaf2DTO(syncTreeLeaf);
-                syncTreeLeafDTO.setParent(syncTreeDirectoryDTO);
-                syncTreeDirectoryDTO.addTreeNode(syncTreeLeafDTO);
-                if (syncTreeLeafDTO.isUpdated()){
-                    SyncTreeDirectoryDTO parent = syncTreeLeafDTO.getParent();
-                    while(!parent.isMarkAsAddon()){
-                        parent.setUpdated(true);
-                        parent = parent.getParent();
-                    }
-                    parent.setUpdated(true);
-                }
+				syncTreeLeafDTO.setParent(syncTreeDirectoryDTO);
+				syncTreeDirectoryDTO.addTreeNode(syncTreeLeafDTO);
+				if (syncTreeLeafDTO.isUpdated()) {
+					SyncTreeDirectoryDTO parent = syncTreeLeafDTO.getParent();
+					parent.setUpdated(true);
+					while (!parent.isMarkAsAddon()) {
+						parent = parent.getParent();
+						if (parent == null) {
+							break;
+						} else {
+							parent.setUpdated(true);
+						}
+					}
+				}
 			} else {
 				SyncTreeDirectory syncTreeDirectory2 = (SyncTreeDirectory) node;
 				SyncTreeDirectoryDTO syncTreedDirectoryDTO2 = new SyncTreeDirectoryDTO();
@@ -880,7 +884,7 @@ public class RepositoryService {
 		syncTreeLeafDTO.setDestinationPath(syncTreeLeaf.getDestinationPath());
 		return syncTreeLeafDTO;
 	}
-	
+
 	private void propagateUpdatedStatus(
 			SyncTreeDirectoryDTO syncTreeDirectoryDTO) {
 
@@ -922,8 +926,8 @@ public class RepositoryService {
 
 		final Event event = new Event(eventDTO.getName());
 		event.setDescription(eventDTO.getDescription());
-		for (Iterator<String> iter = eventDTO.getAddonNames()
-				.keySet().iterator(); iter.hasNext();) {
+		for (Iterator<String> iter = eventDTO.getAddonNames().keySet()
+				.iterator(); iter.hasNext();) {
 			String key = iter.next();
 			boolean value = eventDTO.getAddonNames().get(key);
 			event.getAddonNames().put(key, value);
@@ -936,8 +940,8 @@ public class RepositoryService {
 		final EventDTO eventDTO = new EventDTO();
 		eventDTO.setName(event.getName());
 		eventDTO.setDescription(event.getDescription());
-		for (Iterator<String> iter = event.getAddonNames()
-				.keySet().iterator(); iter.hasNext();) {
+		for (Iterator<String> iter = event.getAddonNames().keySet().iterator(); iter
+				.hasNext();) {
 			String key = iter.next();
 			boolean value = event.getAddonNames().get(key);
 			eventDTO.getAddonNames().put(key, value);
