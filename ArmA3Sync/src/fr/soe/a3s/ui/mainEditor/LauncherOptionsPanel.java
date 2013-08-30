@@ -61,7 +61,7 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener {
 	private JComboBox comboBoxProfiles, comboBoxMaxMemory, comboBoxCpuCount;
 	private JCheckBox checkBoxProfiles, checkBoxNoPause, checkBoxWindowMode,
 			checkBoxShowScriptErrors, checkBoxRunBeta, checkBoxMaxMemory,
-			checkBoxCpuCount, checkBoxNoSplashScreen, checkBoxDefaultWorld;
+			checkBoxCpuCount, checkBoxNoSplashScreen, checkBoxDefaultWorld,checkBoxNoLogs;
 	private ConfigurationService configurationService = new ConfigurationService();
 	private ProfileService profileService = new ProfileService();
 	private AddonService addonService = new AddonService();
@@ -165,17 +165,6 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener {
 			hBox.add(Box.createHorizontalGlue());
 			vBox.add(hBox);
 		}
-		// {
-		// checkBoxRunBeta = new JCheckBox();
-		// checkBoxRunBeta.setText("Run beta");
-		// JLabel labelLinkBeta = new JLabel(
-		// "<HTML> <FONT color=\"#000099\"><U>Download beta</U></FONT>"
-		// + "</HTML>");
-		// Box hBox = Box.createHorizontalBox();
-		// hBox.add(checkBoxRunBeta);
-		// hBox.add(labelLinkBeta);
-		// vBox.add(hBox);
-		// }
 
 		/* Performances */
 		performancePanel.setLayout(new FlowLayout(FlowLayout.LEFT));
@@ -230,6 +219,14 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener {
 			checkBoxDefaultWorld.setText("Default World Empty");
 			Box hBox = Box.createHorizontalBox();
 			hBox.add(checkBoxDefaultWorld);
+			hBox.add(Box.createHorizontalGlue());
+			vBox.add(hBox);
+		}
+		{
+			checkBoxNoLogs = new JCheckBox();
+			checkBoxNoLogs.setText("No logs");
+			Box hBox = Box.createHorizontalBox();
+			hBox.add(checkBoxNoLogs);
 			hBox.add(Box.createHorizontalGlue());
 			vBox.add(hBox);
 		}
@@ -359,6 +356,13 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener {
 				checkBoxDefaultWorldPerformed();
 			}
 		});
+		checkBoxNoLogs.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				checkBoxNoLogsPerformed();
+			}
+		});
+		
 		buttonSelectArmAExe.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
@@ -383,6 +387,7 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener {
 		comboBoxCpuCount.setToolTipText("Restricts number of cores used");
 		checkBoxNoSplashScreen.setToolTipText("Disables splash screens");
 		checkBoxDefaultWorld.setToolTipText("No world loaded at game startup");
+		checkBoxNoLogs.setToolTipText("Do no write errors into RPT file");
 	}
 
 	public void init() {
@@ -418,6 +423,7 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener {
 		checkBoxNoSplashScreen.setSelected(launcherOptionsDTO
 				.isNoSplashScreen());
 		checkBoxDefaultWorld.setSelected(launcherOptionsDTO.isDefaultWorld());
+		checkBoxNoLogs.setSelected(launcherOptionsDTO.isNoLogs());
 
 		/* Executable locations */
 		textFieldArmAExecutableLocation.setText(launcherOptionsDTO
@@ -539,6 +545,11 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener {
 
 	private void checkBoxDefaultWorldPerformed() {
 		configurationService.setDefaultWorld(checkBoxDefaultWorld.isSelected());
+		updateRunParameters();
+	}
+	
+	private void checkBoxNoLogsPerformed() {
+		configurationService.setNoLogs(checkBoxNoLogs.isSelected());
 		updateRunParameters();
 	}
 

@@ -397,7 +397,10 @@ public class LaunchService {
 		if (launcherOptions.isDefaultWorld()) {
 			params.add("-world=empty");
 		}
-
+		if (launcherOptions.isNologs()){
+			params.add("-nologs");
+		}
+		
 		// Join Server
 		String serverName = configuration.getServerName();
 		if (serverName != null) {

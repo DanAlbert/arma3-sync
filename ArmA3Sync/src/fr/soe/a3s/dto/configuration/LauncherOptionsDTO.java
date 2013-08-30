@@ -13,6 +13,7 @@ public class LauncherOptionsDTO {
 	private int cpuCountSelection;
 	private boolean noSplashScreen;
 	private boolean defaultWorld;
+	private boolean noLogs;
 	
 	/* Executable location */
 	private String arma3ExePath;
@@ -84,5 +85,11 @@ public class LauncherOptionsDTO {
 	public void setSteamExePath(String steamExePath) {
 		this.steamExePath = steamExePath;
 	}
-	
+	public boolean isNoLogs() {
+		return noLogs;
+	}
+	public void setNoLogs(boolean noLogs) {
+		this.noLogs = noLogs;
+	}
+
 }

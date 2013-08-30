@@ -214,6 +214,11 @@ public class ConfigurationService {
 				.setDefaultWorld(value);
 	}
 
+	public void setNoLogs(boolean value) {
+		configurationDAO.getConfiguration().getLauncherOptions()
+				.setNoLogs(value);
+	}
+
 	public void saveLaunchOptions(LauncherOptionsDTO launcherOptionsDTO) {
 
 		/* Launcher options */
@@ -235,6 +240,8 @@ public class ConfigurationService {
 				.setCpuCountSelection(launcherOptionsDTO.getCpuCountSelection());
 		configurationDAO.getConfiguration().getLauncherOptions()
 				.setDefaultWorld(launcherOptionsDTO.isDefaultWorld());
+		configurationDAO.getConfiguration().getLauncherOptions()
+				.setNoLogs(launcherOptionsDTO.isNoLogs());
 		configurationDAO
 				.getConfiguration()
 				.getLauncherOptions()
@@ -380,7 +387,7 @@ public class ConfigurationService {
 				.setTohPath(aiaOptionsDTO.getTohPath());
 		// Do no set AllinArmA path here!
 	}
-	
+
 	public int getHeight() {
 		return configurationDAO.getConfiguration().getHeight();
 	}
@@ -435,6 +442,7 @@ public class ConfigurationService {
 		launcherOptionsDTO.setCpuCountSelection(launcherOptions
 				.getCpuCountSelection());
 		launcherOptionsDTO.setDefaultWorld(launcherOptions.isDefaultWorld());
+		launcherOptionsDTO.setNoLogs(launcherOptions.isNologs());
 		launcherOptionsDTO.setGameProfile(launcherOptions.getGameProfile());
 		launcherOptionsDTO.setMaxMemorySelection(launcherOptions
 				.getMaxMemorySelection());
