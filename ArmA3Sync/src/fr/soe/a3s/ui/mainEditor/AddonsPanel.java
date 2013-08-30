@@ -245,25 +245,20 @@ public class AddonsPanel extends JPanel implements UIConstants {
 				onArbre1Collapsed(event.getPath());
 			}
 		});
-		arbre2.addTreeSelectionListener(new TreeSelectionListener() {
-			@Override
-			public void valueChanged(TreeSelectionEvent arg0) {
-				arbre2TreePath = arbre2.getSelectionPath();
-				// System.out.println(arbre2TreePath);
-			}
-		});
 		arbre2.addMouseListener(new MouseAdapter() {
 			public void mouseClicked(MouseEvent e) {
+				
+				arbre2TreePath  = arbre2.getPathForLocation(e.getX(), e.getY());
+				
 				if (arbre2TreePath == null) {
+					arbre2.setSelectionPath(null);
+					refreshViewArbre2();
 					return;
 				}
 
 				int hotspot = new JCheckBox().getPreferredSize().width;
 
-				TreePath path = arbre2.getPathForLocation(e.getX(), e.getY());
-				if (path == null) {
-					return;
-				} else if (e.getX() > arbre2.getPathBounds(path).x + hotspot) {
+				if (e.getX() > arbre2.getPathBounds(arbre2TreePath).x + hotspot) {
 					return;
 				}
 
@@ -508,6 +503,12 @@ public class AddonsPanel extends JPanel implements UIConstants {
 		arbre2.setVisibleRowCount(numberRowShown);
 		arbre2.setPreferredSize(arbre2.getPreferredScrollableViewportSize());
 		arbre2.updateUI();
+		
+		if (numberRowShown==0){
+			arbre2.setToolTipText("Right click to add a group");
+		}else {
+			arbre2.setToolTipText("");
+		}
 	}
 
 	private void popupActionPerformed(ActionEvent evt) {
@@ -522,10 +523,29 @@ public class AddonsPanel extends JPanel implements UIConstants {
 
 	private void addPerformed() {
 
-		AddonsAddGroupPanel addGroupPanel = new AddonsAddGroupPanel(facade,
-				racine2);
-		addGroupPanel.init();
-		addGroupPanel.setVisible(true);
+		TreeNodeDTO[] treeNodeDTOs = getSelectedNode();
+
+		if (treeNodeDTOs == null) {
+			AddonsAddGroupPanel addGroupPanel = new AddonsAddGroupPanel(facade,
+					racine2);
+			addGroupPanel.init();
+			addGroupPanel.setVisible(true);
+		} else if (treeNodeDTOs.length != 0) {
+			TreeNodeDTO node = treeNodeDTOs[0];
+			if (node.isLeaf()) {
+				TreeDirectoryDTO directory = node.getParent();
+				AddonsAddGroupPanel addGroupPanel = new AddonsAddGroupPanel(
+						facade, directory);
+				addGroupPanel.init();
+				addGroupPanel.setVisible(true);
+			} else {
+				TreeDirectoryDTO directory = (TreeDirectoryDTO) node;
+				AddonsAddGroupPanel addGroupPanel = new AddonsAddGroupPanel(
+						facade, directory);
+				addGroupPanel.init();
+				addGroupPanel.setVisible(true);
+			}
+		}
 	}
 
 	private void renamePormed() {
