@@ -15,7 +15,9 @@ import javax.swing.SwingUtilities;
 import javax.swing.filechooser.FileFilter;
 
 import fr.soe.a3s.exception.LoadingException;
+import fr.soe.a3s.exception.WritingException;
 import fr.soe.a3s.service.CommonService;
+import fr.soe.a3s.service.RepositoryService;
 import fr.soe.a3s.ui.ExtensionFilter;
 import fr.soe.a3s.ui.Facade;
 import fr.soe.a3s.ui.UIConstants;
@@ -127,6 +129,8 @@ public class AutoConfigImportPanel extends JDialog implements UIConstants {
 		try {
 			CommonService commonService = new CommonService();
 			commonService.importAutoConfig(path);
+			RepositoryService repositoryService = new RepositoryService();
+			repositoryService.writeAll();
 			this.dispose();
 			this.facade.getMainPanel().updateProfilesMenu();
 			this.facade.getSyncPanel().init();
@@ -135,6 +139,9 @@ public class AutoConfigImportPanel extends JDialog implements UIConstants {
 			JOptionPane.showMessageDialog(facade.getMainPanel(),
 					"An error occured. \n Failed to import auto-config.",
 					"Import auto-config", JOptionPane.ERROR_MESSAGE);
+		} catch (WritingException e) {
+			JOptionPane.showMessageDialog(facade.getMainPanel(),
+					e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
 		}
 	}
 
