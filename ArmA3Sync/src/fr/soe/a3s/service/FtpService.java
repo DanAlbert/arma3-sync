@@ -63,7 +63,7 @@ public class FtpService implements DataAccessConstants {
 			ftpClientUpdate.disconnect();
 
 			if (updateVersionName != null) {
-				System.out.println(updateVersionName);
+				System.out.println("Update version = " + updateVersionName);
 
 				StringTokenizer stringTokenizer = new StringTokenizer(
 						updateVersionName, ".");

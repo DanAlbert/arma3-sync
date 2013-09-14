@@ -55,9 +55,9 @@ public abstract class AbstractProtocole implements Serializable {
 		if ("".equals(getLogin()) || getLogin() == null) {
 			throw new CheckException("Login field is empty!");
 		}
-		if ((getPassword().equals("")) && !getLogin().equals("anonymous")) {
-			throw new CheckException("Password field is empty!");
-		}
+//		if ((getPassword().equals("")) && !getLogin().equals("anonymous")) {
+//			throw new CheckException("Password field is empty!");
+//		}
 		if ("".equals(getPort()) || getPort() == null) {
 			throw new CheckException("Port field is empty!");
 		}

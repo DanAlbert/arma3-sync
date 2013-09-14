@@ -104,6 +104,7 @@ public class CommonService {
 				repositoryDAO.getMap().put(repository.getName(), repository);
 			}
 		}
+		
 	}
 
 	public String getWiki() {

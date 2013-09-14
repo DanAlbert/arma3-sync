@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
@@ -72,7 +73,7 @@ public class RepositoryDAO implements DataAccessConstants {
 			throw new LoadingException();
 		}
 	}
-
+	
 	public void write(Cipher cipher, String repositoryName)
 			throws WritingException {
 
@@ -131,5 +132,4 @@ public class RepositoryDAO implements DataAccessConstants {
 		}
 		return sync;
 	}
-	
 }

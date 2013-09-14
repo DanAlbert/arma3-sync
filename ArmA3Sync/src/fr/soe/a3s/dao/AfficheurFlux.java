@@ -8,7 +8,7 @@ import java.io.InputStreamReader;
 public class AfficheurFlux implements Runnable {
 	private final InputStream inputStream;
 
-	AfficheurFlux(InputStream inputStream) {
+	public AfficheurFlux(InputStream inputStream) {
 		this.inputStream = inputStream;
 	}
 

@@ -234,7 +234,7 @@ public class RepositoryBuilderDAO implements DataAccessConstants,
 			fWo.close();
 
 		} catch (Exception e) {
-			e.printStackTrace();
+			//e.printStackTrace();
 			throw new WritingException(e.getMessage());
 		}
 	}
