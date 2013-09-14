@@ -67,6 +67,14 @@ public class RepositoryService {
 			throw new LoadingException();
 		}
 	}
+	
+	public void writeAll() throws WritingException {
+		
+		for (Iterator<String> iter = repositoryDAO.getMap().keySet().iterator() ; iter.hasNext() ; ){
+			String repositoryName = iter.next();
+			write(repositoryName);
+		}
+	}
 
 	public void write(String repositoryName) throws WritingException {
 
@@ -193,7 +201,18 @@ public class RepositoryService {
 					+ " not found!");
 		}
 	}
-
+	
+	public void buildRepository(String repositoryName)
+			throws RepositoryException, WritingException {
+		
+		Repository repository = repositoryDAO.getMap().get(repositoryName);
+		if (repository == null) {
+			throw new RepositoryException("Repository " + repositoryName
+					+ " not found!");
+		}
+		repositoryBuilderDAO.buildRepository(repository);
+	}
+	
 	public void buildRepository(String repositoryName, String path)
 			throws RepositoryException, WritingException {
 
@@ -979,4 +998,5 @@ public class RepositoryService {
 		treeLeafDTO.setSelected(treeLeaf.isSelected());
 		return treeLeafDTO;
 	}
+
 }
