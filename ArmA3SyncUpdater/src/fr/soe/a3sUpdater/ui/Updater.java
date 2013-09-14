@@ -153,6 +153,7 @@ public class Updater extends JFrame implements ActionListener, UIConstants {
 			jTextAreaUpdating.setText("Updating to " + TARGET_APPLICATION_NAME
 					+ " " + version);
 			jTextAreaAction.setText("Downloading files...");
+			System.out.println("Downloading files...");
 			service.getFtpDAO().getDos().addObservateur(new Observateur() {
 				public void update(int value) {
 					progressBar.setValue(value);

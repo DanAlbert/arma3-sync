@@ -21,7 +21,7 @@ public class DownloadCountingOutputStream extends CountingOutputStream implement
     @Override
     protected void afterWrite(int n) throws IOException {
 		super.afterWrite(n);
-		System.out.println(getCount());
+		//System.out.println(getCount());
 		count = getCount();
 		updateObservateur();
     }
