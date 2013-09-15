@@ -49,6 +49,8 @@ public class Console {
 				+ ": check repository synchronization");
 		System.out.println(ConsoleCommands.DELETE.toString()
 				+ ": delete repository");
+		System.out.println(ConsoleCommands.LIST.toString()
+				+ ": list repositories");
 		System.out.println(ConsoleCommands.UPDATE.toString()
 				+ ": check for updates");
 		System.out.println(ConsoleCommands.COMMANDS.toString()
@@ -155,8 +157,8 @@ public class Console {
 			}
 
 			System.out.println("Repository name: " + name);
-			System.out.println("Url: " + url);
-			System.out.println("Auto-config url: " + autoconfig);
+			System.out.println("Url: ftp://" + url);
+			System.out.println("Auto-config url: ftp://" + autoconfig);
 			System.out.println("FTP folder path: " + path);
 			System.out.println("");
 		}
