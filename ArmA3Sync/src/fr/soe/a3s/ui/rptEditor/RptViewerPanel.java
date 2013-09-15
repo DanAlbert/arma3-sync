@@ -94,16 +94,14 @@ public class RptViewerPanel extends JFrame implements UIConstants {
 		
 		String arma3RPTfolderPath = configurationService.getRptPath();
 
-		JFileChooser fc = null;
+		JFileChooser fc = new JFileChooser();
 		if (arma3RPTfolderPath != null) {
 			File file = new File(arma3RPTfolderPath);
 			if (file.exists()) {
 				fc = new JFileChooser(arma3RPTfolderPath);
 			}
-		} else {
-			fc = new JFileChooser();
 		}
-		fc.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
+		fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
 		int returnVal = fc.showOpenDialog(RptViewerPanel.this);
 		if (returnVal == JFileChooser.APPROVE_OPTION) {
 			File rpt = fc.getSelectedFile();
