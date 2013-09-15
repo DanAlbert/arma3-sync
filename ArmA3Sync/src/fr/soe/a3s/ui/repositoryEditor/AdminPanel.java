@@ -340,6 +340,12 @@ public class AdminPanel extends JPanel implements UIConstants {
 			/* Check consistency between repository url and ftp folder path */
 			String ftpFolderName = file.getName();
 			String url = repositoryDTO.getFtpDTO().getUrl();
+			if (url.endsWith("/")) {//there is / at the end of url
+				int lastIndex = url.lastIndexOf("/");
+				if (lastIndex!=-1){
+					url = url.substring(0, lastIndex);
+				}
+			}
 			int index = url.lastIndexOf("/");
 			if (index != -1) {// There is a folder after the root
 				String folderName = url.substring(index + 1);
@@ -349,7 +355,7 @@ public class AdminPanel extends JPanel implements UIConstants {
 									facade.getMainPanel(),
 									"The selected FTP shared folder "
 											+ file.getName()
-											+ "\n does not correspond with the repository url "
+											+ "\n does not correspond with the repository url: \n"
 											+ url, "Build repository",
 									JOptionPane.WARNING_MESSAGE);
 					textFieldftpSharedFolderLocation.setText("");
