@@ -259,7 +259,7 @@ public class ExternalApplicationsPanel extends JPanel implements UIConstants {
 
 	class MyTableModel extends AbstractTableModel {
 		private String[] columnNames = { "Active", "Description",
-				"Executable/.bat/.sh Path", "Parameters" };
+				".exe/.bat/.sh Path", "Parameters" };
 		private Object[][] data = {};
 
 		public int getColumnCount() {
