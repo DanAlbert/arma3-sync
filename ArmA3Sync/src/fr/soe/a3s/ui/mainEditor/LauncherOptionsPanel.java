@@ -61,11 +61,14 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener {
 	private JComboBox comboBoxProfiles, comboBoxMaxMemory, comboBoxCpuCount;
 	private JCheckBox checkBoxProfiles, checkBoxNoPause, checkBoxWindowMode,
 			checkBoxShowScriptErrors, checkBoxRunBeta, checkBoxMaxMemory,
-			checkBoxCpuCount, checkBoxNoSplashScreen, checkBoxDefaultWorld,checkBoxNoLogs;
+			checkBoxCpuCount, checkBoxNoSplashScreen, checkBoxDefaultWorld,
+			checkBoxNoLogs;
 	private ConfigurationService configurationService = new ConfigurationService();
 	private ProfileService profileService = new ProfileService();
 	private AddonService addonService = new AddonService();
 	private LaunchService launchService = new LaunchService();
+	private JCheckBox checkBoxExThreads;
+	private JComboBox comboBoxExThreads;
 
 	public LauncherOptionsPanel(Facade facade) {
 		this.facade = facade;
@@ -121,7 +124,8 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener {
 						File[] subf = file.listFiles();
 						if (subf != null) {
 							for (int i = 0; i < subf.length; i++) {
-								listProfileNames.add(subf[i].getName().replaceAll("%20", " "));
+								listProfileNames.add(subf[i].getName()
+										.replaceAll("%20", " "));
 							}
 						}
 					}
@@ -172,8 +176,10 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener {
 		performancePanel.add(vBox);
 		{
 			checkBoxMaxMemory = new JCheckBox();
-			checkBoxMaxMemory.setText("Max Memory:   ");
+			checkBoxMaxMemory.setText("Max Memory:");
+			checkBoxMaxMemory.setPreferredSize(new java.awt.Dimension(90, 23));
 			comboBoxMaxMemory = new JComboBox();
+			comboBoxMaxMemory.setFocusable(false);
 			ComboBoxModel maxMemoryModel = new DefaultComboBoxModel(
 					new String[] {
 							"",
@@ -181,7 +187,6 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener {
 							Integer.toString(MaxMemoryValues.MEDIUM.getValue()),
 							Integer.toString(MaxMemoryValues.MAX.getValue()) });
 			comboBoxMaxMemory.setModel(maxMemoryModel);
-			comboBoxMaxMemory.setPreferredSize(new Dimension(95, 8));
 			Box hBox = Box.createHorizontalBox();
 			hBox.add(checkBoxMaxMemory);
 			hBox.add(comboBoxMaxMemory);
@@ -189,8 +194,10 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener {
 		}
 		{
 			checkBoxCpuCount = new JCheckBox();
-			checkBoxCpuCount.setText("CPU Count:      ");
+			checkBoxCpuCount.setText("CPU Count:");
+			checkBoxCpuCount.setPreferredSize(new java.awt.Dimension(90, 23));
 			comboBoxCpuCount = new JComboBox();
+			comboBoxCpuCount.setFocusable(false);
 			Runtime runtime = Runtime.getRuntime();
 			int nbProcessors = runtime.availableProcessors();
 			String[] tab = new String[nbProcessors + 1];
@@ -200,10 +207,23 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener {
 			}
 			ComboBoxModel cpuCountModel = new DefaultComboBoxModel(tab);
 			comboBoxCpuCount.setModel(cpuCountModel);
-			comboBoxCpuCount.setPreferredSize(new Dimension(95, 8));
 			Box hBox = Box.createHorizontalBox();
 			hBox.add(checkBoxCpuCount);
 			hBox.add(comboBoxCpuCount);
+			vBox.add(hBox);
+		}
+		{
+			checkBoxExThreads = new JCheckBox();
+			checkBoxExThreads.setText("exThreads:");
+			checkBoxExThreads.setPreferredSize(new java.awt.Dimension(90, 23));
+			comboBoxExThreads = new JComboBox();
+			comboBoxExThreads.setFocusable(false);
+			ComboBoxModel exThreadsModel = new DefaultComboBoxModel(
+					new String[] {"","0", "1", "3", "5", "7" });
+			comboBoxExThreads.setModel(exThreadsModel);
+			Box hBox = Box.createHorizontalBox();
+			hBox.add(checkBoxExThreads);
+			hBox.add(comboBoxExThreads);
 			vBox.add(hBox);
 		}
 		{
@@ -344,6 +364,12 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener {
 				comboBoxCpuCountPerformed();
 			}
 		});
+		comboBoxExThreads.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				comboBoxExThreadsPerformed();
+			}
+		});
 		checkBoxNoSplashScreen.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -362,7 +388,7 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener {
 				checkBoxNoLogsPerformed();
 			}
 		});
-		
+
 		buttonSelectArmAExe.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
@@ -418,6 +444,11 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener {
 			comboBoxCpuCount.setSelectedItem(Integer
 					.toString(launcherOptionsDTO.getCpuCountSelection()));
 			checkBoxCpuCount.setSelected(true);
+		}
+		
+		if (launcherOptionsDTO.getExThreadsSelection() != null) {
+			comboBoxExThreads.setSelectedItem(launcherOptionsDTO.getExThreadsSelection());
+			checkBoxExThreads.setSelected(true);
 		}
 
 		checkBoxNoSplashScreen.setSelected(launcherOptionsDTO
@@ -486,11 +517,6 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener {
 		updateRunParameters();
 	}
 
-	private void checkBoxRunPerformed() {
-		configurationService.setCheckBoxRun(checkBoxRunBeta.isSelected());
-		updateRunParameters();
-	}
-
 	private void checkBoxMaxMemoryPerformed() {
 		if (!checkBoxMaxMemory.isSelected()) {
 			comboBoxMaxMemory.setSelectedIndex(0);
@@ -536,6 +562,22 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener {
 		}
 		updateRunParameters();
 	}
+	
+	private void comboBoxExThreadsPerformed() {
+		
+		String exThreads = (String) comboBoxExThreads.getSelectedItem();
+		if (exThreads==null){
+			return;
+		}
+		if (!exThreads.isEmpty()) {
+			checkBoxExThreads.setSelected(true);
+			configurationService.setExThreads(exThreads);
+		}else {
+			checkBoxExThreads.setSelected(false);
+			configurationService.setExThreads(null);
+		}
+		updateRunParameters();
+	}
 
 	private void checkBoxNoSplashScreenPerformed() {
 		configurationService.setNoSplashScreen(checkBoxNoSplashScreen
@@ -547,7 +589,7 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener {
 		configurationService.setDefaultWorld(checkBoxDefaultWorld.isSelected());
 		updateRunParameters();
 	}
-	
+
 	private void checkBoxNoLogsPerformed() {
 		configurationService.setNoLogs(checkBoxNoLogs.isSelected());
 		updateRunParameters();

@@ -204,6 +204,11 @@ public class ConfigurationService {
 		}
 	}
 
+	public void setExThreads(String exThreads) {
+		configurationDAO.getConfiguration().getLauncherOptions()
+				.setExThreadsSelection(exThreads);
+	}
+
 	public void setNoSplashScreen(boolean value) {
 		configurationDAO.getConfiguration().getLauncherOptions()
 				.setNoSplashScreen(value);
@@ -217,44 +222,6 @@ public class ConfigurationService {
 	public void setNoLogs(boolean value) {
 		configurationDAO.getConfiguration().getLauncherOptions()
 				.setNoLogs(value);
-	}
-
-	public void saveLaunchOptions(LauncherOptionsDTO launcherOptionsDTO) {
-
-		/* Launcher options */
-		configurationDAO.getConfiguration().getLauncherOptions()
-				.setGameProfile(launcherOptionsDTO.getGameProfile());
-		configurationDAO.getConfiguration().getLauncherOptions()
-				.setShowScriptErrors(launcherOptionsDTO.isShowScriptError());
-		configurationDAO.getConfiguration().getLauncherOptions()
-				.setWindowMode(launcherOptionsDTO.isWindowMode());
-		configurationDAO.getConfiguration().getLauncherOptions()
-				.setNoPause(launcherOptionsDTO.isNoPause());
-		configurationDAO.getConfiguration().getLauncherOptions()
-				.setRunBeta(launcherOptionsDTO.isRunBeta());
-
-		/* Performance */
-		configurationDAO
-				.getConfiguration()
-				.getLauncherOptions()
-				.setCpuCountSelection(launcherOptionsDTO.getCpuCountSelection());
-		configurationDAO.getConfiguration().getLauncherOptions()
-				.setDefaultWorld(launcherOptionsDTO.isDefaultWorld());
-		configurationDAO.getConfiguration().getLauncherOptions()
-				.setNoLogs(launcherOptionsDTO.isNoLogs());
-		configurationDAO
-				.getConfiguration()
-				.getLauncherOptions()
-				.setMaxMemorySelection(
-						launcherOptionsDTO.getMaxMemorySelection());
-		configurationDAO.getConfiguration().getLauncherOptions()
-				.setNoSplashScreen(launcherOptionsDTO.isNoSplashScreen());
-
-		/* Executable locations */
-		configurationDAO.getConfiguration().getLauncherOptions()
-				.setArma3ExePath(launcherOptionsDTO.getArma3ExePath());
-		configurationDAO.getConfiguration().getLauncherOptions()
-				.setSteamExePath(launcherOptionsDTO.getSteamExePath());
 	}
 
 	public String determineArmA3Path() {
@@ -439,8 +406,6 @@ public class ConfigurationService {
 
 		launcherOptionsDTO.setArma3ExePath(launcherOptions.getArma3ExePath());
 		launcherOptionsDTO.setSteamExePath(launcherOptions.getSteamExePath());
-		launcherOptionsDTO.setCpuCountSelection(launcherOptions
-				.getCpuCountSelection());
 		launcherOptionsDTO.setDefaultWorld(launcherOptions.isDefaultWorld());
 		launcherOptionsDTO.setNoLogs(launcherOptions.isNologs());
 		launcherOptionsDTO.setGameProfile(launcherOptions.getGameProfile());
@@ -448,10 +413,11 @@ public class ConfigurationService {
 				.getMaxMemorySelection());
 		launcherOptionsDTO.setCpuCountSelection(launcherOptions
 				.getCpuCountSelection());
+		launcherOptionsDTO.setExThreadsSelection(launcherOptions
+				.getExThreadsSelection());
 		launcherOptionsDTO.setNoPause(launcherOptions.isNoPause());
 		launcherOptionsDTO
 				.setNoSplashScreen(launcherOptions.isNoSplashScreen());
-		launcherOptionsDTO.setRunBeta(launcherOptions.isRunBeta());
 		launcherOptionsDTO.setShowScriptError(launcherOptions
 				.isShowScriptErrors());
 		launcherOptionsDTO.setWindowMode(launcherOptions.isWindowMode());
@@ -491,5 +457,4 @@ public class ConfigurationService {
 		aiaOptionsDTO.setAllinArmaPath(aiaOptions.getAllinArmaPath());
 		return aiaOptionsDTO;
 	}
-
 }

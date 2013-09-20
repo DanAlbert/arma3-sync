@@ -422,6 +422,9 @@ public class LaunchService {
 		if (launcherOptions.getCpuCountSelection() != 0) {
 			params.add("-cpuCount=" + launcherOptions.getCpuCountSelection());
 		}
+		if (launcherOptions.getExThreadsSelection() != null) {
+			params.add("-exThreads=" + launcherOptions.getExThreadsSelection());
+		}
 		if (launcherOptions.isNoSplashScreen()) {
 			params.add("-nosplash");
 		}

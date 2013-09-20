@@ -15,6 +15,7 @@ public class LauncherOptions implements Serializable {
 	private boolean xpCompatibilityMode = false;
 	private String maxMemorySelection;
 	private int cpuCountSelection = 0;
+	private String exThreadsSelection;
 	private boolean noSplashScreen = false;
 	private boolean defaultWorld = false;
 	private boolean nologs = false;
@@ -128,4 +129,11 @@ public class LauncherOptions implements Serializable {
 		return steamExePath;
 	}
 
+	public String getExThreadsSelection() {
+		return exThreadsSelection;
+	}
+
+	public void setExThreadsSelection(String exThreadsSelection) {
+		this.exThreadsSelection = exThreadsSelection;
+	}
 }

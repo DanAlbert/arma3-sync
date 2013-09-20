@@ -8,9 +8,9 @@ public class LauncherOptionsDTO {
 	private boolean showScriptError;
 	private boolean noPause;
 	private boolean windowMode;
-	private boolean runBeta;
 	private String maxMemorySelection;
 	private int cpuCountSelection;
+	private String exThreadsSelection;
 	private boolean noSplashScreen;
 	private boolean defaultWorld;
 	private boolean noLogs;
@@ -42,12 +42,6 @@ public class LauncherOptionsDTO {
 	}
 	public void setWindowMode(boolean windowMode) {
 		this.windowMode = windowMode;
-	}
-	public boolean isRunBeta() {
-		return runBeta;
-	}
-	public void setRunBeta(boolean runBeta) {
-		this.runBeta = runBeta;
 	}
 	public String getMaxMemorySelection() {
 		return maxMemorySelection;
@@ -91,5 +85,10 @@ public class LauncherOptionsDTO {
 	public void setNoLogs(boolean noLogs) {
 		this.noLogs = noLogs;
 	}
-
+	public String getExThreadsSelection() {
+		return exThreadsSelection;
+	}
+	public void setExThreadsSelection(String exThreadsSelection) {
+		this.exThreadsSelection = exThreadsSelection;
+	}
 }
