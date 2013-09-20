@@ -109,8 +109,8 @@ public class AddonsPanel extends JPanel implements UIConstants {
 		groupCheckBox.add(checkBoxTree);
 		groupCheckBox.add(checkBoxList);
 		buttonRefresh = new JButton("Refresh");
-		ImageIcon addIcon = new ImageIcon(REFRESH);
-		buttonRefresh.setIcon(addIcon);
+		ImageIcon refreshIcon = new ImageIcon(REFRESH);
+		buttonRefresh.setIcon(refreshIcon);
 		controlPanel1.add(checkBoxTree);
 		controlPanel1.add(checkBoxList);
 		controlPanel1.add(buttonRefresh);
@@ -240,7 +240,6 @@ public class AddonsPanel extends JPanel implements UIConstants {
 			public void treeExpanded(TreeExpansionEvent event) {
 				onArbre1Expanded(event.getPath());
 			}
-
 			public void treeCollapsed(TreeExpansionEvent event) {
 				onArbre1Collapsed(event.getPath());
 			}
@@ -521,7 +520,7 @@ public class AddonsPanel extends JPanel implements UIConstants {
 		}
 	}
 
-	private void addPerformed() {
+	public void addPerformed() {
 
 		TreeNodeDTO[] treeNodeDTOs = getSelectedNode();
 
@@ -548,7 +547,7 @@ public class AddonsPanel extends JPanel implements UIConstants {
 		}
 	}
 
-	private void renamePormed() {
+	public void renamePormed() {
 
 		TreeNodeDTO[] nodes = getSelectedNode();
 		if (nodes == null) {
@@ -568,7 +567,7 @@ public class AddonsPanel extends JPanel implements UIConstants {
 		}
 	}
 
-	private void removePerformed() {
+	public void removePerformed() {
 
 		TreeNodeDTO[] nodes = getSelectedNode();
 		if (nodes == null) {
@@ -809,5 +808,4 @@ public class AddonsPanel extends JPanel implements UIConstants {
 	public JCheckBox getCheckBoxTree() {
 		return checkBoxTree;
 	}
-
 }
