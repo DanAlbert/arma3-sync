@@ -73,7 +73,7 @@ public class MainPanel extends JFrame implements UIConstants {
 	private static final String TAB_TITLE_EXTENAL_APPS = "External Apps";
 	private static final String TAB_TITLE_SYNC = "Repositories";
 	private JMenuBar menuBar;
-	private JMenu menuProfiles, menuHelp, menuTools, menuItemAutoConfig;
+	private JMenu menuProfiles,menuGroups, menuHelp, menuTools, menuItemAutoConfig;
 	private JMenuItem menuItemEdit, menuItemHelp, menuItemuUpdates,
 			menuItemAbout, menuItemPreferences, menuItemACREwizard,
 			menuItemRPTviewer, menuItemAiAwizard, menuItemServerTuner,
@@ -92,6 +92,9 @@ public class MainPanel extends JFrame implements UIConstants {
 	private MenuItem launchItem, exitItem;
 	private Map<String, Integer> mapTabIndexes = new LinkedHashMap<String, Integer>();
 	private Container contenu;
+	private JMenuItem menuItemAddGroup;
+	private JMenuItem menuItemRenameGroup;
+	private JMenuItem menuItemRemoveGroup;
 
 	public MainPanel(Facade facade) {
 
@@ -116,6 +119,15 @@ public class MainPanel extends JFrame implements UIConstants {
 		menuProfiles.add(menuItemEdit);
 		menuProfiles.add(s);
 
+		menuGroups = new JMenu("Groups");
+		menuItemAddGroup = new JMenuItem("Add");
+		menuItemRenameGroup = new JMenuItem("Rename");
+		menuItemRemoveGroup = new JMenuItem("Remove");
+		menuGroups.add(menuItemAddGroup);
+		menuGroups.add(menuItemRenameGroup);
+		menuGroups.add(menuItemRemoveGroup);
+		menuBar.add(menuGroups);
+		
 		menuTools = new JMenu("Tools");
 		menuBar.add(menuTools);
 		menuItemACREwizard = new JMenuItem("ACRE installer",
@@ -126,9 +138,6 @@ public class MainPanel extends JFrame implements UIConstants {
 		menuTools.add(menuItemAiAwizard);
 		menuItemRPTviewer = new JMenuItem("RPT viewer", new ImageIcon(RPT));
 		menuTools.add(menuItemRPTviewer);
-		// menuItemServerTuner = new JMenuItem("Server tuner",
-		// new ImageIcon(ARMA3));
-		// menuTools.add(menuItemServerTuner);
 		menuHelp = new JMenu("Help");
 		menuItemHelp = new JMenuItem("Online Help", new ImageIcon(HELP));
 		menuHelp.add(menuItemHelp);
@@ -295,6 +304,25 @@ public class MainPanel extends JFrame implements UIConstants {
 				}
 			});
 		}
+		menuItemAddGroup.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				menuItemAddGroupPerformed();
+			}
+		});
+		menuItemRenameGroup.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				menuItemRenameGroupPerformed();
+			}
+		});
+		menuItemRemoveGroup.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				menuItemRemoveGroupPerformed();
+			}
+		});
+		
 		// Add Listeners
 		this.addWindowListener(new WindowListener() {
 			@Override
@@ -403,7 +431,19 @@ public class MainPanel extends JFrame implements UIConstants {
 	}
 
 	/* Menu Actions */
-
+	
+	private void menuItemAddGroupPerformed() {
+		facade.getAddonsPanel().addPerformed();
+	}
+	
+	private void menuItemRenameGroupPerformed() {
+		facade.getAddonsPanel().renamePormed();
+	}
+	
+	private void menuItemRemoveGroupPerformed() {
+		facade.getAddonsPanel().removePerformed();
+	}
+	
 	private void menuItemEditPerformed() {
 
 		facade.getAddonsPanel().saveAddonGroups();
