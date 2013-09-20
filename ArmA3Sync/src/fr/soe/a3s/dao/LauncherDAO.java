@@ -67,6 +67,7 @@ public class LauncherDAO implements DataAccessConstants {
 		// new Thread(fluxErreur).start();
 	}
 
+	@Deprecated
 	public void run(final String exePath, final String runParameters) {
 
 		Thread t = new Thread(new Runnable() {
@@ -102,31 +103,74 @@ public class LauncherDAO implements DataAccessConstants {
 		t.start();
 	}
 
-	public Callable<Integer> call(final String exePath,
-			final List<String> params) throws Exception {
+	public Callable<Integer> call(final String executableName,
+			final String exePath, final List<String> params) throws Exception {
 
 		Callable<Integer> c = new Callable<Integer>() {
 			@Override
 			public Integer call() throws Exception {
-				int nbParameters = params.size();
-				String[] cmd = new String[1 + nbParameters];
-				cmd[0] = exePath;
-				for (int i = 0; i < nbParameters; i++) {
-					cmd[1 + i] = params.get(i).trim();
+
+				int response = 0;
+
+				if (executableName.contains(".exe")) {
+					int nbParameters = params.size();
+					String[] cmd = new String[1 + nbParameters];
+					cmd[0] = exePath;
+					for (int i = 0; i < nbParameters; i++) {
+						cmd[1 + i] = params.get(i).trim();
+					}
+					Process p = Runtime.getRuntime().exec(cmd);
+					AfficheurFlux fluxSortie = new AfficheurFlux(
+							p.getInputStream());
+					AfficheurFlux fluxErreur = new AfficheurFlux(
+							p.getErrorStream());
+					new Thread(fluxSortie).start();
+					new Thread(fluxErreur).start();
+					p.waitFor();
+					response = p.exitValue();
+				} else if (executableName.contains(".bat")) {
+					String osName = System.getProperty("os.name");
+					if (osName.contains("Windows")) {
+						String[] cmd = new String[4];
+						cmd[0] = "cmd.exe";
+						cmd[1] = "/C";
+						cmd[2] = "start";
+						cmd[3] = exePath;
+						Process p = Runtime.getRuntime().exec(cmd);
+						AfficheurFlux fluxSortie = new AfficheurFlux(
+								p.getInputStream());
+						AfficheurFlux fluxErreur = new AfficheurFlux(
+								p.getErrorStream());
+						new Thread(fluxSortie).start();
+						new Thread(fluxErreur).start();
+						p.waitFor();
+						response = p.exitValue();
+					}
+				} else if (executableName.contains(".sh")) {
+					String osName = System.getProperty("os.name");
+					if (osName.contains("Linux")) {
+						String[] cmd = new String[3];
+						cmd[0] = "/bin/bash";
+						cmd[1] = "-c";
+						cmd[2] = exePath;
+						Process p = Runtime.getRuntime().exec(cmd);
+						AfficheurFlux fluxSortie = new AfficheurFlux(
+								p.getInputStream());
+						AfficheurFlux fluxErreur = new AfficheurFlux(
+								p.getErrorStream());
+						new Thread(fluxSortie).start();
+						new Thread(fluxErreur).start();
+						p.waitFor();
+						response = p.exitValue();
+					}
 				}
-				Process p = Runtime.getRuntime().exec(cmd);
-				AfficheurFlux fluxSortie = new AfficheurFlux(p.getInputStream());
-				AfficheurFlux fluxErreur = new AfficheurFlux(p.getErrorStream());
-				new Thread(fluxSortie).start();
-				new Thread(fluxErreur).start();
-				p.waitFor();
-				return p.exitValue();
+				return response;
 			}
 		};
 		return c;
-
 	}
 
+	@Deprecated
 	public void killSteam(String executableName) {
 
 		try {

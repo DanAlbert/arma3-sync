@@ -87,8 +87,8 @@ public class LaunchService {
 						List<String> params = new ArrayList<String>();
 						params.add(runParameters.trim());
 						try {
-							Callable<Integer> c = launcherDAO.call(launchPath,
-									params);
+							Callable<Integer> c = launcherDAO.call(executableName,
+									launchPath, params);
 							runnables.add(c);
 						} catch (Exception e) {
 							e.printStackTrace();
@@ -171,10 +171,10 @@ public class LaunchService {
 		List<String> params = determineRunParameters();
 		launcherDAO = new LauncherDAO();
 
-		// launcherDAO.run(arma3Path, runParameters);
 		List<Callable<Integer>> runnables = new ArrayList<Callable<Integer>>();
 		try {
-			Callable<Integer> c = launcherDAO.call(arma3Path, params);
+			String executableName = new File(arma3Path).getName();
+			Callable<Integer> c = launcherDAO.call(executableName,arma3Path, params);
 			runnables.add(c);
 			ExecutorService executor = Executors.newSingleThreadExecutor();
 			executor.submit(c);
@@ -357,37 +357,44 @@ public class LaunchService {
 				 * 
 				 * @AllInArma\PostA3"
 				 */
-				
+
 				String allInArma = " -mod=" + path + "\\ProductDummies" + ";";
-				
-				if (aiAOptions.getArmaPath()!=null && !"".equals(aiAOptions.getArmaPath())){
-					allInArma = allInArma + aiAOptions.getArmaPath() + "\\DBE1" + ";";
+
+				if (aiAOptions.getArmaPath() != null
+						&& !"".equals(aiAOptions.getArmaPath())) {
+					allInArma = allInArma + aiAOptions.getArmaPath() + "\\DBE1"
+							+ ";";
 				}
-				
-				allInArma = allInArma + path+ "\\A1Dummies" + ";";
-				
-				if (aiAOptions.getArma2Path()!=null && !"".equals(aiAOptions.getArma2Path())){
+
+				allInArma = allInArma + path + "\\A1Dummies" + ";";
+
+				if (aiAOptions.getArma2Path() != null
+						&& !"".equals(aiAOptions.getArma2Path())) {
 					allInArma = allInArma + aiAOptions.getArma2Path() + ";";
 				}
-				
-				if (aiAOptions.getArma2OAPath()!=null && !"".equals(aiAOptions.getArma2OAPath())){
-					allInArma = allInArma + aiAOptions.getArma2OAPath() + ";" + aiAOptions.getArma2OAPath() + "\\Expansion" + ";";
+
+				if (aiAOptions.getArma2OAPath() != null
+						&& !"".equals(aiAOptions.getArma2OAPath())) {
+					allInArma = allInArma + aiAOptions.getArma2OAPath() + ";"
+							+ aiAOptions.getArma2OAPath() + "\\Expansion" + ";";
 				}
-				
-				if (aiAOptions.getTohPath()!=null && !"".equals(aiAOptions.getTohPath())){
+
+				if (aiAOptions.getTohPath() != null
+						&& !"".equals(aiAOptions.getTohPath())) {
 					allInArma = allInArma + aiAOptions.getTohPath() + ";";
 				}
-				
-				allInArma = allInArma + "@A1A2ObjectMerge;" + parentArma3ExePath
-						+ ";" + path + "\\Core" + ";" + path + "\\PostA3" + ";";
-				
-//				String allInArma = " -mod=" + path + "\\ProductDummies" + ";"
-//						+ aiAOptions.getArmaPath() + "\\DBE1" + ";" + path
-//						+ "\\A1Dummies" + ";" + aiAOptions.getArma2Path() + ";"
-//						+ aiAOptions.getArma2OAPath() + ";"
-//						+ aiAOptions.getArma2OAPath() + "\\Expansion" + ";"
-//						+ aiAOptions.getTohPath() + ";" + parentArma3ExePath
-//						+ ";" + path + "\\Core" + ";" + path + "\\PostA3" + ";";
+
+				allInArma = allInArma + "@A1A2ObjectMerge;"
+						+ parentArma3ExePath + ";" + path + "\\Core" + ";"
+						+ path + "\\PostA3" + ";";
+
+				// String allInArma = " -mod=" + path + "\\ProductDummies" + ";"
+				// + aiAOptions.getArmaPath() + "\\DBE1" + ";" + path
+				// + "\\A1Dummies" + ";" + aiAOptions.getArma2Path() + ";"
+				// + aiAOptions.getArma2OAPath() + ";"
+				// + aiAOptions.getArma2OAPath() + "\\Expansion" + ";"
+				// + aiAOptions.getTohPath() + ";" + parentArma3ExePath
+				// + ";" + path + "\\Core" + ";" + path + "\\PostA3" + ";";
 				params.add(allInArma);
 			}
 		}
@@ -421,10 +428,10 @@ public class LaunchService {
 		if (launcherOptions.isDefaultWorld()) {
 			params.add("-world=empty");
 		}
-		if (launcherOptions.isNologs()){
+		if (launcherOptions.isNologs()) {
 			params.add("-nologs");
 		}
-		
+
 		// Join Server
 		String serverName = configuration.getServerName();
 		if (serverName != null) {

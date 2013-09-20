@@ -3,6 +3,7 @@ package fr.soe.a3s.ui.mainEditor;
 import java.awt.BorderLayout;
 import java.awt.Container;
 import java.awt.FlowLayout;
+import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
@@ -19,24 +20,25 @@ import javax.swing.JPanel;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.border.BevelBorder;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 
 import fr.soe.a3s.dto.configuration.ExternalApplicationDTO;
 import fr.soe.a3s.ui.Facade;
 import fr.soe.a3s.ui.UIConstants;
 
 /**
-* This code was edited or generated using CloudGarden's Jigloo
-* SWT/Swing GUI Builder, which is free for non-commercial
-* use. If Jigloo is being used commercially (ie, by a corporation,
-* company or business for any purpose whatever) then you
-* should purchase a license for each developer using Jigloo.
-* Please visit www.cloudgarden.com for details.
-* Use of Jigloo implies acceptance of these licensing terms.
-* A COMMERCIAL LICENSE HAS NOT BEEN PURCHASED FOR
-* THIS MACHINE, SO JIGLOO OR THIS CODE CANNOT BE USED
-* LEGALLY FOR ANY CORPORATE OR COMMERCIAL PURPOSE.
-*/
-public class ExternalApplicationsEditionPanel extends JDialog implements UIConstants {
+ * This code was edited or generated using CloudGarden's Jigloo SWT/Swing GUI
+ * Builder, which is free for non-commercial use. If Jigloo is being used
+ * commercially (ie, by a corporation, company or business for any purpose
+ * whatever) then you should purchase a license for each developer using Jigloo.
+ * Please visit www.cloudgarden.com for details. Use of Jigloo implies
+ * acceptance of these licensing terms. A COMMERCIAL LICENSE HAS NOT BEEN
+ * PURCHASED FOR THIS MACHINE, SO JIGLOO OR THIS CODE CANNOT BE USED LEGALLY FOR
+ * ANY CORPORATE OR COMMERCIAL PURPOSE.
+ */
+public class ExternalApplicationsEditionPanel extends JDialog implements
+		UIConstants {
 
 	private Facade facade;
 	private ExternalApplicationDTO externalApplicationDTO;
@@ -54,20 +56,22 @@ public class ExternalApplicationsEditionPanel extends JDialog implements UIConst
 		super(facade.getMainPanel(), "External Applications", true);
 		this.facade = facade;
 		this.externalApplicationDTO = externalApplicationDTO;
-		
+
 		this.facade.setExternalApplicationsEditionPanel(this);
-		this.setResizable(false);
-		this.setSize(385, 300);
+		this.setSize(450, 300);
 		setIconImage(ICON);
-		this.setLocation((int) facade.getMainPanel().getLocation().getX()
-				+ facade.getMainPanel().getWidth() / 2 - this.getWidth() / 2,
+
+		this.setLocation(
+				(int) facade.getMainPanel().getLocation().getX()
+						+ facade.getMainPanel().getWidth() / 2
+						- this.getWidth() / 2,
 				(int) facade.getMainPanel().getLocation().getY()
 						+ facade.getMainPanel().getHeight() / 2
 						- this.getHeight() / 2);
-		
+
 		this.setLayout(new BorderLayout());
 		Container contenu = getContentPane();
-		
+
 		{
 			JPanel controlPanel = new JPanel();
 			buttonOK = new JButton("OK");
@@ -94,7 +98,7 @@ public class ExternalApplicationsEditionPanel extends JDialog implements UIConst
 			{
 				textFieldDescription = new JTextField();
 				centerPanel.add(textFieldDescription);
-				textFieldDescription.setBounds(116, 21, 181, 25);
+				textFieldDescription.setBounds(116, 21, 237, 25);
 			}
 			{
 				labelExecutablePath = new JLabel();
@@ -105,20 +109,23 @@ public class ExternalApplicationsEditionPanel extends JDialog implements UIConst
 			{
 				textFieldExecutablePath = new JTextField();
 				centerPanel.add(textFieldExecutablePath);
-				textFieldExecutablePath.setBounds(116, 57, 181, 25);
-				textFieldExecutablePath .setEnabled(false);
+				textFieldExecutablePath.setBounds(116, 57, 237, 25);
+				textFieldExecutablePath.setEnabled(false);
 			}
 			{
 				textAreaParameters = new JTextArea();
 				centerPanel.add(textAreaParameters);
-				textAreaParameters.setBounds(116, 97, 255, 137);
-				textAreaParameters.setBorder(BorderFactory.createEtchedBorder(BevelBorder.LOWERED));
+				textAreaParameters.setBounds(116, 97, 311, 132);
+				textAreaParameters.setBorder(BorderFactory
+						.createEtchedBorder(BevelBorder.LOWERED));
+				textAreaParameters.setFont(new Font("Tohama", Font.ITALIC, 11));
+				textAreaParameters.setLineWrap(true);
 			}
 			{
 				buttonSelect = new JButton();
 				centerPanel.add(buttonSelect);
 				buttonSelect.setText("Select");
-				buttonSelect.setBounds(303, 57, 68, 26);
+				buttonSelect.setBounds(359, 57, 68, 26);
 			}
 			{
 				labelParameters = new JLabel();
@@ -156,32 +163,35 @@ public class ExternalApplicationsEditionPanel extends JDialog implements UIConst
 
 	private void init() {
 		textFieldDescription.setText(externalApplicationDTO.getName());
-		textFieldExecutablePath.setText(externalApplicationDTO.getExecutablePath());
+		textFieldExecutablePath.setText(externalApplicationDTO
+				.getExecutablePath());
 		textAreaParameters.setText(externalApplicationDTO.getParameters());
 	}
-	
+
 	private void buttonSelectPerformed() {
 		JFileChooser fc = new JFileChooser();
 		fc.setLocale(Locale.ENGLISH);
-		int returnVal = fc.showOpenDialog(ExternalApplicationsEditionPanel.this);
-		
+		int returnVal = fc
+				.showOpenDialog(ExternalApplicationsEditionPanel.this);
+
 		if (returnVal == JFileChooser.APPROVE_OPTION) {
-			File file =	 fc.getSelectedFile();
+			File file = fc.getSelectedFile();
 			textFieldExecutablePath.setText(file.getAbsolutePath());
 		}
 	}
 
 	private void buttonOKPerformed() {
 		externalApplicationDTO.setName(textFieldDescription.getText());
-		externalApplicationDTO.setExecutablePath(textFieldExecutablePath.getText());
+		externalApplicationDTO.setExecutablePath(textFieldExecutablePath
+				.getText());
 		externalApplicationDTO.setParameters(textAreaParameters.getText());
 		this.dispose();
 	}
-	
+
 	private void buttonCancelPerformed() {
 		this.dispose();
 	}
-	
+
 	private void menuExitPerformed() {
 		this.dispose();
 	}

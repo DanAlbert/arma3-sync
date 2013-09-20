@@ -6,8 +6,6 @@ import java.awt.Component;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.util.Iterator;
 import java.util.List;
 
@@ -15,6 +13,7 @@ import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -260,7 +259,7 @@ public class ExternalApplicationsPanel extends JPanel implements UIConstants {
 
 	class MyTableModel extends AbstractTableModel {
 		private String[] columnNames = { "Active", "Description",
-				"Executable Path", "Parameters" };
+				"Executable/.bat/.sh Path", "Parameters" };
 		private Object[][] data = {};
 
 		public int getColumnCount() {
