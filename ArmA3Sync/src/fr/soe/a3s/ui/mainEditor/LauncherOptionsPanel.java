@@ -268,8 +268,6 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener {
 		additionalParametersTextArea
 				.setFont(new Font("Tohama", Font.ITALIC, 11));
 		additionalParametersTextArea.setLineWrap(true);
-		additionalParametersTextArea
-				.setFont(new Font("Tohama", Font.PLAIN, 11));
 		additionalParametersTextArea.setBorder(BorderFactory
 				.createBevelBorder(BevelBorder.LOWERED));
 		scrollPaneAditionalParameters = new JScrollPane(
