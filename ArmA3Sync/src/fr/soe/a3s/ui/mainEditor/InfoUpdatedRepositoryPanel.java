@@ -100,6 +100,7 @@ public class InfoUpdatedRepositoryPanel extends JDialog implements UIConstants {
 		if (tab.length != 0) {
 			list.setSelectedIndex(0);
 			buttonUpdateNow.setEnabled(true);
+			getRootPane().setDefaultButton(buttonUpdateNow);
 		}
 	}
 
