@@ -6,6 +6,7 @@ import fr.soe.a3s.ui.mainEditor.AddonsPanel;
 import fr.soe.a3s.ui.mainEditor.ExternalApplicationsEditionPanel;
 import fr.soe.a3s.ui.mainEditor.ExternalApplicationsPanel;
 import fr.soe.a3s.ui.mainEditor.InfoPanel;
+import fr.soe.a3s.ui.mainEditor.InfoUpdatedRepositoryPanel;
 import fr.soe.a3s.ui.mainEditor.LaunchPanel;
 import fr.soe.a3s.ui.mainEditor.LauncherOptionsPanel;
 import fr.soe.a3s.ui.mainEditor.MainPanel;
@@ -44,6 +45,7 @@ public class Facade {
 	private ConnectionPanel connectiongPanel;
 	private FirstPageInstallerPanel firstPageInstallerPanel;
 	private EventsPanel eventsPanel;
+	private InfoUpdatedRepositoryPanel infoUpdatedRepositoryPanel;
 	
 	/** Dev mode */
 	private boolean devMode = false;
@@ -219,4 +221,11 @@ public class Facade {
 		return eventsPanel;
 	}
 
+	public void setInfoUpdatedRepositoryPanel(InfoUpdatedRepositoryPanel infoUpdatedRepositoryPanel) {
+		this.infoUpdatedRepositoryPanel = infoUpdatedRepositoryPanel;
+	}
+
+	public InfoUpdatedRepositoryPanel getInfoUpdatedRepositoryPanel() {
+		return infoUpdatedRepositoryPanel;
+	}
 }

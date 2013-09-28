@@ -14,6 +14,9 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -110,6 +113,7 @@ public class DownloadPanel extends JPanel implements UIConstants {
 	private JCheckBox checkBoxExpandAll;
 	private JCheckBox checkBoxUpdated;
 	private String eventName;
+	private boolean update;
 
 	public DownloadPanel(Facade facade) {
 
@@ -386,7 +390,7 @@ public class DownloadPanel extends JPanel implements UIConstants {
 			@Override
 			public void valueChanged(TreeSelectionEvent arg0) {
 				arbreTreePath = arbre.getSelectionPath();
-				//System.out.println(arbreTreePath);
+				// System.out.println(arbreTreePath);
 			}
 		});
 		arbre.addMouseListener(new MouseAdapter() {
@@ -394,7 +398,7 @@ public class DownloadPanel extends JPanel implements UIConstants {
 				if (arbreTreePath == null) {
 					return;
 				}
-				if (SwingUtilities.isRightMouseButton(e)){
+				if (SwingUtilities.isRightMouseButton(e)) {
 					return;
 				}
 				int hotspot = new JCheckBox().getPreferredSize().width;
@@ -507,17 +511,37 @@ public class DownloadPanel extends JPanel implements UIConstants {
 
 	public void init(String repositoryName) {
 		this.repositoryName = repositoryName;
+		this.eventName = null;
+		this.update = false;
 		updateDefaultFolderDestination();
 	}
 
 	public void init(String repositoryName, String eventName) {
 		this.repositoryName = repositoryName;
 		this.eventName = eventName;
+		this.update = false;
 		updateDefaultFolderDestination();
 		// Lock user action on addons tree
 		arbre.setEnabled(false);
 		// Check addons repository
-		addonsChecker = new AddonsChecker(facade, repositoryName, eventName);
+		addonsChecker = new AddonsChecker(facade, repositoryName, eventName,
+				update);
+		addonsChecker.start();
+	}
+
+	public void init(String repositoryName, boolean update) {
+		this.repositoryName = repositoryName;
+		this.eventName = null;
+		this.update = true;
+		updateDefaultFolderDestination();
+		// Repository status changed to ok
+		repositoryService.updateRepositoryRevision(repositoryName);
+		repositoryService.setOutOfSync(repositoryName, false);
+		// Lock user action on addons tree
+		arbre.setEnabled(false);
+		// Check addons repository and update
+		addonsChecker = new AddonsChecker(facade, repositoryName, eventName,
+				update);
 		addonsChecker.start();
 	}
 
@@ -554,15 +578,15 @@ public class DownloadPanel extends JPanel implements UIConstants {
 	}
 
 	private void buttonCheckForAddonsStartPerformed() {
-	    
-	    if (comBoxDestinationFolder.getSelectedItem() == null) {
-	            JOptionPane
-	                    .showMessageDialog(
-	                            facade.getMainPanel(),
-	                            "A default destination folder must be set. \n Please checkout Addon Options panel.",
-	                            "Download", JOptionPane.WARNING_MESSAGE);
-	            return;
-	     }
+
+		if (comBoxDestinationFolder.getSelectedItem() == null) {
+			JOptionPane
+					.showMessageDialog(
+							facade.getMainPanel(),
+							"A default destination folder must be set. \n Please checkout Addon Options panel.",
+							"Download", JOptionPane.WARNING_MESSAGE);
+			return;
+		}
 
 		// Lock user action on addons tree
 		arbre.setEnabled(false);
@@ -578,7 +602,8 @@ public class DownloadPanel extends JPanel implements UIConstants {
 		facade.getSyncPanel().init();
 
 		// Check addons repository
-		addonsChecker = new AddonsChecker(facade, repositoryName, eventName);
+		addonsChecker = new AddonsChecker(facade, repositoryName, eventName,
+				update);
 		addonsChecker.start();
 	}
 
@@ -655,7 +680,7 @@ public class DownloadPanel extends JPanel implements UIConstants {
 		}
 
 		addonsDownloader = new AddonsDownloader(facade, repositoryName, racine,
-				totalFilesSize,eventName);
+				totalFilesSize, eventName);
 		addonsDownloader.setDaemon(true);
 		addonsDownloader.start();
 	}
@@ -678,10 +703,11 @@ public class DownloadPanel extends JPanel implements UIConstants {
 			addonsDownloader.interrupt();
 			addonsDownloader = null;
 			repositoryService.setDownloading(repositoryName, false);
-		}else {
+		} else {
 			facade.getDownloadPanel().getLabelDownloadStatus()
 					.setText("Canceled!");
-			repositoryService.saveDownloadParameters(repositoryName,0,0,false);
+			repositoryService.saveDownloadParameters(repositoryName, 0, 0,
+					false);
 		}
 		buttonDownloadStart.setEnabled(true);
 	}
@@ -695,10 +721,11 @@ public class DownloadPanel extends JPanel implements UIConstants {
 			return;
 		}
 
-		String defaultDestinationPath = repositoryService.getDefaultDownloadLocation(repositoryName);
-		
+		String defaultDestinationPath = repositoryService
+				.getDefaultDownloadLocation(repositoryName);
+
 		AdvancedConfigurationPanel advancedConfigurationPanel = new AdvancedConfigurationPanel(
-				facade, racine,defaultDestinationPath);
+				facade, racine, defaultDestinationPath);
 		advancedConfigurationPanel.setVisible(true);
 		buttonAdvancedConfigurationPerformed.setEnabled(false);
 	}
@@ -957,5 +984,4 @@ public class DownloadPanel extends JPanel implements UIConstants {
 	public JButton getButtonAdvancedConfiguration() {
 		return buttonAdvancedConfigurationPerformed;
 	}
-
 }

@@ -73,7 +73,8 @@ public class MainPanel extends JFrame implements UIConstants {
 	private static final String TAB_TITLE_EXTENAL_APPS = "External Apps";
 	private static final String TAB_TITLE_SYNC = "Repositories";
 	private JMenuBar menuBar;
-	private JMenu menuProfiles,menuGroups, menuHelp, menuTools, menuItemAutoConfig;
+	private JMenu menuProfiles, menuGroups, menuHelp, menuTools,
+			menuItemAutoConfig;
 	private JMenuItem menuItemEdit, menuItemHelp, menuItemuUpdates,
 			menuItemAbout, menuItemPreferences, menuItemACREwizard,
 			menuItemRPTviewer, menuItemAiAwizard, menuItemServerTuner,
@@ -127,7 +128,7 @@ public class MainPanel extends JFrame implements UIConstants {
 		menuGroups.add(menuItemRenameGroup);
 		menuGroups.add(menuItemRemoveGroup);
 		menuBar.add(menuGroups);
-		
+
 		menuTools = new JMenu("Tools");
 		menuBar.add(menuTools);
 		menuItemACREwizard = new JMenuItem("ACRE installer",
@@ -322,7 +323,7 @@ public class MainPanel extends JFrame implements UIConstants {
 				menuItemRemoveGroupPerformed();
 			}
 		});
-		
+
 		// Add Listeners
 		this.addWindowListener(new WindowListener() {
 			@Override
@@ -396,8 +397,8 @@ public class MainPanel extends JFrame implements UIConstants {
 							"An error occured. \n Failded to load on or more repositories.",
 							"Error", JOptionPane.ERROR_MESSAGE);
 		}
-		/* Set previous Height and Width */
 
+		/* Set previous Height and Width */
 		int height = configurationService.getHeight();
 		int width = configurationService.getWidth();
 		if (height != 0 && width != 0) {
@@ -407,8 +408,10 @@ public class MainPanel extends JFrame implements UIConstants {
 		}
 		setMinimumSize(new Dimension(DEFAULT_WIDTH, DEFAULT_HEIGHT));
 		Dimension dimension = Toolkit.getDefaultToolkit().getScreenSize();
-		int x = (int) ((dimension.getWidth() - this.getPreferredSize().getWidth()) / 2);
-		int y = (int) ((dimension.getHeight() - this.getPreferredSize().getHeight()) / 2);
+		int x = (int) ((dimension.getWidth() - this.getPreferredSize()
+				.getWidth()) / 2);
+		int y = (int) ((dimension.getHeight() - this.getPreferredSize()
+				.getHeight()) / 2);
 		this.setLocation(x, y);
 		this.pack();
 
@@ -427,23 +430,25 @@ public class MainPanel extends JFrame implements UIConstants {
 
 		/* Update repositories statuts */
 		updateRepositoriesStatus();
-
 	}
 
 	/* Menu Actions */
-	
+
 	private void menuItemAddGroupPerformed() {
+		tabbedPane.setSelectedIndex(0);
 		facade.getAddonsPanel().addPerformed();
 	}
-	
+
 	private void menuItemRenameGroupPerformed() {
+		tabbedPane.setSelectedIndex(0);
 		facade.getAddonsPanel().renamePormed();
 	}
-	
+
 	private void menuItemRemoveGroupPerformed() {
+		tabbedPane.setSelectedIndex(0);
 		facade.getAddonsPanel().removePerformed();
 	}
-	
+
 	private void menuItemEditPerformed() {
 
 		facade.getAddonsPanel().saveAddonGroups();
@@ -642,13 +647,13 @@ public class MainPanel extends JFrame implements UIConstants {
 							"Update", JOptionPane.OK_CANCEL_OPTION);
 
 					if (response == 0) {
-						// Save all 
+						// Save all
 						try {
 							commonService.saveAllParameters();
 						} catch (WritingException e) {
 							e.printStackTrace();
 						}
-						// Proceed update 
+						// Proceed update
 						String command = "java -jar -Djava.net.preferIPv4Stack=true ArmA3Sync-Updater.jar";
 						if (facade.isDevMode()) {
 							command = command + " -dev";
@@ -776,23 +781,27 @@ public class MainPanel extends JFrame implements UIConstants {
 					for (String rep : repositoryNames) {
 						message = message + "\n" + "> " + rep;
 					}
-					JOptionPane.showMessageDialog(facade.getMainPanel(),
-							message, "Repository",
-							JOptionPane.INFORMATION_MESSAGE);
+					InfoUpdatedRepositoryPanel infoUpdatedRepositoryPanel = new InfoUpdatedRepositoryPanel(
+							facade);
+					infoUpdatedRepositoryPanel.init(repositoryNames);
+					infoUpdatedRepositoryPanel.setVisible(true);
 				}
 			}
 		});
 		t.start();
 	}
 
-	public void openRepository(final String repositoryName, String eventName) {
+	public void openRepository(final String repositoryName, String eventName,
+			boolean update) {
 
 		String title = repositoryName;
 
 		if (!mapTabIndexes.containsKey(title)) {
 			RepositoryPanel repositoryPanel = new RepositoryPanel(facade);
-			if (eventName == null) {
+			if (eventName == null && !update) {
 				repositoryPanel.init(repositoryName);
+			} else if (eventName == null && update) {
+				repositoryPanel.initUpdate(repositoryName);
 			} else {
 				repositoryPanel.init(repositoryName, eventName);
 			}

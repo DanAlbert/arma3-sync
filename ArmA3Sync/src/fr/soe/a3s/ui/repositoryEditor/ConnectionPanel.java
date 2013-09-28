@@ -71,7 +71,7 @@ public class ConnectionPanel extends ProgressPanel{
 				} finally {
 					if (!canceled) {
 						facade.getSyncPanel().init();
-						facade.getMainPanel().openRepository(repositoryName,eventName);
+						facade.getMainPanel().openRepository(repositoryName,eventName,false);
 						progressBar.setIndeterminate(false);
 					}
 					setVisible(false);

@@ -102,6 +102,12 @@ public class RepositoryPanel extends JPanel implements UIConstants {
 		buttonRepository.setVisible(false);
 		buttonEvents.setVisible(false);
 	}
+	
+	public void initUpdate(String repositoryName) {
+		adminPanel.init(repositoryName);
+		downloadPanel.init(repositoryName,true);
+		eventsPanel.init(repositoryName);
+	}
 
 	private void buttonDownloadPerformed() {
 		CardLayout cl = (CardLayout) centerPanel.getLayout();

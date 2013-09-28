@@ -26,11 +26,13 @@ public class AddonsChecker extends Thread {
 	private RepositoryService repositoryService = new RepositoryService();
 	private SyncTreeDirectoryDTO parent;
 	private boolean found;
+	private boolean update;
 
-	public AddonsChecker(Facade facade, String repositoryName, String eventName) {
+	public AddonsChecker(Facade facade, String repositoryName, String eventName, boolean update) {
 		this.facade = facade;
 		this.repositoryName = repositoryName;
 		this.eventName = eventName;
+		this.update = update;
 	}
 
 	public void run() {
@@ -65,6 +67,8 @@ public class AddonsChecker extends Thread {
 			parent = repositoryService.getSync(repositoryName);
 			if (eventName != null) {
 				setEventAddonSelection();
+			}else if (update){
+				selectAllDescending(parent);
 			}
 			facade.getDownloadPanel().updateAddons(parent);
 			facade.getDownloadPanel().getLabelCheckForAddonsStatus()
@@ -123,7 +127,7 @@ public class AddonsChecker extends Thread {
 		}
 	}
 
-	private void retieve(SyncTreeDirectoryDTO syncTreeDirectoryDTO,
+	private void retrieve(SyncTreeDirectoryDTO syncTreeDirectoryDTO,
 			List<SyncTreeDirectoryDTO> retrievedList,
 			Map<String, Boolean> addonNames) {
 
@@ -142,7 +146,7 @@ public class AddonsChecker extends Thread {
 					}
 					retrievedList.add(directoryDTO);
 				} else {
-					retieve(directoryDTO, retrievedList, addonNames);
+					retrieve(directoryDTO, retrievedList, addonNames);
 				}
 			}
 		}
@@ -269,6 +273,16 @@ public class AddonsChecker extends Thread {
 			syncTreeNodeDTO.setSelected(true);
 			SyncTreeNodeDTO parent = syncTreeNodeDTO.getParent();
 			selectAllAscending(parent);
+		}
+	}
+	
+	private void selectAllDescending(SyncTreeNodeDTO syncTreeNodeDTO) {
+		syncTreeNodeDTO.setSelected(true);
+		if (!syncTreeNodeDTO.isLeaf()) {
+			SyncTreeDirectoryDTO syncTreeDirectoryDTO = (SyncTreeDirectoryDTO) syncTreeNodeDTO;
+			for (SyncTreeNodeDTO t : syncTreeDirectoryDTO.getList()) {
+				selectAllDescending(t);
+			}
 		}
 	}
 }
