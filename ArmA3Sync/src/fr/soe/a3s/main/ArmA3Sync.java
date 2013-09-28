@@ -48,6 +48,7 @@ public class ArmA3Sync {
 
 	public static void main(String[] args) {
 
+		checkJRE();
 		Facade facade = new Facade();
 
 		if (args.length == 0) {
@@ -65,6 +66,22 @@ public class ArmA3Sync {
 				&& args[1].equalsIgnoreCase("-console")) {
 			Console console = new Console(true);
 			console.execute();
+		}
+	}
+
+	private static void checkJRE() {
+
+		String version = System.getProperty("java.version");
+		if (!version.contains("1.7.")) {
+			String message = "JRE installed version is: " + version + "\n"
+					+ "ArmA3Sync required JRE 1.7 (Java 7) to run.";
+			if (!GraphicsEnvironment.isHeadless()) {
+				JFrame frame = new JFrame();
+				JOptionPane.showMessageDialog(frame, message, "ArmA3Sync",
+						JOptionPane.INFORMATION_MESSAGE);
+			} else {
+				System.out.println(message);
+			}
 		}
 	}
 
