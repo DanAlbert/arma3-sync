@@ -2,7 +2,9 @@ package fr.soe.a3s.dao;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
@@ -30,6 +32,7 @@ import fr.soe.a3s.controller.ObserverFilesNumber;
 import fr.soe.a3s.domain.repository.AutoConfig;
 import fr.soe.a3s.domain.repository.Changelog;
 import fr.soe.a3s.domain.repository.Changelogs;
+import fr.soe.a3s.domain.repository.Events;
 import fr.soe.a3s.domain.repository.Repository;
 import fr.soe.a3s.domain.repository.ServerInfo;
 import fr.soe.a3s.domain.repository.SyncTreeDirectory;
@@ -49,7 +52,6 @@ public class RepositoryBuilderDAO implements DataAccessConstants,
 	private long totalFilesSize;
 	private long cumulativeFileSize;
 	private boolean error;
-	// private List<Thread> listThreads = new ArrayList<Thread>();
 	private List<Callable<Integer>> callables;
 
 	@SuppressWarnings("unchecked")
@@ -64,13 +66,13 @@ public class RepositoryBuilderDAO implements DataAccessConstants,
 			nbFiles = 0;
 			cumulativeFileSize = 0;
 			error = false;
-			// listThreads = new ArrayList<Thread>();
 
 			/*
-			 * Read sync, serverInfo and changelogs file before .a3s folder
-			 * deletion
+			 * Read sync, serverInfo, changelogs and events file before .a3s
+			 * folder deletion
 			 */
 			Changelogs changelogs = readChangelogs(file);
+			Events events = readEvents(file);
 			SyncTreeDirectory oldSync = readSync(file);
 			ServerInfo oldServerInfo = readServerInfo(file);
 
@@ -199,42 +201,59 @@ public class RepositoryBuilderDAO implements DataAccessConstants,
 
 			// Sync file
 			File syncFile = new File(file.getAbsolutePath() + SYNC_FILE_PATH);
-			ObjectOutputStream fWo = new ObjectOutputStream(
-					new GZIPOutputStream(new FileOutputStream(
-							syncFile.getAbsolutePath())));
-			if (sync != null)
+			if (sync != null) {
+				ObjectOutputStream fWo = new ObjectOutputStream(
+						new GZIPOutputStream(new FileOutputStream(
+								syncFile.getAbsolutePath())));
 				fWo.writeObject(sync);
-			fWo.close();
+				fWo.close();
+			}
 
 			// ServerInfo file
 			File serverInfoFile = new File(file.getAbsolutePath()
 					+ SERVERINFO_FILE_PATH);
-			fWo = new ObjectOutputStream(new GZIPOutputStream(
-					new FileOutputStream(serverInfoFile.getAbsolutePath())));
-			if (serverInfo != null)
+			if (serverInfo != null) {
+				ObjectOutputStream fWo = new ObjectOutputStream(
+						new GZIPOutputStream(new FileOutputStream(
+								serverInfoFile.getAbsolutePath())));
 				fWo.writeObject(serverInfo);
-			fWo.close();
+				fWo.close();
+			}
 
 			// AutoConfig file
 			File autoConfigFile = new File(file.getAbsolutePath()
 					+ AUTOCONFIG_FILE_PATH);
-			fWo = new ObjectOutputStream(new GZIPOutputStream(
-					new FileOutputStream(autoConfigFile.getAbsolutePath())));
-			if (autoConfig != null)
+			if (autoConfig != null) {
+				ObjectOutputStream fWo = new ObjectOutputStream(
+						new GZIPOutputStream(new FileOutputStream(
+								autoConfigFile.getAbsolutePath())));
 				fWo.writeObject(autoConfig);
-			fWo.close();
+				fWo.close();
+			}
 
 			// Changelogs file
 			File changelogsFile = new File(file.getAbsolutePath()
 					+ CHANGELOG_FILE_PATH);
-			fWo = new ObjectOutputStream(new GZIPOutputStream(
-					new FileOutputStream(changelogsFile.getAbsolutePath())));
-			if (changelogs != null)
+			if (changelogs != null) {
+				ObjectOutputStream fWo = new ObjectOutputStream(
+						new GZIPOutputStream(new FileOutputStream(
+								changelogsFile.getAbsolutePath())));
 				fWo.writeObject(changelogs);
-			fWo.close();
+				fWo.close();
+			}
 
+			// Events file
+			File eventsFile = new File(file.getAbsolutePath()
+					+ EVENTS_FILE_PATH);
+			if (events != null) {
+				ObjectOutputStream fWo = new ObjectOutputStream(
+						new GZIPOutputStream(new FileOutputStream(
+								eventsFile.getAbsolutePath())));
+				fWo.writeObject(events);
+				fWo.close();
+			}
 		} catch (Exception e) {
-			//e.printStackTrace();
+			// e.printStackTrace();
 			throw new WritingException(e.getMessage());
 		}
 	}
@@ -482,7 +501,6 @@ public class RepositoryBuilderDAO implements DataAccessConstants,
 			if (changelogsFile.exists()) {
 				ObjectInputStream fRo = new ObjectInputStream(
 						new GZIPInputStream(new FileInputStream(changelogsFile)));
-
 				if (fRo != null) {
 					changelogs = (Changelogs) fRo.readObject();
 					fRo.close();
@@ -492,6 +510,26 @@ public class RepositoryBuilderDAO implements DataAccessConstants,
 			e.printStackTrace();
 		}
 		return changelogs;
+	}
+
+	private Events readEvents(File file) {
+
+		Events events = null;
+		try {
+			File eventsFile = new File(file.getAbsolutePath()
+					+ EVENTS_FILE_PATH);
+			if (eventsFile.exists()) {
+				ObjectInputStream fRo = new ObjectInputStream(
+						new GZIPInputStream(new FileInputStream(eventsFile)));
+				if (fRo != null) {
+					events = (Events) fRo.readObject();
+					fRo.close();
+				}
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return events;
 	}
 
 	private SyncTreeDirectory readSync(File file) {
