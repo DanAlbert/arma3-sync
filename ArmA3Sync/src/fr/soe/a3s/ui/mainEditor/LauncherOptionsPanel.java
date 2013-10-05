@@ -77,15 +77,9 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener {
 
 		Box vertBox1 = Box.createVerticalBox();
 		vertBox1.add(Box.createVerticalStrut(10));
-		// JPanel containerPanel = new JPanel();
-		// containerPanel.setBorder(BorderFactory.createTitledBorder(
-		// BorderFactory.createEtchedBorder(), "Favorite servers"));
-		// vertBox1.add(containerPanel);
-		// this.add(vertBox1);
-		// containerPanel.setLayout(new BorderLayout());
 
 		JPanel centerPanel = new JPanel();
-		GridLayout grid1 = new GridLayout(1, 2);
+		GridLayout grid1 = new GridLayout(2, 2);
 		centerPanel.setLayout(grid1);
 		vertBox1.add(centerPanel, BorderLayout.CENTER);
 		this.add(vertBox1);
@@ -97,11 +91,6 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener {
 		performancePanel = new JPanel();
 		performancePanel.setBorder(BorderFactory.createTitledBorder(
 				BorderFactory.createEtchedBorder(), "Performance"));
-
-		Box vertBox = Box.createVerticalBox();
-		vertBox.add(launcherOptionsPanel);
-		vertBox.add(performancePanel);
-		centerPanel.add(vertBox);
 
 		/* Launch options */
 		launcherOptionsPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
@@ -276,10 +265,10 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener {
 				.createTitledBorder(BorderFactory.createEtchedBorder(),
 						"Additional Parameters"));
 
-		vertBox = Box.createVerticalBox();
-		vertBox.add(scrollPaneRunParameters);
-		vertBox.add(scrollPaneAditionalParameters);
-		centerPanel.add(vertBox);
+		centerPanel.add(launcherOptionsPanel);
+		centerPanel.add(scrollPaneRunParameters);
+		centerPanel.add(performancePanel);
+		centerPanel.add(scrollPaneAditionalParameters);
 
 		/* Executable locations */
 		JPanel southPanel = new JPanel();
