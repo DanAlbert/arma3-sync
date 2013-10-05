@@ -114,7 +114,7 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener {
 						if (subf != null) {
 							for (int i = 0; i < subf.length; i++) {
 								listProfileNames.add(subf[i].getName()
-										.replaceAll("%20", " "));
+										.replaceAll("(%*)20", " "));
 							}
 						}
 					}
