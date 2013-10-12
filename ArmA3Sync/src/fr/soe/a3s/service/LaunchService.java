@@ -285,8 +285,12 @@ public class LaunchService {
 						&& !path.equals(parentArma3ExePath)) {
 					path = path.substring(parentArma3ExePath.length() + 1);
 					addon.setPath(path);
+					addon.setAtArmA3InstallRoot(true);
 				} else if (path.equals(parentArma3ExePath)) {
 					addon.setPath("");
+					addon.setAtArmA3InstallRoot(true);
+				}else {
+					addon.setAtArmA3InstallRoot(false);
 				}
 			}
 		}
@@ -316,15 +320,26 @@ public class LaunchService {
 		for (int i = 0; i < ordererAddonListByPath.size(); i++) {
 			List<Addon> list1 = ordererAddonListByPath.get(i);
 			String path = list1.get(0).getPath();
-			if (path.isEmpty()) {
-				mods = mods + "-mod=";
-			} else {
-				mods = mods + "-mod=" + path + "\\";
-			}
-			for (Addon addon : list1) {
-				mods = mods + addon.getName() + ";";
+			if (list1.get(0).isAtArmA3InstallRoot()){
+				if (path.isEmpty()) {
+					mods = mods + "-mod=";
+				} else{
+					mods = mods + "-mod=" + path + "\\";
+				}
+				for (Addon addon : list1) {
+					mods = mods + addon.getName() + ";";
+				}
+			}else {
+				for (Addon addon : list1) {
+					if (path.isEmpty()) {
+						mods = mods + "-mod=" + addon.getName() + ";";
+					}else {
+						mods = mods + "-mod=" + path + "\\" + addon.getName() + ";";
+					}
+				}
 			}
 		}
+		
 		String[] tab = mods.split("-mod=");
 
 		for (int i = 0; i < tab.length; i++) {

@@ -4,6 +4,7 @@ public class Addon {
 
 	private String name;
 	private String path;
+	private boolean atArmA3InstallRoot;
 	
 	public Addon(String name, String path) {
 		this.name=name;
@@ -25,5 +26,13 @@ public class Addon {
 	public void setPath(String path) {
 		this.path = path;
 	}
-	
+
+	public boolean isAtArmA3InstallRoot() {
+		return atArmA3InstallRoot;
+	}
+
+	public void setAtArmA3InstallRoot(boolean atArmA3InstallRoot) {
+		this.atArmA3InstallRoot = atArmA3InstallRoot;
+	}
+
 }
