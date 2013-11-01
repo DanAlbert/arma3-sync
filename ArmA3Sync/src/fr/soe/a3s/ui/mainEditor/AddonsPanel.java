@@ -358,7 +358,6 @@ public class AddonsPanel extends JPanel implements UIConstants {
 			}
 		});
 		buttonEvents.addActionListener(new ActionListener() {
-
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				buttonEventsPerformed();
