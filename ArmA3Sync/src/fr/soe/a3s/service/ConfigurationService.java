@@ -327,12 +327,12 @@ public class ConfigurationService {
 		if (aiaOptions.getTohPath() == null) {
 			String tohPath = configurationDAO.determineTOHPath();
 			if (tohPath == null) {
-				aiaOptions.setArmaPath("");
+				aiaOptions.setTohPath("");
 			} else {
-				aiaOptions.setArmaPath(tohPath);
+				aiaOptions.setTohPath(tohPath);
 			}
 		}
-		Addon addon = addonDAO.getMap().get("a1dummies");
+		Addon addon = addonDAO.getMap().get("posta3");
 		if (addon != null) {
 			aiaOptions.setAllinArmaPath(addon.getPath());
 		} else {
