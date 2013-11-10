@@ -399,7 +399,7 @@ public class LaunchService {
 					allInArma = allInArma + aiAOptions.getTohPath() + ";";
 				}
 
-				allInArma = allInArma + "@A1A2ObjectMerge;"
+				allInArma = allInArma + "@A1A2ObjectMerge;@A2OAPondFix"
 						+ parentArma3ExePath + ";" + path + "\\Core" + ";"
 						+ path + "\\PostA3" + ";";
 
