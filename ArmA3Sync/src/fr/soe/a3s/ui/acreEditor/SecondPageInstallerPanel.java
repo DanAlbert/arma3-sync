@@ -141,7 +141,7 @@ public class SecondPageInstallerPanel extends AcreInstallerPanel {
 
 		/* Copy userconfig to ArmA 3 */
 		File sourceLocation = new File(acreUserconfigDirectory);
-		File targetLocation = new File(armA3Directory + "/userconfig");
+		File targetLocation = new File(armA3Directory + "/userconfig/acre");
 		targetLocation.mkdirs();
 		try {
 			FileAccessMethods.copyDirectory(sourceLocation, targetLocation);
