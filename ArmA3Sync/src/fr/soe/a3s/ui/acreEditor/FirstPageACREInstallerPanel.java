@@ -39,7 +39,7 @@ import fr.soe.a3s.ui.UIConstants;
  * PURCHASED FOR THIS MACHINE, SO JIGLOO OR THIS CODE CANNOT BE USED LEGALLY FOR
  * ANY CORPORATE OR COMMERCIAL PURPOSE.
  */
-public class FirstPageInstallerPanel extends AcreInstallerPanel implements
+public class FirstPageACREInstallerPanel extends AcreInstallerPanel implements
 		UIConstants {
 
 	private JTextField textFieldArmA3InstallationDirectory;
@@ -59,7 +59,7 @@ public class FirstPageInstallerPanel extends AcreInstallerPanel implements
 	private JTextField textFieldACREUserconfigInstallationDirectory;
 	private JButton buttonSelectACREUserconfigInstallationDirectory;
 
-	public FirstPageInstallerPanel(Facade facade) {
+	public FirstPageACREInstallerPanel(Facade facade) {
 		super(facade);
 		buttonFist.setText("Proceed");
 		buttonSecond.setText("Cancel");
@@ -395,7 +395,7 @@ public class FirstPageInstallerPanel extends AcreInstallerPanel implements
 		}
 
 		fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-		int returnVal = fc.showOpenDialog(FirstPageInstallerPanel.this);
+		int returnVal = fc.showOpenDialog(FirstPageACREInstallerPanel.this);
 		if (returnVal == JFileChooser.APPROVE_OPTION) {
 			File file = fc.getSelectedFile();
 			String path = file.getAbsolutePath();
@@ -410,7 +410,7 @@ public class FirstPageInstallerPanel extends AcreInstallerPanel implements
 
 		JFileChooser fc = new JFileChooser();
 		fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-		int returnVal = fc.showOpenDialog(FirstPageInstallerPanel.this);
+		int returnVal = fc.showOpenDialog(FirstPageACREInstallerPanel.this);
 		if (returnVal == JFileChooser.APPROVE_OPTION) {
 			File file = fc.getSelectedFile();
 			String path = file.getAbsolutePath();
@@ -428,7 +428,7 @@ public class FirstPageInstallerPanel extends AcreInstallerPanel implements
 
 		JFileChooser fc = new JFileChooser();
 		fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-		int returnVal = fc.showOpenDialog(FirstPageInstallerPanel.this);
+		int returnVal = fc.showOpenDialog(FirstPageACREInstallerPanel.this);
 		if (returnVal == JFileChooser.APPROVE_OPTION) {
 			File file = fc.getSelectedFile();
 			String path = file.getAbsolutePath();
@@ -443,7 +443,7 @@ public class FirstPageInstallerPanel extends AcreInstallerPanel implements
 
 		JFileChooser fc = new JFileChooser();
 		fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-		int returnVal = fc.showOpenDialog(FirstPageInstallerPanel.this);
+		int returnVal = fc.showOpenDialog(FirstPageACREInstallerPanel.this);
 		if (returnVal == JFileChooser.APPROVE_OPTION) {
 			File file = fc.getSelectedFile();
 			String path = file.getAbsolutePath();
@@ -510,7 +510,7 @@ public class FirstPageInstallerPanel extends AcreInstallerPanel implements
 		}
 
 		this.setVisible(false);
-		SecondPageInstallerPanel secondPageInstallerPanel = new SecondPageInstallerPanel(
+		SecondPageACREInstallerPanel secondPageInstallerPanel = new SecondPageACREInstallerPanel(
 				facade);
 		secondPageInstallerPanel.init(
 				textFieldArmA3InstallationDirectory.getText(),

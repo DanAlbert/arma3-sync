@@ -30,7 +30,7 @@ import fr.soe.a3s.ui.Facade;
  * PURCHASED FOR THIS MACHINE, SO JIGLOO OR THIS CODE CANNOT BE USED LEGALLY FOR
  * ANY CORPORATE OR COMMERCIAL PURPOSE.
  */
-public class SecondPageInstallerPanel extends AcreInstallerPanel {
+public class SecondPageACREInstallerPanel extends AcreInstallerPanel {
 
 	private JLabel labelOperationsPerformed;
 	private JLabel labelCopyPlugin;
@@ -46,7 +46,7 @@ public class SecondPageInstallerPanel extends AcreInstallerPanel {
 	private static String statusOK = "OK";
 	private static String statusFail = "Fail";
 
-	public SecondPageInstallerPanel(Facade facade) {
+	public SecondPageACREInstallerPanel(Facade facade) {
 		super(facade);
 		buttonFist.setText("Back");
 		buttonSecond.setText("Close");
@@ -141,7 +141,7 @@ public class SecondPageInstallerPanel extends AcreInstallerPanel {
 
 		/* Copy userconfig to ArmA 3 */
 		File sourceLocation = new File(acreUserconfigDirectory);
-		File targetLocation = new File(armA3Directory + "/userconfig/acre");
+		File targetLocation = new File(armA3Directory + "/userconfig");
 		targetLocation.mkdirs();
 		try {
 			FileAccessMethods.copyDirectory(sourceLocation, targetLocation);
