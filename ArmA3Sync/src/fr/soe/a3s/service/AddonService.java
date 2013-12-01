@@ -200,6 +200,17 @@ public class AddonService {
 			return addon.getPath();
 		}
 	}
+	
+
+	public String getTFARinstallationFolder() {
+		
+		Addon addon = addonDAO.getMap().get("@task_force_radio");
+		if (addon == null) {
+			return null;
+		} else {
+			return addon.getPath();
+		}
+	}
 
 	/* Business methods */
 
@@ -233,5 +244,6 @@ public class AddonService {
 		treeLeafDTO.setSelected(treeLeaf.isSelected());
 		return treeLeafDTO;
 	}
+
 
 }

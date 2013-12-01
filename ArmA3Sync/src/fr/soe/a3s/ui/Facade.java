@@ -1,6 +1,6 @@
 package fr.soe.a3s.ui;
 
-import fr.soe.a3s.ui.acreEditor.FirstPageInstallerPanel;
+import fr.soe.a3s.ui.acreEditor.FirstPageACREInstallerPanel;
 import fr.soe.a3s.ui.mainEditor.AddonOptionsPanel;
 import fr.soe.a3s.ui.mainEditor.AddonsPanel;
 import fr.soe.a3s.ui.mainEditor.ExternalApplicationsEditionPanel;
@@ -21,9 +21,10 @@ import fr.soe.a3s.ui.repositoryEditor.DownloadPanel;
 import fr.soe.a3s.ui.repositoryEditor.EventsPanel;
 import fr.soe.a3s.ui.repositoryEditor.RepositoryEditPanel;
 import fr.soe.a3s.ui.repositoryEditor.RepositoryPanel;
+import fr.soe.a3s.ui.tfarEditor.FirstPageTFARInstallerPanel;
 
 public class Facade {
-	
+
 	/** Views */
 	private MainPanel mainPanel;
 	private InfoPanel infoPanel;
@@ -43,10 +44,11 @@ public class Facade {
 	private DownloadPanel downloadPanel;
 	private DestinationFolderPanel destinationFolderPanel;
 	private ConnectionPanel connectiongPanel;
-	private FirstPageInstallerPanel firstPageInstallerPanel;
+	private FirstPageACREInstallerPanel firstPageInstallerPanel;
 	private EventsPanel eventsPanel;
 	private InfoUpdatedRepositoryPanel infoUpdatedRepositoryPanel;
-	
+	private FirstPageTFARInstallerPanel firstPageTFARInstallerPanel;
+
 	/** Dev mode */
 	private boolean devMode = false;
 
@@ -58,43 +60,45 @@ public class Facade {
 	public void setInfoPanel(InfoPanel infoPanel) {
 		this.infoPanel = infoPanel;
 	}
-	
+
 	public void setAddonsPanel(AddonsPanel addonsPanel) {
-		this.addonsPanel = 	addonsPanel;
+		this.addonsPanel = addonsPanel;
 	}
-	
+
 	public void setLaunchPanel(LaunchPanel launchPanel) {
 		this.launchPanel = launchPanel;
 	}
-	
+
 	public void setAddonOptionsPanel(AddonOptionsPanel addonOptionsPanel) {
 		this.addonOptionsPanel = addonOptionsPanel;
 	}
-	
+
 	public void setLaunchOptionsPanel(LauncherOptionsPanel launchOptionsPanel) {
 		this.launchOptionsPanel = launchOptionsPanel;
 	}
-	
+
 	public void setOnlinePanel(OnlinePanel onlinePanel) {
 		this.onlinePanel = onlinePanel;
 	}
-	
-	public void setExternalApplicationsPanel(ExternalApplicationsPanel externalApplicationsPanel) {
-		this.externalApplicationsPanel = externalApplicationsPanel;	
+
+	public void setExternalApplicationsPanel(
+			ExternalApplicationsPanel externalApplicationsPanel) {
+		this.externalApplicationsPanel = externalApplicationsPanel;
 	}
 
 	public void setProfilePanel(ProfilePanel profilePanel) {
 		this.profilePanel = profilePanel;
 	}
-	
+
 	public void setSyncPanel(SyncPanel syncPanel) {
 		this.syncPanel = syncPanel;
 	}
-	
-	public void setExternalApplicationsEditionPanel(ExternalApplicationsEditionPanel externalApplicationsEditionPanel) {
+
+	public void setExternalApplicationsEditionPanel(
+			ExternalApplicationsEditionPanel externalApplicationsEditionPanel) {
 		this.externalApplicationsEditionPanel = externalApplicationsEditionPanel;
 	}
-	
+
 	public MainPanel getMainPanel() {
 		return mainPanel;
 	}
@@ -118,7 +122,7 @@ public class Facade {
 	public LauncherOptionsPanel getLaunchOptionsPanel() {
 		return launchOptionsPanel;
 	}
-	
+
 	public ExternalApplicationsPanel getExternalApplicationsPanel() {
 		return externalApplicationsPanel;
 	}
@@ -150,7 +154,7 @@ public class Facade {
 	public void setRepositoryEditPanel(RepositoryEditPanel repositoryEditPanel) {
 		this.repositoryEditPanel = repositoryEditPanel;
 	}
-	
+
 	public RepositoryEditPanel getRepositoryEditPanel() {
 		return repositoryEditPanel;
 	}
@@ -205,11 +209,11 @@ public class Facade {
 	}
 
 	public void setFirstPageInstallerPanel(
-			FirstPageInstallerPanel firstPageInstallerPanel) {
+			FirstPageACREInstallerPanel firstPageInstallerPanel) {
 		this.firstPageInstallerPanel = firstPageInstallerPanel;
 	}
 
-	public FirstPageInstallerPanel getFirstPageInstallerPanel() {
+	public FirstPageACREInstallerPanel getFirstPageInstallerPanel() {
 		return firstPageInstallerPanel;
 	}
 
@@ -221,11 +225,17 @@ public class Facade {
 		return eventsPanel;
 	}
 
-	public void setInfoUpdatedRepositoryPanel(InfoUpdatedRepositoryPanel infoUpdatedRepositoryPanel) {
+	public void setInfoUpdatedRepositoryPanel(
+			InfoUpdatedRepositoryPanel infoUpdatedRepositoryPanel) {
 		this.infoUpdatedRepositoryPanel = infoUpdatedRepositoryPanel;
 	}
 
 	public InfoUpdatedRepositoryPanel getInfoUpdatedRepositoryPanel() {
 		return infoUpdatedRepositoryPanel;
+	}
+
+	public void setFirstPageTFARInstallerPanel(
+			FirstPageTFARInstallerPanel firstPageTFARInstallerPanel) {
+		this.firstPageTFARInstallerPanel = firstPageTFARInstallerPanel;
 	}
 }

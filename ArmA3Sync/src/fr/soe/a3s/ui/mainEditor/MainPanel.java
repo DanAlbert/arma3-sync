@@ -55,13 +55,14 @@ import fr.soe.a3s.service.RepositoryService;
 import fr.soe.a3s.ui.Facade;
 import fr.soe.a3s.ui.UIConstants;
 import fr.soe.a3s.ui.about.AboutPanel;
-import fr.soe.a3s.ui.acreEditor.FirstPageInstallerPanel;
+import fr.soe.a3s.ui.acreEditor.FirstPageACREInstallerPanel;
 import fr.soe.a3s.ui.aiaEditor.AiaInstallerPanel;
 import fr.soe.a3s.ui.autoConfigEditor.AutoConfigExportPanel;
 import fr.soe.a3s.ui.autoConfigEditor.AutoConfigImportPanel;
 import fr.soe.a3s.ui.profileEditor.ProfilePanel;
 import fr.soe.a3s.ui.repositoryEditor.RepositoryPanel;
 import fr.soe.a3s.ui.rptEditor.RptViewerPanel;
+import fr.soe.a3s.ui.tfarEditor.FirstPageTFARInstallerPanel;
 
 public class MainPanel extends JFrame implements UIConstants {
 
@@ -96,6 +97,7 @@ public class MainPanel extends JFrame implements UIConstants {
 	private JMenuItem menuItemAddGroup;
 	private JMenuItem menuItemRenameGroup;
 	private JMenuItem menuItemRemoveGroup;
+	private JMenuItem menuItemTFARwizard;
 
 	public MainPanel(Facade facade) {
 
@@ -134,6 +136,10 @@ public class MainPanel extends JFrame implements UIConstants {
 		menuItemACREwizard = new JMenuItem("ACRE installer",
 				new ImageIcon(ACRE));
 		menuTools.add(menuItemACREwizard);
+		menuItemTFARwizard = new JMenuItem("TFAR installer",
+				new ImageIcon(TFAR));
+		menuTools.add(menuItemTFARwizard);
+		
 		menuItemAiAwizard = new JMenuItem("AiA tweaker", new ImageIcon(
 				TRANSMISSION));
 		menuTools.add(menuItemAiAwizard);
@@ -219,6 +225,16 @@ public class MainPanel extends JFrame implements UIConstants {
 				SwingUtilities.invokeLater(new Runnable() {
 					public void run() {
 						menuItemACREwizardPerformed();
+					}
+				});
+			}
+		});
+		menuItemTFARwizard.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				SwingUtilities.invokeLater(new Runnable() {
+					public void run() {
+						menuItemTFARwizardPerformed();
 					}
 				});
 			}
@@ -459,7 +475,14 @@ public class MainPanel extends JFrame implements UIConstants {
 
 	private void menuItemACREwizardPerformed() {
 
-		FirstPageInstallerPanel firstPage = new FirstPageInstallerPanel(facade);
+		FirstPageACREInstallerPanel firstPage = new FirstPageACREInstallerPanel(facade);
+		firstPage.init();
+		firstPage.setVisible(true);
+	}
+	
+	private void menuItemTFARwizardPerformed(){
+		
+		FirstPageTFARInstallerPanel firstPage = new FirstPageTFARInstallerPanel(facade);
 		firstPage.init();
 		firstPage.setVisible(true);
 	}
