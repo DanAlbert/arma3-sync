@@ -240,15 +240,16 @@ public class AddonsPanel extends JPanel implements UIConstants {
 			public void treeExpanded(TreeExpansionEvent event) {
 				onArbre1Expanded(event.getPath());
 			}
+
 			public void treeCollapsed(TreeExpansionEvent event) {
 				onArbre1Collapsed(event.getPath());
 			}
 		});
 		arbre2.addMouseListener(new MouseAdapter() {
 			public void mouseClicked(MouseEvent e) {
-				
-				arbre2TreePath  = arbre2.getPathForLocation(e.getX(), e.getY());
-				
+
+				arbre2TreePath = arbre2.getPathForLocation(e.getX(), e.getY());
+
 				if (arbre2TreePath == null) {
 					arbre2.setSelectionPath(null);
 					refreshViewArbre2();
@@ -501,10 +502,10 @@ public class AddonsPanel extends JPanel implements UIConstants {
 		arbre2.setVisibleRowCount(numberRowShown);
 		arbre2.setPreferredSize(arbre2.getPreferredScrollableViewportSize());
 		arbre2.updateUI();
-		
-		if (numberRowShown==0){
+
+		if (numberRowShown == 0) {
 			arbre2.setToolTipText("Right click to add a group");
-		}else {
+		} else {
 			arbre2.setToolTipText("");
 		}
 	}
@@ -793,14 +794,16 @@ public class AddonsPanel extends JPanel implements UIConstants {
 
 	private TreeNodeDTO[] getSelectedNode() {
 		TreePath[] paths = arbre2.getSelectionPaths();
-		if (paths != null) {
+		if (paths == null) {
+			return null;
+		} else if (paths.length == 0) {
+			return null;
+		} else {// paths !=null
 			TreeNodeDTO[] treeNodeDTOs = new TreeNodeDTO[paths.length];
 			for (int i = 0; i < paths.length; i++) {
 				treeNodeDTOs[i] = (TreeNodeDTO) paths[i].getLastPathComponent();
 			}
 			return treeNodeDTOs;
-		} else {
-			return null;
 		}
 	}
 
