@@ -169,8 +169,9 @@ public class Updater extends JFrame implements ActionListener, UIConstants {
 
 			this.dispose();
 
-			String command = "java -jar -Djava.net.preferIPv4Stack=true -Xms256m -Xmx256m -Dsun.java2d.d3d=false "
-					+ TARGET_APPLICATION_NAME + ".jar";
+//			String command = "java -jar -Djava.net.preferIPv4Stack=true -Xms256m -Xmx256m -Dsun.java2d.d3d=false "
+//					+ TARGET_APPLICATION_NAME + ".jar";
+			String command = "ArmA3Sync.exe";
 
 			if (facade.isDevMode()) {
 				command = command + " -dev";
