@@ -332,44 +332,8 @@ public class RepositoryBuilderDAO implements DataAccessConstants,
 				}
 			};
 			callables.add(c);
-			// Thread t = new Thread(new Runnable() {
-			// @Override
-			// public void run() {
-			// try {
-			// long size = FileUtils.sizeOf(file);
-			// treeSyncTreeLeaf.setSize(size);
-			// String sha1 = FileAccessMethods.computeSHA1(file);
-			// treeSyncTreeLeaf.setSha1(sha1);
-			// increment(size);
-			// updateFileSizeObserver();
-			// } catch (Exception e) {
-			// error = true;
-			// e.printStackTrace();
-			// }
-			// }
-			// });
-			// listThreads.add(t);
-			// t.start();
 		}
 	}
-
-	// private void attendre() {
-	// try {
-	// Thread.sleep(100);
-	// boolean alive = false;
-	// for (Thread t : listThreads) {
-	// if (t.isAlive()) {
-	// alive = true;
-	// break;
-	// }
-	// }
-	// if (alive) {
-	// attendre();
-	// }
-	// } catch (InterruptedException e) {
-	// // e.printStackTrace();
-	// }
-	// }
 
 	public void determineLocalSHA1(SyncTreeNode parent, long numberOfFiles)
 			throws Exception {
@@ -377,13 +341,11 @@ public class RepositoryBuilderDAO implements DataAccessConstants,
 		totalNbFiles = numberOfFiles;
 		nbFiles = 0;
 		callables = new ArrayList<Callable<Integer>>();
-		// listThreads = new ArrayList<Thread>();
 		generateLocalSHA1(parent);
 		ExecutorService executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
 				executor.invokeAll(callables);
 		executor.shutdownNow();
 		System.gc();
-		// attendre();
 	}
 
 	private void generateLocalSHA1(SyncTreeNode syncTreeNode) throws Exception {
@@ -398,23 +360,6 @@ public class RepositoryBuilderDAO implements DataAccessConstants,
 				final File file = new File(leaf.getDestinationPath() + "/"
 						+ leaf.getName());
 				if (file.exists()) {
-					// Thread t = new Thread(new Runnable() {
-					// @Override
-					// public void run() {
-					// try {
-					// String sha1 = FileAccessMethods
-					// .computeSHA1(file);
-					// leaf.setLocalSHA1(sha1);
-					// increment();
-					// updateFilesNumberObserver();
-					// } catch (Exception e) {
-					// error = true;
-					// e.printStackTrace();
-					// }
-					// }
-					// });
-					// listThreads.add(t);
-					// t.start();
 					Callable<Integer> c = new Callable<Integer>() {
 						@Override
 						public Integer call() throws Exception {
