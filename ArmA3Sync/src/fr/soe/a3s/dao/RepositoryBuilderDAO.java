@@ -379,9 +379,10 @@ public class RepositoryBuilderDAO implements DataAccessConstants,
 		callables = new ArrayList<Callable<Integer>>();
 		// listThreads = new ArrayList<Thread>();
 		generateLocalSHA1(parent);
-		ExecutorService executor = Executors.newCachedThreadPool();
-		executor.invokeAll(callables);
+		ExecutorService executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+				executor.invokeAll(callables);
 		executor.shutdownNow();
+		System.gc();
 		// attendre();
 	}
 
