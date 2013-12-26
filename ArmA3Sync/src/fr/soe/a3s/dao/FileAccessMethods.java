@@ -17,6 +17,8 @@ import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
 public class FileAccessMethods {
+	
+	private static final char[] HEX_CHARS = "0123456789abcdef".toCharArray();
 
     public static void copyDirectory(File sourceLocation, File targetLocation) throws IOException {
 
@@ -268,29 +270,41 @@ public class FileAccessMethods {
 
     public static String computeSHA1(File file) throws NoSuchAlgorithmException, IOException {
 
-        // convert the byte to hex format
-        FileInputStream fis = null;
-        StringBuffer sb = null;
-        try {
-            MessageDigest md = MessageDigest.getInstance("SHA1");
-            fis = new FileInputStream(file);
-            byte[] dataBytes = new byte[1024];
-            int nread = 0;
-            while ((nread = fis.read(dataBytes)) != -1) {
-                md.update(dataBytes, 0, nread);
-            }
-            byte[] mdbytes = md.digest();
-            sb = new StringBuffer("");
-            for (int i = 0; i < mdbytes.length; i++) {
-                sb.append(Integer.toString((mdbytes[i] & 0xff) + 0x100, 16).substring(1));
-            }
-        }
-        finally {
-            if (fis != null) {
-                fis.close();
-            }
-        }
-        return sb.toString();
+		// convert the byte to hex format
+		FileInputStream fis = null;
+		// StringBuffer sb = null;
+		char[] chars = null;
+		try {
+			MessageDigest md = MessageDigest.getInstance("SHA1");
+			fis = new FileInputStream(file);
+			byte[] dataBytes = new byte[1024];
+			int nread = 0;
+			while ((nread = fis.read(dataBytes)) != -1) {
+				md.update(dataBytes, 0, nread);
+			}
+			byte[] mdbytes = md.digest();
+			// sb = new StringBuffer("");
+			// for (int i = 0; i < mdbytes.length; i++) {
+			// sb.append(Integer.toString((mdbytes[i] & 0xff) + 0x100,
+			// 16).substring(1));
+			// }
+
+			/*
+			 * http://forums.xkcd.com/viewtopic.php?f=11&t=16666&p=553936
+			 */
+			chars = new char[2 * mdbytes.length];
+			for (int i = 0; i < mdbytes.length; ++i) {
+				chars[2 * i] = HEX_CHARS[(mdbytes[i] & 0xF0) >>> 4];
+				chars[2 * i + 1] = HEX_CHARS[mdbytes[i] & 0x0F];
+			}
+
+		} finally {
+			if (fis != null) {
+				fis.close();
+			}
+		}
+		// return sb.toString();
+		return new String(chars);
     }
 
 }
