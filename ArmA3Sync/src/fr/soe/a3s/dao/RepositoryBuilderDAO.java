@@ -89,7 +89,8 @@ public class RepositoryBuilderDAO implements DataAccessConstants,
 				generateSync(sync, f);
 			}
 			// attendre();
-			ExecutorService executor = Executors.newCachedThreadPool();
+			ExecutorService executor = Executors.newFixedThreadPool(Runtime
+					.getRuntime().availableProcessors());
 			executor.invokeAll(callables);
 			executor.shutdownNow();
 
@@ -342,8 +343,9 @@ public class RepositoryBuilderDAO implements DataAccessConstants,
 		nbFiles = 0;
 		callables = new ArrayList<Callable<Integer>>();
 		generateLocalSHA1(parent);
-		ExecutorService executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
-				executor.invokeAll(callables);
+		ExecutorService executor = Executors.newFixedThreadPool(Runtime
+				.getRuntime().availableProcessors());
+		executor.invokeAll(callables);
 		executor.shutdownNow();
 		System.gc();
 	}
@@ -562,5 +564,4 @@ public class RepositoryBuilderDAO implements DataAccessConstants,
 	public void delObserverFilesNumber() {
 		this.observerFilesNumber = null;
 	}
-
 }
