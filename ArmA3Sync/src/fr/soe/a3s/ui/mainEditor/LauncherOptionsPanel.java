@@ -368,6 +368,12 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener {
 				comboBoxCpuCountPerformed();
 			}
 		});
+		checkBoxExThreads.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				checkBoxExThreadsPerformed();
+			}
+		});
 		comboBoxExThreads.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -424,49 +430,8 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener {
 
 	public void init() {
 
-		LauncherOptionsDTO launcherOptionsDTO = configurationService
-				.getLauncherOptions();
-
 		/* Launcher options */
-		if (launcherOptionsDTO.getGameProfile() != null) {
-			comboBoxProfiles.setSelectedItem(launcherOptionsDTO
-					.getGameProfile());
-			checkBoxProfiles.setSelected(true);
-		}
-
-		checkBoxShowScriptErrors.setSelected(launcherOptionsDTO
-				.isShowScriptError());
-		checkBoxNoPause.setSelected(launcherOptionsDTO.isNoPause());
-		checkBoxNoFilePatching.setSelected(launcherOptionsDTO.isNoFilePatching());
-		checkBoxWindowMode.setSelected(launcherOptionsDTO.isWindowMode());
-
-		/* Performance */
-		if (launcherOptionsDTO.getMaxMemorySelection() != null) {
-			comboBoxMaxMemory.setSelectedItem(launcherOptionsDTO
-					.getMaxMemorySelection());
-			checkBoxMaxMemory.setSelected(true);
-		}
-
-		if (launcherOptionsDTO.getCpuCountSelection() != 0) {
-			comboBoxCpuCount.setSelectedItem(Integer
-					.toString(launcherOptionsDTO.getCpuCountSelection()));
-			checkBoxCpuCount.setSelected(true);
-		}
-
-		if (launcherOptionsDTO.getExThreadsSelection() != null) {
-			comboBoxExThreads.setSelectedItem(launcherOptionsDTO
-					.getExThreadsSelection());
-			checkBoxExThreads.setSelected(true);
-		}
-
-		checkBoxNoSplashScreen.setSelected(launcherOptionsDTO
-				.isNoSplashScreen());
-		checkBoxDefaultWorld.setSelected(launcherOptionsDTO.isDefaultWorld());
-		checkBoxNoLogs.setSelected(launcherOptionsDTO.isNoLogs());
-
-		/* Executable locations */
-		textFieldArmAExecutableLocation.setText(launcherOptionsDTO
-				.getArma3ExePath());
+		updateOptions();
 
 		/* Run parameters */
 		updateRunParameters();
@@ -573,6 +538,13 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener {
 		} else {
 			checkBoxCpuCount.setSelected(false);
 			configurationService.setCpuCount(null);
+		}
+		updateRunParameters();
+	}
+	
+	private void checkBoxExThreadsPerformed() {
+		if (!checkBoxExThreads.isSelected()) {
+			comboBoxExThreads.setSelectedIndex(0);
 		}
 		updateRunParameters();
 	}
@@ -706,6 +678,62 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener {
 			System.out.println(e.getMessage());
 			e.printStackTrace();
 		}
+	}
+
+	public void updateOptions() {
+
+		LauncherOptionsDTO launcherOptionsDTO = configurationService
+				.getLauncherOptions();
+
+		/* Launcher options */
+		if (launcherOptionsDTO.getGameProfile() != null) {
+			comboBoxProfiles.setSelectedItem(launcherOptionsDTO
+					.getGameProfile());
+			checkBoxProfiles.setSelected(true);
+		}else {
+			comboBoxProfiles.setSelectedIndex(0);
+		}
+
+		checkBoxShowScriptErrors.setSelected(launcherOptionsDTO
+				.isShowScriptError());
+		checkBoxNoPause.setSelected(launcherOptionsDTO.isNoPause());
+		checkBoxNoFilePatching.setSelected(launcherOptionsDTO
+				.isNoFilePatching());
+		checkBoxWindowMode.setSelected(launcherOptionsDTO.isWindowMode());
+
+		/* Performance */
+		if (launcherOptionsDTO.getMaxMemorySelection() != null) {
+			comboBoxMaxMemory.setSelectedItem(launcherOptionsDTO
+					.getMaxMemorySelection());
+			checkBoxMaxMemory.setSelected(true);
+		}else {
+			comboBoxMaxMemory.setSelectedIndex(0);
+		}
+
+		if (launcherOptionsDTO.getCpuCountSelection() != 0) {
+			comboBoxCpuCount.setSelectedItem(Integer
+					.toString(launcherOptionsDTO.getCpuCountSelection()));
+			checkBoxCpuCount.setSelected(true);
+		}else {
+			comboBoxCpuCount.setSelectedIndex(0);
+		}
+
+		if (launcherOptionsDTO.getExThreadsSelection() != null) {
+			comboBoxExThreads.setSelectedItem(launcherOptionsDTO
+					.getExThreadsSelection());
+			checkBoxExThreads.setSelected(true);
+		}else {
+			comboBoxExThreads.setSelectedIndex(0);
+		}
+
+		checkBoxNoSplashScreen.setSelected(launcherOptionsDTO
+				.isNoSplashScreen());
+		checkBoxDefaultWorld.setSelected(launcherOptionsDTO.isDefaultWorld());
+		checkBoxNoLogs.setSelected(launcherOptionsDTO.isNoLogs());
+
+		/* ArmA 3 Executable Location */
+		textFieldArmAExecutableLocation.setText(launcherOptionsDTO
+				.getArma3ExePath());
 	}
 
 	/* additionalParametersTextArea modificiation listener */

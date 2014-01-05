@@ -14,14 +14,16 @@ import fr.soe.a3s.domain.Profile;
 import fr.soe.a3s.domain.TreeDirectory;
 import fr.soe.a3s.domain.TreeLeaf;
 import fr.soe.a3s.domain.TreeNode;
+import fr.soe.a3s.domain.configration.LauncherOptions;
 import fr.soe.a3s.dto.TreeDirectoryDTO;
 import fr.soe.a3s.dto.TreeLeafDTO;
 import fr.soe.a3s.dto.TreeNodeDTO;
+import fr.soe.a3s.dto.configuration.LauncherOptionsDTO;
 import fr.soe.a3s.exception.LoadingException;
 import fr.soe.a3s.exception.ProfileException;
 import fr.soe.a3s.exception.WritingException;
 
-public class ProfileService {
+public class ProfileService extends ObjectDTOtransformer {
 
 	private static final ConfigurationDAO configurationDAO = new ConfigurationDAO();
 	private static final ProfileDAO profileDAO = new ProfileDAO();
@@ -83,6 +85,8 @@ public class ProfileService {
 		TreeDirectory treeDirectory = profile.getTree();
 		TreeDirectory duplicateTreeDirectory = duplicateProfile.getTree();
 		duplicateTree(treeDirectory, duplicateTreeDirectory);
+		duplicateProfile.setAdditionalParameters(profile.getAdditionalParameters());
+		duplicateLauncherOptions(profile.getLauncherOptions(),duplicateProfile.getLauncherOptions());
 		profileDAO.getMap().put(duplicateProfile.getName(), duplicateProfile);
 	}
 
@@ -115,6 +119,26 @@ public class ProfileService {
 		duplicateTreeLeaf.setSelected(treeLeaf.isSelected());
 		return duplicateTreeLeaf;
 	}
+	
+	private void duplicateLauncherOptions(LauncherOptions launcherOptions,
+			LauncherOptions duplicateLauncherOptions) {
+		
+		duplicateLauncherOptions.setCpuCountSelection(
+				launcherOptions.getCpuCountSelection());
+		duplicateLauncherOptions.setExThreadsSelection(
+				launcherOptions.getExThreadsSelection());
+		duplicateLauncherOptions.setDefaultWorld(launcherOptions.isDefaultWorld());
+		duplicateLauncherOptions.setGameProfile(launcherOptions
+				.getGameProfile());
+		duplicateLauncherOptions.setMaxMemorySelection(launcherOptions.getMaxMemorySelection());
+		duplicateLauncherOptions.setNoFilePatching(launcherOptions.isNoFilePatching());
+		duplicateLauncherOptions.setNoLogs(launcherOptions.isNologs());
+		duplicateLauncherOptions.setNoPause(launcherOptions.isNoPause());
+		duplicateLauncherOptions.setNoSplashScreen(launcherOptions.isNoPause());
+		duplicateLauncherOptions.setShowScriptErrors(launcherOptions.isShowScriptErrors());
+		duplicateLauncherOptions.setWindowMode(launcherOptions.isWindowMode());
+		duplicateLauncherOptions.setArma3ExePath(launcherOptions.getArma3ExePath());
+	}
 
 	public void renameProfile(String initProfileName, String newProfileName)
 			throws ProfileException {
@@ -135,6 +159,45 @@ public class ProfileService {
 					+ " does not exists.");
 		}
 		profileDAO.getMap().remove(profileName);
+	}
+
+	public LauncherOptionsDTO getLauncherOptions(String profileName)
+			throws ProfileException {
+
+		Profile profile = (Profile) profileDAO.getMap().get(profileName);
+		if (profile == null) {
+			throw new ProfileException("Profile with name " + profileName
+					+ " does not exists.");
+		}
+		LauncherOptions launcherOptions = profile.getLauncherOptions();
+		LauncherOptionsDTO launcherOptionsDTO = transformLauncherOptions2DTO(launcherOptions);
+		return launcherOptionsDTO;
+	}
+
+	public void saveLauncherOptions(String profileName) throws ProfileException {
+
+		Profile profile = (Profile) profileDAO.getMap().get(profileName);
+		if (profile == null) {
+			throw new ProfileException("Profile with name " + profileName
+					+ " does not exists.");
+		}
+		LauncherOptions launcherOptions = configurationDAO.getConfiguration()
+				.getLauncherOptions();
+		profile.getLauncherOptions().setCpuCountSelection(
+				launcherOptions.getCpuCountSelection());
+		profile.getLauncherOptions().setExThreadsSelection(
+				launcherOptions.getExThreadsSelection());
+		profile.getLauncherOptions().setDefaultWorld(launcherOptions.isDefaultWorld());
+		profile.getLauncherOptions().setGameProfile(launcherOptions
+				.getGameProfile());
+		profile.getLauncherOptions().setMaxMemorySelection(launcherOptions.getMaxMemorySelection());
+		profile.getLauncherOptions().setNoFilePatching(launcherOptions.isNoFilePatching());
+		profile.getLauncherOptions().setNoLogs(launcherOptions.isNologs());
+		profile.getLauncherOptions().setNoPause(launcherOptions.isNoPause());
+		profile.getLauncherOptions().setNoSplashScreen(launcherOptions.isNoPause());
+		profile.getLauncherOptions().setShowScriptErrors(launcherOptions.isShowScriptErrors());
+		profile.getLauncherOptions().setWindowMode(launcherOptions.isWindowMode());
+		profile.getLauncherOptions().setArma3ExePath(launcherOptions.getArma3ExePath());
 	}
 
 	public TreeDirectoryDTO getAddonGroupsTree() {
@@ -230,7 +293,7 @@ public class ProfileService {
 	}
 
 	public List<String> getAddonNamesByPriority() {
-		
+
 		String profileName = configurationDAO.getConfiguration()
 				.getProfileName();
 
@@ -240,20 +303,20 @@ public class ProfileService {
 			TreeDirectory treeDirectory = profile.getTree();
 			Set<String> extractedAddonNames = new TreeSet<String>();
 			getAddonsByName(treeDirectory, extractedAddonNames);
-			if (list.isEmpty()){
+			if (list.isEmpty()) {
 				list.addAll(extractedAddonNames);
 				return list;
-			}else {
+			} else {
 				Iterator iter = extractedAddonNames.iterator();
-				while (iter.hasNext()){
+				while (iter.hasNext()) {
 					String name = (String) iter.next();
-					if (!list.contains(name)){
+					if (!list.contains(name)) {
 						list.add(name);
 					}
 				}
 				List<String> addonNamesToRemove = new ArrayList<String>();
-				for (String stg:list){
-					if (!extractedAddonNames.contains(stg)){
+				for (String stg : list) {
+					if (!extractedAddonNames.contains(stg)) {
 						addonNamesToRemove.add(stg);
 					}
 				}
@@ -263,7 +326,7 @@ public class ProfileService {
 		}
 		return null;
 	}
-	
+
 	private void getAddonsByName(TreeNode treendNode, Set<String> set) {
 
 		if (treendNode.isLeaf()) {
@@ -293,9 +356,9 @@ public class ProfileService {
 			}
 		}
 	}
-	
-	public void downPriority(int index){
-		
+
+	public void downPriority(int index) {
+
 		String profileName = configurationDAO.getConfiguration()
 				.getProfileName();
 
@@ -310,70 +373,4 @@ public class ProfileService {
 			}
 		}
 	}
-
-	/* Business methods */
-
-	public void transformTreeDirectory2DTO(TreeDirectory treeDirectory,
-			TreeDirectoryDTO treeDirectoryDTO) {
-
-		List<TreeNode> list = treeDirectory.getList();
-
-		for (TreeNode treeNode : list) {
-			if (treeNode.isLeaf()) {
-				TreeLeaf treeLeaf = (TreeLeaf) treeNode;
-				TreeLeafDTO treeLeafDTO = transformTreeLeaf2DTO(treeLeaf);
-				treeLeafDTO.setParent(treeDirectoryDTO);
-				treeDirectoryDTO.addTreeNode(treeLeafDTO);
-			} else {
-				TreeDirectory treeDirectory2 = (TreeDirectory) treeNode;
-				TreeDirectoryDTO treedDirectoryDTO2 = new TreeDirectoryDTO();
-				treedDirectoryDTO2.setName(treeDirectory2.getName());
-				treedDirectoryDTO2.setSelected(treeDirectory2.isSelected());
-				treedDirectoryDTO2.setParent(treeDirectoryDTO);
-				treeDirectoryDTO.addTreeNode(treedDirectoryDTO2);
-				transformTreeDirectory2DTO(treeDirectory2, treedDirectoryDTO2);
-			}
-		}
-	}
-
-	private TreeLeafDTO transformTreeLeaf2DTO(TreeLeaf treeLeaf) {
-
-		TreeLeafDTO treeLeafDTO = new TreeLeafDTO();
-		treeLeafDTO.setName(treeLeaf.getName());
-		treeLeafDTO.setSelected(treeLeaf.isSelected());
-		treeLeafDTO.setOptional(treeLeaf.isOptional());
-		return treeLeafDTO;
-	}
-
-	private void transform2TreeDirectory(TreeDirectoryDTO treeDirectoryDTO,
-			TreeDirectory treeDirectory) {
-
-		List<TreeNodeDTO> list = treeDirectoryDTO.getList();
-
-		for (TreeNodeDTO treeNodeDTO : list) {
-			if (treeNodeDTO.isLeaf()) {
-				TreeLeafDTO treeLeafDTO = (TreeLeafDTO) treeNodeDTO;
-				TreeLeaf treeLeaf = transform2TreeLeaf(treeLeafDTO);
-				treeLeaf.setParent(treeDirectory);
-				treeDirectory.addTreeNode(treeLeaf);
-			} else {
-				TreeDirectoryDTO treeDirectoryDTO2 = (TreeDirectoryDTO) treeNodeDTO;
-				TreeDirectory treedDirectory2 = new TreeDirectory(
-						treeDirectoryDTO2.getName(), treeDirectory);
-				treedDirectory2.setSelected(treeDirectoryDTO2.isSelected());
-				treeDirectory.addTreeNode(treedDirectory2);
-				transform2TreeDirectory(treeDirectoryDTO2, treedDirectory2);
-			}
-		}
-	}
-
-	private TreeLeaf transform2TreeLeaf(TreeLeafDTO treeLeafDTO) {
-
-		TreeLeaf treeLeaf = new TreeLeaf();
-		treeLeaf.setName(treeLeafDTO.getName());
-		treeLeaf.setSelected(treeLeafDTO.isSelected());
-		treeLeaf.setOptional(treeLeafDTO.isOptional());
-		return treeLeaf;
-	}
-
 }

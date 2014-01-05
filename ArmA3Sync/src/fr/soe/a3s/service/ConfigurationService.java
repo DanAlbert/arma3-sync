@@ -20,7 +20,7 @@ import fr.soe.a3s.dto.configuration.LauncherOptionsDTO;
 import fr.soe.a3s.exception.LoadingException;
 import fr.soe.a3s.exception.WritingException;
 
-public class ConfigurationService {
+public class ConfigurationService extends ObjectDTOtransformer {
 
 	private static final ConfigurationDAO configurationDAO = new ConfigurationDAO();
 	private static final AddonDAO addonDAO = new AddonDAO();
@@ -376,92 +376,19 @@ public class ConfigurationService {
 		configurationDAO.getConfiguration().setWidth(width);
 	}
 
-	/* Business Methods */
-
-	private ExternalApplicationDTO transformExternalApplication2DTO(
-			ExternalApplication externalApplication) {
-
-		final ExternalApplicationDTO externalApplicationDTO = new ExternalApplicationDTO();
-		externalApplicationDTO.setName(externalApplication.getName());
-		externalApplicationDTO.setExecutablePath(externalApplication
-				.getExecutablePath());
-		externalApplicationDTO.setEnable(externalApplication.isEnable());
-		externalApplicationDTO.setParameters(externalApplication
-				.getParameters());
-		return externalApplicationDTO;
-	}
-
-	private ExternalApplication transformDTO2ExternalApplication(
-			ExternalApplicationDTO externalApplicationDTO) {
-
-		final ExternalApplication externalApplication = new ExternalApplication();
-		externalApplication.setName(externalApplicationDTO.getName());
-		externalApplication.setExecutablePath(externalApplicationDTO
-				.getExecutablePath());
-		externalApplication.setEnable(externalApplicationDTO.isEnable());
-		externalApplication.setParameters(externalApplicationDTO
-				.getParameters());
-		return externalApplication;
-	}
-
-	private LauncherOptionsDTO transformLauncherOptions2DTO(
-			LauncherOptions launcherOptions) {
-
-		final LauncherOptionsDTO launcherOptionsDTO = new LauncherOptionsDTO();
-
-		launcherOptionsDTO.setArma3ExePath(launcherOptions.getArma3ExePath());
-		launcherOptionsDTO.setSteamExePath(launcherOptions.getSteamExePath());
-		launcherOptionsDTO.setDefaultWorld(launcherOptions.isDefaultWorld());
-		launcherOptionsDTO.setNoLogs(launcherOptions.isNologs());
-		launcherOptionsDTO.setGameProfile(launcherOptions.getGameProfile());
-		launcherOptionsDTO.setMaxMemorySelection(launcherOptions
-				.getMaxMemorySelection());
-		launcherOptionsDTO.setCpuCountSelection(launcherOptions
-				.getCpuCountSelection());
-		launcherOptionsDTO.setExThreadsSelection(launcherOptions
-				.getExThreadsSelection());
-		launcherOptionsDTO.setNoPause(launcherOptions.isNoPause());
-		launcherOptionsDTO
-				.setNoFilePatching(launcherOptions.isNoFilePatching());
-		launcherOptionsDTO
-				.setNoSplashScreen(launcherOptions.isNoSplashScreen());
-		launcherOptionsDTO.setShowScriptError(launcherOptions
-				.isShowScriptErrors());
-		launcherOptionsDTO.setWindowMode(launcherOptions.isWindowMode());
-
-		return launcherOptionsDTO;
-	}
-
-	private FavoriteServerDTO transformFavoriteServers2DTO(
-			FavoriteServer favoriteServer) {
-
-		final FavoriteServerDTO favoriteServerDTO = new FavoriteServerDTO();
-		favoriteServerDTO.setName(favoriteServer.getName());
-		favoriteServerDTO.setIpAddress(favoriteServer.getIpAddress());
-		favoriteServerDTO.setPort(favoriteServer.getPort());
-		favoriteServerDTO.setPassword(favoriteServer.getPassword());
-		return favoriteServerDTO;
-	}
-
-	private FavoriteServer transformDTO2FavoriteServer(
-			FavoriteServerDTO favoriteServerDTO) {
-
-		final FavoriteServer favoriteServer = new FavoriteServer();
-		favoriteServer.setName(favoriteServerDTO.getName());
-		favoriteServer.setIpAddress(favoriteServerDTO.getIpAddress());
-		favoriteServer.setPort(favoriteServerDTO.getPort());
-		favoriteServer.setPassword(favoriteServerDTO.getPassword());
-		return favoriteServer;
-	}
-
-	private AiAOptionsDTO transformAiAOptions2DTO(AiAOptions aiaOptions) {
-
-		final AiAOptionsDTO aiaOptionsDTO = new AiAOptionsDTO();
-		aiaOptionsDTO.setArma2Path(aiaOptions.getArma2Path());
-		aiaOptionsDTO.setArma2OAPath(aiaOptions.getArma2OAPath());
-		aiaOptionsDTO.setArmaPath(aiaOptions.getArmaPath());
-		aiaOptionsDTO.setTohPath(aiaOptions.getTohPath());
-		aiaOptionsDTO.setAllinArmaPath(aiaOptions.getAllinArmaPath());
-		return aiaOptionsDTO;
+	public void setLauncherOptions(LauncherOptionsDTO launcherOptionsDTO) {
+		
+		setGameProfile(launcherOptionsDTO.getGameProfile());
+		setCheckBoxShowScriptErrors(launcherOptionsDTO.isShowScriptError());
+		setCheckBoxNoPause(launcherOptionsDTO.isNoPause());
+		setCheckBoxNoFilePatching(launcherOptionsDTO.isNoFilePatching());
+		setCheckBoxWindowMode(launcherOptionsDTO.isWindowMode());
+		setMaxMemory(launcherOptionsDTO.getMaxMemorySelection());
+		setCpuCount(Integer.toString(launcherOptionsDTO.getCpuCountSelection()));
+		setExThreads(launcherOptionsDTO.getExThreadsSelection());
+		setNoSplashScreen(launcherOptionsDTO.isNoSplashScreen());
+		setDefaultWorld(launcherOptionsDTO.isDefaultWorld());
+		setNoLogs(launcherOptionsDTO.isNoLogs());
+		setArmA3ExePath(launcherOptionsDTO.getArma3ExePath());
 	}
 }

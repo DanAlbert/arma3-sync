@@ -58,6 +58,11 @@ public class ProfileDAO implements DataAccessConstants {
 
 	public void writeProfiles() throws WritingException {
 		
+		/* Clear profiles folder */
+		File profilesFolder = new File(PROFILES_FOLDER_PATH);
+		FileAccessMethods.deleteDirectory(profilesFolder);
+		profilesFolder.mkdir();
+		
 		boolean error = false; 
 		for (Iterator<String> i = mapProfiles.keySet().iterator() ; i.hasNext() ; ){
 			String profileName = i.next();

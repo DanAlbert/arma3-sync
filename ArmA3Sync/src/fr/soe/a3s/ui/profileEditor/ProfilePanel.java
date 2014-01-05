@@ -15,13 +15,11 @@ import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.ListSelectionModel;
 import javax.swing.border.BevelBorder;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
-import javax.swing.tree.TreePath;
 
 import fr.soe.a3s.constant.DefaultProfileName;
-import fr.soe.a3s.domain.Profile;
+import fr.soe.a3s.dto.configuration.LauncherOptionsDTO;
 import fr.soe.a3s.exception.ProfileException;
 import fr.soe.a3s.service.ConfigurationService;
 import fr.soe.a3s.service.ProfileService;
@@ -59,8 +57,10 @@ public class ProfilePanel extends JDialog implements UIConstants {
 		this.setResizable(false);
 		this.setSize(285, 256);
 		setIconImage(ICON);
-		this.setLocation((int) facade.getMainPanel().getLocation().getX()
-				+ facade.getMainPanel().getWidth() / 2 - this.getWidth() / 2,
+		this.setLocation(
+				(int) facade.getMainPanel().getLocation().getX()
+						+ facade.getMainPanel().getWidth() / 2
+						- this.getWidth() / 2,
 				(int) facade.getMainPanel().getLocation().getY()
 						+ facade.getMainPanel().getHeight() / 2
 						- this.getHeight() / 2);
@@ -79,6 +79,7 @@ public class ProfilePanel extends JDialog implements UIConstants {
 		{
 			JPanel centerPanel = new JPanel();
 			profilesList = new JList();
+			profilesList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 			scrollPane = new JScrollPane(profilesList);
 			scrollPane.setColumnHeader(null);
 			scrollPane.setBorder(BorderFactory
@@ -155,13 +156,6 @@ public class ProfilePanel extends JDialog implements UIConstants {
 				buttonCancelPerformed();
 			}
 		});
-		profilesList.addListSelectionListener(new ListSelectionListener() {
-			@Override
-			public void valueChanged(ListSelectionEvent arg) {
-				//String profileName = (String) profilesList.getSelectedValue();
-				//configurationService.setProfileName(profileName);
-			}
-		});
 		// Add Listeners
 		addWindowListener(new WindowAdapter() {
 			public void windowClosing(WindowEvent e) {
@@ -180,17 +174,18 @@ public class ProfilePanel extends JDialog implements UIConstants {
 		boolean contains = false;
 		for (int i = 0; i < profileNames.size(); i++) {
 			names[i] = profileNames.get(i);
-			if (profileNames.contains(initProfileName)){
+			if (profileNames.contains(initProfileName)) {
 				contains = true;
 			}
 		}
 
 		profilesList.clearSelection();
 		profilesList.setListData(names);
-		if (contains){
-			profilesList.setSelectedValue(initProfileName, true);	
-		}else {
-			profilesList.setSelectedValue(DefaultProfileName.DEFAULT.getDescription(), true);
+		if (contains) {
+			profilesList.setSelectedValue(initProfileName, true);
+		} else {
+			profilesList.setSelectedValue(
+					DefaultProfileName.DEFAULT.getDescription(), true);
 		}
 		int numberLigneShown = profileNames.size();
 		profilesList.setVisibleRowCount(numberLigneShown);
@@ -209,13 +204,13 @@ public class ProfilePanel extends JDialog implements UIConstants {
 
 	private void buttonEditPerformed() {
 		String profileName = (String) profilesList.getSelectedValue();
-		if (profileName.equals(DefaultProfileName.DEFAULT.getDeclaringClass())){
+		if (profileName.equals(DefaultProfileName.DEFAULT.getDeclaringClass())) {
 			return;
 		}
 		ProfileEditionPanel profileEditionPanel = new ProfileEditionPanel(
 				facade, "Edit Profile", profileName);
 		profileEditionPanel.setVisible(true);
-		
+
 	}
 
 	private void buttonDuplicatePerformed() {
@@ -263,10 +258,24 @@ public class ProfilePanel extends JDialog implements UIConstants {
 			return;
 		}
 		configurationService.setProfileName(profileName);
+		try {
+			LauncherOptionsDTO launcherOptionsDTO = profileService
+					.getLauncherOptions(profileName);
+			if (launcherOptionsDTO.getSteamExePath() == null && !profileName.equals("Default")) {
+				LauncherOptionsDTO launcherOptionsDTODefault = profileService
+						.getLauncherOptions("Default");
+				launcherOptionsDTO.setArma3ExePath(launcherOptionsDTODefault
+						.getArma3ExePath());
+			}
+			configurationService.setLauncherOptions(launcherOptionsDTO);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 		facade.getMainPanel().updateProfilesMenu();
 		facade.getInfoPanel().init();
 		facade.getAddonsPanel().updateAddonGroups();
 		facade.getAddonsPanel().expandAddonGroups();
+		facade.getLaunchOptionsPanel().updateOptions();
 		facade.getLaunchOptionsPanel().updateRunParameters();
 		facade.getLaunchOptionsPanel().updateAdditionalParameters();
 		this.dispose();
@@ -275,7 +284,7 @@ public class ProfilePanel extends JDialog implements UIConstants {
 	private void buttonCancelPerformed() {
 
 		List<String> profileNames = profileService.getProfileNames();
-		if(!profileNames.contains(initProfileName)){
+		if (!profileNames.contains(initProfileName)) {
 			initProfileName = DefaultProfileName.DEFAULT.getDescription();
 		}
 		configurationService.setProfileName(initProfileName);
@@ -286,7 +295,7 @@ public class ProfilePanel extends JDialog implements UIConstants {
 	private void menuExitPerformed() {
 
 		List<String> profileNames = profileService.getProfileNames();
-		if(!profileNames.contains(initProfileName)){
+		if (!profileNames.contains(initProfileName)) {
 			initProfileName = DefaultProfileName.DEFAULT.getDescription();
 		}
 		configurationService.setProfileName(initProfileName);

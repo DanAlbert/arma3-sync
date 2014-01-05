@@ -4,6 +4,8 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+import fr.soe.a3s.domain.configration.LauncherOptions;
+
 public class Profile implements Serializable{
 	
 	/**
@@ -14,6 +16,7 @@ public class Profile implements Serializable{
 	private TreeDirectory tree = new TreeDirectory("racine", null);
 	private String additionalParameters;
 	private List<String> addonNamesByPriority = new ArrayList<String>();
+	private LauncherOptions launcherOptions = new LauncherOptions(); 
 	
 	public Profile(String name){
 		this.name = name;
@@ -44,4 +47,14 @@ public class Profile implements Serializable{
 		return addonNamesByPriority;
 	}
 
+	public LauncherOptions getLauncherOptions() {
+		if (launcherOptions==null){
+			launcherOptions = new LauncherOptions();
+		}
+		return launcherOptions;
+	}
+
+	public void setLauncherOptions(LauncherOptions launcherOptions) {
+		this.launcherOptions = launcherOptions;
+	}
 }

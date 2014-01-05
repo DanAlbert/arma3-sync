@@ -44,6 +44,7 @@ import fr.soe.a3s.dto.RepositoryDTO;
 import fr.soe.a3s.dto.ServerInfoDTO;
 import fr.soe.a3s.dto.configuration.PreferencesDTO;
 import fr.soe.a3s.exception.LoadingException;
+import fr.soe.a3s.exception.ProfileException;
 import fr.soe.a3s.exception.RepositoryException;
 import fr.soe.a3s.exception.WritingException;
 import fr.soe.a3s.service.CommonService;
@@ -468,6 +469,11 @@ public class MainPanel extends JFrame implements UIConstants {
 	private void menuItemEditPerformed() {
 
 		facade.getAddonsPanel().saveAddonGroups();
+		try {
+			profileService.saveLauncherOptions(configurationService.getProfileName());
+		} catch (ProfileException e) {
+			e.printStackTrace();
+		}
 		ProfilePanel profilePanel = new ProfilePanel(facade);
 		profilePanel.toFront();
 		profilePanel.setVisible(true);

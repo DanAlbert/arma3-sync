@@ -43,6 +43,7 @@ public class ProfileEditionPanel extends JDialog implements UIConstants {
 
 	public ProfileEditionPanel(Facade facade, String title,
 			String initProfileName) {
+		
 		super(facade.getProfilePanel(), title, true);
 		this.facade = facade;
 		this.initProfileName = initProfileName;
@@ -120,7 +121,6 @@ public class ProfileEditionPanel extends JDialog implements UIConstants {
 				profileService.createProfile(newProfileName);
 			} else {// rename profile
 				profileService.renameProfile(initProfileName, newProfileName);
-				//configurationService.setProfileName(newProfileName);
 			}
 			this.facade.getProfilePanel().init();
 			this.facade.getProfilePanel().selectProfile(newProfileName);
