@@ -425,6 +425,9 @@ public class LaunchService {
 		if (launcherOptions.isNoPause()) {
 			params.add("-noPause");
 		}
+		if (launcherOptions.isNoFilePatching()){
+			params.add("-noFilePatching");
+		}
 		if (launcherOptions.isWindowMode()) {
 			params.add("-window");
 		}

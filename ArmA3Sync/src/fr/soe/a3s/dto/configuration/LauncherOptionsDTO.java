@@ -7,6 +7,7 @@ public class LauncherOptionsDTO {
 	private String gameProfile;
 	private boolean showScriptError;
 	private boolean noPause;
+	private boolean noFilePatching;
 	private boolean windowMode;
 	private String maxMemorySelection;
 	private int cpuCountSelection;
@@ -90,5 +91,11 @@ public class LauncherOptionsDTO {
 	}
 	public void setExThreadsSelection(String exThreadsSelection) {
 		this.exThreadsSelection = exThreadsSelection;
+	}
+	public boolean isNoFilePatching() {
+		return noFilePatching;
+	}
+	public void setNoFilePatching(boolean noFilePatching) {
+		this.noFilePatching = noFilePatching;
 	}
 }

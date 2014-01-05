@@ -174,6 +174,11 @@ public class ConfigurationService {
 				.setNoPause(value);
 	}
 
+	public void setCheckBoxNoFilePatching(boolean value) {
+		configurationDAO.getConfiguration().getLauncherOptions()
+				.setNoFilePatching(value);
+	}
+
 	public void setCheckBoxWindowMode(boolean value) {
 		configurationDAO.getConfiguration().getLauncherOptions()
 				.setWindowMode(value);
@@ -416,6 +421,8 @@ public class ConfigurationService {
 		launcherOptionsDTO.setExThreadsSelection(launcherOptions
 				.getExThreadsSelection());
 		launcherOptionsDTO.setNoPause(launcherOptions.isNoPause());
+		launcherOptionsDTO
+				.setNoFilePatching(launcherOptions.isNoFilePatching());
 		launcherOptionsDTO
 				.setNoSplashScreen(launcherOptions.isNoSplashScreen());
 		launcherOptionsDTO.setShowScriptError(launcherOptions

@@ -10,6 +10,7 @@ public class LauncherOptions implements Serializable {
 	private String gameProfile;
 	private boolean showScriptErrors = false;
 	private boolean noPause = false;
+	private boolean noFilePatching = false;
 	private boolean windowMode = false;
 	private boolean runBeta = false;
 	private boolean xpCompatibilityMode = false;
@@ -135,5 +136,13 @@ public class LauncherOptions implements Serializable {
 
 	public void setExThreadsSelection(String exThreadsSelection) {
 		this.exThreadsSelection = exThreadsSelection;
+	}
+
+	public boolean isNoFilePatching() {
+		return noFilePatching;
+	}
+
+	public void setNoFilePatching(boolean value) {
+		this.noFilePatching = value;
 	}
 }

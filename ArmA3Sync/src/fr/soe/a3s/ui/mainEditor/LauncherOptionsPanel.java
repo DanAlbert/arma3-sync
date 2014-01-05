@@ -29,6 +29,8 @@ import javax.swing.border.BevelBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
+import com.sun.crypto.provider.JceKeyStore;
+
 import fr.soe.a3s.constant.MaxMemoryValues;
 import fr.soe.a3s.dto.configuration.LauncherOptionsDTO;
 import fr.soe.a3s.exception.ProfileException;
@@ -63,12 +65,13 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener {
 			checkBoxShowScriptErrors, checkBoxRunBeta, checkBoxMaxMemory,
 			checkBoxCpuCount, checkBoxNoSplashScreen, checkBoxDefaultWorld,
 			checkBoxNoLogs;
+	private JCheckBox checkBoxExThreads;
+	private JComboBox comboBoxExThreads;
+	private JCheckBox checkBoxNoFilePatching;
 	private ConfigurationService configurationService = new ConfigurationService();
 	private ProfileService profileService = new ProfileService();
 	private AddonService addonService = new AddonService();
 	private LaunchService launchService = new LaunchService();
-	private JCheckBox checkBoxExThreads;
-	private JComboBox comboBoxExThreads;
 
 	public LauncherOptionsPanel(Facade facade) {
 		this.facade = facade;
@@ -151,6 +154,14 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener {
 			vBox.add(hBox);
 		}
 		{
+			checkBoxNoFilePatching = new JCheckBox();
+			checkBoxNoFilePatching.setText("No File Patching");
+			Box hBox = Box.createHorizontalBox();
+			hBox.add(checkBoxNoFilePatching);
+			hBox.add(Box.createHorizontalGlue());
+			vBox.add(hBox);
+		}
+		{
 			checkBoxWindowMode = new JCheckBox();
 			checkBoxWindowMode.setText("Window Mode");
 			Box hBox = Box.createHorizontalBox();
@@ -208,7 +219,7 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener {
 			comboBoxExThreads = new JComboBox();
 			comboBoxExThreads.setFocusable(false);
 			ComboBoxModel exThreadsModel = new DefaultComboBoxModel(
-					new String[] {"","0", "1", "3", "5", "7" });
+					new String[] { "", "0", "1", "3", "5", "7" });
 			comboBoxExThreads.setModel(exThreadsModel);
 			Box hBox = Box.createHorizontalBox();
 			hBox.add(checkBoxExThreads);
@@ -321,6 +332,12 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener {
 				checkBoxNoPausePerformed();
 			}
 		});
+		checkBoxNoFilePatching.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				checkBoxNoFilePatchingPerformed();
+			}
+		});
 		checkBoxWindowMode.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -394,6 +411,7 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener {
 		checkBoxShowScriptErrors.setToolTipText("Show in game script error");
 		checkBoxNoPause
 				.setToolTipText("Don't suspend the game when placed in background");
+		checkBoxNoFilePatching.setToolTipText("Load only PBO files");
 		checkBoxWindowMode
 				.setToolTipText("Display the game windowed instead of full screen");
 		comboBoxMaxMemory.setToolTipText("Restricts memory allocation");
@@ -419,6 +437,7 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener {
 		checkBoxShowScriptErrors.setSelected(launcherOptionsDTO
 				.isShowScriptError());
 		checkBoxNoPause.setSelected(launcherOptionsDTO.isNoPause());
+		checkBoxNoFilePatching.setSelected(launcherOptionsDTO.isNoFilePatching());
 		checkBoxWindowMode.setSelected(launcherOptionsDTO.isWindowMode());
 
 		/* Performance */
@@ -433,9 +452,10 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener {
 					.toString(launcherOptionsDTO.getCpuCountSelection()));
 			checkBoxCpuCount.setSelected(true);
 		}
-		
+
 		if (launcherOptionsDTO.getExThreadsSelection() != null) {
-			comboBoxExThreads.setSelectedItem(launcherOptionsDTO.getExThreadsSelection());
+			comboBoxExThreads.setSelectedItem(launcherOptionsDTO
+					.getExThreadsSelection());
 			checkBoxExThreads.setSelected(true);
 		}
 
@@ -499,6 +519,12 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener {
 		updateRunParameters();
 	}
 
+	private void checkBoxNoFilePatchingPerformed() {
+		configurationService.setCheckBoxNoFilePatching(checkBoxNoFilePatching
+				.isSelected());
+		updateRunParameters();
+	}
+
 	private void checkBoxWindowModePerformed() {
 		configurationService.setCheckBoxWindowMode(checkBoxWindowMode
 				.isSelected());
@@ -550,17 +576,17 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener {
 		}
 		updateRunParameters();
 	}
-	
+
 	private void comboBoxExThreadsPerformed() {
-		
+
 		String exThreads = (String) comboBoxExThreads.getSelectedItem();
-		if (exThreads==null){
+		if (exThreads == null) {
 			return;
 		}
 		if (!exThreads.isEmpty()) {
 			checkBoxExThreads.setSelected(true);
 			configurationService.setExThreads(exThreads);
-		}else {
+		} else {
 			checkBoxExThreads.setSelected(false);
 			configurationService.setExThreads(null);
 		}
