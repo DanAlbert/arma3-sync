@@ -90,19 +90,18 @@ public class AboutPanel extends JDialog implements ActionListener,UIConstants {
 			{
 				jPanel2 = new ImagePanel();
 				jPanel1.add(jPanel2);
-				jPanel2.setBounds(187, 48, 101, 100);
+				jPanel2.setBounds(181, 38, 114, 116);
 				jPanel2.setBackground(new java.awt.Color(255, 255, 255));
 				ImageIcon imageIcon = new ImageIcon(PICTURE);
 				Image myNewImage = imageIcon.getImage();
 				jPanel2.setImage(myNewImage);
-				jPanel2.setSize(100, 100);
 				jPanel2.repaint();
 			}
 			{
 				jTextArea1 = new JTextArea();
 				jPanel1.add(jTextArea1);
 				jTextArea1.setText(APPLICATION_NAME);
-				jTextArea1.setBounds(12, 7, 184, 35);
+				jTextArea1.setBounds(12, 7, 170, 35);
 				jTextArea1.setFont(new java.awt.Font("Tahoma", 1, 28));
 				jTextArea1.setEditable(false);
 			}
@@ -110,7 +109,7 @@ public class AboutPanel extends JDialog implements ActionListener,UIConstants {
 				jTextArea2 = new JTextArea();
 				jPanel1.add(jTextArea2);
 				jTextArea2.setText("Version " + Version.getName());
-				jTextArea2.setBounds(12, 116, 157, 22);
+				jTextArea2.setBounds(12, 116, 145, 22);
 				jTextArea2.setFont(new java.awt.Font("Tahoma", 0, 11));
 				jTextArea2.setEditable(false);
 			}
@@ -119,7 +118,7 @@ public class AboutPanel extends JDialog implements ActionListener,UIConstants {
 				jPanel1.add(jTextArea3);
 				jTextArea3.setText("Build " + Version.getVersion() + " ("
 						+ Version.getYear() + ")");
-				jTextArea3.setBounds(12, 138, 157, 22);
+				jTextArea3.setBounds(12, 138, 145, 22);
 				jTextArea3.setFont(new java.awt.Font("Tahoma", 0, 11));
 				jTextArea3.setEditable(false);
 			}
@@ -127,7 +126,7 @@ public class AboutPanel extends JDialog implements ActionListener,UIConstants {
 				jTextArea4 = new JTextArea();
 				jPanel1.add(jTextArea4);
 				jTextArea4.setText("by the [S.o.E] Team,");
-				jTextArea4.setBounds(12, 53, 157, 24);
+				jTextArea4.setBounds(12, 53, 145, 24);
 				jTextArea4.setFont(new java.awt.Font("Tahoma", 1, 11));
 				jTextArea4.setEditable(false);
 			}
