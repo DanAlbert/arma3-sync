@@ -42,6 +42,7 @@ import javax.swing.SwingUtilities;
 import fr.soe.a3s.constant.MinimizationType;
 import fr.soe.a3s.dto.RepositoryDTO;
 import fr.soe.a3s.dto.ServerInfoDTO;
+import fr.soe.a3s.dto.configuration.LauncherOptionsDTO;
 import fr.soe.a3s.dto.configuration.PreferencesDTO;
 import fr.soe.a3s.exception.LoadingException;
 import fr.soe.a3s.exception.ProfileException;
@@ -140,7 +141,7 @@ public class MainPanel extends JFrame implements UIConstants {
 		menuItemTFARwizard = new JMenuItem("TFAR installer",
 				new ImageIcon(TFAR));
 		menuTools.add(menuItemTFARwizard);
-		
+
 		menuItemAiAwizard = new JMenuItem("AiA tweaker", new ImageIcon(
 				TRANSMISSION));
 		menuTools.add(menuItemAiAwizard);
@@ -470,7 +471,8 @@ public class MainPanel extends JFrame implements UIConstants {
 
 		facade.getAddonsPanel().saveAddonGroups();
 		try {
-			profileService.saveLauncherOptions(configurationService.getProfileName());
+			profileService.saveLauncherOptions(configurationService
+					.getProfileName());
 		} catch (ProfileException e) {
 			e.printStackTrace();
 		}
@@ -481,14 +483,16 @@ public class MainPanel extends JFrame implements UIConstants {
 
 	private void menuItemACREwizardPerformed() {
 
-		FirstPageACREInstallerPanel firstPage = new FirstPageACREInstallerPanel(facade);
+		FirstPageACREInstallerPanel firstPage = new FirstPageACREInstallerPanel(
+				facade);
 		firstPage.init();
 		firstPage.setVisible(true);
 	}
-	
-	private void menuItemTFARwizardPerformed(){
-		
-		FirstPageTFARInstallerPanel firstPage = new FirstPageTFARInstallerPanel(facade);
+
+	private void menuItemTFARwizardPerformed() {
+
+		FirstPageTFARInstallerPanel firstPage = new FirstPageTFARInstallerPanel(
+				facade);
 		firstPage.init();
 		firstPage.setVisible(true);
 	}
@@ -739,6 +743,12 @@ public class MainPanel extends JFrame implements UIConstants {
 
 		// Save current profile
 		facade.getAddonsPanel().saveAddonGroups();
+		try {
+			profileService.saveLauncherOptions(configurationService
+					.getProfileName());
+		} catch (ProfileException ex) {
+			ex.printStackTrace();
+		}
 
 		int numberMenuItems = menuProfiles.getItemCount();
 
@@ -755,6 +765,14 @@ public class MainPanel extends JFrame implements UIConstants {
 		facade.getInfoPanel().init();
 		facade.getAddonsPanel().updateAddonGroups();
 		facade.getAddonsPanel().expandAddonGroups();
+		try {
+			LauncherOptionsDTO launcherOptionsDTO = profileService
+					.getLauncherOptions(profileName);
+			configurationService.setLauncherOptions(launcherOptionsDTO);
+			facade.getLaunchOptionsPanel().updateOptions();
+		} catch (Exception e2) {
+			e2.printStackTrace();
+		}
 		facade.getLaunchOptionsPanel().updateRunParameters();
 		facade.getLaunchOptionsPanel().updateAdditionalParameters();
 	}
