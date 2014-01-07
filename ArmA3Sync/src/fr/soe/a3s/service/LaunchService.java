@@ -87,8 +87,8 @@ public class LaunchService {
 						List<String> params = new ArrayList<String>();
 						params.add(runParameters.trim());
 						try {
-							Callable<Integer> c = launcherDAO.call(executableName,
-									launchPath, params);
+							Callable<Integer> c = launcherDAO.call(
+									executableName, launchPath, params);
 							runnables.add(c);
 						} catch (Exception e) {
 							e.printStackTrace();
@@ -174,7 +174,8 @@ public class LaunchService {
 		List<Callable<Integer>> runnables = new ArrayList<Callable<Integer>>();
 		try {
 			String executableName = new File(arma3Path).getName();
-			Callable<Integer> c = launcherDAO.call(executableName,arma3Path, params);
+			Callable<Integer> c = launcherDAO.call(executableName, arma3Path,
+					params);
 			runnables.add(c);
 			ExecutorService executor = Executors.newSingleThreadExecutor();
 			executor.submit(c);
@@ -289,7 +290,7 @@ public class LaunchService {
 				} else if (path.equals(parentArma3ExePath)) {
 					addon.setPath("");
 					addon.setAtArmA3InstallRoot(true);
-				}else {
+				} else {
 					addon.setAtArmA3InstallRoot(false);
 				}
 			}
@@ -320,26 +321,31 @@ public class LaunchService {
 		for (int i = 0; i < ordererAddonListByPath.size(); i++) {
 			List<Addon> list1 = ordererAddonListByPath.get(i);
 			String path = list1.get(0).getPath();
-			if (list1.get(0).isAtArmA3InstallRoot()){
+
+			if (list1.get(0).isAtArmA3InstallRoot()) {
 				if (path.isEmpty()) {
 					mods = mods + "-mod=";
-				} else{
-					mods = mods + "-mod=" + path + "\\";
+					for (Addon addon : list1) {
+						mods = mods + addon.getName() + ";";
+					}
+				} else {
+					for (Addon addon : list1) {
+						mods = mods + "-mod=" + path + "\\" + addon.getName()
+								+ ";";
+					}
 				}
-				for (Addon addon : list1) {
-					mods = mods + addon.getName() + ";";
-				}
-			}else {
+			} else {
 				for (Addon addon : list1) {
 					if (path.isEmpty()) {
 						mods = mods + "-mod=" + addon.getName() + ";";
-					}else {
-						mods = mods + "-mod=" + path + "\\" + addon.getName() + ";";
+					} else {
+						mods = mods + "-mod=" + path + "\\" + addon.getName()
+								+ ";";
 					}
 				}
 			}
 		}
-		
+
 		String[] tab = mods.split("-mod=");
 
 		for (int i = 0; i < tab.length; i++) {
@@ -425,7 +431,7 @@ public class LaunchService {
 		if (launcherOptions.isNoPause()) {
 			params.add("-noPause");
 		}
-		if (launcherOptions.isNoFilePatching()){
+		if (launcherOptions.isNoFilePatching()) {
 			params.add("-noFilePatching");
 		}
 		if (launcherOptions.isWindowMode()) {
