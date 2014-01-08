@@ -366,7 +366,7 @@ public class ConfigurationDAO implements DataAccessConstants {
 			if (appDataFolderPath != null) {
 				arma3RPTfolderPath = new File(appDataFolderPath)
 						.getParentFile().getAbsolutePath()
-						+ "\\Local\\Arma 3 Alpha";
+						+ "\\Local\\Arma 3";
 			}
 		}
 		return arma3RPTfolderPath;
