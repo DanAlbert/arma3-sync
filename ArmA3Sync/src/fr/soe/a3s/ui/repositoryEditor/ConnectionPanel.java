@@ -7,8 +7,12 @@ import java.awt.event.WindowEvent;
 
 import javax.swing.JOptionPane;
 
+import fr.soe.a3s.exception.CheckException;
 import fr.soe.a3s.exception.FtpException;
+import fr.soe.a3s.exception.HttpException;
 import fr.soe.a3s.exception.RepositoryException;
+import fr.soe.a3s.service.AbstractConnexionService;
+import fr.soe.a3s.service.ConnexionServiceFactory;
 import fr.soe.a3s.service.FtpService;
 import fr.soe.a3s.ui.Facade;
 
@@ -22,14 +26,15 @@ import fr.soe.a3s.ui.Facade;
  * PURCHASED FOR THIS MACHINE, SO JIGLOO OR THIS CODE CANNOT BE USED LEGALLY FOR
  * ANY CORPORATE OR COMMERCIAL PURPOSE.
  */
-public class ConnectionPanel extends ProgressPanel{
+public class ConnectionPanel extends ProgressPanel {
 
-	private FtpService ftpService = new FtpService();
+	private AbstractConnexionService connexion;
 	private String repositoryName;
 	private String eventName;
 	private Thread t;
 
-	public ConnectionPanel(Facade facade,String repositoryName, String eventName) {
+	public ConnectionPanel(Facade facade, String repositoryName,
+			String eventName) {
 		super(facade);
 		this.repositoryName = repositoryName;
 		this.eventName = eventName;
@@ -50,28 +55,27 @@ public class ConnectionPanel extends ProgressPanel{
 	}
 
 	public void init() {
-		
+
 		progressBar.setIndeterminate(true);
 		t = new Thread(new Runnable() {
 			@Override
 			public void run() {
 				try {
-					ftpService.checkRepository(repositoryName);
-				} catch (RepositoryException e) {
-					e.printStackTrace();
-					setVisible(false);
-					JOptionPane.showMessageDialog(facade.getMainPanel(),
-							e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-				} catch (FtpException e) {
+					connexion = ConnexionServiceFactory
+							.getServiceFromRepository(repositoryName);
+					connexion.checkRepository(repositoryName);
+				} catch (Exception e) {
 					if (!canceled) {
 						setVisible(false);
 						JOptionPane.showMessageDialog(facade.getMainPanel(),
-								e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+								e.getMessage(), "Error",
+								JOptionPane.ERROR_MESSAGE);
 					}
 				} finally {
 					if (!canceled) {
 						facade.getSyncPanel().init();
-						facade.getMainPanel().openRepository(repositoryName,eventName,false);
+						facade.getMainPanel().openRepository(repositoryName,
+								eventName, false);
 						progressBar.setIndeterminate(false);
 					}
 					setVisible(false);
@@ -86,7 +90,9 @@ public class ConnectionPanel extends ProgressPanel{
 	private void menuExitPerformed() {
 		this.setVisible(false);
 		canceled = true;
-		ftpService.disconnect();
+		if (connexion!=null){
+			connexion.disconnect();
+		}
 		this.dispose();
 		t.interrupt();
 	}

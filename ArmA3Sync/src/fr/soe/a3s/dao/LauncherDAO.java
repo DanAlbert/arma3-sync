@@ -34,7 +34,7 @@ public class LauncherDAO implements DataAccessConstants {
 			input.close();
 			p.destroy();
 		} catch (Exception err) {
-			err.printStackTrace();
+			//err.printStackTrace();
 		}
 		return response;
 	}

@@ -48,8 +48,10 @@ import fr.soe.a3s.exception.LoadingException;
 import fr.soe.a3s.exception.ProfileException;
 import fr.soe.a3s.exception.RepositoryException;
 import fr.soe.a3s.exception.WritingException;
+import fr.soe.a3s.service.AbstractConnexionService;
 import fr.soe.a3s.service.CommonService;
 import fr.soe.a3s.service.ConfigurationService;
+import fr.soe.a3s.service.ConnexionServiceFactory;
 import fr.soe.a3s.service.FtpService;
 import fr.soe.a3s.service.PreferencesService;
 import fr.soe.a3s.service.ProfileService;
@@ -801,8 +803,9 @@ public class MainPanel extends JFrame implements UIConstants {
 				List<RepositoryDTO> list = repositoryService.getRepositories();
 				for (final RepositoryDTO repositoryDTO : list) {
 					try {
-						FtpService ftpService = new FtpService();
-						ftpService.checkRepository(repositoryDTO.getName());
+						AbstractConnexionService connexion = ConnexionServiceFactory
+								.getServiceFromRepository(repositoryDTO.getName());
+						connexion.checkRepository(repositoryDTO.getName());
 					} catch (Exception e) {
 						System.out.println(e.getMessage());
 					}

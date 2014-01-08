@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 import javax.swing.JOptionPane;
+import javax.swing.UIManager;
 
 import fr.soe.a3s.controller.ObserverFileSize;
 import fr.soe.a3s.controller.ObserverFilesNumber;
@@ -16,13 +17,11 @@ import fr.soe.a3s.dto.EventDTO;
 import fr.soe.a3s.dto.sync.SyncTreeDirectoryDTO;
 import fr.soe.a3s.dto.sync.SyncTreeLeafDTO;
 import fr.soe.a3s.dto.sync.SyncTreeNodeDTO;
-import fr.soe.a3s.exception.FtpException;
 import fr.soe.a3s.exception.RepositoryException;
-import fr.soe.a3s.exception.ServerInfoNotFoundException;
-import fr.soe.a3s.exception.SyncFileNotFoundException;
+import fr.soe.a3s.service.AbstractConnexionService;
 import fr.soe.a3s.service.AddonService;
 import fr.soe.a3s.service.ConfigurationService;
-import fr.soe.a3s.service.FtpService;
+import fr.soe.a3s.service.ConnexionServiceFactory;
 import fr.soe.a3s.service.ProfileService;
 import fr.soe.a3s.service.RepositoryService;
 import fr.soe.a3s.ui.Facade;
@@ -39,7 +38,8 @@ public class AddonsDownloader extends Thread {
 	private String repositoryName;
 	private List<SyncTreeNodeDTO> listFilesToUpdate = new ArrayList<SyncTreeNodeDTO>();
 	private List<SyncTreeNodeDTO> listFilesToDelete = new ArrayList<SyncTreeNodeDTO>();
-	private FtpService ftpService = new FtpService();
+	// private FtpService ftpService = new FtpService();
+	private AbstractConnexionService connexionService;
 	private RepositoryService repositoryService = new RepositoryService();
 	private ConfigurationService configurationService = new ConfigurationService();
 	private boolean canceled = false;
@@ -64,7 +64,7 @@ public class AddonsDownloader extends Thread {
 		for (SyncTreeNodeDTO node : racine.getList()) {
 			getFiles(node);
 		}
-	
+
 		int nbFiles = listFilesToUpdate.size();
 
 		repositoryService.setDownloading(repositoryName, true);
@@ -83,80 +83,104 @@ public class AddonsDownloader extends Thread {
 				.setMinimum(0);
 		facade.getDownloadPanel().getProgressBarDownloadSingleAddon()
 				.setMaximum(100);
-		
-		//Resuming download
-		lastIndexFileDownloaded = repositoryService.getLastIndexFileDownloaded(repositoryName);
-		incrementedFilesSize = repositoryService.getIncrementedFilesSize(repositoryName);
+
+		// Resuming download
+		lastIndexFileDownloaded = repositoryService
+				.getLastIndexFileDownloaded(repositoryName);
+		incrementedFilesSize = repositoryService
+				.getIncrementedFilesSize(repositoryName);
 		resume = repositoryService.isResume(repositoryName);
-		facade.getDownloadPanel().getProgressBarDownloadAddons().setValue(lastIndexFileDownloaded);
-		
-		ftpService.getFtpDAO().addObserverFilesNumber(
-				new ObserverFilesNumber() {
-					@Override
-					public void update(int value) {
-						lastIndexFileDownloaded++;
-						facade.getDownloadPanel()
-								.getProgressBarDownloadAddons().setValue(lastIndexFileDownloaded);
-						SyncTreeNodeDTO node = listFilesToUpdate.get(lastIndexFileDownloaded - 1);
-						if (node.isLeaf()) {
-							SyncTreeLeafDTO leaf = (SyncTreeLeafDTO) node;
-							long size = leaf.getSize();
-							incrementedFilesSize = incrementedFilesSize + size;
-						}
-						if (!paused && !canceled) {
-							facade.getDownloadPanel()
-									.getLabelDownloadedValue()
-									.setText(
-											UnitConverter
-													.convertSize(incrementedFilesSize));
-						}
-					}
-				});
-		ftpService.getFtpDAO().addObserverFileSize(new ObserverFileSize() {
-			@Override
-			public void update(long value) {
-				
-				offset = value;
-				
-				SyncTreeNodeDTO node = listFilesToUpdate
-						.get(lastIndexFileDownloaded);
-				if (node.isLeaf()) {
-					SyncTreeLeafDTO leaf = (SyncTreeLeafDTO) node;
-					long size = leaf.getSize();
-					facade.getDownloadPanel()
-							.getProgressBarDownloadSingleAddon()
-							.setValue((int) (value * 100 / size));
-					facade.getDownloadPanel()
-							.getLabelDownloadedValue()
-							.setText(
-									UnitConverter
-											.convertSize(incrementedFilesSize
-													+ value));
-				}
-			}
-		});
-		ftpService.getFtpDAO().addObserverSpeed(new ObserverSpeed() {
-			@Override
-			public void update(long value) {
-				facade.getDownloadPanel().getLabelSpeedValue()
-						.setText(UnitConverter.convertSpeed(value));
-				long remainingFileSize = totalFilesSize - incrementedFilesSize-offset;
-				long time = remainingFileSize / value;
-				facade.getDownloadPanel().getLabelRemainingTimeValue()
-						.setText(UnitConverter.convertTime(time));
-			}
-		});
+		facade.getDownloadPanel().getProgressBarDownloadAddons()
+				.setValue(lastIndexFileDownloaded);
 
 		try {
+			connexionService = ConnexionServiceFactory
+					.getServiceFromRepository(repositoryName);
+
+			connexionService.getConnexionDAO().addObserverFilesNumber(
+					new ObserverFilesNumber() {
+						@Override
+						public void update(int value) {
+							lastIndexFileDownloaded++;
+							facade.getDownloadPanel()
+									.getProgressBarDownloadAddons()
+									.setValue(lastIndexFileDownloaded);
+							SyncTreeNodeDTO node = listFilesToUpdate
+									.get(lastIndexFileDownloaded - 1);
+							if (node.isLeaf()) {
+								SyncTreeLeafDTO leaf = (SyncTreeLeafDTO) node;
+								long size = leaf.getSize();
+								incrementedFilesSize = incrementedFilesSize
+										+ size;
+							}
+							if (!paused && !canceled) {
+								facade.getDownloadPanel()
+										.getLabelDownloadedValue()
+										.setText(
+												UnitConverter
+														.convertSize(incrementedFilesSize));
+							}
+						}
+					});
+			connexionService.getConnexionDAO().addObserverFileSize(
+					new ObserverFileSize() {
+						@Override
+						public void update(long value) {
+
+							offset = value;
+
+							SyncTreeNodeDTO node = listFilesToUpdate
+									.get(lastIndexFileDownloaded);
+							if (node.isLeaf()) {
+								SyncTreeLeafDTO leaf = (SyncTreeLeafDTO) node;
+								long size = leaf.getSize();
+								facade.getDownloadPanel()
+										.getProgressBarDownloadSingleAddon()
+										.setValue((int) (value * 100 / size));
+								facade.getDownloadPanel()
+										.getLabelDownloadedValue()
+										.setText(
+												UnitConverter
+														.convertSize(incrementedFilesSize
+																+ value));
+							}
+						}
+					});
+			connexionService.getConnexionDAO().addObserverSpeed(
+					new ObserverSpeed() {
+						@Override
+						public void update(long value) {
+							if (value != 0) {
+								facade.getDownloadPanel()
+										.getLabelSpeedValue()
+										.setText(
+												UnitConverter
+														.convertSpeed(value));
+								long remainingFileSize = totalFilesSize
+										- incrementedFilesSize - offset;
+								long time = remainingFileSize / value;
+								facade.getDownloadPanel()
+										.getLabelRemainingTimeValue()
+										.setText(
+												UnitConverter.convertTime(time));
+							}
+						}
+					});
+
 			/* Download files */
 			List<SyncTreeNodeDTO> newListFiles = new ArrayList<SyncTreeNodeDTO>();
 			for (int i = lastIndexFileDownloaded; i < nbFiles; i++) {
 				newListFiles.add(listFilesToUpdate.get(i));
 			}
 
-			ftpService.downloadAddons(repositoryName,newListFiles,resume);
-			
+			connexionService.downloadAddons(repositoryName, newListFiles,
+					resume);
+
 			resume = false;
+
+			/* Stop indeterminate single download */
+			facade.getDownloadPanel().getProgressBarDownloadSingleAddon()
+					.setIndeterminate(false);
 
 			/* Delete extra files */
 			facade.getDownloadPanel().getLabelDownloadStatus()
@@ -170,7 +194,8 @@ public class AddonsDownloader extends Thread {
 						JOptionPane.INFORMATION_MESSAGE);
 				facade.getDownloadPanel().getLabelDownloadStatus()
 						.setText("Finished!");
-				repositoryService.saveDownloadParameters(repositoryName,0,0,false);
+				repositoryService.saveDownloadParameters(repositoryName, 0, 0,
+						false);
 				/* Check for Addons */
 				checkForAddons();
 			} else if (canceled) {
@@ -180,12 +205,16 @@ public class AddonsDownloader extends Thread {
 				facade.getDownloadPanel().getLabelDownloadStatus()
 						.setText("Canceled!");
 				/* Check for Addons */
-			    checkForAddons();
+				checkForAddons();
 			} else if (paused) {
 				facade.getDownloadPanel().getLabelDownloadStatus()
 						.setText("Paused");
 			}
 		} catch (Exception e) {
+			/* Stop indeterminate single download */
+			facade.getDownloadPanel().getProgressBarDownloadSingleAddon()
+					.setIndeterminate(false);
+			facade.getDownloadPanel().getLabelDownloadStatus().setText("");
 			if (!canceled && !paused) {
 				JOptionPane.showMessageDialog(facade.getMainPanel(),
 						e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
@@ -259,10 +288,10 @@ public class AddonsDownloader extends Thread {
 		AddonService addonService = new AddonService();
 		addonService.resetAvailableAddonTree();
 		facade.getAddonsPanel().updateAvailableAddons();
-		
+
 		// Addons Panel: Update Addons Group
 		ProfileService profileService = new ProfileService();
-		configurationService.setViewMode(true);//required to merge
+		configurationService.setViewMode(true);// required to merge
 		facade.getAddonsPanel().getCheckBoxTree().setSelected(true);
 		profileService.merge(addonService.getAvailableAddonsTree(),
 				profileService.getAddonGroupsTree());
@@ -270,8 +299,7 @@ public class AddonsDownloader extends Thread {
 		facade.getAddonsPanel().expandAddonGroups();
 		facade.getAddonOptionsPanel().updateAddonPriorities();
 
-		FtpService ftpService = new FtpService();
-		ftpService.getSync(repositoryName);
+		connexionService.getSync(repositoryName);
 		parent = repositoryService.getSync(repositoryName);
 		if (eventName != null) {
 			setEventAddonSelection();
@@ -301,14 +329,16 @@ public class AddonsDownloader extends Thread {
 
 	public void cancel() {
 		this.canceled = true;
-		ftpService.stopDownload();
-		repositoryService.saveDownloadParameters(repositoryName,0,0,false);
+		connexionService.stopDownload(false);
+		repositoryService.saveDownloadParameters(repositoryName, 0, 0, false);
 	}
 
 	public void pause() {
 		this.paused = true;
-		ftpService.stopDownload();
-		repositoryService.saveDownloadParameters(repositoryName,incrementedFilesSize,lastIndexFileDownloaded,true);
+		connexionService.stopDownload(true);
+		
+		repositoryService.saveDownloadParameters(repositoryName,
+				incrementedFilesSize, lastIndexFileDownloaded, true);
 	}
 
 	public int getLastIndexFileDownloaded() {
@@ -318,10 +348,9 @@ public class AddonsDownloader extends Thread {
 	public long getIncrementedFilesSize() {
 		return incrementedFilesSize;
 	}
-	
 
 	private void setEventAddonSelection() {
-		
+
 		try {
 			List<EventDTO> eventDTOs = repositoryService
 					.getEvents(this.repositoryName);
@@ -344,7 +373,7 @@ public class AddonsDownloader extends Thread {
 			e.printStackTrace();
 		}
 	}
-	
+
 	private void refine(SyncTreeDirectoryDTO oldSyncTreeDirectoryDTO,
 			SyncTreeDirectoryDTO newSyncTreeDirectoryDTO,
 			Map<String, Boolean> addonNames) {
@@ -371,10 +400,10 @@ public class AddonsDownloader extends Thread {
 					}
 					newSyncTreeDirectoryDTO.addTreeNode(newDirectory);
 					fill(directoryDTO, newDirectory);
-				} else if (!directoryDTO.isMarkAsAddon()){
+				} else if (!directoryDTO.isMarkAsAddon()) {
 					found = false;
-					seek(directoryDTO,addonNames);
-					if (found){
+					seek(directoryDTO, addonNames);
+					if (found) {
 						SyncTreeDirectoryDTO newDirectory = new SyncTreeDirectoryDTO();
 						newDirectory.setName(directoryDTO.getName());
 						newSyncTreeDirectoryDTO.addTreeNode(newDirectory);
@@ -385,7 +414,7 @@ public class AddonsDownloader extends Thread {
 			}
 		}
 	}
-	
+
 	private void fill(SyncTreeDirectoryDTO directoryDTO,
 			SyncTreeDirectoryDTO newDirectoryDTO) {
 
@@ -416,23 +445,23 @@ public class AddonsDownloader extends Thread {
 			}
 		}
 	}
-	
+
 	private void seek(SyncTreeDirectoryDTO seakDirectory,
 			Map<String, Boolean> addonNames) {
-		
+
 		for (SyncTreeNodeDTO nodeDTO : seakDirectory.getList()) {
 			if (!nodeDTO.isLeaf()) {
 				SyncTreeDirectoryDTO directoryDTO = (SyncTreeDirectoryDTO) nodeDTO;
 				if (directoryDTO.isMarkAsAddon()
 						&& addonNames.containsKey(nodeDTO.getName())) {
 					found = true;
-				}else {
+				} else {
 					seek(directoryDTO, addonNames);
 				}
 			}
 		}
 	}
-	
+
 	private void selectAllAscending(SyncTreeNodeDTO syncTreeNodeDTO) {
 		if (syncTreeNodeDTO != null) {
 			syncTreeNodeDTO.setSelected(true);

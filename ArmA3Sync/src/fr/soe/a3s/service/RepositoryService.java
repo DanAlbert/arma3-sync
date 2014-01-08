@@ -12,12 +12,15 @@ import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 
-import fr.soe.a3s.constant.EncryptionMode;
+import fr.soe.a3s.constant.Protocole;
 import fr.soe.a3s.dao.AddonDAO;
+import fr.soe.a3s.dao.DataAccessConstants;
 import fr.soe.a3s.dao.RepositoryBuilderDAO;
 import fr.soe.a3s.dao.RepositoryDAO;
+import fr.soe.a3s.domain.AbstractProtocole;
 import fr.soe.a3s.domain.Addon;
 import fr.soe.a3s.domain.Ftp;
+import fr.soe.a3s.domain.Http;
 import fr.soe.a3s.domain.TreeDirectory;
 import fr.soe.a3s.domain.TreeLeaf;
 import fr.soe.a3s.domain.TreeNode;
@@ -32,7 +35,7 @@ import fr.soe.a3s.domain.repository.SyncTreeLeaf;
 import fr.soe.a3s.domain.repository.SyncTreeNode;
 import fr.soe.a3s.dto.ChangelogDTO;
 import fr.soe.a3s.dto.EventDTO;
-import fr.soe.a3s.dto.FtpDTO;
+import fr.soe.a3s.dto.ProtocoleDTO;
 import fr.soe.a3s.dto.RepositoryDTO;
 import fr.soe.a3s.dto.ServerInfoDTO;
 import fr.soe.a3s.dto.TreeDirectoryDTO;
@@ -47,7 +50,7 @@ import fr.soe.a3s.exception.ServerInfoNotFoundException;
 import fr.soe.a3s.exception.SyncFileNotFoundException;
 import fr.soe.a3s.exception.WritingException;
 
-public class RepositoryService {
+public class RepositoryService implements DataAccessConstants {
 
 	private static final RepositoryDAO repositoryDAO = new RepositoryDAO();
 	private RepositoryBuilderDAO repositoryBuilderDAO = new RepositoryBuilderDAO();
@@ -67,10 +70,11 @@ public class RepositoryService {
 			throw new LoadingException();
 		}
 	}
-	
+
 	public void writeAll() throws WritingException {
-		
-		for (Iterator<String> iter = repositoryDAO.getMap().keySet().iterator() ; iter.hasNext() ; ){
+
+		for (Iterator<String> iter = repositoryDAO.getMap().keySet().iterator(); iter
+				.hasNext();) {
 			String repositoryName = iter.next();
 			write(repositoryName);
 		}
@@ -88,22 +92,29 @@ public class RepositoryService {
 	}
 
 	public void createRepository(String name, String url, String port,
-			String login, String password, EncryptionMode encryptionMode)
+			String login, String password, Protocole protocole)
 			throws CheckException {
 
 		if (name == null || "".equals(name)) {
-			throw new CheckException("Repository name can't be empty");
+			throw new CheckException("Repository name can't be empty.");
 		}
-
-		Ftp ftp = new Ftp(url, port, login, password, encryptionMode);
-		ftp.checkData();
 
 		if (repositoryDAO.getMap().containsKey(name)) {
 			throw new CheckException("Repository with name " + name
 					+ " already exists.");
 		}
 
-		Repository repository = new Repository(name, ftp);
+		AbstractProtocole abstractProtocole = null;
+		if (protocole.equals(Protocole.FTP)) {
+			abstractProtocole = new Ftp(url, port, login, password);
+		} else if (protocole.equals(Protocole.HTTP)) {
+			abstractProtocole = new Http(url, port, login, password);
+		} else {
+			throw new CheckException("Protocole not supported yet.");
+		}
+		abstractProtocole.checkData();
+
+		Repository repository = new Repository(name, abstractProtocole);
 		repositoryDAO.getMap().put(repository.getName(), repository);
 	}
 
@@ -201,10 +212,10 @@ public class RepositoryService {
 					+ " not found!");
 		}
 	}
-	
+
 	public void buildRepository(String repositoryName)
 			throws RepositoryException, WritingException {
-		
+
 		Repository repository = repositoryDAO.getMap().get(repositoryName);
 		if (repository == null) {
 			throw new RepositoryException("Repository " + repositoryName
@@ -212,7 +223,7 @@ public class RepositoryService {
 		}
 		repositoryBuilderDAO.buildRepository(repository);
 	}
-	
+
 	public void buildRepository(String repositoryName, String path)
 			throws RepositoryException, WritingException {
 
@@ -249,8 +260,13 @@ public class RepositoryService {
 		determineAddonFoldersToDelete(parent);
 
 		if (repository.getServerInfo().getNumberOfFiles() > 0) {
-			repositoryBuilderDAO.determineLocalSHA1(parent, repository
-					.getServerInfo().getNumberOfFiles());
+			repositoryBuilderDAO.determineLocalSHA1(parent, repository);
+			try {
+				Cipher cipher = getEncryptionCipher();
+				repositoryDAO.write(cipher, repositoryName);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
 		}
 
 		SyncTreeDirectoryDTO parentDTO = new SyncTreeDirectoryDTO();
@@ -357,7 +373,8 @@ public class RepositoryService {
 			listNames.add(node.getName().toLowerCase());
 		}
 		for (File f : subFiles) {
-			if (!listNames.contains(f.getName().toLowerCase())) {
+			if (!listNames.contains(f.getName().toLowerCase())
+					&& !f.getName().contains(PART_EXTENSION)) {
 				if (f.isDirectory()) {
 					SyncTreeDirectory d = new SyncTreeDirectory(f.getName(),
 							directory);
@@ -685,6 +702,27 @@ public class RepositoryService {
 		}
 	}
 
+	public void saveToDiskEvents(String repositoryName)
+			throws RepositoryException, WritingException, CheckException {
+
+		Repository repository = repositoryDAO.getMap().get(repositoryName);
+		if (repository != null) {
+			Events events = repository.getEvents();
+			if (events != null) {
+				String repositoryPath = repository.getPath();
+				if ("".equals(repositoryPath) || repositoryPath == null) {
+					throw new CheckException(
+							"Repository folder location is missing.\n"
+									+ "Please check out Repository panel informations.");
+				}
+				repositoryDAO.saveToDiskEvents(events, repositoryPath);
+			}
+		} else {
+			throw new RepositoryException("Repository " + repositoryName
+					+ " not found!");
+		}
+	}
+
 	public TreeDirectoryDTO getEventAddonSelection(String repositoryName)
 			throws RepositoryException {
 
@@ -806,13 +844,19 @@ public class RepositoryService {
 		final RepositoryDTO repositoryDTO = new RepositoryDTO();
 		repositoryDTO.setName(repository.getName());
 		repositoryDTO.setNotify(repository.isNotify());
-		FtpDTO ftpDTO = new FtpDTO();
-		ftpDTO.setUrl(repository.getProtocole().getUrl());
-		ftpDTO.setLogin(repository.getProtocole().getLogin());
-		ftpDTO.setPassword(repository.getProtocole().getPassword());
-		ftpDTO.setPort(repository.getProtocole().getPort());
-		ftpDTO.setEncryptionMode(repository.getProtocole().getEncryptionMode());
-		repositoryDTO.setFtpDTO(ftpDTO);
+		ProtocoleDTO protocoleDTO = new ProtocoleDTO();
+		protocoleDTO.setUrl(repository.getProtocole().getUrl());
+		protocoleDTO.setLogin(repository.getProtocole().getLogin());
+		protocoleDTO.setPassword(repository.getProtocole().getPassword());
+		protocoleDTO.setPort(repository.getProtocole().getPort());
+		protocoleDTO.setEncryptionMode(repository.getProtocole()
+				.getEncryptionMode());
+		if (repository.getProtocole() instanceof Http) {
+			protocoleDTO.setProtocole(Protocole.HTTP);
+		} else {
+			protocoleDTO.setProtocole(Protocole.FTP);
+		}
+		repositoryDTO.setProtocoleDTO(protocoleDTO);
 		repositoryDTO.setPath(repository.getPath());
 		repositoryDTO.setRevision(repository.getRevision());
 		repositoryDTO.setAutoConfigURL(repository.getAutoConfigURL());
@@ -900,6 +944,7 @@ public class RepositoryService {
 		} else {
 			syncTreeLeafDTO.setUpdated(false);
 		}
+		syncTreeLeafDTO.setLocalSHA1(localSHA1);
 		syncTreeLeafDTO.setDestinationPath(syncTreeLeaf.getDestinationPath());
 		return syncTreeLeafDTO;
 	}
@@ -998,5 +1043,4 @@ public class RepositoryService {
 		treeLeafDTO.setSelected(treeLeaf.isSelected());
 		return treeLeafDTO;
 	}
-
 }

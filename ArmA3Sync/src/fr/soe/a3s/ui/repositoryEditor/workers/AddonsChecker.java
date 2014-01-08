@@ -13,7 +13,9 @@ import fr.soe.a3s.dto.sync.SyncTreeDirectoryDTO;
 import fr.soe.a3s.dto.sync.SyncTreeLeafDTO;
 import fr.soe.a3s.dto.sync.SyncTreeNodeDTO;
 import fr.soe.a3s.exception.RepositoryException;
+import fr.soe.a3s.service.AbstractConnexionService;
 import fr.soe.a3s.service.AddonService;
+import fr.soe.a3s.service.ConnexionServiceFactory;
 import fr.soe.a3s.service.FtpService;
 import fr.soe.a3s.service.RepositoryService;
 import fr.soe.a3s.ui.Facade;
@@ -28,7 +30,8 @@ public class AddonsChecker extends Thread {
 	private boolean found;
 	private boolean update;
 
-	public AddonsChecker(Facade facade, String repositoryName, String eventName, boolean update) {
+	public AddonsChecker(Facade facade, String repositoryName,
+			String eventName, boolean update) {
 		this.facade = facade;
 		this.repositoryName = repositoryName;
 		this.eventName = eventName;
@@ -56,18 +59,16 @@ public class AddonsChecker extends Thread {
 				});
 
 		try {
-			FtpService ftpService = new FtpService();
-			ftpService.checkRepository(repositoryName);// Update all repository
-														// infos
-														// (sync,serverInfos,changelogs,
-														// events)
+			AbstractConnexionService connexionService = ConnexionServiceFactory
+					.getServiceFromRepository(repositoryName);
+			connexionService.getSync(repositoryName);
 			AddonService addonService = new AddonService();
 			addonService.resetAvailableAddonTree();
 			addonService.getAvailableAddonsTree();
 			parent = repositoryService.getSync(repositoryName);
 			if (eventName != null) {
 				setEventAddonSelection();
-			}else if (update){
+			} else if (update) {
 				selectAllDescending(parent);
 			}
 			facade.getDownloadPanel().updateAddons(parent);
@@ -114,9 +115,13 @@ public class AddonsChecker extends Thread {
 				}
 			}
 
+			// List<SyncTreeDirectoryDTO> retrievedList = new
+			// ArrayList<SyncTreeDirectoryDTO>();
+			// retieve(parent, retrievedList, addonNames);
 			SyncTreeDirectoryDTO newRacine = new SyncTreeDirectoryDTO();
 			newRacine.setName(parent.getName());
 			newRacine.setParent(null);
+			// build(parent, newRacine, retrievedList);
 			refine(parent, newRacine, addonNames);
 			parent = newRacine;
 		} catch (RepositoryException e) {
@@ -149,33 +154,33 @@ public class AddonsChecker extends Thread {
 		}
 	}
 
-//	private void build(SyncTreeDirectoryDTO syncTreeDirectoryDTO,
-//			SyncTreeDirectoryDTO newSyncTreeDirectoryDTO,
-//			List<SyncTreeDirectoryDTO> retrievedList) {
-//
-//		for (SyncTreeNodeDTO nodeDTO : retrievedList) {
-//			if (nodeDTO.getParent().getName().contains("racine")) {
-//				newSyncTreeDirectoryDTO.addTreeNode(nodeDTO);
-//				nodeDTO.setParent(newSyncTreeDirectoryDTO);
-//			} else {
-//				SyncTreeDirectoryDTO newParent = new SyncTreeDirectoryDTO();
-//				newParent.setName(nodeDTO.getParent().getName());
-//				SyncTreeDirectoryDTO p = nodeDTO.getParent().getParent();
-//				SyncTreeDirectoryDTO previousParent = newParent;
-//				while (!p.getName().contains("racine")) {
-//					SyncTreeDirectoryDTO newP = new SyncTreeDirectoryDTO();
-//					newP.setName(p.getName());
-//					previousParent.setParent(newP);
-//					newP.addTreeNode(previousParent);
-//					previousParent = newP;
-//					p = p.getParent();
-//				}
-//				newSyncTreeDirectoryDTO.addTreeNode(previousParent);
-//				newParent.addTreeNode(nodeDTO);
-//				nodeDTO.setParent(newParent);
-//			}
-//		}
-//	}
+	// private void build(SyncTreeDirectoryDTO syncTreeDirectoryDTO,
+	// SyncTreeDirectoryDTO newSyncTreeDirectoryDTO,
+	// List<SyncTreeDirectoryDTO> retrievedList) {
+	//
+	// for (SyncTreeNodeDTO nodeDTO : retrievedList) {
+	// if (nodeDTO.getParent().getName().contains("racine")) {
+	// newSyncTreeDirectoryDTO.addTreeNode(nodeDTO);
+	// nodeDTO.setParent(newSyncTreeDirectoryDTO);
+	// } else {
+	// SyncTreeDirectoryDTO newParent = new SyncTreeDirectoryDTO();
+	// newParent.setName(nodeDTO.getParent().getName());
+	// SyncTreeDirectoryDTO p = nodeDTO.getParent().getParent();
+	// SyncTreeDirectoryDTO previousParent = newParent;
+	// while (!p.getName().contains("racine")) {
+	// SyncTreeDirectoryDTO newP = new SyncTreeDirectoryDTO();
+	// newP.setName(p.getName());
+	// previousParent.setParent(newP);
+	// newP.addTreeNode(previousParent);
+	// previousParent = newP;
+	// p = p.getParent();
+	// }
+	// newSyncTreeDirectoryDTO.addTreeNode(previousParent);
+	// newParent.addTreeNode(nodeDTO);
+	// nodeDTO.setParent(newParent);
+	// }
+	// }
+	// }
 
 	private void refine(SyncTreeDirectoryDTO oldSyncTreeDirectoryDTO,
 			SyncTreeDirectoryDTO newSyncTreeDirectoryDTO,
@@ -203,10 +208,10 @@ public class AddonsChecker extends Thread {
 					}
 					newSyncTreeDirectoryDTO.addTreeNode(newDirectory);
 					fill(directoryDTO, newDirectory);
-				} else if (!directoryDTO.isMarkAsAddon()){
+				} else if (!directoryDTO.isMarkAsAddon()) {
 					found = false;
-					seek(directoryDTO,addonNames);
-					if (found){
+					seek(directoryDTO, addonNames);
+					if (found) {
 						SyncTreeDirectoryDTO newDirectory = new SyncTreeDirectoryDTO();
 						newDirectory.setName(directoryDTO.getName());
 						newSyncTreeDirectoryDTO.addTreeNode(newDirectory);
@@ -248,23 +253,23 @@ public class AddonsChecker extends Thread {
 			}
 		}
 	}
-	
+
 	private void seek(SyncTreeDirectoryDTO seakDirectory,
 			Map<String, Boolean> addonNames) {
-		
+
 		for (SyncTreeNodeDTO nodeDTO : seakDirectory.getList()) {
 			if (!nodeDTO.isLeaf()) {
 				SyncTreeDirectoryDTO directoryDTO = (SyncTreeDirectoryDTO) nodeDTO;
 				if (directoryDTO.isMarkAsAddon()
 						&& addonNames.containsKey(nodeDTO.getName())) {
 					found = true;
-				}else {
+				} else {
 					seek(directoryDTO, addonNames);
 				}
 			}
 		}
 	}
-	
+
 	private void selectAllAscending(SyncTreeNodeDTO syncTreeNodeDTO) {
 		if (syncTreeNodeDTO != null) {
 			syncTreeNodeDTO.setSelected(true);
@@ -272,7 +277,7 @@ public class AddonsChecker extends Thread {
 			selectAllAscending(parent);
 		}
 	}
-	
+
 	private void selectAllDescending(SyncTreeNodeDTO syncTreeNodeDTO) {
 		syncTreeNodeDTO.setSelected(true);
 		if (!syncTreeNodeDTO.isLeaf()) {

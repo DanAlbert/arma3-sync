@@ -25,14 +25,17 @@ import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JTextField;
 
-import fr.soe.a3s.constant.EncryptionMode;
+import fr.soe.a3s.constant.Protocole;
 import fr.soe.a3s.dto.AutoConfigDTO;
+import fr.soe.a3s.dto.ProtocoleDTO;
 import fr.soe.a3s.dto.RepositoryDTO;
 import fr.soe.a3s.exception.CheckException;
 import fr.soe.a3s.exception.FtpException;
+import fr.soe.a3s.exception.HttpException;
 import fr.soe.a3s.exception.RepositoryException;
 import fr.soe.a3s.exception.WritingException;
-import fr.soe.a3s.service.FtpService;
+import fr.soe.a3s.service.AbstractConnexionService;
+import fr.soe.a3s.service.ConnexionServiceFactory;
 import fr.soe.a3s.service.RepositoryService;
 import fr.soe.a3s.ui.Facade;
 import fr.soe.a3s.ui.UIConstants;
@@ -72,13 +75,14 @@ public class RepositoryEditPanel extends JDialog implements UIConstants {
 	private char[] password;
 	private RepositoryService repositoryService = new RepositoryService();
 	private String initialRepositoryName = "";
+	private JComboBox<Object> comboBoxProtocole;
 
 	public RepositoryEditPanel(Facade facade) {
 		super(facade.getMainPanel(), "New repository", true);
 		this.facade = facade;
 		this.facade.setRepositoryEditPanel(this);
 		this.setResizable(false);
-		this.setSize(405, 350);
+		this.setSize(405, 400);
 		setIconImage(ICON);
 		this.setLocation(
 				(int) facade.getMainPanel().getLocation().getX()
@@ -149,8 +153,29 @@ public class RepositoryEditPanel extends JDialog implements UIConstants {
 				}
 			}
 			{
+				protocolePanel = new JPanel();
+				protocolePanel.setLayout(null);
+				protocolePanel.setBorder(BorderFactory.createTitledBorder(
+						BorderFactory.createEtchedBorder(), "Protocole"));
+				{
+					labelProtocole = new JLabel();
+					protocolePanel.add(labelProtocole);
+					labelProtocole.setText("File transfer protocole");
+					labelProtocole.setBounds(18, 23, 122, 24);
+				}
+				{
+					comboBoxProtocole = new JComboBox<>();
+					protocolePanel.add(comboBoxProtocole);
+					protocolePanel.add(comboBoxProtocole);
+					ComboBoxModel comboBoxProtocoleModel = new DefaultComboBoxModel(
+							new String[] { Protocole.FTP.getDescription(),
+									Protocole.HTTP.getDescription() });
+					comboBoxProtocole.setModel(comboBoxProtocoleModel);
+					comboBoxProtocole.setBounds(141, 24, 77, 23);
+				}
+			}
+			{
 				connectionPanel = new JPanel();
-				// centerPanel.add(connectionPanel);
 				connectionPanel.setLayout(null);
 				connectionPanel.setBorder(BorderFactory.createTitledBorder(
 						BorderFactory.createEtchedBorder(), "Connection"));
@@ -208,39 +233,30 @@ public class RepositoryEditPanel extends JDialog implements UIConstants {
 					checkBoxAnonymous.setBounds(280, 91, 93, 24);
 				}
 			}
-			{
-				protocolePanel = new JPanel();
-				// centerPanel.add(protocolePanel);
-				protocolePanel.setLayout(null);
-				protocolePanel.setBorder(BorderFactory.createTitledBorder(
-						BorderFactory.createEtchedBorder(), "Protocole"));
-			}
-			{
-				labelProtocole = new JLabel();
-				protocolePanel.add(labelProtocole);
-				labelProtocole.setText("FTP file protocole");
-				labelProtocole.setBounds(18, 23, 100, 24);
-			}
+
 			Box vertBox = Box.createVerticalBox();
 			vertBox.add(Box.createVerticalStrut(5));
 			vertBox.add(repositoryPanel);
 			vertBox.add(Box.createVerticalStrut(5));
 			repositoryPanel.setPreferredSize(new java.awt.Dimension(344, 65));
+			vertBox.add(protocolePanel);
+			protocolePanel.setPreferredSize(new java.awt.Dimension(344, 5));
+			vertBox.add(Box.createVerticalStrut(5));
 			vertBox.add(connectionPanel);
 			vertBox.add(Box.createVerticalStrut(5));
 			connectionPanel.setPreferredSize(new java.awt.Dimension(384, 71));
-			//vertBox.add(protocolePanel);
-			{
-				ComboBoxModel comboBoxEncryptionModel = new DefaultComboBoxModel(
-						new String[] {
-								EncryptionMode.NO_ENCRYPTION.getDescription(),
-								EncryptionMode.EXPLICIT_SSL.getDescription(),
-								EncryptionMode.IMPLICIT_SSL.getDescription() });
-				comboBoxEncryption = new JComboBox();
-				protocolePanel.add(comboBoxEncryption);
-				comboBoxEncryption.setModel(comboBoxEncryptionModel);
-				comboBoxEncryption.setBounds(123, 24, 146, 25);
-			}
+			// vertBox.add(protocolePanel);
+			// {
+			// ComboBoxModel comboBoxEncryptionModel = new DefaultComboBoxModel(
+			// new String[] {
+			// EncryptionMode.NO_ENCRYPTION.getDescription(),
+			// EncryptionMode.EXPLICIT_SSL.getDescription(),
+			// EncryptionMode.IMPLICIT_SSL.getDescription() });
+			// comboBoxEncryption = new JComboBox();
+			// protocolePanel.add(comboBoxEncryption);
+			// comboBoxEncryption.setModel(comboBoxEncryptionModel);
+			// comboBoxEncryption.setBounds(123, 24, 146, 25);
+			// }
 			// protocolePanel.setPreferredSize(new java.awt.Dimension(384, 20));
 			centerPanel.add(vertBox);
 		}
@@ -268,10 +284,16 @@ public class RepositoryEditPanel extends JDialog implements UIConstants {
 				checkBoxAnonymousPerformed();
 			}
 		});
-		comboBoxEncryption.addActionListener(new ActionListener() {
+		// comboBoxEncryption.addActionListener(new ActionListener() {
+		// @Override
+		// public void actionPerformed(ActionEvent arg0) {
+		// comboBoxEncryptionPerformed();
+		// }
+		// });
+		comboBoxProtocole.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
-				comboBoxEncryptionPerformed();
+				comboBoxProtocolePerformed();
 			}
 		});
 		// Add Listeners
@@ -290,14 +312,16 @@ public class RepositoryEditPanel extends JDialog implements UIConstants {
 					.getRepository(repositoryName);
 			initialRepositoryName = repositoryName;
 			textFieldRepositoryName.setText(repositoryDTO.getName());
-			textFieldHost
-					.setText("ftp://" + repositoryDTO.getFtpDTO().getUrl());
-			textFieldPort.setText(repositoryDTO.getFtpDTO().getPort());
-			textFieldLogin.setText(repositoryDTO.getFtpDTO().getLogin());
-			passwordField.setText(repositoryDTO.getFtpDTO().getPassword());
-			// comboBoxEncryption.setSelectedItem(repositoryDTO.getFtpDTO()
-			// .getEncryptionMode().getDescription());
-			if (repositoryDTO.getFtpDTO().getLogin().equals("anonymous")) {
+			ProtocoleDTO protocoleDTO = repositoryDTO.getProtocoleDTO();
+			Protocole protocole = protocoleDTO.getProtocole();
+			comboBoxProtocole.setSelectedItem(protocole.getDescription());
+			textFieldHost.setText(protocole.getDescription().toLowerCase()
+					+ "://" + protocoleDTO.getUrl());
+			textFieldPort.setText(protocoleDTO.getPort());
+			textFieldLogin.setText(protocoleDTO.getLogin());
+			passwordField.setText(protocoleDTO.getPassword());
+
+			if (protocoleDTO.getLogin().equals("anonymous")) {
 				checkBoxAnonymous.setSelected(true);
 				textFieldLogin.setEnabled(false);
 				passwordField.setText("");
@@ -316,52 +340,58 @@ public class RepositoryEditPanel extends JDialog implements UIConstants {
 
 	private void buttonImportPerformed() {
 
-		final String url = textFieldAutoConfigUrl.getText()
-				.replace("ftp://", "").trim();
-		if (url.isEmpty()) {
-			JOptionPane.showMessageDialog(this, "The url is empty!", "Error",
-					JOptionPane.WARNING_MESSAGE);
-			return;
-		}
-
-		labelConnection.setText("Connecting to repository...");
-		labelConnection.setFont(new Font("Tohama", Font.ITALIC, 11));
-
 		Thread t = new Thread(new Runnable() {
 			@Override
 			public void run() {
+
+				String url = textFieldAutoConfigUrl.getText().trim();
+				AbstractConnexionService connexion = null;
 				try {
-					FtpService ftpService = new FtpService();
-					AutoConfigDTO autoConfigDTO = ftpService
+					connexion = ConnexionServiceFactory.getServiceFromUrl(url);
+					assert (connexion != null);
+				} catch (CheckException e) {
+					JOptionPane.showMessageDialog(facade.getMainPanel(),
+							e.getMessage(), "Error",
+							JOptionPane.WARNING_MESSAGE);
+					return;
+				}
+
+				labelConnection.setText("Connecting to repository...");
+				labelConnection.setFont(new Font("Tohama", Font.ITALIC, 11));
+
+				try {
+					AutoConfigDTO autoConfigDTO = connexion
 							.importAutoConfig(url);
 					if (autoConfigDTO != null) {
-						labelConnection.setText("Connexion success!");
+						labelConnection.setText("Connetion success!");
 						labelConnection.setFont(new Font("Tohama", Font.ITALIC,
 								11));
 						labelConnection.setForeground(new Color(45, 125, 45));
 						textFieldRepositoryName.setText(autoConfigDTO
 								.getRepositoryName());
-						textFieldHost.setText(autoConfigDTO.getFtpDTO()
+						Protocole protocole = autoConfigDTO.getProtocoleDTO()
+								.getProtocole();
+						comboBoxProtocole.setSelectedItem(protocole
+								.getDescription());
+						textFieldHost.setText(autoConfigDTO.getProtocoleDTO()
 								.getUrl());
-						textFieldLogin.setText(autoConfigDTO.getFtpDTO()
+						textFieldLogin.setText(autoConfigDTO.getProtocoleDTO()
 								.getLogin());
-						textFieldPort.setText(autoConfigDTO.getFtpDTO()
+						textFieldPort.setText(autoConfigDTO.getProtocoleDTO()
 								.getPort());
-						passwordField.setText(autoConfigDTO.getFtpDTO()
+						passwordField.setText(autoConfigDTO.getProtocoleDTO()
 								.getPassword());
-						if (autoConfigDTO.getFtpDTO().getLogin()
+						if (autoConfigDTO.getProtocoleDTO().getLogin()
 								.equalsIgnoreCase("anonymous")) {
 							textFieldLogin.setEnabled(false);
 							passwordField.setEnabled(false);
-						checkBoxAnonymous.setSelected(true);
+							checkBoxAnonymous.setSelected(true);
 						}
-					} else {
-						labelConnection.setText("Url is not reachable!");
-						labelConnection.setFont(new Font("Tohama", Font.ITALIC,
-								11));
-						labelConnection.setForeground(Color.RED);
 					}
-				} catch (Exception e) {
+				} catch (WritingException e) {
+					JOptionPane.showMessageDialog(facade.getMainPanel(),
+							e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+				} catch (HttpException e) {
 					labelConnection.setText("Url is not reachable!");
 					labelConnection
 							.setFont(new Font("Tohama", Font.ITALIC, 11));
@@ -375,7 +405,9 @@ public class RepositoryEditPanel extends JDialog implements UIConstants {
 	private void buttonOKPerformed() {
 
 		String name = textFieldRepositoryName.getText().trim();
-		String url = textFieldHost.getText().replace("ftp://", "").trim();
+		String url = textFieldHost.getText()
+				.replace(Protocole.FTP.getPrompt(), "")
+				.replace(Protocole.HTTP.getPrompt(), "").trim();
 		String port = textFieldPort.getText().trim();
 		String login = textFieldLogin.getText().trim();
 		password = passwordField.getPassword();
@@ -383,14 +415,17 @@ public class RepositoryEditPanel extends JDialog implements UIConstants {
 		for (int i = 0; i < password.length; i++) {
 			pass = pass + password[i];
 		}
-		String encryption = (String) comboBoxEncryption.getSelectedItem();
+		Protocole protocole = Protocole.getEnum((String) comboBoxProtocole
+				.getSelectedItem());
+
+		assert (protocole != null);
 
 		try {
 			if (!initialRepositoryName.isEmpty()) {
 				repositoryService.removeRepository(initialRepositoryName);
 			}
 			repositoryService.createRepository(name, url, port, login, pass,
-					EncryptionMode.getEnum(encryption));
+					protocole);
 			repositoryService.write(name);
 			this.dispose();
 			facade.getSyncPanel().refresh();
@@ -401,7 +436,7 @@ public class RepositoryEditPanel extends JDialog implements UIConstants {
 			JOptionPane.showMessageDialog(this,
 					"An error occured. \n Failded to write repository.",
 					"Error", JOptionPane.ERROR_MESSAGE);
-		} 
+		}
 	}
 
 	private void checkBoxAnonymousPerformed() {
@@ -414,6 +449,17 @@ public class RepositoryEditPanel extends JDialog implements UIConstants {
 			textFieldLogin.setText("");
 			textFieldLogin.setEnabled(true);
 			passwordField.setEnabled(true);
+		}
+	}
+
+	private void comboBoxProtocolePerformed() {
+		if (comboBoxProtocole.getSelectedItem().equals(
+				Protocole.HTTP.getDescription())) {
+			textFieldHost.setText("http://");
+			textFieldPort.setText("80");
+		} else {
+			textFieldHost.setText("ftp://");
+			textFieldPort.setText("21");
 		}
 	}
 

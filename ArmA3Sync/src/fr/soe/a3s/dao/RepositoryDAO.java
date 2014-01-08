@@ -16,6 +16,7 @@ import java.util.zip.GZIPOutputStream;
 import javax.crypto.Cipher;
 import javax.crypto.SealedObject;
 
+import fr.soe.a3s.domain.repository.Events;
 import fr.soe.a3s.domain.repository.Repository;
 import fr.soe.a3s.domain.repository.ServerInfo;
 import fr.soe.a3s.domain.repository.SyncTreeDirectory;
@@ -131,5 +132,25 @@ public class RepositoryDAO implements DataAccessConstants {
 			}
 		}
 		return sync;
+	}
+
+	public void saveToDiskEvents(Events events,String repositoryPath) throws WritingException {
+		
+		try {
+			File file = new File(repositoryPath);
+			File a3sFolder = new File(repositoryPath + A3S_FOlDER_PATH);
+			a3sFolder.mkdirs();
+			File eventsFile = new File(file.getAbsolutePath()
+					+ EVENTS_FILE_PATH);
+			if (events != null) {
+				ObjectOutputStream fWo = new ObjectOutputStream(
+						new GZIPOutputStream(new FileOutputStream(
+								eventsFile.getAbsolutePath())));
+				fWo.writeObject(events);
+				fWo.close();
+			}
+		} catch (Exception e) {
+			throw new WritingException(e.getMessage());
+		}
 	}
 }

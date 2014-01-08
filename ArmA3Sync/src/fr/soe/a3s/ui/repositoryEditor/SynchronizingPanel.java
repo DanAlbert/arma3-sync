@@ -7,14 +7,16 @@ import java.awt.event.WindowEvent;
 import java.util.List;
 
 import fr.soe.a3s.dto.RepositoryDTO;
+import fr.soe.a3s.service.AbstractConnexionService;
+import fr.soe.a3s.service.ConnexionServiceFactory;
 import fr.soe.a3s.service.FtpService;
 import fr.soe.a3s.service.RepositoryService;
 import fr.soe.a3s.ui.Facade;
 
 public class SynchronizingPanel extends ProgressPanel {
 
-	private FtpService ftpService = new FtpService();
 	private RepositoryService repositoryService = new RepositoryService();
+	private AbstractConnexionService connexion;
 
 	public SynchronizingPanel(Facade facade) {
 		super(facade);
@@ -47,7 +49,10 @@ public class SynchronizingPanel extends ProgressPanel {
 						break;
 					}
 					try {
-						ftpService.checkRepository(repositoryDTO.getName());
+						connexion = ConnexionServiceFactory
+								.getServiceFromRepository(repositoryDTO
+										.getName());
+						connexion.checkRepository(repositoryDTO.getName());
 					} catch (Exception e) {
 						System.out.println(e.getMessage());
 					}
@@ -59,14 +64,14 @@ public class SynchronizingPanel extends ProgressPanel {
 			}
 		});
 		t.start();
-
 	}
 
 	private void menuExitPerformed() {
 		this.setVisible(false);
 		canceled = true;
-		ftpService.disconnect();
+		if (connexion != null) {
+			connexion.disconnect();
+		}
 		this.dispose();
 	}
-
 }

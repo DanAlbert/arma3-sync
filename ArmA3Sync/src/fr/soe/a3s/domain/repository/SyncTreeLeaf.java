@@ -100,5 +100,4 @@ public class SyncTreeLeaf implements SyncTreeNode,Serializable{
 	public boolean isDeleted() {
 		return this.deleted;
 	}
-
 }

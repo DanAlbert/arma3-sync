@@ -209,8 +209,28 @@ public interface UIConstants {
 			.getDefaultToolkit()
 			.getImage(
 					java.lang.ClassLoader
-							.getSystemResource("resources/pictures/system/upload16x16.png"));
+		
+					
+					.getSystemResource("resources/pictures/system/upload16x16.png"));
 
+	Image SAVE = Toolkit
+			.getDefaultToolkit()
+			.getImage(
+					java.lang.ClassLoader
+							.getSystemResource("resources/pictures/system/save16x16.png"));
+	
+	Image DRIVE_ADD = Toolkit
+			.getDefaultToolkit()
+			.getImage(
+					java.lang.ClassLoader
+							.getSystemResource("resources/pictures/system/drive_add_16x16.png"));
+	
+	Image DRIVE_DELETE = Toolkit
+			.getDefaultToolkit()
+			.getImage(
+					java.lang.ClassLoader
+							.getSystemResource("resources/pictures/system/drive_delete_16x16.png"));
+	
 	Image AUTOCONFIG = Toolkit
 			.getDefaultToolkit()
 			.getImage(

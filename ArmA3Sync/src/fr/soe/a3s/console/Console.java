@@ -13,6 +13,7 @@ import javax.swing.JOptionPane;
 
 import fr.soe.a3s.constant.ConsoleCommands;
 import fr.soe.a3s.constant.EncryptionMode;
+import fr.soe.a3s.constant.Protocole;
 import fr.soe.a3s.controller.ObserverFileSize;
 import fr.soe.a3s.dao.AfficheurFlux;
 import fr.soe.a3s.dto.RepositoryDTO;
@@ -120,10 +121,10 @@ public class Console {
 			String name = repositoryDTO.getName();
 			String autoconfig = repositoryDTO.getAutoConfigURL();
 			String path = repositoryDTO.getPath();
-			String url = repositoryDTO.getFtpDTO().getUrl();
-			String login = repositoryDTO.getFtpDTO().getLogin();
-			String password = repositoryDTO.getFtpDTO().getPassword();
-			String port = repositoryDTO.getFtpDTO().getPort();
+			String url = repositoryDTO.getProtocoleDTO().getUrl();
+			String login = repositoryDTO.getProtocoleDTO().getLogin();
+			String password = repositoryDTO.getProtocoleDTO().getPassword();
+			String port = repositoryDTO.getProtocoleDTO().getPort();
 
 			if (name != null) {
 				if (name.isEmpty()) {
@@ -198,7 +199,7 @@ public class Console {
 		RepositoryService repositoryService = new RepositoryService();
 		try {
 			repositoryService.createRepository(name, url, "21", "anonymous",
-					"", EncryptionMode.NO_ENCRYPTION);
+					"", Protocole.FTP);
 			repositoryService.write(name);
 		} catch (CheckException e) {
 			System.out.println(e.getMessage());
@@ -230,7 +231,8 @@ public class Console {
 			repositoryService.buildRepository(name, path);
 			repositoryService.write(name);
 			System.out.println("Repository creation finished.");
-			System.out.println("Auto-config url: ftp://" + url + "/.a3s/autoconfig");
+			System.out.println("Auto-config url: ftp://" + url
+					+ "/.a3s/autoconfig");
 		} catch (Exception e) {
 			System.out
 					.println("An error occured. Failed to create repository.");

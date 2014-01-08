@@ -9,15 +9,17 @@ import javax.swing.JOptionPane;
 
 import fr.soe.a3s.exception.FtpException;
 import fr.soe.a3s.exception.RepositoryException;
+import fr.soe.a3s.service.AbstractConnexionService;
+import fr.soe.a3s.service.ConnexionServiceFactory;
 import fr.soe.a3s.service.FtpService;
 import fr.soe.a3s.ui.Facade;
 
 public class UploadPanel extends ProgressPanel {
 
-	private FtpService ftpService = new FtpService();
+	private AbstractConnexionService connexion;
 	private String repositoryName;
 	private Thread t;
-	
+
 	public UploadPanel(Facade facade, String repositoryName) {
 		super(facade);
 		this.repositoryName = repositoryName;
@@ -44,19 +46,22 @@ public class UploadPanel extends ProgressPanel {
 			@Override
 			public void run() {
 				try {
-					boolean response = ftpService.upLoadEvents(repositoryName);
+					connexion = ConnexionServiceFactory
+							.getServiceFromRepository(repositoryName);
+					boolean response = connexion.upLoadEvents(repositoryName);
 					setVisible(false);
 					if (response == false) {
-						JOptionPane
-								.showMessageDialog(
-										facade.getMainPanel(),
-										"Failed to upload events informations. \n Please checkout FTP server permissions.",
-										"Error", JOptionPane.ERROR_MESSAGE);
+						JOptionPane.showMessageDialog(
+								facade.getMainPanel(),
+								"Failed to upload events informations. \n Please check out the server permissions.",
+								"Information", JOptionPane.INFORMATION_MESSAGE);
 					} else {
-						JOptionPane.showMessageDialog(facade.getMainPanel(),
+						JOptionPane.showMessageDialog(
+								facade.getMainPanel(),
 								"Events informatons have been uploaded to repository.",
-								"Error", JOptionPane.INFORMATION_MESSAGE);
-						SynchronizingPanel synchronizingPanel = new SynchronizingPanel(facade);
+								"Information", JOptionPane.INFORMATION_MESSAGE);
+						SynchronizingPanel synchronizingPanel = new SynchronizingPanel(
+								facade);
 						synchronizingPanel.setVisible(true);
 						synchronizingPanel.init();
 					}
@@ -64,7 +69,7 @@ public class UploadPanel extends ProgressPanel {
 					setVisible(false);
 					JOptionPane.showMessageDialog(facade.getMainPanel(),
 							e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-				} catch (FtpException e) {
+				} catch (Exception e) {
 					if (!canceled) {
 						setVisible(false);
 						JOptionPane.showMessageDialog(facade.getMainPanel(),
@@ -84,7 +89,9 @@ public class UploadPanel extends ProgressPanel {
 	private void menuExitPerformed() {
 		this.setVisible(false);
 		canceled = true;
-		ftpService.disconnect();
+		if (connexion != null) {
+			connexion.disconnect();
+		}
 		this.dispose();
 		t.interrupt();
 	}

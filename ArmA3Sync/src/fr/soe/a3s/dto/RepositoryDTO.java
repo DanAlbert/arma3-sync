@@ -6,7 +6,7 @@ public class RepositoryDTO implements java.lang.Comparable {
 
 	private String name;
 	private boolean notify;
-	private FtpDTO ftpDTO;
+	private ProtocoleDTO protocoleDTO;
 	private int revision;
 	private String path;
 	private String autoConfigURL;
@@ -28,12 +28,12 @@ public class RepositoryDTO implements java.lang.Comparable {
 		this.notify = notify;
 	}
 
-	public FtpDTO getFtpDTO() {
-		return ftpDTO;
+	public ProtocoleDTO getProtocoleDTO() {
+		return protocoleDTO;
 	}
 
-	public void setFtpDTO(FtpDTO ftpDTO) {
-		this.ftpDTO = ftpDTO;
+	public void setProtocoleDTO(ProtocoleDTO protocoleDTO) {
+		this.protocoleDTO = protocoleDTO;
 	}
 
 	public int getRevision() {

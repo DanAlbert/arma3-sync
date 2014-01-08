@@ -21,11 +21,12 @@ public class RepositoryBuilder extends Thread {
 
 	public void run() {
 
-		facade.getAdminPanel().getButtonSelectFTPfolderPath().setEnabled(false);
+		facade.getAdminPanel().getButtonSelectRepositoryfolderPath()
+				.setEnabled(false);
 		facade.getAdminPanel().getButtonBuild().setEnabled(false);
 		facade.getAdminPanel().getButtonCopyAutoConfigURL().setEnabled(false);
 		facade.getAdminPanel().getButtonCheck().setEnabled(false);
-		
+
 		facade.getAdminPanel().getBuildProgressBar().setMinimum(0);
 		facade.getAdminPanel().getBuildProgressBar().setMaximum(100);
 		RepositoryService repositoryService = new RepositoryService();
@@ -34,7 +35,7 @@ public class RepositoryBuilder extends Thread {
 					@Override
 					public void update(long value) {
 						facade.getAdminPanel().getBuildProgressBar()
-								.setValue((int)value);
+								.setValue((int) value);
 					}
 				});
 		try {
@@ -48,9 +49,11 @@ public class RepositoryBuilder extends Thread {
 			JOptionPane.showMessageDialog(facade.getMainPanel(),
 					e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
 		} finally {
-			facade.getAdminPanel().getButtonSelectFTPfolderPath().setEnabled(true);
+			facade.getAdminPanel().getButtonSelectRepositoryfolderPath()
+					.setEnabled(true);
 			facade.getAdminPanel().getButtonBuild().setEnabled(true);
-			facade.getAdminPanel().getButtonCopyAutoConfigURL().setEnabled(true);
+			facade.getAdminPanel().getButtonCopyAutoConfigURL()
+					.setEnabled(true);
 			facade.getAdminPanel().getButtonCheck().setEnabled(true);
 			facade.getAdminPanel().getBuildProgressBar().setMaximum(0);
 			facade.getAdminPanel().init(repositoryName);

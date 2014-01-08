@@ -1,8 +1,8 @@
 package fr.soe.a3s.domain.repository;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 import fr.soe.a3s.domain.AbstractProtocole;
 
@@ -20,17 +20,18 @@ public class Repository implements Serializable {
 	private String autoConfigURL;
 	private String defaultDownloadLocation;
 	private boolean outOfSynk = false;
+	private Map<String, FileAttributes> mapFiles = new HashMap<String, FileAttributes>();
+	/* Remote files */
 	private transient ServerInfo serverInfo;
 	private transient SyncTreeDirectory sync;
 	private transient Changelogs changelogs;
-	private transient boolean downloading;
+	private transient Events events;
 	/* Resuming download */
+	private transient boolean downloading;
 	private transient int lastIndexFileDownloaded;
 	private transient long incrementedFilesSize;
 	private transient boolean resume;
-	/* Events */; 
-	private transient Events events;
-	
+
 	public Repository(String name, AbstractProtocole protocole) {
 		this.name = name;
 		this.protocole = protocole;
@@ -75,7 +76,7 @@ public class Repository implements Serializable {
 	public void setPath(String path) {
 		this.path = path;
 	}
-	
+
 	public String getAutoConfigURL() {
 		return autoConfigURL;
 	}
@@ -163,5 +164,15 @@ public class Repository implements Serializable {
 	public void setEvents(Events events) {
 		this.events = events;
 	}
-	
+
+	public Map<String, FileAttributes> getMapFiles() {
+		if (mapFiles == null) {
+			mapFiles = new HashMap<String, FileAttributes>();
+		}
+		return mapFiles;
+	}
+
+	public void setMapFiles(Map<String, FileAttributes> mapFiles) {
+		this.mapFiles = mapFiles;
+	}
 }

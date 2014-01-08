@@ -2,9 +2,7 @@ package fr.soe.a3s.dao;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
@@ -25,14 +23,17 @@ import java.util.zip.GZIPOutputStream;
 
 import org.apache.commons.io.FileUtils;
 
+import fr.soe.a3s.constant.Protocole;
 import fr.soe.a3s.controller.ObservableFileSize;
 import fr.soe.a3s.controller.ObservableFilesNumber;
 import fr.soe.a3s.controller.ObserverFileSize;
 import fr.soe.a3s.controller.ObserverFilesNumber;
+import fr.soe.a3s.domain.Http;
 import fr.soe.a3s.domain.repository.AutoConfig;
 import fr.soe.a3s.domain.repository.Changelog;
 import fr.soe.a3s.domain.repository.Changelogs;
 import fr.soe.a3s.domain.repository.Events;
+import fr.soe.a3s.domain.repository.FileAttributes;
 import fr.soe.a3s.domain.repository.Repository;
 import fr.soe.a3s.domain.repository.ServerInfo;
 import fr.soe.a3s.domain.repository.SyncTreeDirectory;
@@ -41,11 +42,14 @@ import fr.soe.a3s.domain.repository.SyncTreeNode;
 import fr.soe.a3s.exception.RepositoryCheckException;
 import fr.soe.a3s.exception.RepositoryException;
 import fr.soe.a3s.exception.WritingException;
+import fr.soe.a3s.jazsync.Jazsync;
 
 public class RepositoryBuilderDAO implements DataAccessConstants,
 		ObservableFilesNumber, ObservableFileSize {
 
 	private String repositoryPath;
+	private Protocole protocole;
+	private String repositortUrl;
 	private ObserverFilesNumber observerFilesNumber;
 	private ObserverFileSize observerFileSize;
 	private long nbFiles, totalNbFiles;
@@ -53,6 +57,8 @@ public class RepositoryBuilderDAO implements DataAccessConstants,
 	private long cumulativeFileSize;
 	private boolean error;
 	private List<Callable<Integer>> callables;
+	private Map<String, FileAttributes> currentMapFiles;
+	private Map<String, FileAttributes> newMapFiles;
 
 	@SuppressWarnings("unchecked")
 	public void buildRepository(Repository repository)
@@ -60,6 +66,13 @@ public class RepositoryBuilderDAO implements DataAccessConstants,
 
 		try {
 			repositoryPath = repository.getPath();
+			repositortUrl = repository.getProtocole().getUrl();
+			if (repository.getProtocole() instanceof Http) {
+				protocole = Protocole.HTTP;
+			} else {
+				protocole = Protocole.FTP;
+			}
+
 			final File file = new File(repositoryPath);
 
 			totalFilesSize = FileUtils.sizeOfDirectory(file);
@@ -88,9 +101,11 @@ public class RepositoryBuilderDAO implements DataAccessConstants,
 			for (File f : file.listFiles()) {
 				generateSync(sync, f);
 			}
+
 			// attendre();
 			ExecutorService executor = Executors.newFixedThreadPool(Runtime
 					.getRuntime().availableProcessors());
+
 			executor.invokeAll(callables);
 			executor.shutdownNow();
 
@@ -316,7 +331,8 @@ public class RepositoryBuilderDAO implements DataAccessConstants,
 				}
 				generateSync(syncTreeDirectory, f);
 			}
-		} else {
+		} else if (!file.getName().contains(ZSYNC_EXTENSION)) {// exclude .zsync
+																// files
 			final SyncTreeLeaf treeSyncTreeLeaf = new SyncTreeLeaf(
 					file.getName(), parent);
 			parent.addTreeNode(treeSyncTreeLeaf);
@@ -326,6 +342,12 @@ public class RepositoryBuilderDAO implements DataAccessConstants,
 					long size = FileUtils.sizeOf(file);
 					treeSyncTreeLeaf.setSize(size);
 					String sha1 = FileAccessMethods.computeSHA1(file);
+					if (protocole.equals(Protocole.HTTP)) {
+						String url = Protocole.HTTP.getPrompt() + repositortUrl
+								+ "/" + determinePath(treeSyncTreeLeaf);
+						// FileAccessMethods.zsyncmake(file, url);
+						Jazsync.make(file, url, sha1);
+					}
 					treeSyncTreeLeaf.setSha1(sha1);
 					increment(size);
 					updateFileSizeObserver();
@@ -336,18 +358,23 @@ public class RepositoryBuilderDAO implements DataAccessConstants,
 		}
 	}
 
-	public void determineLocalSHA1(SyncTreeNode parent, long numberOfFiles)
+	public void determineLocalSHA1(SyncTreeNode parent, Repository repository)
 			throws Exception {
 
-		totalNbFiles = numberOfFiles;
-		nbFiles = 0;
-		callables = new ArrayList<Callable<Integer>>();
+		this.totalNbFiles = repository.getServerInfo().getNumberOfFiles();
+		this.nbFiles = 0;
+		this.callables = new ArrayList<Callable<Integer>>();
+		this.currentMapFiles = repository.getMapFiles();
+		this.newMapFiles = new HashMap<String, FileAttributes>();
 		generateLocalSHA1(parent);
+
 		ExecutorService executor = Executors.newFixedThreadPool(Runtime
 				.getRuntime().availableProcessors());
 		executor.invokeAll(callables);
+
 		executor.shutdownNow();
 		System.gc();
+		repository.setMapFiles(newMapFiles);// to be write on disk
 	}
 
 	private void generateLocalSHA1(SyncTreeNode syncTreeNode) throws Exception {
@@ -362,20 +389,62 @@ public class RepositoryBuilderDAO implements DataAccessConstants,
 				final File file = new File(leaf.getDestinationPath() + "/"
 						+ leaf.getName());
 				if (file.exists()) {
-					Callable<Integer> c = new Callable<Integer>() {
-						@Override
-						public Integer call() throws Exception {
-							String sha1 = FileAccessMethods.computeSHA1(file);
-							leaf.setLocalSHA1(sha1);
-							increment();
-							updateFilesNumberObserver();
-							return 0;
+					boolean compute = false;
+					final String path = file.getAbsolutePath();
+					final long lastModified = file.lastModified();
+					FileAttributes currentFileAttributes = currentMapFiles
+							.get(path);
+					if (currentFileAttributes != null) {
+						String currentSHA1 = currentFileAttributes.getSha1();
+						long currentLastModified = currentFileAttributes
+								.getLastModified();
+						if (lastModified != currentLastModified
+								|| currentSHA1 == null) {
+							compute = true;
+						} else {
+							compute = false;
 						}
-					};
-					callables.add(c);
+					} else {
+						compute = true;
+					}
+
+					if (compute) {
+						Callable<Integer> c = new Callable<Integer>() {
+							@Override
+							public Integer call() throws Exception {
+								String sha1 = FileAccessMethods
+										.computeSHA1(file);
+								leaf.setLocalSHA1(sha1);
+								increment();
+								updateFilesNumberObserver();
+								newMapFiles.put(path, new FileAttributes(sha1,
+										lastModified));
+								return 0;
+							}
+						};
+						callables.add(c);
+					} else {
+						String sha1 = currentFileAttributes.getSha1();
+						leaf.setLocalSHA1(sha1);
+						increment();
+						updateFilesNumberObserver();
+						newMapFiles.put(path, new FileAttributes(sha1,
+								lastModified));
+					}
 				}
 			}
 		}
+	}
+
+	private String determinePath(SyncTreeNode syncTreeNode) {
+
+		assert (syncTreeNode.getParent() != null);
+		String path = syncTreeNode.getName();
+		while (syncTreeNode.getParent().getName() != "racine") {
+			path = syncTreeNode.getParent().getName() + "/" + path;
+			syncTreeNode = syncTreeNode.getParent();
+		}
+		return path;
 	}
 
 	public void checkRepository(Repository repository)
@@ -405,7 +474,9 @@ public class RepositoryBuilderDAO implements DataAccessConstants,
 			Set<File> set1 = new TreeSet<File>();
 			for (int i = 0; i < file.listFiles().length; i++) {
 				if (!file.listFiles()[i].getName().equals(
-						DataAccessConstants.A3S_FOlDER_NAME)) {
+						DataAccessConstants.A3S_FOlDER_NAME)
+						&& !file.listFiles()[i].getName().contains(
+								ZSYNC_EXTENSION)) {
 					set1.add(file.listFiles()[i]);
 				}
 			}
@@ -432,7 +503,9 @@ public class RepositoryBuilderDAO implements DataAccessConstants,
 			}
 		} else {
 			String name = file.getName();
-			if (!syncTreeNode.isLeaf()) {
+			if (file.getName().contains(ZSYNC_EXTENSION)) {
+				return;
+			} else if (!syncTreeNode.isLeaf()) {
 				throw new RepositoryCheckException();
 			} else if (!syncTreeNode.getName().equals(name)) {
 				throw new RepositoryCheckException();

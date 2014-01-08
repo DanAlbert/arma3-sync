@@ -40,8 +40,8 @@ import javax.swing.tree.TreeSelectionModel;
 import fr.soe.a3s.dto.EventDTO;
 import fr.soe.a3s.dto.TreeDirectoryDTO;
 import fr.soe.a3s.dto.TreeNodeDTO;
+import fr.soe.a3s.exception.CheckException;
 import fr.soe.a3s.exception.RepositoryException;
-import fr.soe.a3s.service.FtpService;
 import fr.soe.a3s.service.RepositoryService;
 import fr.soe.a3s.ui.Facade;
 import fr.soe.a3s.ui.UIConstants;
@@ -63,10 +63,6 @@ public class EventsPanel extends JPanel implements UIConstants {
 	private JScrollPane tableScrollPane;
 	private JList listEvents;
 	private JButton buttonEdit;
-	private String repositoryName;
-	private RepositoryService repositoryService = new RepositoryService();
-	private FtpService ftpService = new FtpService();
-	private List<EventDTO> eventDTOs;
 	private TreeDirectoryDTO racine1;
 	private AddonTreeModel addonTreeModel1;
 	private JButton buttonSaveUpload;
@@ -74,6 +70,13 @@ public class EventsPanel extends JPanel implements UIConstants {
 	private JPopupMenu popup;
 	private JMenuItem menuItemSetRequired;
 	private JMenuItem menuItemSetOptional;
+	private JButton buttonSaveToDisk;
+	// Services
+	private RepositoryService repositoryService = new RepositoryService();
+	// Data
+	private String repositoryName;
+	private List<EventDTO> eventDTOs;
+	private JButton buttonDeleteFromDisk;
 
 	public EventsPanel(Facade facade) {
 
@@ -106,6 +109,10 @@ public class EventsPanel extends JPanel implements UIConstants {
 				ImageIcon saveUploadIcon = new ImageIcon(UPLOAD);
 				buttonSaveUpload.setIcon(saveUploadIcon);
 				hBox.add(buttonSaveUpload);
+				buttonSaveToDisk = new JButton("");
+				ImageIcon saveToDiskIcon = new ImageIcon(SAVE);
+				buttonSaveToDisk.setIcon(saveToDiskIcon);
+				hBox.add(buttonSaveToDisk);
 			}
 			{
 				listEvents = new JList();
@@ -214,6 +221,12 @@ public class EventsPanel extends JPanel implements UIConstants {
 				buttonUploadPerformed();
 			}
 		});
+		buttonSaveToDisk.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				buttonSaveToDiskPerformed();
+			}
+		});
 		listEvents.addListSelectionListener(new ListSelectionListener() {
 			@Override
 			public void valueChanged(ListSelectionEvent event) {
@@ -227,7 +240,7 @@ public class EventsPanel extends JPanel implements UIConstants {
 			@Override
 			public void valueChanged(TreeSelectionEvent arg0) {
 				arbreTreePath = arbre.getSelectionPath();
-				//System.out.println(arbreTreePath);
+				// System.out.println(arbreTreePath);
 			}
 		});
 		arbre.addMouseListener(new MouseAdapter() {
@@ -237,7 +250,7 @@ public class EventsPanel extends JPanel implements UIConstants {
 				if (arbreTreePath == null) {
 					return;
 				}
-				
+
 				int hotspot = new JCheckBox().getPreferredSize().width;
 
 				TreePath path = arbre.getPathForLocation(e.getX(), e.getY());
@@ -280,9 +293,6 @@ public class EventsPanel extends JPanel implements UIConstants {
 			}
 
 			public void mouseReleased(MouseEvent e) {
-//				if (e.isPopupTrigger()) {
-//					popup.show((JComponent) e.getSource(), e.getX(), e.getY());
-//				}
 				if (e.isPopupTrigger()) {
 					popup.show((JComponent) e.getSource(), e.getX(), e.getY());
 				} else if (SwingUtilities.isRightMouseButton(e)) {
@@ -308,6 +318,7 @@ public class EventsPanel extends JPanel implements UIConstants {
 		buttonEdit.setToolTipText("Edit selected event");
 		buttonRemove.setToolTipText("Remove selected event");
 		buttonSaveUpload.setToolTipText("Upload events informations");
+		buttonSaveToDisk.setToolTipText("Save to disk (local repository)");
 	}
 
 	public void init(String repositoryName) {
@@ -335,7 +346,9 @@ public class EventsPanel extends JPanel implements UIConstants {
 	private void buttonNewPerformed() {
 
 		listEvents.clearSelection();
-		deselectAllDescending(racine1);
+		if (racine1 != null) {
+			deselectAllDescending(racine1);
+		}
 
 		// Desable selection
 		arbre.setEnabled(false);
@@ -378,7 +391,6 @@ public class EventsPanel extends JPanel implements UIConstants {
 				repositoryService.removeEvent(repositoryName,
 						eventDTOs.get(index).getName());
 				updateListEvents();
-				uploadInformations();
 			} catch (RepositoryException e) {
 				JOptionPane.showMessageDialog(facade.getMainPanel(),
 						e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
@@ -387,7 +399,14 @@ public class EventsPanel extends JPanel implements UIConstants {
 	}
 
 	private void buttonUploadPerformed() {
-		uploadInformations();
+
+		if (eventDTOs == null) {
+			JOptionPane.showMessageDialog(facade.getMainPanel(),
+					"Nothing to upload.", "Information",
+					JOptionPane.INFORMATION_MESSAGE);
+		} else {
+			uploadInformations();
+		}
 	}
 
 	private void uploadInformations() {
@@ -395,6 +414,22 @@ public class EventsPanel extends JPanel implements UIConstants {
 		UploadPanel uploadPanel = new UploadPanel(facade, repositoryName);
 		uploadPanel.setVisible(true);
 		uploadPanel.init();
+	}
+
+	private void buttonSaveToDiskPerformed() {
+
+		try {
+			repositoryService.saveToDiskEvents(repositoryName);
+			JOptionPane.showMessageDialog(facade.getMainPanel(),
+					"Events informatons have been save to repository.",
+					"Information", JOptionPane.INFORMATION_MESSAGE);
+		} catch (CheckException e) {
+			JOptionPane.showMessageDialog(facade.getMainPanel(),
+					e.getMessage(), "Warning", JOptionPane.WARNING_MESSAGE);
+		} catch (Exception e) {
+			JOptionPane.showMessageDialog(facade.getMainPanel(),
+					e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+		}
 	}
 
 	public void updateListEvents() {
@@ -464,7 +499,7 @@ public class EventsPanel extends JPanel implements UIConstants {
 
 		int index = listEvents.getSelectedIndex();
 
-		if (index != -1) {
+		if (index != -1 && racine1 != null) {
 			arbre.setEnabled(true);
 			EventDTO eventDTO = eventDTOs.get(index);
 			Map<String, Boolean> map = eventDTO.getAddonNames();

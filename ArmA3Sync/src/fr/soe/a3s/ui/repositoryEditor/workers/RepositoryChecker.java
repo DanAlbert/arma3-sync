@@ -25,7 +25,7 @@ public class RepositoryChecker extends Thread {
 
 	public void run() {
 
-		facade.getAdminPanel().getButtonSelectFTPfolderPath().setEnabled(false);
+		facade.getAdminPanel().getButtonSelectRepositoryfolderPath().setEnabled(false);
 		facade.getAdminPanel().getButtonBuild().setEnabled(false);
 		facade.getAdminPanel().getButtonCopyAutoConfigURL().setEnabled(false);
 		facade.getAdminPanel().getButtonCheck().setEnabled(false);
@@ -68,7 +68,7 @@ public class RepositoryChecker extends Thread {
 					JOptionPane.WARNING_MESSAGE);
 		}
 		finally {
-			facade.getAdminPanel().getButtonSelectFTPfolderPath()
+			facade.getAdminPanel().getButtonSelectRepositoryfolderPath()
 					.setEnabled(true);
 			facade.getAdminPanel().getButtonBuild().setEnabled(true);
 			facade.getAdminPanel().getButtonCopyAutoConfigURL()

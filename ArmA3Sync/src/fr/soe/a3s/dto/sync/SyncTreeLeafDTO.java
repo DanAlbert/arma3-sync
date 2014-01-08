@@ -8,6 +8,7 @@ public class SyncTreeLeafDTO implements SyncTreeNodeDTO {
 	private boolean updated;
 	private boolean selected;
 	private long size;
+	private String localSHA1;
 	private String destinationPath;
 	private boolean deleted;
 	private boolean optional;
@@ -65,7 +66,7 @@ public class SyncTreeLeafDTO implements SyncTreeNodeDTO {
 	public void setSize(long size) {
 		this.size = size;
 	}
-
+	
 	public String toString() {
 		return this.name;
 	}
@@ -109,4 +110,11 @@ public class SyncTreeLeafDTO implements SyncTreeNodeDTO {
 		return this.optional;
 	}
 
+	public String getLocalSHA1() {
+		return localSHA1;
+	}
+
+	public void setLocalSHA1(String localSHA1) {
+		this.localSHA1 = localSHA1;
+	}
 }

@@ -148,7 +148,7 @@ public class AdminPanel extends JPanel implements UIConstants {
 			JPanel locationLabelPanel = new JPanel();
 			locationLabelPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
 			JLabel labelFtpSharedFolderLocation = new JLabel(
-					"FTP shared folder location");
+					"Repository main folder location");
 			locationLabelPanel.add(labelFtpSharedFolderLocation);
 			vBox.add(locationLabelPanel);
 		}
@@ -279,7 +279,8 @@ public class AdminPanel extends JPanel implements UIConstants {
 			textFieldftpSharedFolderLocation.setText(repositoryDTO.getPath());
 
 			if (repositoryDTO.getAutoConfigURL() != null) {
-				textFieldAutoConfigURL.setText("ftp://"
+				textFieldAutoConfigURL.setText(repositoryDTO.getProtocoleDTO()
+						.getProtocole().getPrompt()
 						+ repositoryDTO.getAutoConfigURL());
 			}
 
@@ -339,10 +340,10 @@ public class AdminPanel extends JPanel implements UIConstants {
 			File file = fc.getSelectedFile();
 			/* Check consistency between repository url and ftp folder path */
 			String ftpFolderName = file.getName();
-			String url = repositoryDTO.getFtpDTO().getUrl();
-			if (url.endsWith("/")) {//there is / at the end of url
+			String url = repositoryDTO.getProtocoleDTO().getUrl();
+			if (url.endsWith("/")) {// there is / at the end of url
 				int lastIndex = url.lastIndexOf("/");
-				if (lastIndex!=-1){
+				if (lastIndex != -1) {
 					url = url.substring(0, lastIndex);
 				}
 			}
@@ -469,7 +470,7 @@ public class AdminPanel extends JPanel implements UIConstants {
 		return checkProgressBar;
 	}
 
-	public JButton getButtonSelectFTPfolderPath() {
+	public JButton getButtonSelectRepositoryfolderPath() {
 		return buttonSelectFTPfolderPath;
 	}
 

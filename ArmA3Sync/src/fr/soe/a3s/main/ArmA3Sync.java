@@ -20,7 +20,7 @@ import fr.soe.a3s.constant.ConsoleCommands;
 import fr.soe.a3s.constant.EncryptionMode;
 import fr.soe.a3s.constant.MinimizationType;
 import fr.soe.a3s.controller.ObserverFileSize;
-import fr.soe.a3s.dto.FtpDTO;
+import fr.soe.a3s.dto.ProtocoleDTO;
 import fr.soe.a3s.dto.RepositoryDTO;
 import fr.soe.a3s.exception.CheckException;
 import fr.soe.a3s.exception.LoadingException;

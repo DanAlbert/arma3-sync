@@ -4,7 +4,7 @@ import java.io.Serializable;
 
 import fr.soe.a3s.constant.EncryptionMode;
 
-public class Ftp extends AbstractProtocole implements Serializable {
+public class Ftp extends AbstractProtocole {
 
 	/**
 	 * 
