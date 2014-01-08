@@ -10,6 +10,8 @@ import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.Arrays;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -30,7 +32,6 @@ import fr.soe.a3s.dto.AutoConfigDTO;
 import fr.soe.a3s.dto.ProtocoleDTO;
 import fr.soe.a3s.dto.RepositoryDTO;
 import fr.soe.a3s.exception.CheckException;
-import fr.soe.a3s.exception.FtpException;
 import fr.soe.a3s.exception.HttpException;
 import fr.soe.a3s.exception.RepositoryException;
 import fr.soe.a3s.exception.WritingException;
@@ -405,6 +406,15 @@ public class RepositoryEditPanel extends JDialog implements UIConstants {
 	private void buttonOKPerformed() {
 
 		String name = textFieldRepositoryName.getText().trim();
+
+		Pattern p = Pattern.compile("[^ \\w]");
+		Matcher m = p.matcher(name);
+		if (m.find()){
+			JOptionPane.showMessageDialog(this, "Repository must not contains special characters.", "Warning",
+					JOptionPane.WARNING_MESSAGE);
+			return;
+		}
+
 		String url = textFieldHost.getText()
 				.replace(Protocole.FTP.getPrompt(), "")
 				.replace(Protocole.HTTP.getPrompt(), "").trim();
