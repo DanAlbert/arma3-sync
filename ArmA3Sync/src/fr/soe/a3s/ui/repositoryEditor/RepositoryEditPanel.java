@@ -114,7 +114,6 @@ public class RepositoryEditPanel extends JDialog implements UIConstants {
 			this.add(centerPanel, BorderLayout.CENTER);
 			{
 				repositoryPanel = new JPanel();
-				// centerPanel.add(repositoryPanel);
 				repositoryPanel.setLayout(null);
 				repositoryPanel.setBorder(BorderFactory.createTitledBorder(
 						BorderFactory.createEtchedBorder(), "Repository"));
@@ -165,6 +164,7 @@ public class RepositoryEditPanel extends JDialog implements UIConstants {
 				}
 				{
 					comboBoxProtocole = new JComboBox<>();
+					comboBoxProtocole.setFocusable(false);
 					protocolePanel.add(comboBoxProtocole);
 					protocolePanel.add(comboBoxProtocole);
 					ComboBoxModel comboBoxProtocoleModel = new DefaultComboBoxModel(
