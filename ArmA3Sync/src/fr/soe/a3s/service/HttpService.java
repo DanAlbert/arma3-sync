@@ -201,7 +201,6 @@ public class HttpService extends AbstractConnexionService implements
 		}
 
 		boolean response = httpDAO.uploadEvents(repository);
-
-		return false;
+		return response;
 	}
 }
