@@ -328,7 +328,6 @@ public class FileAccessMethods implements DataAccessConstants {
                 fis.close();
             }
         }
-
         return new String(chars);
     }
 
