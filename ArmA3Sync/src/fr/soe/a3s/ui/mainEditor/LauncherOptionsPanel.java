@@ -541,7 +541,7 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener {
 		}
 		updateRunParameters();
 	}
-	
+
 	private void checkBoxExThreadsPerformed() {
 		if (!checkBoxExThreads.isSelected()) {
 			comboBoxExThreads.setSelectedIndex(0);
@@ -690,7 +690,7 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener {
 			comboBoxProfiles.setSelectedItem(launcherOptionsDTO
 					.getGameProfile());
 			checkBoxProfiles.setSelected(true);
-		}else {
+		} else {
 			comboBoxProfiles.setSelectedIndex(0);
 		}
 
@@ -706,7 +706,7 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener {
 			comboBoxMaxMemory.setSelectedItem(launcherOptionsDTO
 					.getMaxMemorySelection());
 			checkBoxMaxMemory.setSelected(true);
-		}else {
+		} else {
 			comboBoxMaxMemory.setSelectedIndex(0);
 		}
 
@@ -714,7 +714,7 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener {
 			comboBoxCpuCount.setSelectedItem(Integer
 					.toString(launcherOptionsDTO.getCpuCountSelection()));
 			checkBoxCpuCount.setSelected(true);
-		}else {
+		} else {
 			comboBoxCpuCount.setSelectedIndex(0);
 		}
 
@@ -722,7 +722,7 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener {
 			comboBoxExThreads.setSelectedItem(launcherOptionsDTO
 					.getExThreadsSelection());
 			checkBoxExThreads.setSelected(true);
-		}else {
+		} else {
 			comboBoxExThreads.setSelectedIndex(0);
 		}
 
