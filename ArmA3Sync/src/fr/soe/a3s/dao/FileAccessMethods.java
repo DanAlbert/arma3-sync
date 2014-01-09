@@ -280,10 +280,32 @@ public class FileAccessMethods implements DataAccessConstants {
         // md.update(dataBytes);
         // byte[] mdbytes = md.digest();
         /**/
+        /*
+                char[] chars = null;
+
+                MessageDigest md = MessageDigest.getInstance("SHA1");
+                FileInputStream fis = new FileInputStream(file);
+                FileChannel ch = fis.getChannel();
+                MappedByteBuffer mb = ch.map(FileChannel.MapMode.READ_ONLY, 0L, ch.size());
+                int buffsize = (int) Math.min(file.length(), 4 * 1024 * 1024);
+                byte[] dataBytes = new byte[buffsize];
+                long checkSum = 0L;
+                int nread;
+                while (mb.hasRemaining()) {
+                    nread = Math.min(mb.remaining(), buffsize);
+                    mb.get(dataBytes, 0, nread);
+                    md.update(dataBytes, 0, nread);
+                }
+                byte[] mdbytes = md.digest();
+                chars = new char[2 * mdbytes.length];
+                for (int i = 0; i < mdbytes.length; ++i) {
+                    chars[2 * i] = HEX_CHARS[(mdbytes[i] & 0xF0) >>> 4];
+                    chars[2 * i + 1] = HEX_CHARS[mdbytes[i] & 0x0F];
+                }
+        */
 
         // convert the byte to hex format
         FileInputStream fis = null;
-        // StringBuffer sb = null;
         char[] chars = null;
         try {
             MessageDigest md = MessageDigest.getInstance("SHA1");
@@ -295,25 +317,18 @@ public class FileAccessMethods implements DataAccessConstants {
                 md.update(dataBytes, 0, nread);
             }
             byte[] mdbytes = md.digest();
-            // sb = new StringBuffer("");
-            // for (int i = 0; i < mdbytes.length; i++) {
-            // sb.append(Integer.toString((mdbytes[i] & 0xff) + 0x100,
-            // 16).substring(1));
-            // }
-
             chars = new char[2 * mdbytes.length];
             for (int i = 0; i < mdbytes.length; ++i) {
                 chars[2 * i] = HEX_CHARS[(mdbytes[i] & 0xF0) >>> 4];
                 chars[2 * i + 1] = HEX_CHARS[mdbytes[i] & 0x0F];
             }
-
         }
         finally {
             if (fis != null) {
                 fis.close();
             }
         }
-        // return sb.toString();
+
         return new String(chars);
     }
 
