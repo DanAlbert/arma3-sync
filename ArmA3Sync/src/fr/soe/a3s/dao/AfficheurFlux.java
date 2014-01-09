@@ -21,15 +21,9 @@ public class AfficheurFlux implements Runnable {
 		BufferedReader br = getBufferedReader(inputStream);
 		String ligne = "";
 		try {
-			while (true) {
-				ligne = br.readLine();
-				if (ligne!=null){
-					System.out.println(ligne);
-				}
+			while ((ligne = br.readLine()) != null) {
+				System.out.println(ligne);
 			}
-//			while ((ligne = br.readLine()) != null) {
-//				System.out.println(ligne);
-//			}
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
