@@ -108,6 +108,9 @@ public class FileMaker {
             if (resume) {
                 getResumedFile(targetFile, relativeFileUrl);
             }
+            else if (targetFile.length() == 0) {
+                getWholeFile(targetFile, relativeFileUrl);
+            }
             else {
                 mapMatcher(targetFile);
                 if (complete > 0) {
