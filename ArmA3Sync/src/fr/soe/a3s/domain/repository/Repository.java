@@ -20,6 +20,8 @@ public class Repository implements Serializable {
 	private String autoConfigURL;
 	private String defaultDownloadLocation;
 	private boolean outOfSynk = false;
+	private boolean autoDiscover = true;
+	/* SHA1 computation */
 	private Map<String, FileAttributes> mapFiles = new HashMap<String, FileAttributes>();
 	/* Remote files */
 	private transient ServerInfo serverInfo;
@@ -174,5 +176,13 @@ public class Repository implements Serializable {
 
 	public void setMapFiles(Map<String, FileAttributes> mapFiles) {
 		this.mapFiles = mapFiles;
+	}
+
+	public boolean isAutoDiscover() {
+		return autoDiscover;
+	}
+
+	public void setAutoDiscover(boolean value) {
+		this.autoDiscover = value;
 	}
 }

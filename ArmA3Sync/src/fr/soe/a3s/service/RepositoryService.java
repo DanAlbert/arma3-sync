@@ -252,10 +252,12 @@ public class RepositoryService implements DataAccessConstants {
 			throw new SyncFileNotFoundException();
 		}
 
+		boolean autoDiscover = repository.isAutoDiscover();
+
 		SyncTreeDirectory parent = repository.getSync();
 
 		determineDestinationPaths(parent,
-				repository.getDefaultDownloadLocation());
+				repository.getDefaultDownloadLocation(), autoDiscover);
 		determineAddonFilesToDelete(parent);
 		determineAddonFoldersToDelete(parent);
 
@@ -277,7 +279,7 @@ public class RepositoryService implements DataAccessConstants {
 	}
 
 	private void determineDestinationPaths(SyncTreeNode syncTreeNode,
-			String defaultDestinationPath) {
+			String defaultDestinationPath, boolean autoDiscover) {
 
 		if (!syncTreeNode.isLeaf()) {
 			SyncTreeDirectory directory = (SyncTreeDirectory) syncTreeNode;
@@ -293,7 +295,8 @@ public class RepositoryService implements DataAccessConstants {
 				} else {
 					directory.setDestinationPath(defaultDestinationPath);
 				}
-				if (directory.isMarkAsAddon()
+				if (autoDiscover
+						&& directory.isMarkAsAddon()
 						&& addonDAO.getMap().containsKey(
 								directory.getName().toLowerCase())) {
 					Addon addon = addonDAO.getMap().get(
@@ -303,7 +306,7 @@ public class RepositoryService implements DataAccessConstants {
 				}
 			}
 			for (SyncTreeNode n : directory.getList()) {
-				determineDestinationPaths(n, defaultDestinationPath);
+				determineDestinationPaths(n, defaultDestinationPath,autoDiscover);
 			}
 		} else {
 			SyncTreeLeaf leaf = (SyncTreeLeaf) syncTreeNode;
@@ -606,6 +609,27 @@ public class RepositoryService implements DataAccessConstants {
 			return repository.isResume();
 		} else {
 			return false;
+		}
+	}
+
+	public boolean isAutoDiscover(String repositoryName) {
+		Repository repository = repositoryDAO.getMap().get(repositoryName);
+		if (repository != null) {
+			return repository.isAutoDiscover();
+		} else {
+			return false;
+		}
+	}
+
+	public void setAutoDiscover(boolean value, String repositoryName) {
+		Repository repository = repositoryDAO.getMap().get(repositoryName);
+		if (repository != null) {
+			repository.setAutoDiscover(value);
+			try {
+				write(repositoryName);
+			} catch (WritingException e) {
+				e.printStackTrace();
+			}
 		}
 	}
 

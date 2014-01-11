@@ -99,8 +99,6 @@ public class DownloadPanel extends JPanel implements UIConstants {
 	private JComboBox comBoxDestinationFolder;
 	private String repositoryName;
 	private JLabel labelCheckForAddonsStatus;
-	private RepositoryService repositoryService = new RepositoryService();
-	private ConfigurationService configurationService = new ConfigurationService();
 	private TreePath arbreTreePath;
 	private long totalFilesSize;
 	private int totalFilesSelected;
@@ -114,6 +112,10 @@ public class DownloadPanel extends JPanel implements UIConstants {
 	private JCheckBox checkBoxUpdated;
 	private String eventName;
 	private boolean update;
+	private JCheckBox checkBoxAutoDiscover;
+	/* Services */
+	private RepositoryService repositoryService = new RepositoryService();
+	private ConfigurationService configurationService = new ConfigurationService();
 
 	public DownloadPanel(Facade facade) {
 
@@ -339,8 +341,10 @@ public class DownloadPanel extends JPanel implements UIConstants {
 			selectionPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
 			checkBoxSelectAll = new JCheckBox("Select All");
 			checkBoxExpandAll = new JCheckBox("Expand All");
+			checkBoxAutoDiscover = new JCheckBox("Auto-discover");
 			selectionPanel.add(checkBoxSelectAll);
 			selectionPanel.add(checkBoxExpandAll);
+			selectionPanel.add(checkBoxAutoDiscover);
 			vBox.add(selectionPanel);
 		}
 		{
@@ -375,6 +379,12 @@ public class DownloadPanel extends JPanel implements UIConstants {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				checkBoxExpandAllPerformed();
+			}
+		});
+		checkBoxAutoDiscover.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				checkBoxAutoDiscoverPerformed();
 			}
 		});
 		arbre.addTreeExpansionListener(new TreeExpansionListener() {
@@ -507,20 +517,26 @@ public class DownloadPanel extends JPanel implements UIConstants {
 		buttonDownloadStart.setToolTipText("Start/Resume");
 		buttonDownloadPause.setToolTipText("Pause");
 		buttonDownloadCancel.setToolTipText("Cancel");
+		checkBoxAutoDiscover
+				.setToolTipText("Auto-discover addons within all destination folders.");
 	}
 
 	public void init(String repositoryName) {
+
 		this.repositoryName = repositoryName;
 		this.eventName = null;
 		this.update = false;
 		updateDefaultFolderDestination();
+		updateAutoDiscoverSelection();
 	}
 
 	public void init(String repositoryName, String eventName) {
+
 		this.repositoryName = repositoryName;
 		this.eventName = eventName;
 		this.update = false;
 		updateDefaultFolderDestination();
+		updateAutoDiscoverSelection();
 		// Lock user action on addons tree
 		arbre.setEnabled(false);
 		// Check addons repository
@@ -530,10 +546,12 @@ public class DownloadPanel extends JPanel implements UIConstants {
 	}
 
 	public void init(String repositoryName, boolean update) {
+
 		this.repositoryName = repositoryName;
 		this.eventName = null;
 		this.update = true;
 		updateDefaultFolderDestination();
+		updateAutoDiscoverSelection();
 		// Repository status changed to ok
 		repositoryService.updateRepositoryRevision(repositoryName);
 		repositoryService.setOutOfSync(repositoryName, false);
@@ -566,7 +584,12 @@ public class DownloadPanel extends JPanel implements UIConstants {
 		} else {
 			comBoxDestinationFolder.setSelectedItem(path);
 		}
+	}
 
+	public void updateAutoDiscoverSelection() {
+
+		boolean value = repositoryService.isAutoDiscover(repositoryName);
+		checkBoxAutoDiscover.setSelected(value);
 	}
 
 	private void comBoxDestinationFolderPerformed() {
@@ -627,15 +650,7 @@ public class DownloadPanel extends JPanel implements UIConstants {
 			addonSyncTreeModel = new AddonSyncTreeModel(
 					new SyncTreeDirectoryDTO());
 			arbre.setModel(addonSyncTreeModel);
-			int numberRowShown = arbre.getRowCount();
-			arbre.setVisibleRowCount(numberRowShown);
-			arbre.setPreferredSize(arbre.getPreferredScrollableViewportSize());
-			SwingUtilities.invokeLater(new Runnable() {
-				@Override
-				public void run() {
-					arbre.updateUI();
-				}
-			});
+			refreshViewArbre();
 		}
 	}
 
@@ -769,6 +784,17 @@ public class DownloadPanel extends JPanel implements UIConstants {
 				arbre.collapsePath(treePath);
 			}
 		}
+	}
+
+	private void checkBoxAutoDiscoverPerformed() {
+
+		boolean value = checkBoxAutoDiscover.isSelected();
+		repositoryService.setAutoDiscover(value, repositoryName);
+		arbre.setEnabled(true);
+		arbre.removeAll();
+		addonSyncTreeModel = new AddonSyncTreeModel(new SyncTreeDirectoryDTO());
+		arbre.setModel(addonSyncTreeModel);
+		refreshViewArbre();
 	}
 
 	private void getPathDirectories(TreePath path, Set<TreePath> paths) {
