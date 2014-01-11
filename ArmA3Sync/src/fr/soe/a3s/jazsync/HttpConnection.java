@@ -50,383 +50,390 @@ import fr.soe.a3s.dao.HttpDAO;
  */
 public class HttpConnection {
 
-    private String rangeRequest;
+	private String rangeRequest;
 
-    private final String hostname;
+	private final String hostname;
 
-    private final String login;
+	private final String login;
 
-    private final String password;
+	private final String password;
 
-    private final String port;
+	private final String port;
 
-    private HttpURLConnection connection;
+	private HttpURLConnection connection;
 
-    private String boundary;
+	private String boundary;
 
-    private byte[] boundaryBytes;
+	private byte[] boundaryBytes;
 
-    private long contLen;
+	private long contLen;
 
-    private static final int BUFFER_SIZE = 4096;
+	private static final int BUFFER_SIZE = 4096;
 
-    private long allData = 0;
+	private long allData = 0;
 
-    private final HttpDAO httpDAO;
+	private final HttpDAO httpDAO;
 
-    public HttpConnection(String hostname, String login, String password, String port,
-            HttpDAO httpDAO) {
-        this.hostname = hostname;
-        this.login = login;
-        this.password = password;
-        this.port = port;
-        this.httpDAO = httpDAO;
-    }
+	public HttpConnection(String hostname, String login, String password,
+			String port, HttpDAO httpDAO) {
+		this.hostname = hostname;
+		this.login = login;
+		this.password = password;
+		this.port = port;
+		this.httpDAO = httpDAO;
+	}
 
-    /**
-     * Opens HTTP connection
-     * 
-     * @param relativeUrl
-     * @throws IOException
-     */
-    public void openConnection(String relativeUrl) throws IOException {
+	/**
+	 * Opens HTTP connection
+	 * 
+	 * @param relativeUrl
+	 * @throws IOException
+	 */
+	public void openConnection(String relativeUrl) throws IOException {
 
-        URL url = new URL("http", hostname, Integer.parseInt(port), relativeUrl);
-        connection = (HttpURLConnection) url.openConnection();
-        httpDAO.seConnexion(connection);
-    }
+		URL url = new URL("http", hostname, Integer.parseInt(port), relativeUrl);
+		connection = (HttpURLConnection) url.openConnection();
+		httpDAO.seConnexion(connection);
+	}
 
-    /**
-     * Returns HTTP status code of response
-     * 
-     * @return HTTP code
-     * @throws IOException
-     */
-    private int getHttpStatusCode() throws IOException {
-        int code = connection.getResponseCode();
-        return code;
-    }
+	/**
+	 * Returns HTTP status code of response
+	 * 
+	 * @return HTTP code
+	 * @throws IOException
+	 */
+	private int getHttpStatusCode() throws IOException {
+		int code = connection.getResponseCode();
+		return code;
+	}
 
-    /**
-     * Sends HTTP GET request
-     * 
-     * @throws ProtocolException
-     */
-    public void sendRequest() throws ProtocolException {
+	/**
+	 * Sends HTTP GET request
+	 * 
+	 * @throws ProtocolException
+	 */
+	public void sendRequest() throws ProtocolException {
 
-        connection.setRequestMethod("GET");
-        connection.setRequestProperty("User-Agent", "jazsync");
-        if (login != null && password != null) {
-            String encoding = Base64Coder.encodeLines((login + ":" + password).getBytes());
-            connection.setRequestProperty("Authorization",
-                    "Basic " + encoding.substring(0, encoding.length() - 1));
-        }
-        if (rangeRequest != null) {
-            connection.setRequestProperty("Range", "bytes=" + rangeRequest);
-        }
-    }
+		connection.setRequestMethod("GET");
+		connection.setRequestProperty("User-Agent", "jazsync");
+		if (login != null && password != null) {
+			String encoding = Base64Coder.encodeLines((login + ":" + password)
+					.getBytes());
+			connection.setRequestProperty("Authorization",
+					"Basic " + encoding.substring(0, encoding.length() - 1));
+		}
+		if (rangeRequest != null) {
+			connection.setRequestProperty("Range", "bytes=" + rangeRequest);
+		}
+	}
 
-    /**
-     * Sets ranges for http request
-     * 
-     * @param ranges ArrayList of DataRange objects containing block ranges
-     */
-    public void setRangesRequest(ArrayList<DataRange> ranges) {
-        StringBuilder sb = new StringBuilder();
-        for (DataRange d : ranges) {
-            sb.append(d.getRange()).append(",");
-        }
-        sb.delete(sb.length() - 1, sb.length());
-        rangeRequest = sb.toString();
-    }
+	/**
+	 * Sets ranges for http request
+	 * 
+	 * @param ranges
+	 *            ArrayList of DataRange objects containing block ranges
+	 */
+	public void setRangesRequest(ArrayList<DataRange> ranges) {
+		StringBuilder sb = new StringBuilder();
+		for (DataRange d : ranges) {
+			sb.append(d.getRange()).append(",");
+		}
+		sb.delete(sb.length() - 1, sb.length());
+		rangeRequest = sb.toString();
+	}
 
-    /**
-     * Comparing to find boundaries in byte stream
-     * 
-     * @param src Byte array with data
-     * @param srcOff Offset in byte array with data
-     * @param bound Byte array with boundary value
-     * @return
-     */
-    private boolean boundaryCompare(byte[] src, int srcOff, byte[] bound) {
-        int j = srcOff;
-        for (int i = 0; i < bound.length; i++) {
-            if (src[j] != bound[i]) {
-                return false;
-            }
-            j++;
-        }
-        return true;
-    }
+	/**
+	 * Comparing to find boundaries in byte stream
+	 * 
+	 * @param src
+	 *            Byte array with data
+	 * @param srcOff
+	 *            Offset in byte array with data
+	 * @param bound
+	 *            Byte array with boundary value
+	 * @return
+	 */
+	private boolean boundaryCompare(byte[] src, int srcOff, byte[] bound) {
+		int j = srcOff;
+		for (int i = 0; i < bound.length; i++) {
+			if (src[j] != bound[i]) {
+				return false;
+			}
+			j++;
+		}
+		return true;
+	}
 
-    /**
-     * Method that looks through byte array and figure out where boundaries are and where relevant
-     * data starts
-     * 
-     * @param src Array where we are trying to find data boundaries
-     * @param i Offset of src array where we are starting the look up
-     * @return Offset where the data starts
-     */
-    private int dataBegin(byte[] src, int i) {
-        int newLine = 0;
-        int offset = i;
-        for (; offset < src.length; offset++) {
-            if (src[offset] == 13 && src[offset + 1] == 10) {
-                newLine++;
-                if (newLine == 4) {
-                    offset += 2;
-                    break;
-                }
-            }
-        }
-        return offset;
-    }
+	/**
+	 * Method that looks through byte array and figure out where boundaries are
+	 * and where relevant data starts
+	 * 
+	 * @param src
+	 *            Array where we are trying to find data boundaries
+	 * @param i
+	 *            Offset of src array where we are starting the look up
+	 * @return Offset where the data starts
+	 */
+	private int dataBegin(byte[] src, int i) {
+		int newLine = 0;
+		int offset = i;
+		for (; offset < src.length; offset++) {
+			if (src[offset] == 13 && src[offset + 1] == 10) {
+				newLine++;
+				if (newLine == 4) {
+					offset += 2;
+					break;
+				}
+			}
+		}
+		return offset;
+	}
 
-    /**
-     * Downloads data block or ranges of blocks
-     * 
-     * @param blockLength Length of a data block that we are downloading
-     * @return Content of body in byte array
-     * @throws IOException
-     */
-    public byte[] getResponseBody(int blockLength) throws IOException {
+	/**
+	 * Downloads data block or ranges of blocks
+	 * 
+	 * @param blockLength
+	 *            Length of a data block that we are downloading
+	 * @return Content of body in byte array
+	 * @throws IOException
+	 */
+	public byte[] getResponseBody(int blockLength) throws IOException {
 
-        // opens input stream from the HTTP connection
-        InputStream inputStream = connection.getInputStream();
+		// opens input stream from the HTTP connection
+		InputStream inputStream = connection.getInputStream();
 
-        // byte[] bytes = new byte[(int) contLen];
+		ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+		httpDAO.setStartTime(System.nanoTime());
 
-        ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-        httpDAO.setStartTime(System.nanoTime());
+		CountingOutputStream dos = new CountingOutputStream(buffer) {
+			@Override
+			protected void afterWrite(int n) throws IOException {
+				super.afterWrite(n);
+				// System.out.println(getCount());
+				int nbBytes = getCount();
+				httpDAO.setEndTime(System.nanoTime());
+				httpDAO.updateObserverSpeed(nbBytes);
+			}
+		};
 
-        CountingOutputStream dos = new CountingOutputStream(buffer) {
-            @Override
-            protected void afterWrite(int n) throws IOException {
-                super.afterWrite(n);
-                // System.out.println(getCount());
-                int nbBytes = getCount();
-                httpDAO.setEndTime(System.nanoTime());
-                httpDAO.updateObserverSpeed(nbBytes);
-            }
-        };
+		int read;
+		// byte[] temp = new byte[(int) contLen];//out of memory >256M
+		byte[] temp = new byte[BUFFER_SIZE];
+		while ((read = inputStream.read(temp)) != -1 && !httpDAO.isCanceled()) {
+			dos.write(temp, 0, read);
+		}
+		byte[] bytes = buffer.toByteArray();
+		contLen = bytes.length;
 
-        int read;
-        // byte[] temp = new byte[(int) contLen];//out of memory >256M
-        byte[] temp = new byte[BUFFER_SIZE];
-        while ((read = inputStream.read(temp)) != -1 && !httpDAO.isCanceled()) {
-            dos.write(temp, 0, read);
-        }
-        byte[] bytes = buffer.toByteArray();
-        contLen = bytes.length;
+		allData += contLen;
 
-        // httpDAO.setEndTime(System.nanoTime());
-        // httpDAO.updateObserverSpeed(contLen);
+		// pripad, kdy data obsahuji hranice (code 206 - partial content)
+		if (boundary != null) {
+			int range = 0;
+			byte[] rangeBytes = new byte[(int) contLen + blockLength];
+			for (int i = 0; i < bytes.length; i++) {
+				// jestlize jsou ve streamu "--"
+				if (bytes[i] == 45 && bytes[i + 1] == 45) {
+					// zkontrolujeme jestli za "--" je boundary hodnota
+					if (boundaryCompare(bytes, i + 2, boundaryBytes)) {
+						i += 2 + boundaryBytes.length; // presuneme se za
+														// boundary
+						/*
+						 * pokud je za boundary dalsi "--" jde o konec streamu v
+						 * opacnem pripade si data zkopirujeme
+						 */
+						if (bytes[i] != 45 && bytes[i + 1] != 45) {
+							try {
+								System.arraycopy(bytes, dataBegin(bytes, i),
+										rangeBytes, range, blockLength);
+							} catch (ArrayIndexOutOfBoundsException e) {
+								// e.printStackTrace();
+								/*
+								 * osetreni vyjimky v pripade kopirovani
+								 * kratsiho bloku dat
+								 */
+								System.arraycopy(bytes, dataBegin(bytes, i),
+										rangeBytes, range, bytes.length
+												- dataBegin(bytes, i));
+							}
+							range += blockLength;
+						}
+					}
+				}
+			}
+			byte[] ranges = new byte[range];
+			System.arraycopy(rangeBytes, 0, ranges, 0, ranges.length);
+			return ranges;
+		}
 
-        // for (int i = 0; i < bytes.length; i++) {
-        // if (!httpDAO.isCanceled()) {
-        // bytes[i] = (byte) inputStream.read();
-        // } else {
-        // return bytes;
-        // }
-        // }
+		return bytes;
+	}
 
-        allData += contLen;
+	/**
+	 * Downloads whole file
+	 * 
+	 * @param length
+	 *            Length of the file
+	 * @param filename
+	 *            Name of the downloaded and saved file
+	 * @throws IOException
+	 */
+	public void getFile(long length, File targetFile) throws IOException {
 
-        // pripad, kdy data obsahuji hranice (code 206 - partial content)
-        if (boundary != null) {
-            int range = 0;
-            byte[] rangeBytes = new byte[(int) contLen + blockLength];
-            for (int i = 0; i < bytes.length; i++) {
-                // jestlize jsou ve streamu "--"
-                if (bytes[i] == 45 && bytes[i + 1] == 45) {
-                    // zkontrolujeme jestli za "--" je boundary hodnota
-                    if (boundaryCompare(bytes, i + 2, boundaryBytes)) {
-                        i += 2 + boundaryBytes.length; // presuneme se za
-                                                       // boundary
-                        /*
-                         * pokud je za boundary dalsi "--" jde o konec streamu v
-                         * opacnem pripade si data zkopirujeme
-                         */
-                        if (bytes[i] != 45 && bytes[i + 1] != 45) {
-                            try {
-                                System.arraycopy(bytes, dataBegin(bytes, i), rangeBytes, range,
-                                        blockLength);
-                            }
-                            catch (ArrayIndexOutOfBoundsException e) {
-                                // e.printStackTrace();
-                                /*
-                                 * osetreni vyjimky v pripade kopirovani
-                                 * kratsiho bloku dat
-                                 */
-                                System.arraycopy(bytes, dataBegin(bytes, i), rangeBytes, range,
-                                        bytes.length - dataBegin(bytes, i));
-                            }
-                            range += blockLength;
-                        }
-                    }
-                }
-            }
-            byte[] ranges = new byte[range];
-            System.arraycopy(rangeBytes, 0, ranges, 0, ranges.length);
-            return ranges;
-        }
+		// opens input stream from the HTTP connection
+		InputStream inputStream = connection.getInputStream();
 
-        return bytes;
-    }
+		// opens an output stream to save into file
+		FileOutputStream outputStream = new FileOutputStream(targetFile, false);
 
-    /**
-     * Downloads whole file
-     * 
-     * @param length Length of the file
-     * @param filename Name of the downloaded and saved file
-     * @throws IOException
-     */
-    public void getFile(long length, File targetFile) throws IOException {
+		httpDAO.setSize(length);
+		httpDAO.setStartTime(System.nanoTime());
+		httpDAO.setOffset(0);
+		CountingOutputStream dos = new CountingOutputStream(outputStream) {
+			@Override
+			protected void afterWrite(int n) throws IOException {
+				super.afterWrite(n);
+				// System.out.println(getCount());
+				int nbBytes = getCount();
+				httpDAO.setCountFileSize(nbBytes);
+				httpDAO.setEndTime(System.nanoTime());
+				httpDAO.updateFileSizeObserver();
+				httpDAO.updateObserverSpeed(nbBytes);
+			}
+		};
 
-        // opens input stream from the HTTP connection
-        InputStream inputStream = connection.getInputStream();
+		int bytesRead = -1;
+		byte[] buffer = new byte[BUFFER_SIZE];
+		while ((bytesRead = inputStream.read(buffer)) != -1
+				&& !httpDAO.isCanceled()) {
+			dos.write(buffer, 0, bytesRead);
+		}
+		inputStream.close();
+		outputStream.close();
+		dos.close();
+	}
 
-        // opens an output stream to save into file
-        FileOutputStream outputStream = new FileOutputStream(targetFile, false);
+	public void getResumedFile(long length, File targetFile) throws IOException {
 
-        httpDAO.setSize(length);
-        httpDAO.setStartTime(System.nanoTime());
-        httpDAO.setOffset(0);
-        CountingOutputStream dos = new CountingOutputStream(outputStream) {
-            @Override
-            protected void afterWrite(int n) throws IOException {
-                super.afterWrite(n);
-                // System.out.println(getCount());
-                int nbBytes = getCount();
-                httpDAO.setCountFileSize(nbBytes);
-                httpDAO.setEndTime(System.nanoTime());
-                httpDAO.updateFileSizeObserver();
-                httpDAO.updateObserverSpeed(nbBytes);
-            }
-        };
+		// Specify what portion of file to download.
+		connection.setRequestProperty("Range", "bytes=" + targetFile.length()
+				+ "-");
 
-        int bytesRead = -1;
-        byte[] buffer = new byte[BUFFER_SIZE];
-        while ((bytesRead = inputStream.read(buffer)) != -1 && !httpDAO.isCanceled()) {
-            dos.write(buffer, 0, bytesRead);
-        }
-        inputStream.close();
-        outputStream.close();
-        dos.close();
-    }
+		// opens input stream from the HTTP connection
+		InputStream inputStream = connection.getInputStream();
 
-    public void getResumedFile(long length, File targetFile) throws IOException {
+		// Check for valid content length.
+		int contentLength = connection.getContentLength();
 
-        // Specify what portion of file to download.
-        connection.setRequestProperty("Range", "bytes=" + targetFile.length() + "-");
+		// opens an output stream to save into file
+		FileOutputStream outputStream = new FileOutputStream(targetFile, true);
 
-        // opens input stream from the HTTP connection
-        InputStream inputStream = connection.getInputStream();
+		httpDAO.setSize(length);
+		httpDAO.setStartTime(System.nanoTime());
+		long offset = targetFile.length();
+		httpDAO.setOffset(offset);
+		CountingOutputStream dos = new CountingOutputStream(outputStream) {
+			@Override
+			protected void afterWrite(int n) throws IOException {
+				super.afterWrite(n);
+				// System.out.println(getCount());
+				int nbBytes = getCount();
+				httpDAO.setCountFileSize(getCount());
+				httpDAO.setEndTime(System.nanoTime());
+				httpDAO.updateFileSizeObserver();
+				httpDAO.updateObserverSpeed(nbBytes);
+			}
+		};
 
-        // Check for valid content length.
-        int contentLength = connection.getContentLength();
+		int bytesRead = -1;
+		byte[] buffer = new byte[BUFFER_SIZE];
+		while ((bytesRead = inputStream.read(buffer)) != -1
+				&& !httpDAO.isCanceled()) {
+			dos.write(buffer, 0, bytesRead);
+		}
+		inputStream.close();
+		outputStream.close();
+		dos.close();
+	}
 
-        // opens an output stream to save into file
-        FileOutputStream outputStream = new FileOutputStream(targetFile, true);
+	/**
+	 * Returns http response header and looks up for a boundary and length keys,
+	 * saving their values into the variables
+	 * 
+	 * @return Returns header in String format
+	 * @throws IOException
+	 */
+	public String getResponseHeader() throws IOException {
+		String header = "";
+		Map responseHeader = connection.getHeaderFields();
 
-        httpDAO.setSize(length);
-        httpDAO.setStartTime(System.nanoTime());
-        long offset = targetFile.length();
-        httpDAO.setOffset(offset);
-        CountingOutputStream dos = new CountingOutputStream(outputStream) {
-            @Override
-            protected void afterWrite(int n) throws IOException {
-                super.afterWrite(n);
-                // System.out.println(getCount());
-                int nbBytes = getCount();
-                httpDAO.setCountFileSize(getCount());
-                httpDAO.setEndTime(System.nanoTime());
-                httpDAO.updateFileSizeObserver();
-                httpDAO.updateObserverSpeed(nbBytes);
-            }
-        };
+		for (Iterator iterator = responseHeader.keySet().iterator(); iterator
+				.hasNext();) {
+			String key = (String) iterator.next();
+			if (key != null) {
+				header += key + " = ";
+			}
+			List values = (List) responseHeader.get(key);
+			for (int i = 0; i < values.size(); i++) {
+				Object o = values.get(i);
+				header += o.toString();
+				parseBoundary(key, o.toString());
+				parseLength(key, o.toString());
+			}
+			header += "\n";
+		}
+		allData += header.length();
+		return header;
+	}
 
-        int bytesRead = -1;
-        byte[] buffer = new byte[BUFFER_SIZE];
-        while ((bytesRead = inputStream.read(buffer)) != -1 && !httpDAO.isCanceled()) {
-            dos.write(buffer, 0, bytesRead);
-        }
-        inputStream.close();
-        outputStream.close();
-        dos.close();
-    }
+	/**
+	 * Parse the length of content send in body
+	 * 
+	 * @param key
+	 *            Key name of header line
+	 * @param values
+	 *            Values of key header line
+	 */
+	private void parseLength(String key, String values) {
+		if (key != null && key.equals("Content-Length") == true) {
+			contLen = Integer.valueOf(values);
+		}
+	}
 
-    /**
-     * Returns http response header and looks up for a boundary and length keys, saving their values
-     * into the variables
-     * 
-     * @return Returns header in String format
-     * @throws IOException
-     */
-    public String getResponseHeader() throws IOException {
-        String header = "";
-        Map responseHeader = connection.getHeaderFields();
+	/**
+	 * Gets boundary sequence from response header for identificating the range
+	 * boundaries
+	 * 
+	 * @param key
+	 *            Key name of header line
+	 * @param values
+	 *            Values of key header line
+	 * @throws IOException
+	 */
+	private void parseBoundary(String key, String values) throws IOException {
+		if (getHttpStatusCode() == 206 && key != null
+				&& key.equals("Content-Type") == true) {
+			int index = values.indexOf("boundary");
+			if (index != -1) {
+				boundary = values.substring(index + "boundary=".length());
+				boundaryBytes = boundary.getBytes();
+			}
+		}
+	}
 
-        for (Iterator iterator = responseHeader.keySet().iterator(); iterator.hasNext();) {
-            String key = (String) iterator.next();
-            if (key != null) {
-                header += key + " = ";
-            }
-            List values = (List) responseHeader.get(key);
-            for (int i = 0; i < values.size(); i++) {
-                Object o = values.get(i);
-                header += o.toString();
-                parseBoundary(key, o.toString());
-                parseLength(key, o.toString());
-            }
-            header += "\n";
-        }
-        allData += header.length();
-        return header;
-    }
+	/**
+	 * Closes HTTP connection
+	 */
+	public void closeConnection() {
+		connection.disconnect();
+	}
 
-    /**
-     * Parse the length of content send in body
-     * 
-     * @param key Key name of header line
-     * @param values Values of key header line
-     */
-    private void parseLength(String key, String values) {
-        if (key != null && key.equals("Content-Length") == true) {
-            contLen = Integer.valueOf(values);
-        }
-    }
+	public long getAllTransferedDataLength() {
+		return allData;
+	}
 
-    /**
-     * Gets boundary sequence from response header for identificating the range boundaries
-     * 
-     * @param key Key name of header line
-     * @param values Values of key header line
-     * @throws IOException
-     */
-    private void parseBoundary(String key, String values) throws IOException {
-        if (getHttpStatusCode() == 206 && key != null && key.equals("Content-Type") == true) {
-            int index = values.indexOf("boundary");
-            if (index != -1) {
-                boundary = values.substring(index + "boundary=".length());
-                boundaryBytes = boundary.getBytes();
-            }
-        }
-    }
-
-    /**
-     * Closes HTTP connection
-     */
-    public void closeConnection() {
-        connection.disconnect();
-    }
-
-    public long getAllTransferedDataLength() {
-        return allData;
-    }
-
-    public HttpDAO getHttpDAO() {
-        return this.httpDAO;
-    }
+	public HttpDAO getHttpDAO() {
+		return this.httpDAO;
+	}
 
 }
