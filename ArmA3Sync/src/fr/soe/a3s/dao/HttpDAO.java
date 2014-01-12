@@ -426,7 +426,7 @@ public class HttpDAO extends AbstractConnexionDAO {
 		} else {
 			response = false;
 		}
-		return response;
+		return false;
 	}
 
 	public void stopDownload(boolean resumable) {

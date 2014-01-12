@@ -22,6 +22,7 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
@@ -475,9 +476,12 @@ public class MainPanel extends JFrame implements UIConstants {
 		try {
 			profileService.saveLauncherOptions(configurationService
 					.getProfileName());
+			profileService.saveAddonSearchDirectoryPaths(configurationService
+					.getProfileName());
 		} catch (ProfileException e) {
 			e.printStackTrace();
 		}
+
 		ProfilePanel profilePanel = new ProfilePanel(facade);
 		profilePanel.toFront();
 		profilePanel.setVisible(true);
@@ -768,10 +772,19 @@ public class MainPanel extends JFrame implements UIConstants {
 		facade.getAddonsPanel().updateAddonGroups();
 		facade.getAddonsPanel().expandAddonGroups();
 		try {
+			// Launcher options
 			LauncherOptionsDTO launcherOptionsDTO = profileService
 					.getLauncherOptions(profileName);
 			configurationService.setLauncherOptions(launcherOptionsDTO);
 			facade.getLaunchOptionsPanel().updateOptions();
+			
+			// Addon options
+			Set<String> addonSearchDirectoryPaths = profileService
+					.getAddonSearchDirectoryPaths(profileName);
+			configurationService.getAddonSearchDirectoryPaths().clear();
+			configurationService.getAddonSearchDirectoryPaths().addAll(
+					addonSearchDirectoryPaths);
+			facade.getAddonOptionsPanel().init();
 		} catch (Exception e2) {
 			e2.printStackTrace();
 		}
@@ -804,7 +817,8 @@ public class MainPanel extends JFrame implements UIConstants {
 				for (final RepositoryDTO repositoryDTO : list) {
 					try {
 						AbstractConnexionService connexion = ConnexionServiceFactory
-								.getServiceFromRepository(repositoryDTO.getName());
+								.getServiceFromRepository(repositoryDTO
+										.getName());
 						connexion.checkRepository(repositoryDTO.getName());
 					} catch (Exception e) {
 						System.out.println(e.getMessage());

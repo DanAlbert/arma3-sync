@@ -3,11 +3,13 @@ package fr.soe.a3s.domain;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 
 import fr.soe.a3s.domain.configration.LauncherOptions;
 
-public class Profile implements Serializable{
-	
+public class Profile implements Serializable {
+
 	/**
 	 * 
 	 */
@@ -16,18 +18,21 @@ public class Profile implements Serializable{
 	private TreeDirectory tree = new TreeDirectory("racine", null);
 	private String additionalParameters;
 	private List<String> addonNamesByPriority = new ArrayList<String>();
-	private LauncherOptions launcherOptions = new LauncherOptions(); 
-	
-	public Profile(String name){
+	private LauncherOptions launcherOptions = new LauncherOptions();
+	private Set<String> addonSearchDirectoryPaths = new TreeSet<String>();
+
+	public Profile(String name) {
 		this.name = name;
 	}
-	
+
 	public String getName() {
 		return name;
 	}
+
 	public void setName(String name) {
 		this.name = name;
 	}
+
 	public TreeDirectory getTree() {
 		return tree;
 	}
@@ -41,14 +46,14 @@ public class Profile implements Serializable{
 	}
 
 	public List<String> getAddonNamesByPriority() {
-		if (addonNamesByPriority==null){
+		if (addonNamesByPriority == null) {
 			addonNamesByPriority = new ArrayList<String>();
 		}
 		return addonNamesByPriority;
 	}
 
 	public LauncherOptions getLauncherOptions() {
-		if (launcherOptions==null){
+		if (launcherOptions == null) {
 			launcherOptions = new LauncherOptions();
 		}
 		return launcherOptions;
@@ -56,5 +61,17 @@ public class Profile implements Serializable{
 
 	public void setLauncherOptions(LauncherOptions launcherOptions) {
 		this.launcherOptions = launcherOptions;
+	}
+
+	public Set<String> getAddonSearchDirectoryPaths() {
+		if (addonSearchDirectoryPaths == null) {
+			addonSearchDirectoryPaths = new TreeSet<String>();
+		}
+		return addonSearchDirectoryPaths;
+	}
+
+	public void setAddonSearchDirectoryPaths(
+			Set<String> addonSearchDirectoryPaths) {
+		this.addonSearchDirectoryPaths = addonSearchDirectoryPaths;
 	}
 }

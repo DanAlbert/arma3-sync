@@ -85,8 +85,10 @@ public class ProfileService extends ObjectDTOtransformer {
 		TreeDirectory treeDirectory = profile.getTree();
 		TreeDirectory duplicateTreeDirectory = duplicateProfile.getTree();
 		duplicateTree(treeDirectory, duplicateTreeDirectory);
-		duplicateProfile.setAdditionalParameters(profile.getAdditionalParameters());
-		duplicateLauncherOptions(profile.getLauncherOptions(),duplicateProfile.getLauncherOptions());
+		duplicateProfile.setAdditionalParameters(profile
+				.getAdditionalParameters());
+		duplicateLauncherOptions(profile.getLauncherOptions(),
+				duplicateProfile.getLauncherOptions());
 		profileDAO.getMap().put(duplicateProfile.getName(), duplicateProfile);
 	}
 
@@ -119,25 +121,30 @@ public class ProfileService extends ObjectDTOtransformer {
 		duplicateTreeLeaf.setSelected(treeLeaf.isSelected());
 		return duplicateTreeLeaf;
 	}
-	
+
 	private void duplicateLauncherOptions(LauncherOptions launcherOptions,
 			LauncherOptions duplicateLauncherOptions) {
-		
-		duplicateLauncherOptions.setCpuCountSelection(
-				launcherOptions.getCpuCountSelection());
-		duplicateLauncherOptions.setExThreadsSelection(
-				launcherOptions.getExThreadsSelection());
-		duplicateLauncherOptions.setDefaultWorld(launcherOptions.isDefaultWorld());
+
+		duplicateLauncherOptions.setCpuCountSelection(launcherOptions
+				.getCpuCountSelection());
+		duplicateLauncherOptions.setExThreadsSelection(launcherOptions
+				.getExThreadsSelection());
+		duplicateLauncherOptions.setDefaultWorld(launcherOptions
+				.isDefaultWorld());
 		duplicateLauncherOptions.setGameProfile(launcherOptions
 				.getGameProfile());
-		duplicateLauncherOptions.setMaxMemorySelection(launcherOptions.getMaxMemorySelection());
-		duplicateLauncherOptions.setNoFilePatching(launcherOptions.isNoFilePatching());
+		duplicateLauncherOptions.setMaxMemorySelection(launcherOptions
+				.getMaxMemorySelection());
+		duplicateLauncherOptions.setNoFilePatching(launcherOptions
+				.isNoFilePatching());
 		duplicateLauncherOptions.setNoLogs(launcherOptions.isNologs());
 		duplicateLauncherOptions.setNoPause(launcherOptions.isNoPause());
 		duplicateLauncherOptions.setNoSplashScreen(launcherOptions.isNoPause());
-		duplicateLauncherOptions.setShowScriptErrors(launcherOptions.isShowScriptErrors());
+		duplicateLauncherOptions.setShowScriptErrors(launcherOptions
+				.isShowScriptErrors());
 		duplicateLauncherOptions.setWindowMode(launcherOptions.isWindowMode());
-		duplicateLauncherOptions.setArma3ExePath(launcherOptions.getArma3ExePath());
+		duplicateLauncherOptions.setArma3ExePath(launcherOptions
+				.getArma3ExePath());
 	}
 
 	public void renameProfile(String initProfileName, String newProfileName)
@@ -187,17 +194,52 @@ public class ProfileService extends ObjectDTOtransformer {
 				launcherOptions.getCpuCountSelection());
 		profile.getLauncherOptions().setExThreadsSelection(
 				launcherOptions.getExThreadsSelection());
-		profile.getLauncherOptions().setDefaultWorld(launcherOptions.isDefaultWorld());
-		profile.getLauncherOptions().setGameProfile(launcherOptions
-				.getGameProfile());
-		profile.getLauncherOptions().setMaxMemorySelection(launcherOptions.getMaxMemorySelection());
-		profile.getLauncherOptions().setNoFilePatching(launcherOptions.isNoFilePatching());
+		profile.getLauncherOptions().setDefaultWorld(
+				launcherOptions.isDefaultWorld());
+		profile.getLauncherOptions().setGameProfile(
+				launcherOptions.getGameProfile());
+		profile.getLauncherOptions().setMaxMemorySelection(
+				launcherOptions.getMaxMemorySelection());
+		profile.getLauncherOptions().setNoFilePatching(
+				launcherOptions.isNoFilePatching());
 		profile.getLauncherOptions().setNoLogs(launcherOptions.isNologs());
 		profile.getLauncherOptions().setNoPause(launcherOptions.isNoPause());
-		profile.getLauncherOptions().setNoSplashScreen(launcherOptions.isNoPause());
-		profile.getLauncherOptions().setShowScriptErrors(launcherOptions.isShowScriptErrors());
-		profile.getLauncherOptions().setWindowMode(launcherOptions.isWindowMode());
-		profile.getLauncherOptions().setArma3ExePath(launcherOptions.getArma3ExePath());
+		profile.getLauncherOptions().setNoSplashScreen(
+				launcherOptions.isNoPause());
+		profile.getLauncherOptions().setShowScriptErrors(
+				launcherOptions.isShowScriptErrors());
+		profile.getLauncherOptions().setWindowMode(
+				launcherOptions.isWindowMode());
+		profile.getLauncherOptions().setArma3ExePath(
+				launcherOptions.getArma3ExePath());
+	}
+
+	public void saveAddonSearchDirectoryPaths(String profileName)
+			throws ProfileException {
+
+		Profile profile = (Profile) profileDAO.getMap().get(profileName);
+		if (profile == null) {
+			throw new ProfileException("Profile with name " + profileName
+					+ " does not exists.");
+		}
+
+		Set<String> addonSearchDirectoryPaths = configurationDAO
+				.getConfiguration().getAddonSearchDirectoryPaths();
+		profile.getAddonSearchDirectoryPaths().clear();
+		profile.getAddonSearchDirectoryPaths()
+				.addAll(addonSearchDirectoryPaths);
+	}
+
+	public Set<String> getAddonSearchDirectoryPaths(String profileName)
+			throws ProfileException {
+
+		Profile profile = (Profile) profileDAO.getMap().get(profileName);
+		if (profile == null) {
+			throw new ProfileException("Profile with name " + profileName
+					+ " does not exists.");
+		}
+
+		return profile.getAddonSearchDirectoryPaths();
 	}
 
 	public TreeDirectoryDTO getAddonGroupsTree() {
@@ -373,4 +415,5 @@ public class ProfileService extends ObjectDTOtransformer {
 			}
 		}
 	}
+
 }

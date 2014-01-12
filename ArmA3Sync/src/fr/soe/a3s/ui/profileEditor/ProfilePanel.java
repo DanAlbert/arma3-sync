@@ -7,6 +7,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.List;
+import java.util.Set;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -259,20 +260,30 @@ public class ProfilePanel extends JDialog implements UIConstants {
 		}
 		configurationService.setProfileName(profileName);
 		try {
+			// Launcher options
 			LauncherOptionsDTO launcherOptionsDTO = profileService
 					.getLauncherOptions(profileName);
-			if (launcherOptionsDTO.getSteamExePath() == null && !profileName.equals("Default")) {
+			if (launcherOptionsDTO.getSteamExePath() == null
+					&& !profileName.equals("Default")) {
 				LauncherOptionsDTO launcherOptionsDTODefault = profileService
 						.getLauncherOptions("Default");
 				launcherOptionsDTO.setArma3ExePath(launcherOptionsDTODefault
 						.getArma3ExePath());
 			}
 			configurationService.setLauncherOptions(launcherOptionsDTO);
+
+			// Addon options
+			Set<String> addonSearchDirectoryPaths = profileService
+					.getAddonSearchDirectoryPaths(profileName);
+			configurationService.getAddonSearchDirectoryPaths().clear();
+			configurationService.getAddonSearchDirectoryPaths().addAll(
+					addonSearchDirectoryPaths);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		facade.getMainPanel().updateProfilesMenu();
 		facade.getInfoPanel().init();
+		facade.getAddonOptionsPanel().init();
 		facade.getAddonsPanel().updateAddonGroups();
 		facade.getAddonsPanel().expandAddonGroups();
 		facade.getLaunchOptionsPanel().updateOptions();
