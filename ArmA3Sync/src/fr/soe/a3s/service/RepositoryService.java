@@ -6,6 +6,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import javax.crypto.Cipher;
 import javax.crypto.NoSuchPaddingException;
@@ -252,14 +253,15 @@ public class RepositoryService implements DataAccessConstants {
 			throw new SyncFileNotFoundException();
 		}
 
-		boolean autoDiscover = repository.isAutoDiscover();
+		boolean noAutoDiscover = repository.isNoAutoDiscover();
+		Set<String> hidedFolderPaths = repository.getHidedFolderPath();
 
 		SyncTreeDirectory parent = repository.getSync();
 
 		determineDestinationPaths(parent,
-				repository.getDefaultDownloadLocation(), autoDiscover);
-		determineAddonFilesToDelete(parent);
-		determineAddonFoldersToDelete(parent);
+				repository.getDefaultDownloadLocation(), noAutoDiscover);
+		determineAddonFilesToDelete(parent, hidedFolderPaths);
+		determineAddonFoldersToDelete(parent, hidedFolderPaths);
 
 		if (repository.getServerInfo().getNumberOfFiles() > 0) {
 			repositoryBuilderDAO.determineLocalSHA1(parent, repository);
@@ -279,7 +281,7 @@ public class RepositoryService implements DataAccessConstants {
 	}
 
 	private void determineDestinationPaths(SyncTreeNode syncTreeNode,
-			String defaultDestinationPath, boolean autoDiscover) {
+			String defaultDestinationPath, boolean noAutoDiscover) {
 
 		if (!syncTreeNode.isLeaf()) {
 			SyncTreeDirectory directory = (SyncTreeDirectory) syncTreeNode;
@@ -295,7 +297,7 @@ public class RepositoryService implements DataAccessConstants {
 				} else {
 					directory.setDestinationPath(defaultDestinationPath);
 				}
-				if (autoDiscover
+				if (!noAutoDiscover
 						&& directory.isMarkAsAddon()
 						&& addonDAO.getMap().containsKey(
 								directory.getName().toLowerCase())) {
@@ -306,7 +308,8 @@ public class RepositoryService implements DataAccessConstants {
 				}
 			}
 			for (SyncTreeNode n : directory.getList()) {
-				determineDestinationPaths(n, defaultDestinationPath,autoDiscover);
+				determineDestinationPaths(n, defaultDestinationPath,
+						noAutoDiscover);
 			}
 		} else {
 			SyncTreeLeaf leaf = (SyncTreeLeaf) syncTreeNode;
@@ -343,7 +346,8 @@ public class RepositoryService implements DataAccessConstants {
 		// }
 	}
 
-	private void determineAddonFilesToDelete(SyncTreeNode syncTreeNode) {
+	private void determineAddonFilesToDelete(SyncTreeNode syncTreeNode,
+			Set<String> hidedFolderPaths) {
 
 		if (!syncTreeNode.isLeaf()) {
 			SyncTreeDirectory directory = (SyncTreeDirectory) syncTreeNode;
@@ -353,10 +357,20 @@ public class RepositoryService implements DataAccessConstants {
 				Addon addon = addonDAO.getMap().get(
 						directory.getName().toLowerCase());
 				File file = new File(addon.getPath() + "/" + addon.getName());
-				addFilesToDelete(directory, file);
+				boolean contains = false;
+				for (String stg : hidedFolderPaths) {
+					if (file.getAbsolutePath().toLowerCase()
+							.contains(stg.toLowerCase())) {
+						contains = true;
+						break;
+					}
+				}
+				if (!contains) {
+					addFilesToDelete(directory, file);
+				}
 			} else {
 				for (SyncTreeNode n : directory.getList()) {
-					determineAddonFilesToDelete(n);
+					determineAddonFilesToDelete(n, hidedFolderPaths);
 				}
 			}
 		}
@@ -409,7 +423,8 @@ public class RepositoryService implements DataAccessConstants {
 		}
 	}
 
-	private void determineAddonFoldersToDelete(SyncTreeNode syncTreeNode) {
+	private void determineAddonFoldersToDelete(SyncTreeNode syncTreeNode,
+			Set<String> hidedFolderPaths) {
 
 		if (!syncTreeNode.isLeaf()) {
 			SyncTreeDirectory directory = (SyncTreeDirectory) syncTreeNode;
@@ -425,15 +440,62 @@ public class RepositoryService implements DataAccessConstants {
 					}
 					for (File f : subFiles) {
 						if (!listNames.contains(f.getName().toLowerCase())) {
-							addFilesToDelete(directory, file);
+							boolean contains = false;
+							for (String stg : hidedFolderPaths) {
+								if (file.getAbsolutePath().toLowerCase()
+										.contains(stg.toLowerCase())) {
+									contains = true;
+									break;
+								}
+							}
+							if (!contains) {
+								addFilesToDelete(directory, file);
+							}
 						}
 					}
 				}
 			}
 			for (SyncTreeNode n : directory.getList()) {
-				determineAddonFoldersToDelete(n);
+				determineAddonFoldersToDelete(n, hidedFolderPaths);
 			}
 		}
+	}
+
+	public void addFilesToHide(String folderPath, String repositoryName) {
+
+		Repository repository = repositoryDAO.getMap().get(repositoryName);
+		if (repository != null) {
+			repository.getHidedFolderPath().add(folderPath);
+		}
+	}
+
+	public void removeFilesToHide(String folderPath, String repositoryName) {
+
+		Repository repository = repositoryDAO.getMap().get(repositoryName);
+		if (repository != null) {
+			repository.getHidedFolderPath().remove(folderPath);
+		}
+	}
+
+	public SyncTreeDirectoryDTO getTree(String repositoryName)
+			throws RepositoryException {
+
+		Repository repository = repositoryDAO.getMap().get(repositoryName);
+		if (repository == null) {
+			throw new RepositoryException("Repository " + repositoryName
+					+ " not found!");
+		}
+
+		SyncTreeDirectory parent = repository.getSync();
+		Set<String> hidedFolderPaths = repository.getHidedFolderPath();
+		determineAddonFilesToDelete(parent, hidedFolderPaths);
+		determineAddonFoldersToDelete(parent, hidedFolderPaths);
+
+		SyncTreeDirectoryDTO parentDTO = new SyncTreeDirectoryDTO();
+		parentDTO.setName("racine");
+		parentDTO.setParent(null);
+		transformSyncTreeDirectory2DTO(parent, parentDTO);
+		return parentDTO;
 	}
 
 	private void determineDestinationPathsForAddonFiles(
@@ -615,7 +677,7 @@ public class RepositoryService implements DataAccessConstants {
 	public boolean isAutoDiscover(String repositoryName) {
 		Repository repository = repositoryDAO.getMap().get(repositoryName);
 		if (repository != null) {
-			return repository.isAutoDiscover();
+			return repository.isNoAutoDiscover();
 		} else {
 			return false;
 		}
@@ -624,7 +686,7 @@ public class RepositoryService implements DataAccessConstants {
 	public void setAutoDiscover(boolean value, String repositoryName) {
 		Repository repository = repositoryDAO.getMap().get(repositoryName);
 		if (repository != null) {
-			repository.setAutoDiscover(value);
+			repository.setNoAutoDiscover(value);
 			try {
 				write(repositoryName);
 			} catch (WritingException e) {
@@ -1067,4 +1129,5 @@ public class RepositoryService implements DataAccessConstants {
 		treeLeafDTO.setSelected(treeLeaf.isSelected());
 		return treeLeafDTO;
 	}
+
 }

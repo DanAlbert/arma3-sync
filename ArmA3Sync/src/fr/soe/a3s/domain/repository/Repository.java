@@ -1,8 +1,11 @@
 package fr.soe.a3s.domain.repository;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import fr.soe.a3s.domain.AbstractProtocole;
 
@@ -20,8 +23,10 @@ public class Repository implements Serializable {
 	private String autoConfigURL;
 	private String defaultDownloadLocation;
 	private boolean outOfSynk = false;
-	private boolean autoDiscover = true;
-	/* SHA1 computation */
+	private boolean noAutoDiscover = true;
+	/* Hide extra local folder content */
+	private Set<String> hidedFolderPaths = new HashSet<String>();
+	/* SHA1 computation <Path,FileAttrbutes>*/
 	private Map<String, FileAttributes> mapFiles = new HashMap<String, FileAttributes>();
 	/* Remote files */
 	private transient ServerInfo serverInfo;
@@ -178,11 +183,18 @@ public class Repository implements Serializable {
 		this.mapFiles = mapFiles;
 	}
 
-	public boolean isAutoDiscover() {
-		return autoDiscover;
+	public boolean isNoAutoDiscover() {
+		return noAutoDiscover;
 	}
 
-	public void setAutoDiscover(boolean value) {
-		this.autoDiscover = value;
+	public void setNoAutoDiscover(boolean noAutoDiscover) {
+		this.noAutoDiscover = noAutoDiscover;
+	}
+
+	public Set<String> getHidedFolderPath() {
+		if (hidedFolderPaths==null){
+			hidedFolderPaths = new HashSet<String>();
+		}
+		return hidedFolderPaths;
 	}
 }

@@ -26,15 +26,20 @@ import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
+import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JProgressBar;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTree;
 import javax.swing.SwingUtilities;
 import javax.swing.border.Border;
+import javax.swing.event.PopupMenuEvent;
+import javax.swing.event.PopupMenuListener;
 import javax.swing.event.TreeExpansionEvent;
 import javax.swing.event.TreeExpansionListener;
 import javax.swing.event.TreeSelectionEvent;
@@ -49,6 +54,7 @@ import org.apache.commons.net.nntp.NewsgroupInfo;
 import fr.soe.a3s.dto.EventDTO;
 import fr.soe.a3s.dto.RepositoryDTO;
 import fr.soe.a3s.dto.TreeLeafDTO;
+import fr.soe.a3s.dto.TreeNodeDTO;
 import fr.soe.a3s.dto.sync.SyncTreeDirectoryDTO;
 import fr.soe.a3s.dto.sync.SyncTreeLeafDTO;
 import fr.soe.a3s.dto.sync.SyncTreeNodeDTO;
@@ -113,9 +119,12 @@ public class DownloadPanel extends JPanel implements UIConstants {
 	private String eventName;
 	private boolean update;
 	private JCheckBox checkBoxAutoDiscover;
+	private JPopupMenu popup;
 	/* Services */
 	private RepositoryService repositoryService = new RepositoryService();
 	private ConfigurationService configurationService = new ConfigurationService();
+	private JMenuItem menuItemHideExtraLocalContent;
+	private JMenuItem menuItemShowExtraLocalContent;
 
 	public DownloadPanel(Facade facade) {
 
@@ -340,8 +349,11 @@ public class DownloadPanel extends JPanel implements UIConstants {
 			JPanel selectionPanel = new JPanel();
 			selectionPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
 			checkBoxSelectAll = new JCheckBox("Select All");
+			checkBoxSelectAll.setFocusable(false);
 			checkBoxExpandAll = new JCheckBox("Expand All");
+			checkBoxExpandAll.setFocusable(false);
 			checkBoxAutoDiscover = new JCheckBox("Auto-discover");
+			checkBoxAutoDiscover.setFocusable(false);
 			selectionPanel.add(checkBoxSelectAll);
 			selectionPanel.add(checkBoxExpandAll);
 			selectionPanel.add(checkBoxAutoDiscover);
@@ -369,6 +381,53 @@ public class DownloadPanel extends JPanel implements UIConstants {
 			arbre.setCellRenderer(renderer);
 			panel2.add(addonsPanel, BorderLayout.CENTER);
 		}
+
+		/* Right clic menu */
+		popup = new JPopupMenu();
+
+		menuItemHideExtraLocalContent = new JMenuItem(
+				"Hide  extra local content");
+		menuItemHideExtraLocalContent.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent evt) {
+				popupActionPerformed(evt);
+			}
+		});
+		menuItemHideExtraLocalContent.setActionCommand("Hide");
+		popup.add(menuItemHideExtraLocalContent);
+
+		menuItemShowExtraLocalContent = new JMenuItem(
+				"Show extra local content");
+		menuItemShowExtraLocalContent.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent evt) {
+				popupActionPerformed(evt);
+			}
+		});
+		menuItemShowExtraLocalContent.setActionCommand("Show");
+		popup.add(menuItemShowExtraLocalContent);
+
+		popup.addPopupMenuListener(new PopupMenuListener() {
+
+			@Override
+			public void popupMenuCanceled(PopupMenuEvent arg0) {
+			}
+
+			@Override
+			public void popupMenuWillBecomeInvisible(PopupMenuEvent arg0) {
+			}
+
+			@Override
+			public void popupMenuWillBecomeVisible(PopupMenuEvent arg0) {
+				SyncTreeNodeDTO syncTreeNodeDTO = (SyncTreeNodeDTO) arbre
+						.getLastSelectedPathComponent();
+				menuItemHideExtraLocalContent.setEnabled(false);
+				if (syncTreeNodeDTO == null) {
+					return;
+				} else if (!syncTreeNodeDTO.isLeaf()) {
+					menuItemHideExtraLocalContent.setEnabled(true);
+				}
+			}
+		});
+
 		checkBoxSelectAll.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -464,6 +523,14 @@ public class DownloadPanel extends JPanel implements UIConstants {
 					}
 				});
 			}
+
+			public void mouseReleased(MouseEvent e) {
+				if (e.isPopupTrigger()) {
+					popup.show((JComponent) e.getSource(), e.getX(), e.getY());
+				} else if (SwingUtilities.isRightMouseButton(e)) {
+					popup.show((JComponent) e.getSource(), e.getX(), e.getY());
+				}
+			}
 		});
 		comBoxDestinationFolder.addActionListener(new ActionListener() {
 			@Override
@@ -518,7 +585,7 @@ public class DownloadPanel extends JPanel implements UIConstants {
 		buttonDownloadPause.setToolTipText("Pause");
 		buttonDownloadCancel.setToolTipText("Cancel");
 		checkBoxAutoDiscover
-				.setToolTipText("Auto-discover addons within all destination folders.");
+				.setToolTipText("Auto-discover addons within all destination folders");
 	}
 
 	public void init(String repositoryName) {
@@ -563,6 +630,51 @@ public class DownloadPanel extends JPanel implements UIConstants {
 		addonsChecker.start();
 	}
 
+	private void popupActionPerformed(ActionEvent evt) {
+
+		if (evt.getActionCommand().equals("Hide")) {
+			hidePerformed();
+		} else if (evt.getActionCommand().equals("Show")) {
+			showPerformed();
+		}
+	}
+
+	private void hidePerformed() {
+
+		SyncTreeNodeDTO syncTreeNodeDTO = (SyncTreeNodeDTO) arbre
+				.getLastSelectedPathComponent();
+
+		SyncTreeDirectoryDTO directory = (SyncTreeDirectoryDTO) syncTreeNodeDTO;
+		String path = directory.getDestinationPath();
+
+		repositoryService.addFilesToHide(path, repositoryName);
+		try {
+			SyncTreeDirectoryDTO parent = repositoryService
+					.getTree(repositoryName);
+			updateAddons(parent);
+		} catch (RepositoryException e) {
+			e.printStackTrace();
+		}
+	}
+
+	private void showPerformed() {
+
+		SyncTreeNodeDTO syncTreeNodeDTO = (SyncTreeNodeDTO) arbre
+				.getLastSelectedPathComponent();
+
+		SyncTreeDirectoryDTO directory = (SyncTreeDirectoryDTO) syncTreeNodeDTO;
+		String path = directory.getDestinationPath();
+
+		repositoryService.removeFilesToHide(path, repositoryName);
+		try {
+			SyncTreeDirectoryDTO parent = repositoryService
+					.getTree(repositoryName);
+			updateAddons(parent);
+		} catch (RepositoryException e) {
+			e.printStackTrace();
+		}
+	}
+
 	public void updateDefaultFolderDestination() {
 
 		Set<String> directories = configurationService
@@ -589,7 +701,7 @@ public class DownloadPanel extends JPanel implements UIConstants {
 	public void updateAutoDiscoverSelection() {
 
 		boolean value = repositoryService.isAutoDiscover(repositoryName);
-		checkBoxAutoDiscover.setSelected(value);
+		checkBoxAutoDiscover.setSelected(!value);
 	}
 
 	private void comBoxDestinationFolderPerformed() {
@@ -789,8 +901,7 @@ public class DownloadPanel extends JPanel implements UIConstants {
 	private void checkBoxAutoDiscoverPerformed() {
 
 		boolean value = checkBoxAutoDiscover.isSelected();
-		repositoryService.setAutoDiscover(value, repositoryName);
-		arbre.setEnabled(true);
+		repositoryService.setAutoDiscover(!value, repositoryName);
 		arbre.removeAll();
 		addonSyncTreeModel = new AddonSyncTreeModel(new SyncTreeDirectoryDTO());
 		arbre.setModel(addonSyncTreeModel);
