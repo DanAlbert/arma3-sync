@@ -194,6 +194,7 @@ public class MainPanel extends JFrame implements UIConstants {
 				new ExternalApplicationsPanel(facade));
 		tabbedPane.addTab(TAB_TITLE_SYNC, new SyncPanel(facade));
 		contenu.add(tabbedPane, BorderLayout.CENTER);
+		tabbedPane.setFocusable(false);
 
 		JPanel sidePanel1 = new JPanel();
 		contenu.add(sidePanel1, BorderLayout.EAST);
