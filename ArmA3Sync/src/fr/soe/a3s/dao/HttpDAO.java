@@ -271,40 +271,11 @@ public class HttpDAO extends AbstractConnexionDAO {
 			String fileUrl = Protocole.HTTP.getPrompt() + hostname
 					+ relativeFileUrl;
 
-			// file.createNewFile();
 			SyncTreeLeafDTO leaf = (SyncTreeLeafDTO) node;
 			String sha1 = leaf.getLocalSHA1();
 			Jazsync.sync(this.downloadingFile, sha1, relativeFileUrl,
 					relativeZsyncFileUrl, hostname, login, password, port,
 					resume, this);
-
-			// size = leaf.getSize();
-			// countFileSize = 0;
-			// setFileSizeObserverIndeterminate();
-			//
-			// String[] cmd = new String[4];
-			// cmd[0] = ZSYNC_EXE;
-			// cmd[1] = "-o";
-			// cmd[2] = file.getAbsolutePath();
-			// cmd[3] = zsyncFileUrl;
-			//
-			// try {
-			// startTime = System.nanoTime();
-			// Process p = Runtime.getRuntime().exec(cmd);
-			// p.waitFor();
-			// countFileSize = (int) size;
-			// endTime = System.nanoTime();
-			// updateObserverSpeed();
-			// } catch (InterruptedException e) {
-			// System.out.println("zsync.exe has been interrupted.");
-			// try {
-			// Process proc = Runtime.getRuntime().exec(
-			// "taskkill " + "zsync.exe");
-			// proc.waitFor();
-			// System.out.println("zsync.exe" + "killed");
-			// } catch (Exception e1) {
-			// }
-			// }
 		} else {
 			this.downloadingFile.mkdir();
 		}

@@ -320,28 +320,4 @@ public class FileAccessMethods implements DataAccessConstants {
         }
         return new String(chars);
     }
-
-    public static void zsyncmake(File file, String url) throws IOException, InterruptedException {
-
-        String osName = System.getProperty("os.name");
-        if (osName.contains("Windows")) {
-            String[] cmd = new String[5];
-            cmd[0] = "resources\\bin\\zsyncmake.exe";
-            cmd[1] = "-C";
-            cmd[2] = "-u";
-            cmd[3] = url;
-            cmd[4] = file.getAbsolutePath();
-            Process p = Runtime.getRuntime().exec(cmd);
-            // AfficheurFlux fluxSortie = new AfficheurFlux(p.getInputStream());
-            // AfficheurFlux fluxErreur = new AfficheurFlux(p.getErrorStream());
-            // new Thread(fluxSortie).start();
-            // new Thread(fluxErreur).start();
-            p.waitFor();
-            File sourceLocation = new File(file.getName() + ZSYNC_EXTENSION);
-            File targetLocation = new File(file.getParentFile().getAbsolutePath() + "/"
-                    + file.getName() + ZSYNC_EXTENSION);
-            copyFile(sourceLocation, targetLocation);
-            deleteFile(sourceLocation);
-        }
-    }
 }

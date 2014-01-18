@@ -297,9 +297,6 @@ public class AddonsPanel extends JPanel implements UIConstants {
 			}
 
 			public void mouseReleased(MouseEvent e) {
-				// if (e.isPopupTrigger()) {
-				// popup.show((JComponent) e.getSource(), e.getX(), e.getY());
-				// }
 				if (e.isPopupTrigger()) {
 					popup.show((JComponent) e.getSource(), e.getX(), e.getY());
 				} else if (SwingUtilities.isRightMouseButton(e)) {
