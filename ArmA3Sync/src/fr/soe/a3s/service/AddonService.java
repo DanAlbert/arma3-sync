@@ -39,7 +39,32 @@ public class AddonService {
 			List<String> list = new ArrayList<String>();
 			Iterator iter = addonSearchDirectoryPaths.iterator();
 			while (iter.hasNext()) {
-				list.add((String) iter.next());
+				if (list.isEmpty()) {
+					list.add((String) iter.next());
+				} else {
+					String path = (String) iter.next();
+					String remove = null;
+					boolean contains = false;
+					for (String p : list) {
+						if (p.toLowerCase().contains(path.toLowerCase())
+								|| path.toLowerCase().contains(p.toLowerCase())) {
+							contains = true;
+							if (path.length() < p.length()) {
+								remove = p;
+								break;
+							}
+						}
+					}
+					
+					if (!contains){
+						list.add(path);
+					}else {
+						if (remove != null) {
+							list.remove(remove);
+							list.add(path);
+						}
+					}
+				}
 			}
 
 			addonDAO.getMap().clear();
@@ -107,7 +132,7 @@ public class AddonService {
 					for (TreeNodeDTO n : newTreeDirectoryDTO.getList()) {
 						leafNames.add(n.getName());
 					}
-					if (!leafNames.contains(treeNodeDTO.getName())){
+					if (!leafNames.contains(treeNodeDTO.getName())) {
 						newTreeDirectoryDTO.addTreeNode(treeNodeDTO);
 					}
 				}
@@ -200,10 +225,9 @@ public class AddonService {
 			return addon.getPath();
 		}
 	}
-	
 
 	public String getTFARinstallationFolder() {
-		
+
 		Addon addon = addonDAO.getMap().get("@task_force_radio");
 		if (addon == null) {
 			return null;
@@ -244,6 +268,5 @@ public class AddonService {
 		treeLeafDTO.setSelected(treeLeaf.isSelected());
 		return treeLeafDTO;
 	}
-
 
 }
