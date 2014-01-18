@@ -366,7 +366,10 @@ public class RepositoryService implements DataAccessConstants {
 					}
 				}
 				if (!contains) {
+					directory.setHided(false);
 					addFilesToDelete(directory, file);
+				} else {
+					directory.setHided(true);
 				}
 			} else {
 				for (SyncTreeNode n : directory.getList()) {
@@ -449,7 +452,10 @@ public class RepositoryService implements DataAccessConstants {
 								}
 							}
 							if (!contains) {
+								directory.setHided(false);
 								addFilesToDelete(directory, file);
+							} else {
+								directory.setHided(true);
 							}
 						}
 					}
@@ -477,26 +483,26 @@ public class RepositoryService implements DataAccessConstants {
 		}
 	}
 
-	public SyncTreeDirectoryDTO getTree(String repositoryName)
-			throws RepositoryException {
-
-		Repository repository = repositoryDAO.getMap().get(repositoryName);
-		if (repository == null) {
-			throw new RepositoryException("Repository " + repositoryName
-					+ " not found!");
-		}
-
-		SyncTreeDirectory parent = repository.getSync();
-		Set<String> hidedFolderPaths = repository.getHidedFolderPath();
-		determineAddonFilesToDelete(parent, hidedFolderPaths);
-		determineAddonFoldersToDelete(parent, hidedFolderPaths);
-
-		SyncTreeDirectoryDTO parentDTO = new SyncTreeDirectoryDTO();
-		parentDTO.setName("racine");
-		parentDTO.setParent(null);
-		transformSyncTreeDirectory2DTO(parent, parentDTO);
-		return parentDTO;
-	}
+	// public SyncTreeDirectoryDTO getTree(String repositoryName)
+	// throws RepositoryException {
+	//
+	// Repository repository = repositoryDAO.getMap().get(repositoryName);
+	// if (repository == null) {
+	// throw new RepositoryException("Repository " + repositoryName
+	// + " not found!");
+	// }
+	//
+	// SyncTreeDirectory parent = repository.getSync();
+	// Set<String> hidedFolderPaths = repository.getHidedFolderPath();
+	// determineAddonFilesToDelete(parent, hidedFolderPaths);
+	// determineAddonFoldersToDelete(parent, hidedFolderPaths);
+	//
+	// SyncTreeDirectoryDTO parentDTO = new SyncTreeDirectoryDTO();
+	// parentDTO.setName("racine");
+	// parentDTO.setParent(null);
+	// transformSyncTreeDirectory2DTO(parent, parentDTO);
+	// return parentDTO;
+	// }
 
 	private void determineDestinationPathsForAddonFiles(
 			SyncTreeNode syncTreeNode) {
@@ -1007,6 +1013,7 @@ public class RepositoryService implements DataAccessConstants {
 				syncTreedDirectoryDTO2.setUpdated(false);
 				syncTreedDirectoryDTO2.setDeleted(syncTreeDirectory2
 						.isDeleted());
+				syncTreedDirectoryDTO2.setHided(syncTreeDirectory2.isHided());
 				syncTreeDirectoryDTO.addTreeNode(syncTreedDirectoryDTO2);
 				transformSyncTreeDirectory2DTO(syncTreeDirectory2,
 						syncTreedDirectoryDTO2);
@@ -1129,5 +1136,4 @@ public class RepositoryService implements DataAccessConstants {
 		treeLeafDTO.setSelected(treeLeaf.isSelected());
 		return treeLeafDTO;
 	}
-
 }

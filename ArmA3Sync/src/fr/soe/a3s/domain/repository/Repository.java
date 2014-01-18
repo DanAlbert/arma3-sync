@@ -26,7 +26,7 @@ public class Repository implements Serializable {
 	private boolean noAutoDiscover = true;
 	/* Hide extra local folder content */
 	private Set<String> hidedFolderPaths = new HashSet<String>();
-	/* SHA1 computation <Path,FileAttrbutes>*/
+	/* SHA1 computation <Path,FileAttrbutes> */
 	private Map<String, FileAttributes> mapFiles = new HashMap<String, FileAttributes>();
 	/* Remote files */
 	private transient ServerInfo serverInfo;
@@ -192,7 +192,7 @@ public class Repository implements Serializable {
 	}
 
 	public Set<String> getHidedFolderPath() {
-		if (hidedFolderPaths==null){
+		if (hidedFolderPaths == null) {
 			hidedFolderPaths = new HashSet<String>();
 		}
 		return hidedFolderPaths;

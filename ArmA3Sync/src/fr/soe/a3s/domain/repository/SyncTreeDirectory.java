@@ -17,6 +17,7 @@ public class SyncTreeDirectory implements SyncTreeNode,Serializable {
 	private boolean markAsAddon = false;
 	private transient String destinationPath;
 	private boolean deleted = false;
+	private boolean hided = false;
 
 	public SyncTreeDirectory(String name, SyncTreeDirectory parent) {
 		super();
@@ -110,4 +111,11 @@ public class SyncTreeDirectory implements SyncTreeNode,Serializable {
 		return this.deleted;
 	}
 
+	public boolean isHided() {
+		return hided;
+	}
+
+	public void setHided(boolean hided) {
+		this.hided = hided;
+	}
 }

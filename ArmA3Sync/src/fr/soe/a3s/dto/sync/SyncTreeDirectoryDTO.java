@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class SyncTreeDirectoryDTO implements SyncTreeNodeDTO{
+public class SyncTreeDirectoryDTO implements SyncTreeNodeDTO {
 
 	private String name;
 	private SyncTreeDirectoryDTO parent;
@@ -15,7 +15,8 @@ public class SyncTreeDirectoryDTO implements SyncTreeNodeDTO{
 	private boolean markAsAddon;
 	private boolean deleted;
 	private boolean optional;
-	
+	private boolean hided;
+
 	@Override
 	public String getName() {
 		return this.name;
@@ -23,7 +24,7 @@ public class SyncTreeDirectoryDTO implements SyncTreeNodeDTO{
 
 	@Override
 	public void setName(String name) {
-		this.name=name;
+		this.name = name;
 	}
 
 	@Override
@@ -68,15 +69,17 @@ public class SyncTreeDirectoryDTO implements SyncTreeNodeDTO{
 	public void setDestinationPath(String destinationPath) {
 		this.destinationPath = destinationPath;
 	}
-	
-	public String toString(){
-		if (optional){
+
+	public String toString() {
+		if (optional) {
 			return name + " (optional)";
-		}else {
+		} else if (hided) {
+			return name + " (hided)";
+		} else {
 			return name;
 		}
 	}
-	
+
 	public boolean isMarkAsAddon() {
 		return markAsAddon;
 	}
@@ -86,16 +89,16 @@ public class SyncTreeDirectoryDTO implements SyncTreeNodeDTO{
 	}
 
 	public void addTreeNode(SyncTreeNodeDTO syncTreeNodeDTO) {
-		
+
 		list.add(syncTreeNodeDTO);
-		
+
 		List<SyncTreeDirectoryDTO> directories = new ArrayList<SyncTreeDirectoryDTO>();
 		List<SyncTreeLeafDTO> leafs = new ArrayList<SyncTreeLeafDTO>();
-		for (SyncTreeNodeDTO t:list){
-			if (t instanceof SyncTreeDirectoryDTO){
-				directories.add((SyncTreeDirectoryDTO)t);
-			}else {
-				leafs.add((SyncTreeLeafDTO)t);
+		for (SyncTreeNodeDTO t : list) {
+			if (t instanceof SyncTreeDirectoryDTO) {
+				directories.add((SyncTreeDirectoryDTO) t);
+			} else {
+				leafs.add((SyncTreeLeafDTO) t);
 			}
 		}
 		Collections.sort(directories);
@@ -123,7 +126,7 @@ public class SyncTreeDirectoryDTO implements SyncTreeNodeDTO{
 	@Override
 	public void setDeleted(boolean value) {
 		this.deleted = value;
-		
+
 	}
 
 	@Override
@@ -140,5 +143,12 @@ public class SyncTreeDirectoryDTO implements SyncTreeNodeDTO{
 	public boolean isOptional() {
 		return this.optional;
 	}
-	
+
+	public boolean isHided() {
+		return hided;
+	}
+
+	public void setHided(boolean hided) {
+		this.hided = hided;
+	}
 }

@@ -9,14 +9,10 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.util.ArrayList;
+import java.io.File;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Set;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -49,12 +45,6 @@ import javax.swing.plaf.basic.BasicSplitPaneUI;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 
-import org.apache.commons.net.nntp.NewsgroupInfo;
-
-import fr.soe.a3s.dto.EventDTO;
-import fr.soe.a3s.dto.RepositoryDTO;
-import fr.soe.a3s.dto.TreeLeafDTO;
-import fr.soe.a3s.dto.TreeNodeDTO;
 import fr.soe.a3s.dto.sync.SyncTreeDirectoryDTO;
 import fr.soe.a3s.dto.sync.SyncTreeLeafDTO;
 import fr.soe.a3s.dto.sync.SyncTreeNodeDTO;
@@ -170,7 +160,9 @@ public class DownloadPanel extends JPanel implements UIConstants {
 			JPanel checkForAddonsControls = new JPanel();
 			checkForAddonsControls.setLayout(new BorderLayout());
 			buttonCheckForAddonsStart = new JButton("");
+			buttonCheckForAddonsStart.setFocusable(false);
 			buttonCheckForAddonsCancel = new JButton("");
+			buttonCheckForAddonsCancel.setFocusable(false);
 			Box hBox = Box.createHorizontalBox();
 			hBox.add(buttonCheckForAddonsStart);
 			hBox.add(buttonCheckForAddonsCancel);
@@ -216,6 +208,7 @@ public class DownloadPanel extends JPanel implements UIConstants {
 			optionsPanel.setLayout(new BorderLayout());
 			buttonAdvancedConfigurationPerformed = new JButton(
 					"Advanced configuration");
+			buttonAdvancedConfigurationPerformed.setFocusable(false);
 			ImageIcon addIcon = new ImageIcon(OPTIONS);
 			buttonAdvancedConfigurationPerformed.setIcon(addIcon);
 			optionsPanel.add(buttonAdvancedConfigurationPerformed);
@@ -257,8 +250,11 @@ public class DownloadPanel extends JPanel implements UIConstants {
 			JPanel downloadControls = new JPanel();
 			downloadControls.setLayout(new BorderLayout());
 			buttonDownloadStart = new JButton();
+			buttonDownloadStart.setFocusable(false);
 			buttonDownloadPause = new JButton();
+			buttonDownloadPause.setFocusable(false);
 			buttonDownloadCancel = new JButton();
+			buttonDownloadCancel.setFocusable(false);
 			Box hBox = Box.createHorizontalBox();
 			hBox.add(buttonDownloadStart);
 			hBox.add(buttonDownloadPause);
@@ -339,6 +335,7 @@ public class DownloadPanel extends JPanel implements UIConstants {
 			JPanel locationPanel = new JPanel();
 			locationPanel.setLayout(new BorderLayout());
 			comBoxDestinationFolder = new JComboBox();
+			comBoxDestinationFolder.setFocusable(false);
 			comBoxDestinationFolder.setPreferredSize(new Dimension(this
 					.getWidth(), 22));
 			locationPanel.add(comBoxDestinationFolder, BorderLayout.CENTER);
@@ -420,10 +417,12 @@ public class DownloadPanel extends JPanel implements UIConstants {
 				SyncTreeNodeDTO syncTreeNodeDTO = (SyncTreeNodeDTO) arbre
 						.getLastSelectedPathComponent();
 				menuItemHideExtraLocalContent.setEnabled(false);
+				menuItemShowExtraLocalContent.setEnabled(false);
 				if (syncTreeNodeDTO == null) {
 					return;
 				} else if (!syncTreeNodeDTO.isLeaf()) {
 					menuItemHideExtraLocalContent.setEnabled(true);
+					menuItemShowExtraLocalContent.setEnabled(true);
 				}
 			}
 		});
@@ -645,16 +644,15 @@ public class DownloadPanel extends JPanel implements UIConstants {
 				.getLastSelectedPathComponent();
 
 		SyncTreeDirectoryDTO directory = (SyncTreeDirectoryDTO) syncTreeNodeDTO;
-		String path = directory.getDestinationPath();
+		String path = new File(directory.getDestinationPath() + "/"
+				+ directory.getName()).getAbsolutePath();
 
 		repositoryService.addFilesToHide(path, repositoryName);
-		try {
-			SyncTreeDirectoryDTO parent = repositoryService
-					.getTree(repositoryName);
-			updateAddons(parent);
-		} catch (RepositoryException e) {
-			e.printStackTrace();
-		}
+
+		// Check addons repository
+		addonsChecker = new AddonsChecker(facade, repositoryName, eventName,
+				update);
+		addonsChecker.start();
 	}
 
 	private void showPerformed() {
@@ -663,16 +661,15 @@ public class DownloadPanel extends JPanel implements UIConstants {
 				.getLastSelectedPathComponent();
 
 		SyncTreeDirectoryDTO directory = (SyncTreeDirectoryDTO) syncTreeNodeDTO;
-		String path = directory.getDestinationPath();
+		String path = new File(directory.getDestinationPath() + "/"
+				+ directory.getName()).getAbsolutePath();
 
 		repositoryService.removeFilesToHide(path, repositoryName);
-		try {
-			SyncTreeDirectoryDTO parent = repositoryService
-					.getTree(repositoryName);
-			updateAddons(parent);
-		} catch (RepositoryException e) {
-			e.printStackTrace();
-		}
+
+		// Check addons repository
+		addonsChecker = new AddonsChecker(facade, repositoryName, eventName,
+				update);
+		addonsChecker.start();
 	}
 
 	public void updateDefaultFolderDestination() {
