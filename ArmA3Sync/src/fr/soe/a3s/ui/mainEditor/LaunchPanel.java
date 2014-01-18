@@ -61,6 +61,7 @@ public class LaunchPanel extends JPanel implements UIConstants {
 		joinServerLabel = new JLabel("Join Server");
 		this.add(joinServerLabel);
 		joinServerComboBox = new JComboBox();
+		joinServerComboBox.setFocusable(false);
 		this.add(joinServerComboBox);
 		joinServerComboBox.setPreferredSize(new java.awt.Dimension(150, 27));
 		gameVersionLabel = new JLabel("Game Version");
@@ -70,6 +71,7 @@ public class LaunchPanel extends JPanel implements UIConstants {
 				GameVersions.ARMA3.getDescription(),
 				GameVersions.ARMA3_AIA.getDescription() });
 		gameVersionComboBox.setModel(gameVersionModel);
+		gameVersionComboBox.setFocusable(false);
 		this.add(gameVersionComboBox);
 		gameVersionComboBox.setPreferredSize(new java.awt.Dimension(100, 27));
 		startButton = new JButton("Start Game");
