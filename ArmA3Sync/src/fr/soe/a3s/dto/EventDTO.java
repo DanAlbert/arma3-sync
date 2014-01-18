@@ -9,7 +9,6 @@ public class EventDTO {
 
 	private String name;
 	private String description;
-	//private List<String> addonNames = new ArrayList<String>();
 	private Map<String,Boolean> addonNames = new HashMap<String,Boolean>();
 
 	public String getName() {
@@ -31,11 +30,4 @@ public class EventDTO {
 	public Map<String, Boolean> getAddonNames() {
 		return addonNames;
 	}
-
-//	public List<String> getAddonNames() {
-//		return addonNames;
-//	}
-	
-	
-
 }
