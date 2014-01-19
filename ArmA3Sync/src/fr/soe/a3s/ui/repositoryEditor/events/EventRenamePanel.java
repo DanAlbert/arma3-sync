@@ -9,16 +9,17 @@ import javax.swing.JOptionPane;
 import fr.soe.a3s.dto.EventDTO;
 import fr.soe.a3s.exception.RepositoryException;
 import fr.soe.a3s.ui.Facade;
+import fr.soe.a3s.ui.repositoryEditor.EventsPanel;
 
 public class EventRenamePanel extends EventEditPanel {
 
 	private String eventName;
-
 	private String description;
+	private EventsPanel eventsPanel;
 
-	public EventRenamePanel(Facade facade, String repositoryName) {
+	public EventRenamePanel(Facade facade, String repositoryName,EventsPanel eventsPanel) {
 		super(facade, repositoryName);
-
+		this.eventsPanel = eventsPanel;
 	}
 
 	public void init(String eventName, String description) {
@@ -49,7 +50,7 @@ public class EventRenamePanel extends EventEditPanel {
 
 			repositoryService.renameEvent(repositoryName, eventName,
 					newEventName, description);
-			facade.getEventsPanel().updateListEvents();
+			eventsPanel.updateListEvents();
 			this.dispose();
 		} catch (RepositoryException e) {
 			JOptionPane.showMessageDialog(facade.getMainPanel(),

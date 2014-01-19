@@ -508,7 +508,7 @@ public class DownloadPanel extends JPanel implements UIConstants {
 					}
 				}
 
-				if (!repositoryService.isDownloading()) {
+				if (!repositoryService.isDownloading(repositoryName)) {
 					totalFilesSize = 0;
 					compute(racine);
 					labelTotalFilesSizeValue.setText(UnitConverter
@@ -607,7 +607,7 @@ public class DownloadPanel extends JPanel implements UIConstants {
 		arbre.setEnabled(false);
 		// Check addons repository
 		addonsChecker = new AddonsChecker(facade, repositoryName, eventName,
-				update);
+				update,this);
 		addonsChecker.start();
 	}
 
@@ -625,7 +625,7 @@ public class DownloadPanel extends JPanel implements UIConstants {
 		arbre.setEnabled(false);
 		// Check addons repository and update
 		addonsChecker = new AddonsChecker(facade, repositoryName, eventName,
-				update);
+				update,this);
 		addonsChecker.start();
 	}
 
@@ -651,7 +651,7 @@ public class DownloadPanel extends JPanel implements UIConstants {
 
 		// Check addons repository
 		addonsChecker = new AddonsChecker(facade, repositoryName, eventName,
-				update);
+				update,this);
 		addonsChecker.start();
 	}
 
@@ -668,7 +668,7 @@ public class DownloadPanel extends JPanel implements UIConstants {
 
 		// Check addons repository
 		addonsChecker = new AddonsChecker(facade, repositoryName, eventName,
-				update);
+				update,this);
 		addonsChecker.start();
 	}
 
@@ -735,7 +735,7 @@ public class DownloadPanel extends JPanel implements UIConstants {
 
 		// Check addons repository
 		addonsChecker = new AddonsChecker(facade, repositoryName, eventName,
-				update);
+				update,this);
 		addonsChecker.start();
 	}
 
@@ -804,7 +804,7 @@ public class DownloadPanel extends JPanel implements UIConstants {
 		}
 
 		addonsDownloader = new AddonsDownloader(facade, repositoryName, racine,
-				totalFilesSize, eventName);
+				totalFilesSize, eventName,this);
 		addonsDownloader.setDaemon(true);
 		addonsDownloader.start();
 	}

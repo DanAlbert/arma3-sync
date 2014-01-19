@@ -6,35 +6,38 @@ import fr.soe.a3s.controller.ObserverFileSize;
 import fr.soe.a3s.controller.ObserverFilesNumber;
 import fr.soe.a3s.service.RepositoryService;
 import fr.soe.a3s.ui.Facade;
+import fr.soe.a3s.ui.repositoryEditor.AdminPanel;
 
 public class RepositoryBuilder extends Thread {
 
 	private Facade facade;
 	private String path;
 	private String repositoryName;
+	private AdminPanel adminPanel;
 
-	public RepositoryBuilder(Facade facade, String repositoryName, String path) {
+	public RepositoryBuilder(Facade facade, String repositoryName, String path, AdminPanel adminPanel) {
 		this.facade = facade;
 		this.repositoryName = repositoryName;
 		this.path = path;
+		this.adminPanel = adminPanel;
 	}
 
 	public void run() {
 
-		facade.getAdminPanel().getButtonSelectRepositoryfolderPath()
+		adminPanel.getButtonSelectRepositoryfolderPath()
 				.setEnabled(false);
-		facade.getAdminPanel().getButtonBuild().setEnabled(false);
-		facade.getAdminPanel().getButtonCopyAutoConfigURL().setEnabled(false);
-		facade.getAdminPanel().getButtonCheck().setEnabled(false);
+		adminPanel.getButtonBuild().setEnabled(false);
+		adminPanel.getButtonCopyAutoConfigURL().setEnabled(false);
+		adminPanel.getButtonCheck().setEnabled(false);
 
-		facade.getAdminPanel().getBuildProgressBar().setMinimum(0);
-		facade.getAdminPanel().getBuildProgressBar().setMaximum(100);
+		adminPanel.getBuildProgressBar().setMinimum(0);
+		adminPanel.getBuildProgressBar().setMaximum(100);
 		RepositoryService repositoryService = new RepositoryService();
 		repositoryService.getRepositoryBuilderDAO().addObserverFileSize(
 				new ObserverFileSize() {
 					@Override
 					public void update(long value) {
-						facade.getAdminPanel().getBuildProgressBar()
+						adminPanel.getBuildProgressBar()
 								.setValue((int) value);
 					}
 				});
@@ -49,14 +52,14 @@ public class RepositoryBuilder extends Thread {
 			JOptionPane.showMessageDialog(facade.getMainPanel(),
 					e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
 		} finally {
-			facade.getAdminPanel().getButtonSelectRepositoryfolderPath()
+			adminPanel.getButtonSelectRepositoryfolderPath()
 					.setEnabled(true);
-			facade.getAdminPanel().getButtonBuild().setEnabled(true);
-			facade.getAdminPanel().getButtonCopyAutoConfigURL()
+			adminPanel.getButtonBuild().setEnabled(true);
+			adminPanel.getButtonCopyAutoConfigURL()
 					.setEnabled(true);
-			facade.getAdminPanel().getButtonCheck().setEnabled(true);
-			facade.getAdminPanel().getBuildProgressBar().setMaximum(0);
-			facade.getAdminPanel().init(repositoryName);
+			adminPanel.getButtonCheck().setEnabled(true);
+			adminPanel.getBuildProgressBar().setMaximum(0);
+			adminPanel.init(repositoryName);
 			facade.getSyncPanel().init();
 			System.gc();// Required for unlocking files!
 		}

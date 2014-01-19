@@ -19,41 +19,45 @@ import fr.soe.a3s.service.ConnexionServiceFactory;
 import fr.soe.a3s.service.FtpService;
 import fr.soe.a3s.service.RepositoryService;
 import fr.soe.a3s.ui.Facade;
+import fr.soe.a3s.ui.repositoryEditor.DownloadPanel;
 
 public class AddonsChecker extends Thread {
 
 	private Facade facade;
 	private String repositoryName;
 	private String eventName;
-	private RepositoryService repositoryService = new RepositoryService();
 	private SyncTreeDirectoryDTO parent;
 	private boolean found;
 	private boolean update;
+	private DownloadPanel downloadPanel;
+	/* Services */
+	private RepositoryService repositoryService = new RepositoryService();
 
 	public AddonsChecker(Facade facade, String repositoryName,
-			String eventName, boolean update) {
+			String eventName, boolean update,DownloadPanel downloadPanel) {
 		this.facade = facade;
 		this.repositoryName = repositoryName;
 		this.eventName = eventName;
 		this.update = update;
+		this.downloadPanel = downloadPanel;
 	}
 
 	public void run() {
 
-		facade.getDownloadPanel().getButtonCheckForAddonsCancel()
+		downloadPanel.getButtonCheckForAddonsCancel()
 				.setEnabled(true);
-		facade.getDownloadPanel().getLabelCheckForAddonsStatus().setText("");
-		facade.getDownloadPanel().getButtonCheckForAddonsStart()
+		downloadPanel.getLabelCheckForAddonsStatus().setText("");
+		downloadPanel.getButtonCheckForAddonsStart()
 				.setEnabled(false);
-		facade.getDownloadPanel().getButtonDownloadStart().setEnabled(false);
-		facade.getDownloadPanel().getProgressBarCheckForAddons().setMinimum(0);
-		facade.getDownloadPanel().getProgressBarCheckForAddons()
+		downloadPanel.getButtonDownloadStart().setEnabled(false);
+		downloadPanel.getProgressBarCheckForAddons().setMinimum(0);
+		downloadPanel.getProgressBarCheckForAddons()
 				.setMaximum(100);
 		RepositoryService repositoryService = new RepositoryService();
 		repositoryService.getRepositoryBuilderDAO().addObserverFilesNumber(
 				new ObserverFilesNumber() {
 					public void update(int value) {
-						facade.getDownloadPanel()
+						downloadPanel
 								.getProgressBarCheckForAddons().setValue(value);
 					}
 				});
@@ -71,8 +75,8 @@ public class AddonsChecker extends Thread {
 			} else if (update) {
 				selectAllDescending(parent);
 			}
-			facade.getDownloadPanel().updateAddons(parent);
-			facade.getDownloadPanel().getLabelCheckForAddonsStatus()
+			downloadPanel.updateAddons(parent);
+			downloadPanel.getLabelCheckForAddonsStatus()
 					.setText("Finished!");
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -85,14 +89,14 @@ public class AddonsChecker extends Thread {
 			JOptionPane.showMessageDialog(facade.getMainPanel(), message,
 					"Error", JOptionPane.ERROR_MESSAGE);
 		} finally {
-			facade.getDownloadPanel().getButtonCheckForAddonsStart()
+			downloadPanel.getButtonCheckForAddonsStart()
 					.setEnabled(true);
-			facade.getDownloadPanel().getButtonCheckForAddonsCancel()
+			downloadPanel.getButtonCheckForAddonsCancel()
 					.setEnabled(true);
-			facade.getDownloadPanel().getButtonDownloadStart().setEnabled(true);
-			facade.getDownloadPanel().getProgressBarCheckForAddons()
+			downloadPanel.getButtonDownloadStart().setEnabled(true);
+			downloadPanel.getProgressBarCheckForAddons()
 					.setMaximum(0);
-			facade.getDownloadPanel().getArbre().setEnabled(true);
+			downloadPanel.getArbre().setEnabled(true);
 			facade.getAdminPanel().init(repositoryName);
 			facade.getSyncPanel().init();
 			this.interrupt();

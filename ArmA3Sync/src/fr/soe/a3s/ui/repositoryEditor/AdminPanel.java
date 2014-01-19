@@ -404,7 +404,7 @@ public class AdminPanel extends JPanel implements UIConstants {
 		}
 
 		RepositoryBuilder repositoryBuilder = new RepositoryBuilder(facade,
-				repositoryName, path);
+				repositoryName, path,this);
 		repositoryBuilder.start();
 	}
 
@@ -451,7 +451,6 @@ public class AdminPanel extends JPanel implements UIConstants {
 				repositoryName);
 		changelogPanel.init();
 		changelogPanel.setVisible(true);
-
 	}
 
 	public JProgressBar getBuildProgressBar() {

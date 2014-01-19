@@ -369,7 +369,7 @@ public class EventsPanel extends JPanel implements UIConstants {
 			arbre.setEnabled(false);
 
 			EventRenamePanel eventRenamePanel = new EventRenamePanel(facade,
-					repositoryName);
+					repositoryName, this);
 			eventRenamePanel.init(eventDTOs.get(index).getName(), eventDTOs
 					.get(index).getDescription());
 			eventRenamePanel.setVisible(true);
