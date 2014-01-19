@@ -29,17 +29,13 @@ package fr.soe.a3s.jazsync;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.PrintStream;
 import java.io.StringReader;
-import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
+import java.net.URLEncoder;
 
-import fr.soe.a3s.dao.HttpDAO;
 import fr.soe.a3s.exception.JazsyncException;
 import fr.soe.a3s.exception.WritingException;
 

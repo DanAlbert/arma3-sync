@@ -15,7 +15,8 @@ public class RepositoryBuilder extends Thread {
 	private String repositoryName;
 	private AdminPanel adminPanel;
 
-	public RepositoryBuilder(Facade facade, String repositoryName, String path, AdminPanel adminPanel) {
+	public RepositoryBuilder(Facade facade, String repositoryName, String path,
+			AdminPanel adminPanel) {
 		this.facade = facade;
 		this.repositoryName = repositoryName;
 		this.path = path;
@@ -24,8 +25,7 @@ public class RepositoryBuilder extends Thread {
 
 	public void run() {
 
-		adminPanel.getButtonSelectRepositoryfolderPath()
-				.setEnabled(false);
+		adminPanel.getButtonSelectRepositoryfolderPath().setEnabled(false);
 		adminPanel.getButtonBuild().setEnabled(false);
 		adminPanel.getButtonCopyAutoConfigURL().setEnabled(false);
 		adminPanel.getButtonCheck().setEnabled(false);
@@ -37,8 +37,7 @@ public class RepositoryBuilder extends Thread {
 				new ObserverFileSize() {
 					@Override
 					public void update(long value) {
-						adminPanel.getBuildProgressBar()
-								.setValue((int) value);
+						adminPanel.getBuildProgressBar().setValue((int) value);
 					}
 				});
 		try {
@@ -52,11 +51,9 @@ public class RepositoryBuilder extends Thread {
 			JOptionPane.showMessageDialog(facade.getMainPanel(),
 					e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
 		} finally {
-			adminPanel.getButtonSelectRepositoryfolderPath()
-					.setEnabled(true);
+			adminPanel.getButtonSelectRepositoryfolderPath().setEnabled(true);
 			adminPanel.getButtonBuild().setEnabled(true);
-			adminPanel.getButtonCopyAutoConfigURL()
-					.setEnabled(true);
+			adminPanel.getButtonCopyAutoConfigURL().setEnabled(true);
 			adminPanel.getButtonCheck().setEnabled(true);
 			adminPanel.getBuildProgressBar().setMaximum(0);
 			adminPanel.init(repositoryName);
