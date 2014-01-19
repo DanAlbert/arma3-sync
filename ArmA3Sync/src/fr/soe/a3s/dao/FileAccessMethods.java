@@ -268,6 +268,10 @@ public class FileAccessMethods implements DataAccessConstants {
     }
 
     public static String computeSHA1(File file) throws NoSuchAlgorithmException, IOException {
+    	
+    	if (file.length()==0){
+    		return "0";
+    	}
 
         /*
         char[] chars = null;
