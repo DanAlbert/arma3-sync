@@ -104,11 +104,14 @@ public class AddonsPanel extends JPanel implements UIConstants {
 		controlPanel.add(controlPanel2);
 
 		checkBoxTree = new JCheckBox("Tree");
+		checkBoxTree.setFocusable(false);
 		checkBoxList = new JCheckBox("List");
+		checkBoxList.setFocusable(false);
 		ButtonGroup groupCheckBox = new ButtonGroup();
 		groupCheckBox.add(checkBoxTree);
 		groupCheckBox.add(checkBoxList);
 		buttonRefresh = new JButton("Refresh");
+		buttonRefresh.setFocusable(false);
 		ImageIcon refreshIcon = new ImageIcon(REFRESH);
 		buttonRefresh.setIcon(refreshIcon);
 		controlPanel1.add(checkBoxTree);
@@ -116,8 +119,11 @@ public class AddonsPanel extends JPanel implements UIConstants {
 		controlPanel1.add(buttonRefresh);
 
 		checkBoxSelectAll = new JCheckBox("Select All");
+		checkBoxSelectAll.setFocusable(false);
 		checkBoxExpandAll = new JCheckBox("Expand All");
+		checkBoxExpandAll.setFocusable(false);
 		buttonEvents = new JButton("Events");
+		buttonEvents.setFocusable(false);
 		ImageIcon checkIcon = new ImageIcon(CHECK);
 		buttonEvents.setIcon(checkIcon);
 		controlPanel2.add(checkBoxSelectAll);
