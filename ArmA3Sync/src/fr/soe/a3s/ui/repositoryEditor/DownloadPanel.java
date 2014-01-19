@@ -607,7 +607,7 @@ public class DownloadPanel extends JPanel implements UIConstants {
 		arbre.setEnabled(false);
 		// Check addons repository
 		addonsChecker = new AddonsChecker(facade, repositoryName, eventName,
-				update,this);
+				update, this);
 		addonsChecker.start();
 	}
 
@@ -625,7 +625,7 @@ public class DownloadPanel extends JPanel implements UIConstants {
 		arbre.setEnabled(false);
 		// Check addons repository and update
 		addonsChecker = new AddonsChecker(facade, repositoryName, eventName,
-				update,this);
+				update, this);
 		addonsChecker.start();
 	}
 
@@ -651,7 +651,7 @@ public class DownloadPanel extends JPanel implements UIConstants {
 
 		// Check addons repository
 		addonsChecker = new AddonsChecker(facade, repositoryName, eventName,
-				update,this);
+				update, this);
 		addonsChecker.start();
 	}
 
@@ -668,7 +668,7 @@ public class DownloadPanel extends JPanel implements UIConstants {
 
 		// Check addons repository
 		addonsChecker = new AddonsChecker(facade, repositoryName, eventName,
-				update,this);
+				update, this);
 		addonsChecker.start();
 	}
 
@@ -718,6 +718,11 @@ public class DownloadPanel extends JPanel implements UIConstants {
 							"A default destination folder must be set. \n Please checkout Addon Options panel.",
 							"Download", JOptionPane.WARNING_MESSAGE);
 			return;
+		} else {
+			String defaultDownloadLocation = (String) comBoxDestinationFolder
+					.getSelectedItem();
+			repositoryService.setDefaultDownloadLocation(repositoryName,
+					defaultDownloadLocation);
 		}
 
 		// Lock user action on addons tree
@@ -735,7 +740,7 @@ public class DownloadPanel extends JPanel implements UIConstants {
 
 		// Check addons repository
 		addonsChecker = new AddonsChecker(facade, repositoryName, eventName,
-				update,this);
+				update, this);
 		addonsChecker.start();
 	}
 
@@ -804,7 +809,7 @@ public class DownloadPanel extends JPanel implements UIConstants {
 		}
 
 		addonsDownloader = new AddonsDownloader(facade, repositoryName, racine,
-				totalFilesSize, eventName,this);
+				totalFilesSize, eventName, this);
 		addonsDownloader.setDaemon(true);
 		addonsDownloader.start();
 	}
