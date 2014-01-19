@@ -95,6 +95,11 @@ public class RepositoryBuilderDAO implements DataAccessConstants,
 				FileAccessMethods.deleteDirectory(folderA3S);
 			}
 
+			/* Replace any space characters of file name to "_" */
+			for (File f : file.listFiles()) {
+				removeFileNameSpaces(f);
+			}
+
 			/* Sync */
 			callables = new ArrayList<Callable<Integer>>();
 			final SyncTreeDirectory sync = new SyncTreeDirectory("racine", null);
@@ -102,7 +107,6 @@ public class RepositoryBuilderDAO implements DataAccessConstants,
 				generateSync(sync, f);
 			}
 
-			// attendre();
 			ExecutorService executor = Executors.newFixedThreadPool(Runtime
 					.getRuntime().availableProcessors());
 
@@ -269,8 +273,26 @@ public class RepositoryBuilderDAO implements DataAccessConstants,
 				fWo.close();
 			}
 		} catch (Exception e) {
-			// e.printStackTrace();
+			e.printStackTrace();
 			throw new WritingException(e.getMessage());
+		}
+	}
+
+	private void removeFileNameSpaces(File f) {
+
+		String name = f.getName();
+		if (name.contains(" ")) {
+			name = name.replaceAll(" ", "_");
+			File dest = new File(f.getParentFile().getAbsolutePath() + "/"
+					+ name);
+			f.renameTo(dest);
+		}
+
+		File[] subFiles = f.listFiles();
+		if (subFiles != null) {
+			for (File file : subFiles) {
+				removeFileNameSpaces(file);
+			}
 		}
 	}
 
@@ -345,7 +367,6 @@ public class RepositoryBuilderDAO implements DataAccessConstants,
 					if (protocole.equals(Protocole.HTTP)) {
 						String url = Protocole.HTTP.getPrompt() + repositortUrl
 								+ "/" + determinePath(treeSyncTreeLeaf);
-						// FileAccessMethods.zsyncmake(file, url);
 						Jazsync.make(file, url, sha1);
 					}
 					treeSyncTreeLeaf.setSha1(sha1);
