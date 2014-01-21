@@ -555,24 +555,49 @@ public class EventsPanel extends JPanel implements UIConstants {
 
 		if (index != -1) {
 			EventDTO eventDTO = eventDTOs.get(index);
-			Map<String, Boolean> map = eventDTO.getAddonNames();
-			map.clear();
-			getSelection(racine1, map);
+			Map<String, Boolean> mapAddonNames = eventDTO.getAddonNames();
+			Map<String, Boolean> mapUserconfigFolderNames = eventDTO
+					.getUserconfigFolderNames();
+			mapAddonNames.clear();
+			mapUserconfigFolderNames.clear();
+			getAddonsSelection(racine1, mapAddonNames);
+			getUserconfigSelection(racine1, mapUserconfigFolderNames);
 			repositoryService.saveEvent(repositoryName, eventDTO);
 		}
 	}
 
-	private void getSelection(TreeNodeDTO treeNodeDTO, Map<String, Boolean> map) {
+	private void getAddonsSelection(TreeNodeDTO treeNodeDTO,
+			Map<String, Boolean> mapAddonNames) {
 
 		if (treeNodeDTO.isLeaf()) {
 			if (treeNodeDTO.isSelected()
-					&& !map.containsKey(treeNodeDTO.getName())) {
-				map.put(treeNodeDTO.getName(), treeNodeDTO.isOptional());
+					&& !mapAddonNames.containsKey(treeNodeDTO.getName())) {
+				mapAddonNames.put(treeNodeDTO.getName(),
+						treeNodeDTO.isOptional());
 			}
 		} else {
 			TreeDirectoryDTO treeDirectoryDTO = (TreeDirectoryDTO) treeNodeDTO;
 			for (TreeNodeDTO n : treeDirectoryDTO.getList()) {
-				getSelection(n, map);
+				getAddonsSelection(n, mapAddonNames);
+			}
+		}
+	}
+
+	private void getUserconfigSelection(TreeNodeDTO treeNodeDTO,
+			Map<String, Boolean> mapUserconfigFolderNames) {
+
+		TreeDirectoryDTO treeDirectoryDTO = (TreeDirectoryDTO) treeNodeDTO;
+		for (TreeNodeDTO n : treeDirectoryDTO.getList()) {
+			if (n.getName().equals("userconfig")) {
+				TreeDirectoryDTO userconfig = (TreeDirectoryDTO) n;
+				for (TreeNodeDTO u : userconfig.getList()) {
+					if (u.isSelected()
+							&& !mapUserconfigFolderNames
+									.containsKey(treeNodeDTO.getName())) {
+						mapUserconfigFolderNames.put(u.getName(),
+								u.isOptional());
+					}
+				}
 			}
 		}
 	}

@@ -835,6 +835,22 @@ public class RepositoryService implements DataAccessConstants {
 					TreeDirectory d = (TreeDirectory) directory;
 					cleanTree(d, racineCleaned);
 				}
+
+				// userconfig
+				for (SyncTreeNode node : parentSyncTreeDirectory.getList()) {
+					if (node.getName().toLowerCase().equals("userconfig")
+							&& !node.isLeaf()) {
+						TreeDirectory d = new TreeDirectory(node.getName(),
+								racineCleaned);
+						racineCleaned.addTreeNode(d);
+						for (SyncTreeNode n : ((SyncTreeDirectory) node)
+								.getList()) {
+							TreeLeaf l = new TreeLeaf(n.getName(), d);
+							d.addTreeNode(l);
+						}
+					}
+				}
+
 				TreeDirectoryDTO treeDirectoryDTO = new TreeDirectoryDTO();
 				treeDirectoryDTO.setName("racine1");
 				treeDirectoryDTO.setParent(null);
@@ -904,11 +920,20 @@ public class RepositoryService implements DataAccessConstants {
 				for (Event event : events.getList()) {
 					if (event.getName().equals(eventDTO.getName())) {
 						event.getAddonNames().clear();
+						event.getUserconfigFolderNames().clear();
 						for (Iterator<String> iter = eventDTO.getAddonNames()
 								.keySet().iterator(); iter.hasNext();) {
 							String key = iter.next();
 							boolean value = eventDTO.getAddonNames().get(key);
 							event.getAddonNames().put(key, value);
+						}
+						for (Iterator<String> iter = eventDTO
+								.getUserconfigFolderNames().keySet().iterator(); iter
+								.hasNext();) {
+							String key = iter.next();
+							boolean value = eventDTO.getUserconfigFolderNames()
+									.get(key);
+							event.getUserconfigFolderNames().put(key, value);
 						}
 					}
 				}
@@ -1102,6 +1127,12 @@ public class RepositoryService implements DataAccessConstants {
 			String key = iter.next();
 			boolean value = event.getAddonNames().get(key);
 			eventDTO.getAddonNames().put(key, value);
+		}
+		for (Iterator<String> iter = event.getUserconfigFolderNames().keySet()
+				.iterator(); iter.hasNext();) {
+			String key = iter.next();
+			boolean value = event.getUserconfigFolderNames().get(key);
+			eventDTO.getUserconfigFolderNames().put(key, value);
 		}
 		return eventDTO;
 	}

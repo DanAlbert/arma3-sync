@@ -34,7 +34,7 @@ public class AddonsChecker extends Thread {
 	private RepositoryService repositoryService = new RepositoryService();
 
 	public AddonsChecker(Facade facade, String repositoryName,
-			String eventName, boolean update,DownloadPanel downloadPanel) {
+			String eventName, boolean update, DownloadPanel downloadPanel) {
 		this.facade = facade;
 		this.repositoryName = repositoryName;
 		this.eventName = eventName;
@@ -44,21 +44,18 @@ public class AddonsChecker extends Thread {
 
 	public void run() {
 
-		downloadPanel.getButtonCheckForAddonsCancel()
-				.setEnabled(true);
+		downloadPanel.getButtonCheckForAddonsCancel().setEnabled(true);
 		downloadPanel.getLabelCheckForAddonsStatus().setText("");
-		downloadPanel.getButtonCheckForAddonsStart()
-				.setEnabled(false);
+		downloadPanel.getButtonCheckForAddonsStart().setEnabled(false);
 		downloadPanel.getButtonDownloadStart().setEnabled(false);
 		downloadPanel.getProgressBarCheckForAddons().setMinimum(0);
-		downloadPanel.getProgressBarCheckForAddons()
-				.setMaximum(100);
+		downloadPanel.getProgressBarCheckForAddons().setMaximum(100);
 		RepositoryService repositoryService = new RepositoryService();
 		repositoryService.getRepositoryBuilderDAO().addObserverFilesNumber(
 				new ObserverFilesNumber() {
-					public void update(int value) {
-						downloadPanel
-								.getProgressBarCheckForAddons().setValue(value);
+					public synchronized void update(int value) {
+						downloadPanel.getProgressBarCheckForAddons().setValue(
+								value);
 					}
 				});
 
@@ -76,8 +73,7 @@ public class AddonsChecker extends Thread {
 				selectAllDescending(parent);
 			}
 			downloadPanel.updateAddons(parent);
-			downloadPanel.getLabelCheckForAddonsStatus()
-					.setText("Finished!");
+			downloadPanel.getLabelCheckForAddonsStatus().setText("Finished!");
 		} catch (Exception e) {
 			e.printStackTrace();
 			String message = "";
@@ -89,13 +85,10 @@ public class AddonsChecker extends Thread {
 			JOptionPane.showMessageDialog(facade.getMainPanel(), message,
 					"Error", JOptionPane.ERROR_MESSAGE);
 		} finally {
-			downloadPanel.getButtonCheckForAddonsStart()
-					.setEnabled(true);
-			downloadPanel.getButtonCheckForAddonsCancel()
-					.setEnabled(true);
+			downloadPanel.getButtonCheckForAddonsStart().setEnabled(true);
+			downloadPanel.getButtonCheckForAddonsCancel().setEnabled(true);
 			downloadPanel.getButtonDownloadStart().setEnabled(true);
-			downloadPanel.getProgressBarCheckForAddons()
-					.setMaximum(0);
+			downloadPanel.getProgressBarCheckForAddons().setMaximum(0);
 			downloadPanel.getArbre().setEnabled(true);
 			facade.getAdminPanel().init(repositoryName);
 			facade.getSyncPanel().init();
@@ -110,23 +103,23 @@ public class AddonsChecker extends Thread {
 			List<EventDTO> eventDTOs = repositoryService
 					.getEvents(this.repositoryName);
 			Map<String, Boolean> addonNames = new HashMap<String, Boolean>();
+			Map<String, Boolean> userconfigFolderNames = new HashMap<String, Boolean>();
 			if (eventDTOs != null) {
 				for (EventDTO eventDTO : eventDTOs) {
 					if (eventDTO.getName().equals(eventName)) {
 						addonNames = eventDTO.getAddonNames();
+						userconfigFolderNames = eventDTO
+								.getUserconfigFolderNames();
 						break;
 					}
 				}
 			}
 
-			// List<SyncTreeDirectoryDTO> retrievedList = new
-			// ArrayList<SyncTreeDirectoryDTO>();
-			// retieve(parent, retrievedList, addonNames);
 			SyncTreeDirectoryDTO newRacine = new SyncTreeDirectoryDTO();
 			newRacine.setName(parent.getName());
 			newRacine.setParent(null);
-			// build(parent, newRacine, retrievedList);
-			refine(parent, newRacine, addonNames);
+			refineUserconfig(parent, newRacine, userconfigFolderNames);
+			refineAddons(parent, newRacine, addonNames);
 			parent = newRacine;
 		} catch (RepositoryException e) {
 			e.printStackTrace();
@@ -186,7 +179,7 @@ public class AddonsChecker extends Thread {
 	// }
 	// }
 
-	private void refine(SyncTreeDirectoryDTO oldSyncTreeDirectoryDTO,
+	private void refineAddons(SyncTreeDirectoryDTO oldSyncTreeDirectoryDTO,
 			SyncTreeDirectoryDTO newSyncTreeDirectoryDTO,
 			Map<String, Boolean> addonNames) {
 
@@ -220,7 +213,7 @@ public class AddonsChecker extends Thread {
 						newDirectory.setName(directoryDTO.getName());
 						newSyncTreeDirectoryDTO.addTreeNode(newDirectory);
 						newDirectory.setParent(newSyncTreeDirectoryDTO);
-						refine(directoryDTO, newDirectory, addonNames);
+						refineAddons(directoryDTO, newDirectory, addonNames);
 					}
 				}
 			}
@@ -269,6 +262,45 @@ public class AddonsChecker extends Thread {
 					found = true;
 				} else {
 					seek(directoryDTO, addonNames);
+				}
+			}
+		}
+	}
+
+	private void refineUserconfig(SyncTreeDirectoryDTO oldSyncTreeDirectoryDTO,
+			SyncTreeDirectoryDTO newSyncTreeDirectoryDTO,
+			Map<String, Boolean> userconfigFolderNames) {
+
+		for (SyncTreeNodeDTO nodeDTO : oldSyncTreeDirectoryDTO.getList()) {
+			if (!nodeDTO.isLeaf()
+					&& nodeDTO.getName().toLowerCase().equals("userconfig")) {
+				SyncTreeDirectoryDTO userconfig = (SyncTreeDirectoryDTO) nodeDTO;
+				SyncTreeDirectoryDTO newDirectory = new SyncTreeDirectoryDTO();
+				newDirectory.setName(userconfig.getName());
+				newDirectory
+						.setDestinationPath(userconfig.getDestinationPath());
+				newDirectory.setParent(newSyncTreeDirectoryDTO);
+				newSyncTreeDirectoryDTO.addTreeNode(newDirectory);
+
+				for (SyncTreeNodeDTO d : userconfig.getList()) {
+					if (userconfigFolderNames.containsKey(d.getName())) {
+						SyncTreeDirectoryDTO folder = new SyncTreeDirectoryDTO();
+						folder.setName(d.getName());
+						folder.setDestinationPath(d.getDestinationPath());
+						folder.setParent(newSyncTreeDirectoryDTO);
+						boolean optional = userconfigFolderNames.get(d
+								.getName());
+						if (optional) {
+							folder.setOptional(true);
+							folder.setSelected(false);
+						} else {
+							folder.setOptional(false);
+							folder.setSelected(true);
+							selectAllAscending(newDirectory);
+						}
+						newDirectory.addTreeNode(folder);
+						fill((SyncTreeDirectoryDTO) d, folder);
+					}
 				}
 			}
 		}
