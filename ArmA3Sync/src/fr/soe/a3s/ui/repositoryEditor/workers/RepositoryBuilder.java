@@ -36,7 +36,7 @@ public class RepositoryBuilder extends Thread {
 		repositoryService.getRepositoryBuilderDAO().addObserverFileSize(
 				new ObserverFileSize() {
 					@Override
-					public void update(long value) {
+					public synchronized void update(long value) {
 						adminPanel.getBuildProgressBar().setValue((int) value);
 					}
 				});
