@@ -83,9 +83,7 @@ public class FileMaker {
     /** File existency and completion flag */
     public int FILE_FLAG = 0;
 
-    public FileMaker(File targetFile, String targetFileSha1, String relativeFileUrl,
-            MetaFileReader mfr, HttpConnection http, boolean resume) throws WritingException,
-            JazsyncException {
+    public FileMaker(MetaFileReader mfr, HttpConnection http) {
 
         this.mfr = mfr;
         this.http = http;
@@ -95,6 +93,10 @@ public class FileMaker {
         fileOffset = 0;
         df.setDecimalFormatSymbols(DecimalFormatSymbols.getInstance(Locale.US));
         df.setRoundingMode(RoundingMode.DOWN);
+    }
+
+    public void sync(File targetFile, String targetFileSha1, String relativeFileUrl, boolean resume)
+            throws WritingException, JazsyncException {
 
         if (targetFile.exists() && targetFileSha1 == null) {
             // assert (false);
@@ -124,6 +126,18 @@ public class FileMaker {
         else if (FILE_FLAG == -1) {
             getWholeFile(targetFile, relativeFileUrl);
         }
+    }
+
+    public double getCompletion(File targetFile, String relativeFileUrl) throws WritingException,
+            JazsyncException {
+
+        if (!targetFile.exists()) {
+            return 0;
+        }
+        else {
+            mapMatcher(targetFile);
+        }
+        return complete;
     }
 
     /**
@@ -683,4 +697,5 @@ public class FileMaker {
         }
         return false;
     }
+
 }
