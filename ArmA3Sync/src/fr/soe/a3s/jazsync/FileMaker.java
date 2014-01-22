@@ -519,7 +519,6 @@ public class FileMaker {
                 }
             }
 
-            System.out.println();
             complete = matchControl();
             System.out.println("Target " + df.format(complete) + "% complete.");
             fileMap[fileMap.length - 1] = -1;
