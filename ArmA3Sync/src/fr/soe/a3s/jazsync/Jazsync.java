@@ -38,75 +38,80 @@ import fr.soe.a3s.jazsyncmake.MetaFileMaker;
  */
 public class Jazsync {
 
-    /**
-     * Generate .zsync file
-     * 
-     * @param sourcefile
-     * @param url
-     * @param sha1
-     * @throws WritingException
-     * @throws JazsyncException
-     */
-    public static void make(File sourcefile, String url, String sha1) throws WritingException,
-            JazsyncException {
+	/**
+	 * Generate .zsync file
+	 * 
+	 * @param sourcefile
+	 * @param url
+	 * @param sha1
+	 * @throws WritingException
+	 * @throws JazsyncException
+	 */
+	public static void make(File sourcefile, String url, String sha1)
+			throws WritingException, JazsyncException {
 
-        assert (sourcefile != null);
-        assert (sourcefile.exists());
-        assert (!sourcefile.isDirectory());
-        assert (url != null);
-        assert (sha1 != null);
+		assert (sourcefile != null);
+		assert (sourcefile.exists());
+		assert (!sourcefile.isDirectory());
+		assert (url != null);
+		assert (sha1 != null);
 
-        File zsyncFile = new File(sourcefile.getParentFile() + "/" + sourcefile.getName()
-                + ".zsync");
-        MetaFileMaker mfm = new MetaFileMaker(sourcefile, zsyncFile, url, sha1);
-    }
+		File zsyncFile = new File(sourcefile.getParentFile() + "/"
+				+ sourcefile.getName() + ".zsync");
+		MetaFileMaker mfm = new MetaFileMaker(sourcefile, zsyncFile, url, sha1);
+	}
 
-    /**
-     * Sync file with server
-     * 
-     * @param targetFile
-     * @param targetFileSha1
-     * @param relativeFileUrl
-     * @param relativeZsyncFileUrl
-     * @param hostname
-     * @param login
-     * @param password
-     * @param port
-     * @param resume
-     * @param httpDAO
-     * @throws WritingException
-     * @throws JazsyncException
-     */
-    public static void sync(File targetFile, String targetFileSha1, String relativeFileUrl,
-            String relativeZsyncFileUrl, String hostname, String login, String password,
-            String port, boolean resume, HttpDAO httpDAO) throws WritingException, JazsyncException {
+	/**
+	 * Sync file with server
+	 * 
+	 * @param targetFile
+	 * @param targetFileSha1
+	 * @param relativeFileUrl
+	 * @param relativeZsyncFileUrl
+	 * @param hostname
+	 * @param login
+	 * @param password
+	 * @param port
+	 * @param resume
+	 * @param httpDAO
+	 * @throws WritingException
+	 * @throws JazsyncException
+	 */
+	public static void sync(File targetFile, String targetFileSha1,
+			String relativeFileUrl, String relativeZsyncFileUrl,
+			String hostname, String login, String password, String port,
+			boolean resume, HttpDAO httpDAO) throws WritingException,
+			JazsyncException {
 
-        assert (targetFile != null);
-        assert (relativeZsyncFileUrl != null);
+		assert (targetFile != null);
+		assert (relativeZsyncFileUrl != null);
 
-        HttpConnection http = new HttpConnection(hostname, login, password, port, httpDAO);
-        MetaFileReader mfr = new MetaFileReader(relativeZsyncFileUrl, http);
-        FileMaker fm = new FileMaker(mfr, http);
-        fm.sync(targetFile, targetFileSha1, relativeFileUrl, resume);
-    }
+		HttpConnection http = new HttpConnection(hostname, login, password,
+				port, httpDAO);
+		MetaFileReader mfr = new MetaFileReader(relativeZsyncFileUrl, http);
+		FileMaker fm = new FileMaker(mfr, http);
+		fm.sync(targetFile, targetFileSha1, relativeFileUrl, resume);
+	}
 
-    /**
-     * Determine file completion in %
-     * 
-     * @throws JazsyncException
-     * @throws WritingException
-     */
-    public static double getCompletion(File targetFile, String relativeFileUrl,
-            String relativeZsyncFileUrl, String hostname, String login, String password,
-            String port, HttpDAO httpDAO) throws WritingException, JazsyncException {
+	/**
+	 * Determine file completion in %
+	 * 
+	 * @throws JazsyncException
+	 * @throws WritingException
+	 */
+	public static double getCompletion(File targetFile, String targetFileSha1,
+			String relativeZsyncFileUrl, String hostname, String login,
+			String password, String port, HttpDAO httpDAO)
+			throws WritingException, JazsyncException {
 
-        assert (targetFile != null);
-        assert (relativeZsyncFileUrl != null);
+		assert (targetFile != null);
+		assert (relativeZsyncFileUrl != null);
 
-        HttpConnection http = new HttpConnection(hostname, login, password, port, httpDAO);
-        MetaFileReader mfr = new MetaFileReader(relativeZsyncFileUrl, http);
-        FileMaker fm = new FileMaker(mfr, http);
-        double completion = fm.getCompletion(targetFile, relativeFileUrl);
-        return completion;
-    }
+		HttpConnection http = new HttpConnection(hostname, login, password,
+				port, httpDAO);
+		MetaFileReader mfr = new MetaFileReader(relativeZsyncFileUrl, http);
+		FileMaker fm = new FileMaker(mfr, http);
+		double completion = fm.getCompletion(targetFile, targetFileSha1);
+		return completion;
+	}
 }

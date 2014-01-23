@@ -67,6 +67,8 @@ public class AddonsChecker extends Thread {
 			addonService.resetAvailableAddonTree();
 			addonService.getAvailableAddonsTree();
 			parent = repositoryService.getSync(repositoryName);
+			//connexionService .determineCompletion(repositoryName,parent);// slow with zsync!
+			
 			if (eventName != null) {
 				setEventAddonSelection();
 			} else if (update) {

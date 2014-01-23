@@ -255,8 +255,8 @@ public class HttpDAO extends AbstractConnexionDAO {
 
 	public void downloadAddon(String hostname, String login, String password,
 			String port, String remotePath, String destinationPath,
-			SyncTreeNodeDTO node, boolean resume) throws IOException,
-			WritingException, JazsyncException {
+			SyncTreeNodeDTO node, boolean resume) throws WritingException,
+			JazsyncException {
 
 		File parentDirectory = new File(destinationPath);
 		parentDirectory.mkdirs();
@@ -273,6 +273,7 @@ public class HttpDAO extends AbstractConnexionDAO {
 
 			SyncTreeLeafDTO leaf = (SyncTreeLeafDTO) node;
 			String sha1 = leaf.getLocalSHA1();
+
 			Jazsync.sync(this.downloadingFile, sha1, relativeFileUrl,
 					relativeZsyncFileUrl, hostname, login, password, port,
 					resume, this);
@@ -281,6 +282,30 @@ public class HttpDAO extends AbstractConnexionDAO {
 		}
 		countFilesNumber++;
 		updateFilesNumberObserver();
+	}
+
+	public void getFileCompletion(String hostname, String login,
+			String password, String port, String remotePath,
+			String destinationPath, SyncTreeNodeDTO node)
+			throws WritingException, JazsyncException {
+
+		if (node.isLeaf()) {
+			File targetFile = new File(destinationPath + "/" + node.getName());
+
+			String relativeZsyncFileUrl = remotePath + node.getName()
+					+ ZSYNC_EXTENSION;
+			String zsyncFileUrl = Protocole.HTTP.getPrompt() + hostname
+					+ relativeZsyncFileUrl;
+
+			SyncTreeLeafDTO leaf = (SyncTreeLeafDTO) node;
+			String sha1 = leaf.getLocalSHA1();
+
+			double complete = Jazsync
+					.getCompletion(targetFile, sha1, relativeZsyncFileUrl,
+							hostname, login, password, port, this);
+
+			leaf.setComplete(complete);
+		}
 	}
 
 	public boolean uploadEvents(Repository repository) throws HttpException {

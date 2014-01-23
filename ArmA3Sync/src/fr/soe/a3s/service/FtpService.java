@@ -1,14 +1,11 @@
 package fr.soe.a3s.service;
 
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.ObjectInputStream.GetField;
 import java.net.SocketException;
 import java.util.List;
 import java.util.StringTokenizer;
 
-import org.apache.commons.io.output.CountingOutputStream;
 import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPReply;
@@ -17,7 +14,6 @@ import fr.soe.a3s.constant.Protocole;
 import fr.soe.a3s.dao.DataAccessConstants;
 import fr.soe.a3s.dao.FtpDAO;
 import fr.soe.a3s.dao.RepositoryDAO;
-import fr.soe.a3s.domain.Http;
 import fr.soe.a3s.domain.repository.AutoConfig;
 import fr.soe.a3s.domain.repository.Changelogs;
 import fr.soe.a3s.domain.repository.Events;
@@ -25,11 +21,11 @@ import fr.soe.a3s.domain.repository.Repository;
 import fr.soe.a3s.domain.repository.ServerInfo;
 import fr.soe.a3s.domain.repository.SyncTreeDirectory;
 import fr.soe.a3s.dto.AutoConfigDTO;
-import fr.soe.a3s.dto.ProtocoleDTO;
-import fr.soe.a3s.dto.ServerInfoDTO;
+import fr.soe.a3s.dto.sync.SyncTreeDirectoryDTO;
+import fr.soe.a3s.dto.sync.SyncTreeLeafDTO;
 import fr.soe.a3s.dto.sync.SyncTreeNodeDTO;
-import fr.soe.a3s.exception.CheckException;
 import fr.soe.a3s.exception.FtpException;
+import fr.soe.a3s.exception.HttpException;
 import fr.soe.a3s.exception.RepositoryException;
 import fr.soe.a3s.exception.WritingException;
 import fr.soe.a3s.main.Version;
@@ -169,6 +165,7 @@ public class FtpService extends AbstractConnexionService implements
 	// }
 	// }
 
+	@Override
 	public void getSync(String repositoryName) throws RepositoryException,
 			FtpException {
 
@@ -190,6 +187,7 @@ public class FtpService extends AbstractConnexionService implements
 		}
 	}
 
+	@Override
 	public boolean upLoadEvents(String repositoryName)
 			throws RepositoryException, FtpException {
 
@@ -213,6 +211,7 @@ public class FtpService extends AbstractConnexionService implements
 		return response;
 	}
 
+	@Override
 	public void downloadAddons(String repositoryName,
 			List<SyncTreeNodeDTO> listFiles, boolean resume)
 			throws RepositoryException, FtpException, WritingException,
@@ -269,6 +268,22 @@ public class FtpService extends AbstractConnexionService implements
 			throw new WritingException(e.getMessage());
 		} finally {
 			disconnect();
+		}
+	}
+
+	@Override
+	public void determineCompletion(String repositoryName,
+			SyncTreeDirectoryDTO parent) throws RepositoryException,
+			HttpException, WritingException {
+
+		for (SyncTreeNodeDTO node : parent.getList()) {
+			if (node.isLeaf()) {
+				SyncTreeLeafDTO leaf = (SyncTreeLeafDTO) node;
+				leaf.setComplete(0);
+			}else {
+				SyncTreeDirectoryDTO directory = (SyncTreeDirectoryDTO) node;
+				determineCompletion(repositoryName, directory);
+			}
 		}
 	}
 

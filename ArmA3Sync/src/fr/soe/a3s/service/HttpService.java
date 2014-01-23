@@ -23,6 +23,8 @@ import fr.soe.a3s.domain.repository.Repository;
 import fr.soe.a3s.domain.repository.ServerInfo;
 import fr.soe.a3s.domain.repository.SyncTreeDirectory;
 import fr.soe.a3s.dto.AutoConfigDTO;
+import fr.soe.a3s.dto.sync.SyncTreeDirectoryDTO;
+import fr.soe.a3s.dto.sync.SyncTreeLeafDTO;
 import fr.soe.a3s.dto.sync.SyncTreeNodeDTO;
 import fr.soe.a3s.exception.FtpException;
 import fr.soe.a3s.exception.HttpException;
@@ -163,6 +165,78 @@ public class HttpService extends AbstractConnexionService implements
 			throw new WritingException(
 					"An unexpected error has occured.\n Internal error.");
 		}
+	}
+
+	public void determineCompletion(String repositoryName,
+			SyncTreeDirectoryDTO parent) throws RepositoryException,
+			HttpException, WritingException {
+
+		Repository repository = repositoryDAO.getMap().get(repositoryName);
+		if (repository == null) {
+			throw new RepositoryException("Repository " + repositoryName
+					+ " not found!");
+		}
+
+		try {
+			boolean connected = httpDAO.connectToRepository(repository);
+			if (!connected) {
+				throw new Exception();
+			}
+		} catch (Exception e) {
+			throw new HttpException("Failed to connect to repository "
+					+ repository.getName());
+		}
+
+		assert (repository.getSync() != null);
+		assert (repository.getServerInfo() != null);
+		String url = repository.getProtocole().getUrl();
+		String hostname = url;
+		String rootRemotePath = "";
+		int index = url.indexOf("/");
+		if (index != -1) {
+			hostname = url.substring(0, index);
+			rootRemotePath = url.substring(index);
+		}
+		String port = repository.getProtocole().getPort();
+		String login = repository.getProtocole().getLogin();
+		String password = repository.getProtocole().getPassword();
+
+		String rootDestinationPath = repository.getDefaultDownloadLocation();
+
+		for (SyncTreeNodeDTO node : parent.getList()) {
+			if (node.isLeaf()) {
+				SyncTreeLeafDTO leaf = (SyncTreeLeafDTO) node;
+				try {
+					String destinationPath = null;
+					String remotePath = rootRemotePath;
+					String path = determinePath(node);
+					if (node.getDestinationPath() != null) {
+						destinationPath = node.getDestinationPath();
+						remotePath = remotePath + "/" + path;
+					} else {
+						destinationPath = rootDestinationPath + "/" + path;
+						remotePath = remotePath + "/" + path;
+					}
+
+					if (httpDAO.isCanceled()) {
+						break;
+					}
+
+					httpDAO.getFileCompletion(hostname, login, password, port,
+							remotePath, destinationPath, node);
+				} catch (Exception e) {
+					e.printStackTrace();
+					throw new WritingException(
+							"An unexpected error has occured.\n Internal error.");
+				}
+			} else {
+				SyncTreeDirectoryDTO directory = (SyncTreeDirectoryDTO) node;
+				determineCompletion(repositoryName, directory);
+			}
+		}
+		
+		
+		
 	}
 
 	private String determinePath(SyncTreeNodeDTO syncTreeNodeDTO) {

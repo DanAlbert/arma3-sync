@@ -969,7 +969,8 @@ public class DownloadPanel extends JPanel implements UIConstants {
 			// Compute total files size
 			if (syncTreeNodeDTO.isSelected() && syncTreeNodeDTO.isUpdated()) {
 				SyncTreeLeafDTO leafDTO = (SyncTreeLeafDTO) syncTreeNodeDTO;
-				totalFilesSize = totalFilesSize + leafDTO.getSize();
+				totalFilesSize = totalFilesSize
+						+ (long) (leafDTO.getSize() * (100-leafDTO.getComplete())/100);
 			}
 		} else {
 			SyncTreeDirectoryDTO directoryDTO = (SyncTreeDirectoryDTO) syncTreeNodeDTO;

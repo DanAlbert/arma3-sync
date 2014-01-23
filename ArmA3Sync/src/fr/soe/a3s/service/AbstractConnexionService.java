@@ -5,23 +5,23 @@ import java.util.List;
 
 import fr.soe.a3s.constant.Protocole;
 import fr.soe.a3s.dao.AbstractConnexionDAO;
-import fr.soe.a3s.dao.FtpDAO;
 import fr.soe.a3s.domain.Http;
 import fr.soe.a3s.domain.repository.AutoConfig;
 import fr.soe.a3s.domain.repository.ServerInfo;
 import fr.soe.a3s.dto.AutoConfigDTO;
 import fr.soe.a3s.dto.ProtocoleDTO;
 import fr.soe.a3s.dto.ServerInfoDTO;
+import fr.soe.a3s.dto.sync.SyncTreeDirectoryDTO;
 import fr.soe.a3s.dto.sync.SyncTreeNodeDTO;
-import fr.soe.a3s.exception.CheckException;
 import fr.soe.a3s.exception.FtpException;
 import fr.soe.a3s.exception.HttpException;
 import fr.soe.a3s.exception.RepositoryException;
 import fr.soe.a3s.exception.WritingException;
 
 public abstract class AbstractConnexionService {
-	
-	public abstract AutoConfigDTO importAutoConfig(String url) throws WritingException, HttpException;
+
+	public abstract AutoConfigDTO importAutoConfig(String url)
+			throws WritingException, HttpException;
 
 	public abstract void checkRepository(String repositoryName)
 			throws FtpException, RepositoryException, HttpException;
@@ -35,14 +35,18 @@ public abstract class AbstractConnexionService {
 			List<SyncTreeNodeDTO> newListFiles, boolean resume)
 			throws RepositoryException, FtpException, WritingException,
 			FileNotFoundException, HttpException;
-	
+
 	public abstract void stopDownload(boolean resumable);
-	
-	public abstract void disconnect() ;
-	
+
+	public abstract void disconnect();
+
 	public abstract boolean upLoadEvents(String repositoryName)
 			throws RepositoryException, FtpException, HttpException;
-	
+
+	public abstract void determineCompletion(String repositoryName,
+			SyncTreeDirectoryDTO parent) throws RepositoryException,
+			HttpException, WritingException;
+
 	protected AutoConfigDTO transformAutoConfig2DTO(AutoConfig autoConfig) {
 
 		final AutoConfigDTO autoConfigDTO = new AutoConfigDTO();
