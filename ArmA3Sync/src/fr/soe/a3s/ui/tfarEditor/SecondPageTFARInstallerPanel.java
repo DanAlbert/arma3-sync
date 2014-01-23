@@ -31,7 +31,7 @@ import fr.soe.a3s.ui.acreEditor.AcreInstallerPanel;
  * PURCHASED FOR THIS MACHINE, SO JIGLOO OR THIS CODE CANNOT BE USED LEGALLY FOR
  * ANY CORPORATE OR COMMERCIAL PURPOSE.
  */
-public class SecondPageTFARInstallerPanel extends AcreInstallerPanel {
+public class SecondPageTFARInstallerPanel extends TfarInstallerPanel {
 
 	private JLabel labelOperationsPerformed;
 	private JLabel labelCopyPlugin;
