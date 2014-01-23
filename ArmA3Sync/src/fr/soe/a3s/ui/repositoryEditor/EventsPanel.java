@@ -523,9 +523,11 @@ public class EventsPanel extends JPanel implements UIConstants {
 		if (index != -1 && racine1 != null) {
 			arbre.setEnabled(true);
 			EventDTO eventDTO = eventDTOs.get(index);
-			Map<String, Boolean> map = eventDTO.getAddonNames();
+			Map<String, Boolean> mapAddonNames = eventDTO.getAddonNames();
+			Map<String, Boolean> mapUserconfigFolderNames = eventDTO.getUserconfigFolderNames();
 			deselectAllDescending(racine1);
-			setSelection(racine1, map);
+			setSelection(racine1, mapAddonNames);
+			setSelection(racine1, mapUserconfigFolderNames);
 			refreshViewArbre();
 		}
 	}
@@ -572,8 +574,19 @@ public class EventsPanel extends JPanel implements UIConstants {
 		if (treeNodeDTO.isLeaf()) {
 			if (treeNodeDTO.isSelected()
 					&& !mapAddonNames.containsKey(treeNodeDTO.getName())) {
-				mapAddonNames.put(treeNodeDTO.getName(),
-						treeNodeDTO.isOptional());
+				TreeNodeDTO parent = treeNodeDTO.getParent();
+				boolean found = false;
+				while (parent!=null){
+					if (parent.getName().toLowerCase().equals("userconfig")){
+						found  = true;
+						break;
+					}
+					parent = parent.getParent();
+				}
+				if (!found){
+					mapAddonNames.put(treeNodeDTO.getName(),
+							treeNodeDTO.isOptional());
+				}
 			}
 		} else {
 			TreeDirectoryDTO treeDirectoryDTO = (TreeDirectoryDTO) treeNodeDTO;

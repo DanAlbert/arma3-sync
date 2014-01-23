@@ -142,10 +142,6 @@ public class EventSelectionPanel extends JDialog implements UIConstants {
 			this.dispose();
 		}else {
 			EventDTO eventDTO = mapEvents.get(index);
-			//List<String> listAddonNames = eventDTO.getAddonNames();
-//			for (Iterator<String> iter = eventDTO.getAddonNames().keySet().iterator() ; iter.hasNext() ; ){
-//				
-//			}
 			facade.getAddonsPanel().createGroupFromEvent(eventDTO.getName(),eventDTO.getAddonNames());
 			this.dispose();
 		}
