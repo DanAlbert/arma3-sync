@@ -163,7 +163,7 @@ public class HttpService extends AbstractConnexionService implements
 		} catch (Exception e) {
 			e.printStackTrace();
 			throw new WritingException(
-					"An unexpected error has occured.\n Internal error.");
+					"An unexpected error has occured.\n");
 		}
 	}
 
