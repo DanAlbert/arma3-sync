@@ -628,7 +628,6 @@ public class EventsPanel extends JPanel implements UIConstants {
 	private void selectAllDescending(TreeDirectoryDTO treeDirectoryDTO) {
 		treeDirectoryDTO.setSelected(true);
 		for (TreeNodeDTO t : treeDirectoryDTO.getList()) {
-			// t.setSelected(treeDirectoryDTO.isSelected());
 			t.setSelected(true);
 			if (!t.isLeaf()) {
 				TreeDirectoryDTO d = (TreeDirectoryDTO) t;
