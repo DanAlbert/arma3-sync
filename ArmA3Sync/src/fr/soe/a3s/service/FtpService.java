@@ -363,7 +363,7 @@ public class FtpService extends AbstractConnexionService implements
 	public void disconnect() {
 		if (ftpClient != null) {
 			try {
-				ftpClient.abort();
+				ftpClient.disconnect();
 			} catch (IOException e) {
 			}
 		}
