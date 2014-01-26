@@ -96,6 +96,8 @@ public class HttpConnection {
 	public void openConnection(String relativeUrl) throws IOException,
 			URISyntaxException {
 
+		// See http://stackoverflow.com/questions/724043/http-url-address-encoding-in-java
+		
 		URI uri = new URI("http", hostname, relativeUrl, null);
 		URL url = uri.toURL();
 		String file = url.getFile();
