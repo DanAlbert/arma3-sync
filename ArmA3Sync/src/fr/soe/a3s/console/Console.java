@@ -1,21 +1,15 @@
 package fr.soe.a3s.console;
 
-import java.io.BufferedInputStream;
 import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Scanner;
 
-import javax.swing.JOptionPane;
-
 import fr.soe.a3s.constant.ConsoleCommands;
-import fr.soe.a3s.constant.EncryptionMode;
 import fr.soe.a3s.constant.Protocole;
 import fr.soe.a3s.controller.ObserverFileSize;
-import fr.soe.a3s.dao.AfficheurFlux;
 import fr.soe.a3s.dto.RepositoryDTO;
 import fr.soe.a3s.exception.CheckException;
 import fr.soe.a3s.exception.LoadingException;
@@ -125,6 +119,8 @@ public class Console {
 			String login = repositoryDTO.getProtocoleDTO().getLogin();
 			String password = repositoryDTO.getProtocoleDTO().getPassword();
 			String port = repositoryDTO.getProtocoleDTO().getPort();
+			Protocole protocole = repositoryDTO.getProtocoleDTO()
+					.getProtocole();
 
 			if (name != null) {
 				if (name.isEmpty()) {
@@ -158,9 +154,10 @@ public class Console {
 			}
 
 			System.out.println("Repository name: " + name);
-			System.out.println("Url: ftp://" + url);
-			System.out.println("Auto-config url: ftp://" + autoconfig);
-			System.out.println("FTP folder path: " + path);
+			System.out.println("Url: " + protocole.getPrompt() + url);
+			System.out.println("Auto-config url: " + protocole.getPrompt()
+					+ autoconfig);
+			System.out.println("Repository main folder path: " + path);
 			System.out.println("");
 		}
 
@@ -183,23 +180,41 @@ public class Console {
 			System.out.print("Enter repository name: ");
 			name = c.nextLine();
 		}
-		System.out.print("Enter repository url: ftp://");
+		System.out.print("Enter repository protocole FTP or HTTP: ");
+		String prot = c.nextLine();
+		boolean check = true;
+		while (check) {
+			if (prot.equals(Protocole.FTP.getDescription())) {
+				check = false;
+			} else if (prot.equals(Protocole.HTTP.getDescription())) {
+				check = false;
+			} else {
+				System.out.print("Enter repository protocole FTP or HTTP: ");
+				prot = c.nextLine();
+			}
+		}
+
+		System.out.print("Enter repository url: ");
 		String url = c.nextLine();
+		url = url.toLowerCase();
+		url = url.replaceAll(Protocole.FTP.getPrompt(), "").replaceAll(
+				Protocole.HTTP.getPrompt(), "");
 		while (url.isEmpty()) {
 			System.out.print("Enter repository url: ");
 			url = c.nextLine();
 		}
-		System.out.print("Enter FTP shared folder path: ");
+		System.out.print("Enter root shared folder path: ");
 		String path = c.nextLine();
 		while (path.isEmpty()) {
-			System.out.print("Enter FTP shared folder path: ");
+			System.out.print("Enter root shared folder path: ");
 			path = c.nextLine();
 		}
-
+		Protocole protocole = Protocole.getEnum(prot);
 		RepositoryService repositoryService = new RepositoryService();
 		try {
+
 			repositoryService.createRepository(name, url, "21", "anonymous",
-					"", Protocole.FTP);
+					"", protocole);
 			repositoryService.write(name);
 		} catch (CheckException e) {
 			System.out.println(e.getMessage());
@@ -231,8 +246,8 @@ public class Console {
 			repositoryService.buildRepository(name, path);
 			repositoryService.write(name);
 			System.out.println("Repository creation finished.");
-			System.out.println("Auto-config url: ftp://" + url
-					+ "/.a3s/autoconfig");
+			System.out.println("Auto-config url: " + protocole.getPrompt()
+					+ url + "/.a3s/autoconfig");
 		} catch (Exception e) {
 			System.out
 					.println("An error occured. Failed to create repository.");
