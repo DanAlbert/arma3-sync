@@ -181,7 +181,7 @@ public class FileMaker {
 			http.getFile(mfr.getLength(), targetFile);
 			System.out.println("Target 100.0% complete.");
 			http.closeConnection();
-		} catch (IOException e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 			throw new WritingException("Failed to retrieve file "
 					+ targetFile.getName());
@@ -197,7 +197,7 @@ public class FileMaker {
 			http.getResumedFile(mfr.getLength(), targetFile);
 			System.out.println("Target 100.0% complete.");
 			http.closeConnection();
-		} catch (IOException e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 			throw new WritingException("Failed to retrieve file "
 					+ targetFile.getName());

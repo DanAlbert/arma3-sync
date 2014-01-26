@@ -33,7 +33,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.ProtocolException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -88,11 +91,17 @@ public class HttpConnection {
 	 * 
 	 * @param relativeUrl
 	 * @throws IOException
+	 * @throws URISyntaxException
 	 */
-	public void openConnection(String relativeUrl) throws IOException {
+	public void openConnection(String relativeUrl) throws IOException,
+			URISyntaxException {
 
-		URL url = new URL("http", hostname, Integer.parseInt(port), relativeUrl);
-		connection = (HttpURLConnection) url.openConnection();
+		URI uri = new URI("http", hostname, relativeUrl, null);
+		URL url = uri.toURL();
+		String file = url.getFile();
+
+		URL url2 = new URL("http", hostname, Integer.parseInt(port), file);
+		connection = (HttpURLConnection) url2.openConnection();
 		httpDAO.seConnexion(connection);
 	}
 

@@ -105,7 +105,7 @@ public class MetaFileReader {
 			e.printStackTrace();
 			throw new JazsyncException("Wrong .zsync file url "
 					+ relativeZsyncFileUrl);
-		} catch (IOException e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 			throw new WritingException(
 					"Failed to retrieve .zsync file for url "
