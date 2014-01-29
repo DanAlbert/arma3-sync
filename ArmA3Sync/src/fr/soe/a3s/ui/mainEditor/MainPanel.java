@@ -749,9 +749,11 @@ public class MainPanel extends JFrame implements UIConstants {
 	private void menuItemProfilePerformed(ActionEvent e) {
 
 		// Save current profile
-		facade.getAddonsPanel().saveAddonGroups();
 		try {
+			facade.getAddonsPanel().saveAddonGroups();
 			profileService.saveLauncherOptions(configurationService
+					.getProfileName());
+			profileService.saveAddonSearchDirectoryPaths(configurationService
 					.getProfileName());
 		} catch (ProfileException ex) {
 			ex.printStackTrace();
@@ -778,7 +780,7 @@ public class MainPanel extends JFrame implements UIConstants {
 					.getLauncherOptions(profileName);
 			configurationService.setLauncherOptions(launcherOptionsDTO);
 			facade.getLaunchOptionsPanel().updateOptions();
-			
+
 			// Addon options
 			Set<String> addonSearchDirectoryPaths = profileService
 					.getAddonSearchDirectoryPaths(profileName);
