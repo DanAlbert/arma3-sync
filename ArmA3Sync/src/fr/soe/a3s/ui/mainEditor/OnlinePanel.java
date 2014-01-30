@@ -167,7 +167,7 @@ public class OnlinePanel extends JPanel implements UIConstants {
 		FavoriteServerDTO favoriteServerDTO = new FavoriteServerDTO();
 		favoriteServerDTO.setName("New Server");
 		favoriteServerDTO.setIpAddress("0.0.0.0");
-		favoriteServerDTO.setPassword("Empty");
+		favoriteServerDTO.setPassword("");
 		favoriteServerDTO.setPort(0);
 		list.add(favoriteServerDTO);
 		configurationService.setFavoriteServers(list);

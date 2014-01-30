@@ -469,7 +469,9 @@ public class LaunchService {
 					String password = s.getPassword();
 					params.add("-connect=" + ipAddress);
 					params.add("-port=" + port);
-					params.add("-password=" + password);
+					if (!password.isEmpty()){
+						params.add("-password=" + password);
+					}
 				}
 			}
 		}
