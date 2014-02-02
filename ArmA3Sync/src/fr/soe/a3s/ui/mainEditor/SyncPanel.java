@@ -8,12 +8,10 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.SortedMap;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -38,6 +36,7 @@ import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 
 import fr.soe.a3s.constant.RepositoryStatus;
+import fr.soe.a3s.dto.ChangelogDTO;
 import fr.soe.a3s.dto.EventDTO;
 import fr.soe.a3s.dto.RepositoryDTO;
 import fr.soe.a3s.dto.ServerInfoDTO;
@@ -299,8 +298,22 @@ public class SyncPanel extends JPanel implements UIConstants {
 					if (repositoryDTO.getRevision() == serverInfoDTO
 							.getRevision()) {
 						status = RepositoryStatus.OK.getDescription();
-					} else if (repositoryDTO.getRevision() != 0) {
+					} 
+					else if (repositoryDTO.getRevision() != 0) {
+						
 						status = RepositoryStatus.UPDATED.getDescription();
+						
+						List<ChangelogDTO> changelogs = repositoryService
+								.getChangelogs(name);
+						if (changelogs.size() != 0) {
+							ChangelogDTO changelogDTO = changelogs
+									.get(changelogs.size() - 1);
+							if (changelogDTO.getNewAddons().size() == 0
+									&& changelogDTO.getUpdatedAddons().size() == 0
+									&& changelogDTO.getDeletedAddons().size() == 0) {
+								status = RepositoryStatus.OK.getDescription();
+							}
+						}
 					}
 				}
 

@@ -41,6 +41,7 @@ import javax.swing.JTabbedPane;
 import javax.swing.SwingUtilities;
 
 import fr.soe.a3s.constant.MinimizationType;
+import fr.soe.a3s.dto.ChangelogDTO;
 import fr.soe.a3s.dto.RepositoryDTO;
 import fr.soe.a3s.dto.ServerInfoDTO;
 import fr.soe.a3s.dto.configuration.LauncherOptionsDTO;
@@ -836,7 +837,20 @@ public class MainPanel extends JFrame implements UIConstants {
 						if (serverInfoDTO != null) {
 							if (repositoryDTO.getRevision() != serverInfoDTO
 									.getRevision() && repositoryDTO.isNotify()) {
-								repositoryNames.add(repositoryDTO.getName());
+								List<ChangelogDTO> changelogs = repositoryService
+										.getChangelogs(repositoryDTO.getName());
+								if (changelogs.size() != 0) {
+									ChangelogDTO changelogDTO = changelogs
+											.get(changelogs.size() - 1);
+									if (changelogDTO.getNewAddons().size() != 0
+											&& changelogDTO.getUpdatedAddons()
+													.size() != 0
+											&& changelogDTO.getDeletedAddons()
+													.size() != 0) {
+										repositoryNames.add(repositoryDTO
+												.getName());
+									}
+								}
 							}
 						}
 					} catch (RepositoryException e) {
