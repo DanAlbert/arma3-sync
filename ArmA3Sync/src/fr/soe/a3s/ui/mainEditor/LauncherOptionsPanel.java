@@ -47,39 +47,23 @@ import fr.soe.a3s.ui.Facade;
 public class LauncherOptionsPanel extends JPanel implements DocumentListener {
 
     private final Facade facade;
-
     private final JPanel launcherOptionsPanel, performancePanel;
-
     private JPanel armaPanel;
-
     private JPanel steamPanel;
-
     private final JTextArea runParametersTextArea, additionalParametersTextArea;
-
     private final JScrollPane scrollPaneRunParameters, scrollPaneAditionalParameters;
-
     private JTextField textFieldArmAExecutableLocation, textFieldSteamExecutableLocation;
-
     private JButton buttonSelectArmAExe, buttonSelectSteamExe;
-
     private JComboBox comboBoxProfiles, comboBoxMaxMemory, comboBoxCpuCount;
-
     private JCheckBox checkBoxProfiles, checkBoxNoPause, checkBoxWindowMode,
             checkBoxShowScriptErrors, checkBoxRunBeta, checkBoxMaxMemory, checkBoxCpuCount,
             checkBoxNoSplashScreen, checkBoxDefaultWorld, checkBoxNoLogs;
-
     private JCheckBox checkBoxExThreads;
-
     private JComboBox comboBoxExThreads;
-
     private JCheckBox checkBoxNoFilePatching;
-
     private final ConfigurationService configurationService = new ConfigurationService();
-
     private final ProfileService profileService = new ProfileService();
-
     private final AddonService addonService = new AddonService();
-
     private final LaunchService launchService = new LaunchService();
 
     public LauncherOptionsPanel(Facade facade) {
