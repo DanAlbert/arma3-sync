@@ -378,6 +378,8 @@ public class AddonsPanel extends JPanel implements UIConstants {
 
 	public void init() {
 
+		addonService.resetAvailableAddonTree();
+		
 		/* View Mode */
 		boolean isViewTreeMode = configurationService.isViewModeTree();
 		if (isViewTreeMode) {

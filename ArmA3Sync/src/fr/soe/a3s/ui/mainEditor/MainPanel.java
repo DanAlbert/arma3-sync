@@ -773,22 +773,25 @@ public class MainPanel extends JFrame implements UIConstants {
 		String profileName = menuItemProfile.getText();
 		configurationService.setProfileName(profileName);
 		facade.getInfoPanel().init();
-		facade.getAddonsPanel().updateAddonGroups();
-		facade.getAddonsPanel().expandAddonGroups();
+
 		try {
-			// Launcher options
+			// Launcher options panel
 			LauncherOptionsDTO launcherOptionsDTO = profileService
 					.getLauncherOptions(profileName);
 			configurationService.setLauncherOptions(launcherOptionsDTO);
-			facade.getLaunchOptionsPanel().updateOptions();
-
-			// Addon options
+			facade.getLaunchOptionsPanel().init();
+			
+			// Addon options panel
 			Set<String> addonSearchDirectoryPaths = profileService
 					.getAddonSearchDirectoryPaths(profileName);
 			configurationService.getAddonSearchDirectoryPaths().clear();
 			configurationService.getAddonSearchDirectoryPaths().addAll(
 					addonSearchDirectoryPaths);
 			facade.getAddonOptionsPanel().init();
+			
+			// Addon panel
+			facade.getAddonsPanel().init();
+			
 		} catch (Exception e2) {
 			e2.printStackTrace();
 		}

@@ -260,7 +260,7 @@ public class ProfilePanel extends JDialog implements UIConstants {
 		}
 		configurationService.setProfileName(profileName);
 		try {
-			// Launcher options
+			// Launcher options panel
 			LauncherOptionsDTO launcherOptionsDTO = profileService
 					.getLauncherOptions(profileName);
 			if (launcherOptionsDTO.getSteamExePath() == null
@@ -271,24 +271,24 @@ public class ProfilePanel extends JDialog implements UIConstants {
 						.getArma3ExePath());
 			}
 			configurationService.setLauncherOptions(launcherOptionsDTO);
+			facade.getLaunchOptionsPanel().init();
 
-			// Addon options
+			// Addon options panel
 			Set<String> addonSearchDirectoryPaths = profileService
 					.getAddonSearchDirectoryPaths(profileName);
 			configurationService.getAddonSearchDirectoryPaths().clear();
 			configurationService.getAddonSearchDirectoryPaths().addAll(
 					addonSearchDirectoryPaths);
+			facade.getAddonOptionsPanel().init();
+			
+			// Addon panel
+			facade.getAddonsPanel().init();
+			
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		facade.getMainPanel().updateProfilesMenu();
 		facade.getInfoPanel().init();
-		facade.getAddonOptionsPanel().init();
-		facade.getAddonsPanel().updateAddonGroups();
-		facade.getAddonsPanel().expandAddonGroups();
-		facade.getLaunchOptionsPanel().updateOptions();
-		facade.getLaunchOptionsPanel().updateRunParameters();
-		facade.getLaunchOptionsPanel().updateAdditionalParameters();
 		this.dispose();
 	}
 
