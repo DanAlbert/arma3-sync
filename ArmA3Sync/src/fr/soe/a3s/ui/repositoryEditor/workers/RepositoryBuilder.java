@@ -3,7 +3,6 @@ package fr.soe.a3s.ui.repositoryEditor.workers;
 import javax.swing.JOptionPane;
 
 import fr.soe.a3s.controller.ObserverFileSize;
-import fr.soe.a3s.controller.ObserverFilesNumber;
 import fr.soe.a3s.service.RepositoryService;
 import fr.soe.a3s.ui.Facade;
 import fr.soe.a3s.ui.repositoryEditor.AdminPanel;
