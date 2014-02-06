@@ -780,7 +780,7 @@ public class MainPanel extends JFrame implements UIConstants {
 					.getLauncherOptions(profileName);
 			configurationService.setLauncherOptions(launcherOptionsDTO);
 			facade.getLaunchOptionsPanel().init();
-			
+
 			// Addon options panel
 			Set<String> addonSearchDirectoryPaths = profileService
 					.getAddonSearchDirectoryPaths(profileName);
@@ -788,10 +788,10 @@ public class MainPanel extends JFrame implements UIConstants {
 			configurationService.getAddonSearchDirectoryPaths().addAll(
 					addonSearchDirectoryPaths);
 			facade.getAddonOptionsPanel().init();
-			
+
 			// Addon panel
 			facade.getAddonsPanel().init();
-			
+
 		} catch (Exception e2) {
 			e2.printStackTrace();
 		}
@@ -846,9 +846,9 @@ public class MainPanel extends JFrame implements UIConstants {
 									ChangelogDTO changelogDTO = changelogs
 											.get(changelogs.size() - 1);
 									if (changelogDTO.getNewAddons().size() != 0
-											&& changelogDTO.getUpdatedAddons()
+											|| changelogDTO.getUpdatedAddons()
 													.size() != 0
-											&& changelogDTO.getDeletedAddons()
+											|| changelogDTO.getDeletedAddons()
 													.size() != 0) {
 										repositoryNames.add(repositoryDTO
 												.getName());
