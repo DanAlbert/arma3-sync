@@ -298,22 +298,8 @@ public class SyncPanel extends JPanel implements UIConstants {
 					if (repositoryDTO.getRevision() == serverInfoDTO
 							.getRevision()) {
 						status = RepositoryStatus.OK.getDescription();
-					} 
-					else if (repositoryDTO.getRevision() != 0) {
-						
+					} else if (repositoryDTO.getRevision() != 0) {
 						status = RepositoryStatus.UPDATED.getDescription();
-						
-						List<ChangelogDTO> changelogs = repositoryService
-								.getChangelogs(name);
-						if (changelogs.size() != 0) {
-							ChangelogDTO changelogDTO = changelogs
-									.get(changelogs.size() - 1);
-							if (changelogDTO.getNewAddons().size() == 0
-									&& changelogDTO.getUpdatedAddons().size() == 0
-									&& changelogDTO.getDeletedAddons().size() == 0) {
-								status = RepositoryStatus.OK.getDescription();
-							}
-						}
 					}
 				}
 

@@ -322,23 +322,6 @@ public class AdminPanel extends JPanel implements UIConstants {
 							.getDescription());
 					labelStatusValue.setFont(new Font("Tohama", Font.BOLD, 11));
 					labelStatusValue.setForeground(Color.RED);
-
-					List<ChangelogDTO> changelogs = repositoryService
-							.getChangelogs(repositoryName);
-					if (changelogs.size() != 0) {
-						ChangelogDTO changelogDTO = changelogs.get(changelogs
-								.size() - 1);
-						if (changelogDTO.getNewAddons().size() == 0
-								&& changelogDTO.getUpdatedAddons().size() == 0
-								&& changelogDTO.getDeletedAddons().size() == 0) {
-							labelStatusValue.setText(RepositoryStatus.OK
-									.getDescription());
-							labelStatusValue.setFont(new Font("Tohama",
-									Font.BOLD, 11));
-							labelStatusValue.setForeground(new Color(45, 125,
-									45));
-						}
-					}
 				}
 			} else {
 				labelStatusValue.setText(RepositoryStatus.INDETERMINATED

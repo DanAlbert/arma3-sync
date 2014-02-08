@@ -840,20 +840,7 @@ public class MainPanel extends JFrame implements UIConstants {
 						if (serverInfoDTO != null) {
 							if (repositoryDTO.getRevision() != serverInfoDTO
 									.getRevision() && repositoryDTO.isNotify()) {
-								List<ChangelogDTO> changelogs = repositoryService
-										.getChangelogs(repositoryDTO.getName());
-								if (changelogs.size() != 0) {
-									ChangelogDTO changelogDTO = changelogs
-											.get(changelogs.size() - 1);
-									if (changelogDTO.getNewAddons().size() != 0
-											|| changelogDTO.getUpdatedAddons()
-													.size() != 0
-											|| changelogDTO.getDeletedAddons()
-													.size() != 0) {
-										repositoryNames.add(repositoryDTO
-												.getName());
-									}
-								}
+								repositoryNames.add(repositoryDTO.getName());
 							}
 						}
 					} catch (RepositoryException e) {
