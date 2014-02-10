@@ -65,8 +65,7 @@ public class LaunchService {
 		}
 	}
 
-	public void launchExternalApplications() throws LaunchException,
-			InterruptedException {
+	public void launchExternalApplications() throws LaunchException {
 
 		Configuration configuration = configurationDAO.getConfiguration();
 		List<ExternalApplication> apps = configuration
@@ -469,7 +468,7 @@ public class LaunchService {
 					String password = s.getPassword();
 					params.add("-connect=" + ipAddress);
 					params.add("-port=" + port);
-					if (!password.isEmpty()){
+					if (!password.isEmpty()) {
 						params.add("-password=" + password);
 					}
 				}
