@@ -190,28 +190,31 @@ public class ProfileService extends ObjectDTOtransformer {
 		}
 		LauncherOptions launcherOptions = configurationDAO.getConfiguration()
 				.getLauncherOptions();
+
+		profile.getLauncherOptions().setArma3ExePath(
+				launcherOptions.getArma3ExePath());
+
+		profile.getLauncherOptions().setGameProfile(
+				launcherOptions.getGameProfile());
+		profile.getLauncherOptions().setShowScriptErrors(
+				launcherOptions.isShowScriptErrors());
+		profile.getLauncherOptions().setNoPause(launcherOptions.isNoPause());
+		profile.getLauncherOptions().setNoFilePatching(
+				launcherOptions.isNoFilePatching());
+		profile.getLauncherOptions().setWindowMode(
+				launcherOptions.isWindowMode());
+
+		profile.getLauncherOptions().setMaxMemorySelection(
+				launcherOptions.getMaxMemorySelection());
 		profile.getLauncherOptions().setCpuCountSelection(
 				launcherOptions.getCpuCountSelection());
 		profile.getLauncherOptions().setExThreadsSelection(
 				launcherOptions.getExThreadsSelection());
+		profile.getLauncherOptions().setNoSplashScreen(
+				launcherOptions.isNoSplashScreen());
 		profile.getLauncherOptions().setDefaultWorld(
 				launcherOptions.isDefaultWorld());
-		profile.getLauncherOptions().setGameProfile(
-				launcherOptions.getGameProfile());
-		profile.getLauncherOptions().setMaxMemorySelection(
-				launcherOptions.getMaxMemorySelection());
-		profile.getLauncherOptions().setNoFilePatching(
-				launcherOptions.isNoFilePatching());
 		profile.getLauncherOptions().setNoLogs(launcherOptions.isNologs());
-		profile.getLauncherOptions().setNoPause(launcherOptions.isNoPause());
-		profile.getLauncherOptions().setNoSplashScreen(
-				launcherOptions.isNoPause());
-		profile.getLauncherOptions().setShowScriptErrors(
-				launcherOptions.isShowScriptErrors());
-		profile.getLauncherOptions().setWindowMode(
-				launcherOptions.isWindowMode());
-		profile.getLauncherOptions().setArma3ExePath(
-				launcherOptions.getArma3ExePath());
 	}
 
 	public void saveAddonSearchDirectoryPaths(String profileName)
