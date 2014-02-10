@@ -180,9 +180,9 @@ public class Console {
 			System.out.print("Enter repository name: ");
 			name = c.nextLine();
 		}
-		
+
 		System.out.print("Enter repository protocole FTP or HTTP: ");
-		String prot = c.nextLine();
+		String prot = c.nextLine().toUpperCase();
 		boolean check = true;
 		while (check) {
 			if (prot.equals(Protocole.FTP.getDescription())) {
@@ -191,32 +191,35 @@ public class Console {
 				check = false;
 			} else {
 				System.out.print("Enter repository protocole FTP or HTTP: ");
-				prot = c.nextLine();
+				prot = c.nextLine().toUpperCase();
 			}
 		}
-		
+
 		boolean portIsWrong = false;
-		String port= "";
+		String port = "";
 		do {
 			try {
-				System.out.print("Enter repository port (21 default FTP, 80 default HTTP: ");
+				System.out
+						.print("Enter repository port (21 default FTP, 80 default HTTP: ");
 				port = c.nextLine();
 				int p = Integer.parseInt(port);
-			}catch (NumberFormatException e){
+			} catch (NumberFormatException e) {
 				portIsWrong = true;
 			}
-		}while (portIsWrong);
+		} while (portIsWrong);
 
-		System.out.print("Enter user login (enter anonymous for public access): ");
+		System.out
+				.print("Enter user login (enter anonymous for public access): ");
 		String login = c.nextLine();
 		while (login.isEmpty()) {
-			System.out.print("Enter user login (enter anonymous for public access): ");
+			System.out
+					.print("Enter user login (enter anonymous for public access): ");
 			login = c.nextLine();
 		}
-		
+
 		System.out.print("Enter user login (leave blank if no password): ");
 		String password = c.nextLine();
-		
+
 		System.out.print("Enter repository url: ");
 		String url = c.nextLine();
 		url = url.toLowerCase();
@@ -226,14 +229,14 @@ public class Console {
 			System.out.print("Enter repository url: ");
 			url = c.nextLine();
 		}
-		
+
 		System.out.print("Enter root shared folder path: ");
 		String path = c.nextLine();
 		while (path.isEmpty()) {
 			System.out.print("Enter root shared folder path: ");
 			path = c.nextLine();
 		}
-		
+
 		Protocole protocole = Protocole.getEnum(prot);
 		RepositoryService repositoryService = new RepositoryService();
 		try {
