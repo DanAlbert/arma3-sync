@@ -149,6 +149,7 @@ public class HttpDAO extends AbstractConnexionDAO {
 			FileAccessMethods.deleteFile(file);
 		} catch (Exception e) {
 			e.printStackTrace();
+			 autoConfig = null;
 			throw new WritingException(e.getMessage());
 		}
 		return autoConfig;
@@ -175,6 +176,7 @@ public class HttpDAO extends AbstractConnexionDAO {
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
+			serverInfo = null;
 		}
 		return serverInfo;
 	}
@@ -200,6 +202,7 @@ public class HttpDAO extends AbstractConnexionDAO {
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
+			changelogs = null;
 		}
 		return changelogs;
 	}
@@ -225,6 +228,7 @@ public class HttpDAO extends AbstractConnexionDAO {
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
+			events = null;
 		}
 		return events;
 	}
@@ -249,6 +253,7 @@ public class HttpDAO extends AbstractConnexionDAO {
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
+			syncTreeDirectory = null;
 		}
 		return syncTreeDirectory;
 	}

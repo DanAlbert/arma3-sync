@@ -77,6 +77,7 @@ public class FtpDAO extends AbstractConnexionDAO {
 			FileAccessMethods.deleteDirectory(directory);
 		} catch (Exception e) {
 			e.printStackTrace();
+			serverInfo = null;
 		}
 		return serverInfo;
 	}
@@ -102,6 +103,7 @@ public class FtpDAO extends AbstractConnexionDAO {
 			FileAccessMethods.deleteFile(file);
 		} catch (Exception e) {
 			e.printStackTrace();
+			autoConfig = null;
 		}
 		return autoConfig;
 	}
@@ -138,6 +140,7 @@ public class FtpDAO extends AbstractConnexionDAO {
 			FileAccessMethods.deleteDirectory(directory);
 		} catch (Exception e) {
 			e.printStackTrace();
+			syncTreeDirectory = null;
 		}
 		return syncTreeDirectory;
 	}
@@ -167,6 +170,7 @@ public class FtpDAO extends AbstractConnexionDAO {
 			FileAccessMethods.deleteDirectory(directory);
 		} catch (Exception e) {
 			e.printStackTrace();
+			changelogs = null;
 		}
 		return changelogs;
 	}
@@ -195,6 +199,7 @@ public class FtpDAO extends AbstractConnexionDAO {
 			FileAccessMethods.deleteDirectory(directory);
 		} catch (Exception e) {
 			e.printStackTrace();
+			events = null;
 		}
 		return events;
 	}
@@ -228,7 +233,7 @@ public class FtpDAO extends AbstractConnexionDAO {
 				protected void afterWrite(int n) throws IOException {
 					super.afterWrite(n);
 					// System.out.println(getCount());
-					int nbBytes =  getCount();
+					int nbBytes = getCount();
 					countFileSize = getCount();
 					endTime = System.nanoTime();
 					updateFileSizeObserver();
