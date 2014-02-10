@@ -104,18 +104,20 @@ public class PreferencesPanel extends JDialog implements UIConstants {
 			}
 			{
 				String[] tab = null;
-		        if (SystemTray.isSupported()) {
-		        	tab = new String[] {
-		        			MinimizationType.NOTHING.getDescription(),
+				if (SystemTray.isSupported()) {
+					tab = new String[] {
+							MinimizationType.NOTHING.getDescription(),
 							MinimizationType.TASK_BAR.getDescription(),
-							MinimizationType.TRAY.getDescription() };
-		        } else {
-		        	tab = new String[] {
-		        			MinimizationType.NOTHING.getDescription(),
+							MinimizationType.TRAY.getDescription(),
+							MinimizationType.CLOSE.getDescription() };
+				} else {
+					tab = new String[] {
+							MinimizationType.NOTHING.getDescription(),
 							MinimizationType.TASK_BAR.getDescription() };
-		        }
-				
-				ComboBoxModel comboBoxGameLaunchModel = new DefaultComboBoxModel(tab);
+				}
+
+				ComboBoxModel comboBoxGameLaunchModel = new DefaultComboBoxModel(
+						tab);
 				comboBoxGameLaunch = new JComboBox();
 				launcherPanel.add(comboBoxGameLaunch);
 				comboBoxGameLaunch.setModel(comboBoxGameLaunchModel);
@@ -132,15 +134,16 @@ public class PreferencesPanel extends JDialog implements UIConstants {
 			}
 			{
 				String[] tab = null;
-		        if (SystemTray.isSupported()) {
-		        	tab = new String[] {
+				if (SystemTray.isSupported()) {
+					tab = new String[] {
 							MinimizationType.TASK_BAR.getDescription(),
 							MinimizationType.TRAY.getDescription() };
-		        } else {
-		        	tab = new String[] {
-							MinimizationType.TASK_BAR.getDescription() };
-		        }
-				ComboBoxModel comboBoxLauncherMinimizedModel = new DefaultComboBoxModel(tab);
+				} else {
+					tab = new String[] { MinimizationType.TASK_BAR
+							.getDescription() };
+				}
+				ComboBoxModel comboBoxLauncherMinimizedModel = new DefaultComboBoxModel(
+						tab);
 				comboBoxLauncherMinimized = new JComboBox();
 				launcherPanel.add(comboBoxLauncherMinimized);
 				comboBoxLauncherMinimized
@@ -174,26 +177,31 @@ public class PreferencesPanel extends JDialog implements UIConstants {
 
 	public void init() {
 		PreferencesDTO preferencesDTO = preferencesServices.getPreferences();
-		String gameLaunch =  preferencesDTO.getLaunchPanelGameLaunch().getDescription();
-		if (gameLaunch!=null){
-			comboBoxGameLaunch.setSelectedItem(gameLaunch );
+		String gameLaunch = preferencesDTO.getLaunchPanelGameLaunch()
+				.getDescription();
+		if (gameLaunch != null) {
+			comboBoxGameLaunch.setSelectedItem(gameLaunch);
 		}
-		String launcherMinimized = preferencesDTO.getLaunchPanelMinimized().getDescription();
-		if (launcherMinimized!=null){
+		String launcherMinimized = preferencesDTO.getLaunchPanelMinimized()
+				.getDescription();
+		if (launcherMinimized != null) {
 			comboBoxLauncherMinimized.setSelectedItem(launcherMinimized);
 		}
 	}
-	
+
 	private void buttonOKPerformed() {
 		PreferencesDTO preferencesDTO = new PreferencesDTO();
-		String gameLaunch = (String)comboBoxGameLaunch.getSelectedItem();
-		preferencesDTO.setLaunchPanelGameLaunch(MinimizationType.getEnum(gameLaunch));
-		String launcherMinimized = (String)comboBoxLauncherMinimized.getSelectedItem();
-		preferencesDTO.setLaunchPanelMinimized(MinimizationType.getEnum(launcherMinimized));
+		String gameLaunch = (String) comboBoxGameLaunch.getSelectedItem();
+		preferencesDTO.setLaunchPanelGameLaunch(MinimizationType
+				.getEnum(gameLaunch));
+		String launcherMinimized = (String) comboBoxLauncherMinimized
+				.getSelectedItem();
+		preferencesDTO.setLaunchPanelMinimized(MinimizationType
+				.getEnum(launcherMinimized));
 		preferencesServices.setPreferences(preferencesDTO);
 		this.dispose();
 	}
-	
+
 	private void menuExitPerformed() {
 		this.dispose();
 	}

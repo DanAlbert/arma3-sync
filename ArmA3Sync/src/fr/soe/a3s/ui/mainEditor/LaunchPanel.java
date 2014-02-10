@@ -130,7 +130,7 @@ public class LaunchPanel extends JPanel implements UIConstants {
 		if (serverName.isEmpty()) {
 			configurationService.saveServerName(null);
 		} else {
-			 configurationService.saveServerName(serverName);
+			configurationService.saveServerName(serverName);
 			// this.joinServerComboBox.setSelectedIndex(0);
 			// JoinServerPanel joinServerPanel = new JoinServerPanel(facade);
 			// joinServerPanel.setVisible(true);
@@ -214,6 +214,8 @@ public class LaunchPanel extends JPanel implements UIConstants {
 		} else if (MinimizationType.TRAY.equals(minimize)) {
 			facade.getMainPanel().setVisible(false);
 			facade.getMainPanel().setToTray();
+		} else if (MinimizationType.CLOSE.equals(minimize)) {
+			System.exit(0);
 		}
 	}
 }
