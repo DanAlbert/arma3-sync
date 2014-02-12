@@ -61,11 +61,26 @@ public class ArmA3Sync {
 			start(facade);
 		} else if (args.length == 1 && args[0].equalsIgnoreCase("-console")) {
 			Console console = new Console(false);
+			console.displayCommands();
 			console.execute();
 		} else if (args.length == 2 && args[0].equalsIgnoreCase("-dev")
 				&& args[1].equalsIgnoreCase("-console")) {
 			Console console = new Console(true);
+			console.displayCommands();
 			console.execute();
+		} else if (args.length == 2 && args[0].equalsIgnoreCase("-build")) {
+			Console console = new Console(false);
+			String repositoryName = args[1];
+			console.build(repositoryName);
+		}else if (args.length == 2 && args[0].equalsIgnoreCase("-check")){
+			Console console = new Console(false);
+			String repositoryName = args[1];
+			console.check(repositoryName);
+		}else {
+			System.out.println("ArmA3Sync - bad command.");
+			System.out.println("-CONSOLE: run ArmASync console management.");
+			System.out.println("-BUILD " + "\"" + "NameOfRepository" + "\"" + ": build repository.");
+			System.out.println("-CHECK " + "\"" + "NameOfRepository" + "\"" + ": check repository.");
 		}
 	}
 

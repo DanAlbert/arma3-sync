@@ -30,10 +30,9 @@ public class Console {
 
 	public Console(boolean devMode) {
 		this.devMode = devMode;
-		displayCommands();
 	}
 
-	private void displayCommands() {
+	public void displayCommands() {
 
 		System.out.println("ArmA3Sync console commands:");
 		System.out.println(ConsoleCommands.NEW.toString()
@@ -289,7 +288,7 @@ public class Console {
 	private void checkRepository() {
 
 		System.out.println("");
-		System.out.println("Check repository");
+		System.out.println("Check repository.");
 
 		Scanner c = new Scanner(System.in);
 
@@ -324,11 +323,11 @@ public class Console {
 			execute();
 		}
 	}
-
+	
 	private void buildRepository() {
 
 		System.out.println("");
-		System.out.println("Update repository");
+		System.out.println("Build repository.");
 
 		Scanner c = new Scanner(System.in);
 
@@ -368,7 +367,9 @@ public class Console {
 		} catch (Exception e) {
 			System.out.println("Failed to build repository.");
 			System.out.println(e.getMessage());
-		} finally {
+		}
+		
+		finally {
 			System.out.println("");
 			execute();
 		}
@@ -377,7 +378,7 @@ public class Console {
 	private void deleteRepository() {
 
 		System.out.println("");
-		System.out.println("Delete repository");
+		System.out.println("Delete repository.");
 
 		Scanner c = new Scanner(System.in);
 
@@ -405,6 +406,8 @@ public class Console {
 	private void checkForUpdates() {
 
 		System.out.println("");
+		System.out.println("Check for updates.");
+		
 		FtpService ftpService = new FtpService();
 		String availableVersion = ftpService.checkForUpdate(devMode);
 
@@ -451,5 +454,73 @@ public class Console {
 		System.out.println("");
 		System.out.println("ArmA3Sync exited.");
 		System.exit(0);
+	}
+	
+	public void build(String repositoryName) {
+
+		RepositoryService repositoryService = new RepositoryService();
+
+		try {
+			repositoryService.readAll();
+		} catch (LoadingException e) {
+			System.out.println("Failded to read on or more repositories");
+			System.exit(0);
+		}
+
+		this.value = 0;
+
+		repositoryService.getRepositoryBuilderDAO().addObserverFileSize(
+				new ObserverFileSize() {
+					@Override
+					public void update(long v) {
+						if (v > value) {
+							value = v;
+							System.out.println("Build complete: " + value
+									+ " %");
+						}
+					}
+				});
+
+		try {
+			System.out.println("Repository build starting.");
+			repositoryService.buildRepository(repositoryName);
+			System.out.println("Repository build finished.");
+		} catch (Exception e) {
+			System.out.println("Failed to build repository.");
+			System.out.println(e.getMessage());
+		}finally{
+			System.exit(0);
+		}
+	}
+
+
+
+	public void check(String repositoryName) {
+		
+		System.out.println("");
+		System.out.println("Check repository.");
+
+		RepositoryService repositoryService = new RepositoryService();
+
+		try {
+			repositoryService.readAll();
+			RepositoryDTO repositoryDTO = repositoryService.getRepository(repositoryName);
+			System.out.println("Checking repository...");
+			repositoryService.checkRepository(repositoryName, repositoryDTO.getPath());
+			System.out.println("Repository is synchronized.");
+		} catch (LoadingException e) {
+			System.out.println("Failded to load on or more repositories");
+		} catch (RepositoryException e) {
+			System.out.println(e.getMessage());
+		} catch (RepositoryCheckException e) {
+			System.out
+					.println("Repository is out of synchronization and must be rebuilt.");
+		} catch (ServerInfoNotFoundException e) {
+			System.out.println(e.getMessage());
+		} catch (SyncFileNotFoundException e) {
+			System.out.println(e.getMessage());
+		} finally {
+			System.exit(0);
+		}
 	}
 }
