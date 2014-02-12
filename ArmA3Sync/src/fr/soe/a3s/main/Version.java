@@ -10,7 +10,7 @@ public class Version {
 
     private static final int BUILD = 38;
 
-    private static final String YEAR = "2013";
+    private static final String YEAR = "2013-2014";
 
     public static String getVersion() {
         return MAJOR + "." + MINOR + "." + BUILD;
