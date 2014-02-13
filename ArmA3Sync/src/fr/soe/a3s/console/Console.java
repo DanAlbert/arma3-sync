@@ -367,9 +367,7 @@ public class Console {
 		} catch (Exception e) {
 			System.out.println("Failed to build repository.");
 			System.out.println(e.getMessage());
-		}
-		
-		finally {
+		}finally {
 			System.out.println("");
 			execute();
 		}
@@ -492,8 +490,6 @@ public class Console {
 			System.exit(0);
 		}
 	}
-
-
 
 	public void check(String repositoryName) {
 		

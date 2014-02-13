@@ -78,9 +78,9 @@ public class ArmA3Sync {
 			console.check(repositoryName);
 		}else {
 			System.out.println("ArmA3Sync - bad command.");
-			System.out.println("-CONSOLE: run ArmASync console management.");
 			System.out.println("-BUILD " + "\"" + "NameOfRepository" + "\"" + ": build repository.");
 			System.out.println("-CHECK " + "\"" + "NameOfRepository" + "\"" + ": check repository.");
+			System.out.println("-CONSOLE: run ArmASync console management.");
 		}
 	}
 
