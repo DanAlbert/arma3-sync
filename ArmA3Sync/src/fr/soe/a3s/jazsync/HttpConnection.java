@@ -36,7 +36,6 @@ import java.net.ProtocolException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -96,14 +95,19 @@ public class HttpConnection {
 	public void openConnection(String relativeUrl) throws IOException,
 			URISyntaxException {
 
-		// See http://stackoverflow.com/questions/724043/http-url-address-encoding-in-java
-		
+		// See
+		// http://stackoverflow.com/questions/724043/http-url-address-encoding-in-java
+
 		URI uri = new URI("http", hostname, relativeUrl, null);
 		URL url = uri.toURL();
 		String file = url.getFile();
 
 		URL url2 = new URL("http", hostname, Integer.parseInt(port), file);
 		connection = (HttpURLConnection) url2.openConnection();
+		String encoding = Base64Coder.encodeLines((login + ":" + password)
+				.getBytes());
+		connection.setRequestProperty("Authorization",
+				"Basic " + encoding.substring(0, encoding.length() - 1));
 		httpDAO.seConnexion(connection);
 	}
 
