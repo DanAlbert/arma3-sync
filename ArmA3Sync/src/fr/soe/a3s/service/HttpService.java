@@ -74,7 +74,7 @@ public class HttpService extends AbstractConnexionService implements
 		Changelogs changelogs = httpDAO.downloadChangelog(repository);
 		repository.setChangelogs(changelogs);// null if not found
 		Events events = httpDAO.downloadEvent(repository);
-		repository.setEvents(events);
+		repository.setEvents(events);// null if not found
 	}
 
 	@Override
