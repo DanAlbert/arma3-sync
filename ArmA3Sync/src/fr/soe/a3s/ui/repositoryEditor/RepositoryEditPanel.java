@@ -5,13 +5,19 @@ import java.awt.Color;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.GridLayout;
+import java.awt.Toolkit;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.Transferable;
+import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.io.IOException;
 import java.util.Arrays;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -20,19 +26,22 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
+import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
+import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
+import javax.swing.JPopupMenu;
 import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
 
 import fr.soe.a3s.constant.Protocole;
 import fr.soe.a3s.dto.AutoConfigDTO;
 import fr.soe.a3s.dto.ProtocoleDTO;
 import fr.soe.a3s.dto.RepositoryDTO;
 import fr.soe.a3s.exception.CheckException;
-import fr.soe.a3s.exception.FtpException;
 import fr.soe.a3s.exception.HttpException;
 import fr.soe.a3s.exception.RepositoryException;
 import fr.soe.a3s.exception.WritingException;
@@ -102,6 +111,10 @@ public class RepositoryEditPanel extends JDialog implements UIConstants {
 
 	private JComboBox<Object> comboBoxProtocole;
 
+	private JPopupMenu popup;
+
+	private JMenuItem menuItemPaste;
+
 	public RepositoryEditPanel(Facade facade) {
 		super(facade.getMainPanel(), "New repository", true);
 		this.facade = facade;
@@ -163,12 +176,14 @@ public class RepositoryEditPanel extends JDialog implements UIConstants {
 					textFieldAutoConfigUrl = new JTextField();
 					repositoryPanel.add(textFieldAutoConfigUrl);
 					textFieldAutoConfigUrl.setBounds(18, 41, 346, 24);
+					textFieldAutoConfigUrl.requestFocus();
 				}
 				{
 					buttonImport = new JButton();
 					repositoryPanel.add(buttonImport);
 					buttonImport.setText("Import");
 					buttonImport.setBounds(293, 12, 72, 24);
+					buttonImport.setFocusable(false);
 				}
 				{
 					labelConnection = new JLabel();
@@ -285,6 +300,28 @@ public class RepositoryEditPanel extends JDialog implements UIConstants {
 			// protocolePanel.setPreferredSize(new java.awt.Dimension(384, 20));
 			centerPanel.add(vertBox);
 		}
+
+		/* Right clic menu */
+		popup = new JPopupMenu();
+
+		menuItemPaste = new JMenuItem("Paste");
+		menuItemPaste.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent evt) {
+				popupActionPerformed(evt);
+			}
+		});
+		menuItemPaste.setActionCommand("Paste");
+		popup.add(menuItemPaste);
+
+		textFieldAutoConfigUrl.addMouseListener(new MouseAdapter() {
+			public void mouseReleased(MouseEvent e) {
+				if (e.isPopupTrigger()) {
+					popup.show((JComponent) e.getSource(), e.getX(), e.getY());
+				} else if (SwingUtilities.isRightMouseButton(e)) {
+					popup.show((JComponent) e.getSource(), e.getX(), e.getY());
+				}
+			}
+		});
 		buttonImport.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
@@ -371,17 +408,18 @@ public class RepositoryEditPanel extends JDialog implements UIConstants {
 			public void run() {
 
 				String url = textFieldAutoConfigUrl.getText().trim();
-				
+
 				// Url must ends with /autoconfig
-				
-				String autoconfigEndUrl = url.substring(url.length()-10);
-				if (!autoconfigEndUrl.equals("autoconfig")){
+
+				String autoconfigEndUrl = url.substring(url.length() - 10);
+				if (!autoconfigEndUrl.equals("autoconfig")) {
 					JOptionPane.showMessageDialog(facade.getMainPanel(),
-							"Url must ends with " + "\""  + "autoconfig" + "\"" + ".", "Warning",
+							"Url must ends with " + "\"" + "autoconfig" + "\""
+									+ ".", "Warning",
 							JOptionPane.WARNING_MESSAGE);
 					return;
 				}
-				
+
 				AbstractConnexionService connexion = null;
 				try {
 					connexion = ConnexionServiceFactory.getServiceFromUrl(url);
@@ -497,17 +535,10 @@ public class RepositoryEditPanel extends JDialog implements UIConstants {
 			return;
 		}
 
-		try {
-			AbstractConnexionService connexion = ConnexionServiceFactory
-					.getServiceFromRepository(name);
-			connexion.checkRepository(name);
-		} catch (Exception e) {
-			System.out.println(e.getMessage());
-		} finally {
-			facade.getSyncPanel().init();
-			this.dispose();
-			facade.getSyncPanel().refresh();
-		}
+		facade.getSyncPanel().init();
+		this.dispose();
+		facade.getSyncPanel().refresh();
+
 	}
 
 	private void checkBoxAnonymousPerformed() {
@@ -546,5 +577,39 @@ public class RepositoryEditPanel extends JDialog implements UIConstants {
 		JOptionPane.showMessageDialog(this, "Not implemented yet.",
 				"Repository", JOptionPane.INFORMATION_MESSAGE);
 		comboBoxEncryption.setSelectedIndex(0);
+	}
+
+	private void popupActionPerformed(ActionEvent evt) {
+
+		if (evt.getActionCommand().equals("Paste")) {
+			String autoconfigUrl = getClipboardContents();
+			textFieldAutoConfigUrl.setText(autoconfigUrl);
+		}
+	}
+
+	/**
+	 * Get the String residing on the clipboard. See
+	 * http://www.javapractices.com/topic/TopicAction.do?Id=82
+	 * 
+	 * @return any text found on the Clipboard; if none found, return an empty
+	 *         String.
+	 */
+	private String getClipboardContents() {
+		String result = "";
+		Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+		// odd: the Object param of getContents is not currently used
+		Transferable contents = clipboard.getContents(null);
+		boolean hasTransferableText = (contents != null)
+				&& contents.isDataFlavorSupported(DataFlavor.stringFlavor);
+		if (hasTransferableText) {
+			try {
+				result = (String) contents
+						.getTransferData(DataFlavor.stringFlavor);
+			} catch (UnsupportedFlavorException | IOException ex) {
+				System.out.println(ex);
+				ex.printStackTrace();
+			}
+		}
+		return result;
 	}
 }
