@@ -398,8 +398,8 @@ public class RepositoryEditPanel extends JDialog implements UIConstants {
 								.getProtocole();
 						comboBoxProtocole.setSelectedItem(protocole
 								.getDescription());
-						textFieldHost.setText(autoConfigDTO.getProtocoleDTO()
-								.getUrl());
+						textFieldHost.setText(protocole.getPrompt()
+								+ autoConfigDTO.getProtocoleDTO().getUrl());
 						textFieldLogin.setText(autoConfigDTO.getProtocoleDTO()
 								.getLogin());
 						textFieldPort.setText(autoConfigDTO.getProtocoleDTO()
