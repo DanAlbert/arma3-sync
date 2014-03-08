@@ -418,5 +418,4 @@ public class ProfileService extends ObjectDTOtransformer {
 			}
 		}
 	}
-
 }
