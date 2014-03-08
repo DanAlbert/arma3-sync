@@ -88,13 +88,7 @@ public class FtpService extends AbstractConnexionService implements
 					+ " not found!");
 		}
 
-		String remotePath = null;
-		try {
-			remotePath = connectToRepository(repository);
-		} catch (Exception e) {
-			throw new FtpException("Failed to connect to repository "
-					+ repository.getName());
-		}
+		String remotePath = connectToRepository(repository);
 
 		SyncTreeDirectory syncTreeDirectory = ftpDAO.downloadSync(ftpClient,
 				repositoryName, remotePath);
@@ -113,8 +107,7 @@ public class FtpService extends AbstractConnexionService implements
 	}
 
 	private String connectToRepository(Repository repository)
-			throws FtpException, NumberFormatException, SocketException,
-			IOException {
+			throws FtpException {
 
 		String url = repository.getProtocole().getUrl();
 		String hostname = url;
@@ -129,20 +122,38 @@ public class FtpService extends AbstractConnexionService implements
 		String password = repository.getProtocole().getPassword();
 		ftpClient = new FTPClient();
 		ftpClient.setConnectTimeout(15000);// 15 sec
-		ftpClient.connect(hostname, Integer.parseInt(port));
-		ftpClient.login(login, password);
-		ftpClient.setFileType(FTP.BINARY_FILE_TYPE);
-		ftpClient.enterLocalPassiveMode();// passive mode
-		int reply = ftpClient.getReplyCode();
-		if (FTPReply.isPositiveCompletion(reply)) {
+		boolean isLoged = false;
+		boolean remotePathExists = false;
+		int reply = 0;
+		try {
+			ftpClient.connect(hostname, Integer.parseInt(port));
+			isLoged = ftpClient.login(login, password);
+			ftpClient.setFileType(FTP.BINARY_FILE_TYPE);
+			remotePathExists = ftpClient.changeWorkingDirectory(remotePath);
+			ftpClient.enterLocalPassiveMode();// passive mode
+			ftpClient.getReplyCode();
+		} catch (Exception e) {
+			throw new FtpException("Failed to connect to repository "
+					+ repository.getName());
+		}
+
+		if (!isLoged) {
 			System.out.println("Connection to " + repository.getName()
-					+ " success.");
-		} else {
+					+ " failed.\nWrong login or password");
+			throw new FtpException("Failed to connect to repository "
+					+ repository.getName() + "\n" + "Wrong login or password.");
+		}
+
+		if (!FTPReply.isPositiveCompletion(reply) || !remotePathExists) {
 			System.out.println("Connection to " + repository.getName()
 					+ " failed.");
 			throw new FtpException("Failed to connect to repository "
 					+ repository.getName());
 		}
+
+		System.out.println("Connection to " + repository.getName()
+				+ " success.");
+
 		return remotePath;
 	}
 
@@ -174,17 +185,12 @@ public class FtpService extends AbstractConnexionService implements
 			throw new RepositoryException("Repository " + repositoryName
 					+ " not found!");
 		}
-		try {
-			String remotePath = connectToRepository(repository);
-			SyncTreeDirectory syncTreeDirectory = ftpDAO.downloadSync(
-					ftpClient, repositoryName, remotePath);
-			repository.setSync(syncTreeDirectory);
-		} catch (Exception e) {
-			e.printStackTrace();
-			throw new FtpException("Failed to connect to repository.");
-		} finally {
-			disconnect();
-		}
+
+		String remotePath = connectToRepository(repository);
+
+		SyncTreeDirectory syncTreeDirectory = ftpDAO.downloadSync(ftpClient,
+				repositoryName, remotePath);
+		repository.setSync(syncTreeDirectory);
 	}
 
 	@Override
@@ -280,7 +286,7 @@ public class FtpService extends AbstractConnexionService implements
 			if (node.isLeaf()) {
 				SyncTreeLeafDTO leaf = (SyncTreeLeafDTO) node;
 				leaf.setComplete(0);
-			}else {
+			} else {
 				SyncTreeDirectoryDTO directory = (SyncTreeDirectoryDTO) node;
 				determineCompletion(repositoryName, directory);
 			}
