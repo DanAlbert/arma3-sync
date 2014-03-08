@@ -215,7 +215,7 @@ public class LaunchPanel extends JPanel implements UIConstants {
 			facade.getMainPanel().setVisible(false);
 			facade.getMainPanel().setToTray();
 		} else if (MinimizationType.CLOSE.equals(minimize)) {
-			System.exit(0);
+			facade.getMainPanel().menuExitPerformed();
 		}
 	}
 }

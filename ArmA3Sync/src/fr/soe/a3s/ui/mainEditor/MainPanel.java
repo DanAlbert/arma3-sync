@@ -594,7 +594,7 @@ public class MainPanel extends JFrame implements UIConstants {
 		}
 	}
 
-	private void menuExitPerformed() {
+	public void menuExitPerformed() {
 
 		// Save Height and Width
 		configurationService.setHeight(this.getHeight());
@@ -625,7 +625,7 @@ public class MainPanel extends JFrame implements UIConstants {
 	private void exitTrayItemPerformed() {
 		if (SystemTray.isSupported()) {
 			tray.remove(trayIcon);
-			System.exit(0);
+			menuExitPerformed();
 		}
 	}
 
@@ -688,12 +688,7 @@ public class MainPanel extends JFrame implements UIConstants {
 							"Update", JOptionPane.OK_CANCEL_OPTION);
 
 					if (response == 0) {
-						// Save all
-						try {
-							commonService.saveAllParameters();
-						} catch (WritingException e) {
-							e.printStackTrace();
-						}
+						menuExitPerformed();
 						// Proceed update
 						String command = "java -jar -Djava.net.preferIPv4Stack=true ArmA3Sync-Updater.jar";
 						if (facade.isDevMode()) {
@@ -701,7 +696,7 @@ public class MainPanel extends JFrame implements UIConstants {
 						}
 						try {
 							Runtime.getRuntime().exec(command);
-							System.exit(0);
+
 						} catch (IOException ex) {
 							ex.printStackTrace();
 							JOptionPane.showMessageDialog(
