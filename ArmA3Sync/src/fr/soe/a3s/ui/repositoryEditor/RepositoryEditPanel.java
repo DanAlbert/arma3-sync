@@ -32,6 +32,7 @@ import fr.soe.a3s.dto.AutoConfigDTO;
 import fr.soe.a3s.dto.ProtocoleDTO;
 import fr.soe.a3s.dto.RepositoryDTO;
 import fr.soe.a3s.exception.CheckException;
+import fr.soe.a3s.exception.FtpException;
 import fr.soe.a3s.exception.HttpException;
 import fr.soe.a3s.exception.RepositoryException;
 import fr.soe.a3s.exception.WritingException;
@@ -370,6 +371,17 @@ public class RepositoryEditPanel extends JDialog implements UIConstants {
 			public void run() {
 
 				String url = textFieldAutoConfigUrl.getText().trim();
+				
+				// Url must ends with /autoconfig
+				
+				String autoconfigEndUrl = url.substring(url.length()-10);
+				if (!autoconfigEndUrl.equals("autoconfig")){
+					JOptionPane.showMessageDialog(facade.getMainPanel(),
+							"Url must ends with " + "\""  + "autoconfig" + "\"" + ".", "Warning",
+							JOptionPane.WARNING_MESSAGE);
+					return;
+				}
+				
 				AbstractConnexionService connexion = null;
 				try {
 					connexion = ConnexionServiceFactory.getServiceFromUrl(url);
@@ -387,6 +399,7 @@ public class RepositoryEditPanel extends JDialog implements UIConstants {
 				try {
 					AutoConfigDTO autoConfigDTO = connexion
 							.importAutoConfig(url);
+					// Init fields
 					if (autoConfigDTO != null) {
 						labelConnection.setText("Connetion success!");
 						labelConnection.setFont(new Font("Tohama", Font.ITALIC,
@@ -414,8 +427,12 @@ public class RepositoryEditPanel extends JDialog implements UIConstants {
 						}
 					}
 				} catch (WritingException e) {
+					labelConnection.setText("Error");
+					labelConnection
+							.setFont(new Font("Tohama", Font.ITALIC, 11));
+					labelConnection.setForeground(Color.RED);
 					JOptionPane.showMessageDialog(facade.getMainPanel(),
-							e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+							e.getMessage(), "Error!", JOptionPane.ERROR_MESSAGE);
 				} catch (HttpException e) {
 					labelConnection.setText("Url is not reachable!");
 					labelConnection
@@ -469,15 +486,27 @@ public class RepositoryEditPanel extends JDialog implements UIConstants {
 			repositoryService.createRepository(name, url, port, login, pass,
 					protocole);
 			repositoryService.write(name);
-			this.dispose();
-			facade.getSyncPanel().refresh();
 		} catch (CheckException e) {
 			JOptionPane.showMessageDialog(this, e.getMessage(), "Error",
 					JOptionPane.WARNING_MESSAGE);
+			return;
 		} catch (WritingException e) {
 			JOptionPane.showMessageDialog(this,
 					"An error occured. \n Failded to write repository.",
 					"Error", JOptionPane.ERROR_MESSAGE);
+			return;
+		}
+
+		try {
+			AbstractConnexionService connexion = ConnexionServiceFactory
+					.getServiceFromRepository(name);
+			connexion.checkRepository(name);
+		} catch (Exception e) {
+			System.out.println(e.getMessage());
+		} finally {
+			facade.getSyncPanel().init();
+			this.dispose();
+			facade.getSyncPanel().refresh();
 		}
 	}
 
