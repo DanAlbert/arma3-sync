@@ -14,6 +14,7 @@ import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
@@ -45,8 +46,7 @@ public class HttpDAO extends AbstractConnexionDAO {
 	private File downloadingFile;
 
 	private void connect(Repository repository,
-			String relativePathFromRepository, int timeout)
-			throws HttpException {
+			String relativePathFromRepository, int timeout) throws IOException {
 
 		String url = repository.getProtocole().getUrl();
 		String hostname = url;
@@ -63,37 +63,42 @@ public class HttpDAO extends AbstractConnexionDAO {
 		String password = repository.getProtocole().getPassword();
 
 		URL urlObject = null;
-		try {
-			urlObject = new URL("http", hostname, Integer.parseInt(port),
-					remotePath);
-			httpURLConnection = (HttpURLConnection) urlObject.openConnection();
-			httpURLConnection.setConnectTimeout(timeout);
 
+		urlObject = new URL("http", hostname, Integer.parseInt(port),
+				remotePath);
+		httpURLConnection = (HttpURLConnection) urlObject.openConnection();
+		httpURLConnection.setConnectTimeout(timeout);
+
+		if (!(login.equalsIgnoreCase("anonymous"))) {
 			String encoding = Base64Coder.encodeLines((login + ":" + password)
 					.getBytes());
 			httpURLConnection.setRequestProperty("Authorization", "Basic "
 					+ encoding.substring(0, encoding.length() - 1));
-		} catch (IOException e) {
-			// e.printStackTrace();
-			throw new HttpException("Connection failed.");
 		}
 	}
 
-	public boolean connectToRepository(Repository repository)
-			throws HttpException, IOException {
+	public void connectToRepository(Repository repository) throws HttpException {
 
-		boolean response = true;
-		connect(repository, "", 5000);
-		int responseCode = httpURLConnection.getResponseCode();
-		if (responseCode == HttpURLConnection.HTTP_OK) {
-			System.out.println("Connection to " + repository.getName()
-					+ " success.");
-		} else {
-			System.out.println("Failed to connect to repository "
-					+ repository.getName() + ".");
-			response = false;
+		try {
+			connect(repository, "", 5000);
+			int responseCode = httpURLConnection.getResponseCode();
+			if (responseCode == HttpURLConnection.HTTP_OK) {
+				System.out.println("Connection to " + repository.getName()
+						+ " success.");
+			} else {
+				String message = "Failed to connect to repository " + "\""
+						+ repository.getName() + "\""
+						+ ".\nServer return error " + responseCode + " on url "
+						+ repository.getProtocole().getUrl()
+						+ ".\n You may need to check login and password.";
+				System.out.println(message);
+				throw new HttpException(message);
+			}
+		} catch (IOException e) {
+			String message = "Failed to connect to repository " + "\""
+					+ repository.getName() + "\"" + ".\n" + e.getMessage();
+			throw new HttpException(message);
 		}
-		return response;
 	}
 
 	private void download(File file) throws IOException {
@@ -149,7 +154,7 @@ public class HttpDAO extends AbstractConnexionDAO {
 			FileAccessMethods.deleteFile(file);
 		} catch (Exception e) {
 			e.printStackTrace();
-			 autoConfig = null;
+			autoConfig = null;
 			throw new WritingException(e.getMessage());
 		}
 		return autoConfig;
@@ -316,7 +321,7 @@ public class HttpDAO extends AbstractConnexionDAO {
 	public boolean uploadEvents(Repository repository) throws HttpException {
 
 		boolean response = true;
-		connect(repository, EVENTS_FILE_PATH, 5000);
+
 		if (repository.getEvents() != null) {
 			try {
 				// // set some connection properties
@@ -359,6 +364,8 @@ public class HttpDAO extends AbstractConnexionDAO {
 				// output.flush();
 				// writer.append(CRLF).flush();
 				// writer.append("--" + boundary + "--").append(CRLF).flush();
+
+				connect(repository, EVENTS_FILE_PATH, 5000);
 
 				String attachmentName = "events";
 				String attachmentFileName = "events";

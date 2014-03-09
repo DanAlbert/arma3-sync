@@ -60,12 +60,7 @@ public class HttpService extends AbstractConnexionService implements
 					+ " not found!");
 		}
 
-		try {
-			httpDAO.connectToRepository(repository);
-		} catch (Exception e) {
-			throw new HttpException("Failed to connect to repository "
-					+ repository.getName());
-		}
+		httpDAO.connectToRepository(repository);
 
 		SyncTreeDirectory syncTreeDirectory = httpDAO.downloadSync(repository);
 		repository.setSync(syncTreeDirectory);// null if not found
@@ -87,15 +82,7 @@ public class HttpService extends AbstractConnexionService implements
 					+ " not found!");
 		}
 
-		try {
-			boolean connected = httpDAO.connectToRepository(repository);
-			if (!connected) {
-				throw new Exception();
-			}
-		} catch (Exception e) {
-			throw new HttpException("Failed to connect to repository "
-					+ repository.getName());
-		}
+		httpDAO.connectToRepository(repository);
 
 		SyncTreeDirectory syncTreeDirectory = httpDAO.downloadSync(repository);
 		repository.setSync(syncTreeDirectory);// null if not found
@@ -112,15 +99,7 @@ public class HttpService extends AbstractConnexionService implements
 					+ " not found!");
 		}
 
-		try {
-			boolean connected = httpDAO.connectToRepository(repository);
-			if (!connected) {
-				throw new Exception();
-			}
-		} catch (Exception e) {
-			throw new HttpException("Failed to connect to repository "
-					+ repository.getName());
-		}
+		httpDAO.connectToRepository(repository);
 
 		assert (repository.getSync() != null);
 		assert (repository.getServerInfo() != null);
@@ -177,15 +156,7 @@ public class HttpService extends AbstractConnexionService implements
 					+ " not found!");
 		}
 
-		try {
-			boolean connected = httpDAO.connectToRepository(repository);
-			if (!connected) {
-				throw new Exception();
-			}
-		} catch (Exception e) {
-			throw new HttpException("Failed to connect to repository "
-					+ repository.getName());
-		}
+		httpDAO.connectToRepository(repository);
 
 		assert (repository.getSync() != null);
 		assert (repository.getServerInfo() != null);
@@ -234,9 +205,7 @@ public class HttpService extends AbstractConnexionService implements
 				determineCompletion(repositoryName, directory);
 			}
 		}
-		
-		
-		
+
 	}
 
 	private String determinePath(SyncTreeNodeDTO syncTreeNodeDTO) {
