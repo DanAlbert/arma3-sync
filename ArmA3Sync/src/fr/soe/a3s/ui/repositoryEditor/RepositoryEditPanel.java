@@ -414,7 +414,7 @@ public class RepositoryEditPanel extends JDialog implements UIConstants,
 				boolean invalid = false;
 				int index = url.lastIndexOf("/");
 				if (index != -1) {
-					String autoconfigWord = url.substring(index+1);
+					String autoconfigWord = url.substring(index + 1);
 					if (!autoconfigWord.equals(DataAccessConstants.AUTOCONFIG)) {
 						invalid = true;
 					}
@@ -549,10 +549,11 @@ public class RepositoryEditPanel extends JDialog implements UIConstants,
 			return;
 		}
 
-		facade.getSyncPanel().init();
-		this.dispose();
-		facade.getSyncPanel().refresh();
+		SynchronizingPanel synchronizingPanel = new SynchronizingPanel(facade);
+		synchronizingPanel.setVisible(true);
+		synchronizingPanel.init();
 
+		this.dispose();
 	}
 
 	private void checkBoxAnonymousPerformed() {
