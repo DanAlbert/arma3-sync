@@ -15,7 +15,7 @@ public class SyncTreeDirectoryDTO implements SyncTreeNodeDTO {
 	private boolean markAsAddon;
 	private boolean deleted;
 	private boolean optional;
-	private boolean hided;
+	private boolean hidden;
 
 	@Override
 	public String getName() {
@@ -73,8 +73,8 @@ public class SyncTreeDirectoryDTO implements SyncTreeNodeDTO {
 	public String toString() {
 		if (optional) {
 			return name + " (optional)";
-		} else if (hided) {
-			return name + " (hided)";
+		} else if (hidden) {
+			return name + " (hidden)";
 		} else {
 			return name;
 		}
@@ -144,11 +144,11 @@ public class SyncTreeDirectoryDTO implements SyncTreeNodeDTO {
 		return this.optional;
 	}
 
-	public boolean isHided() {
-		return hided;
+	public boolean isHidden() {
+		return hidden;
 	}
 
-	public void setHided(boolean hided) {
-		this.hided = hided;
+	public void setHidden(boolean hidden) {
+		this.hidden = hidden;
 	}
 }

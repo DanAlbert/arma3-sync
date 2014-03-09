@@ -366,10 +366,10 @@ public class RepositoryService implements DataAccessConstants {
 					}
 				}
 				if (!contains) {
-					directory.setHided(false);
+					directory.setHidden(false);
 					addFilesToDelete(directory, file);
 				} else {
-					directory.setHided(true);
+					directory.setHidden(true);
 				}
 			} else {
 				for (SyncTreeNode n : directory.getList()) {
@@ -452,10 +452,10 @@ public class RepositoryService implements DataAccessConstants {
 								}
 							}
 							if (!contains) {
-								directory.setHided(false);
+								directory.setHidden(false);
 								addFilesToDelete(directory, file);
 							} else {
-								directory.setHided(true);
+								directory.setHidden(true);
 							}
 						}
 					}
@@ -1038,7 +1038,7 @@ public class RepositoryService implements DataAccessConstants {
 				syncTreedDirectoryDTO2.setUpdated(false);
 				syncTreedDirectoryDTO2.setDeleted(syncTreeDirectory2
 						.isDeleted());
-				syncTreedDirectoryDTO2.setHided(syncTreeDirectory2.isHided());
+				syncTreedDirectoryDTO2.setHidden(syncTreeDirectory2.isHidden());
 				syncTreeDirectoryDTO.addTreeNode(syncTreedDirectoryDTO2);
 				transformSyncTreeDirectory2DTO(syncTreeDirectory2,
 						syncTreedDirectoryDTO2);
