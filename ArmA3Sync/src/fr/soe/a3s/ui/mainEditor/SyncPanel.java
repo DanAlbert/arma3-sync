@@ -338,7 +338,8 @@ public class SyncPanel extends JPanel implements UIConstants {
 		isModifying = false;
 	}
 
-	public void refresh() {
+	private void refresh() {
+		
 		init();
 		isModifying = true;
 		model.fireTableDataChanged();
