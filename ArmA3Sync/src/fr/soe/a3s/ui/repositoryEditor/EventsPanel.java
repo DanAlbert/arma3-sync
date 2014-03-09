@@ -5,6 +5,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -524,10 +525,13 @@ public class EventsPanel extends JPanel implements UIConstants {
 			arbre.setEnabled(true);
 			EventDTO eventDTO = eventDTOs.get(index);
 			Map<String, Boolean> mapAddonNames = eventDTO.getAddonNames();
-			Map<String, Boolean> mapUserconfigFolderNames = eventDTO.getUserconfigFolderNames();
+			Map<String, Boolean> mapUserconfigFolderNames = eventDTO
+					.getUserconfigFolderNames();
+			Map<String, Boolean> map = new HashMap<String, Boolean>();
+			map.putAll(mapAddonNames);
+			map.putAll(mapUserconfigFolderNames);
 			deselectAllDescending(racine1);
-			setSelection(racine1, mapAddonNames);
-			setSelection(racine1, mapUserconfigFolderNames);
+			setSelection(racine1, map);
 			refreshViewArbre();
 		}
 	}
@@ -576,14 +580,14 @@ public class EventsPanel extends JPanel implements UIConstants {
 					&& !mapAddonNames.containsKey(treeNodeDTO.getName())) {
 				TreeNodeDTO parent = treeNodeDTO.getParent();
 				boolean found = false;
-				while (parent!=null){
-					if (parent.getName().toLowerCase().equals("userconfig")){
-						found  = true;
+				while (parent != null) {
+					if (parent.getName().toLowerCase().equals("userconfig")) {
+						found = true;
 						break;
 					}
 					parent = parent.getParent();
 				}
-				if (!found){
+				if (!found) {
 					mapAddonNames.put(treeNodeDTO.getName(),
 							treeNodeDTO.isOptional());
 				}
