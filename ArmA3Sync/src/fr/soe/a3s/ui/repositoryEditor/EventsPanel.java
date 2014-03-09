@@ -59,6 +59,7 @@ import fr.soe.a3s.ui.repositoryEditor.tree.AddonSyncTreeModel;
 public class EventsPanel extends JPanel implements UIConstants {
 
 	private Facade facade;
+	private RepositoryPanel repositoryPanel;
 	private JButton buttonNew;
 	private JButton buttonRemove;
 	private JScrollPane scrollPane1;
@@ -82,10 +83,10 @@ public class EventsPanel extends JPanel implements UIConstants {
 	private List<EventDTO> eventDTOs;
 	private JButton buttonDeleteFromDisk;
 
-	public EventsPanel(Facade facade) {
+	public EventsPanel(Facade facade, RepositoryPanel repositoryPanel) {
 
 		this.facade = facade;
-		this.facade.setEventsPanel(this);
+		this.repositoryPanel = repositoryPanel;
 		setLayout(new BorderLayout());
 
 		Box vertBox1 = Box.createVerticalBox();
@@ -357,7 +358,7 @@ public class EventsPanel extends JPanel implements UIConstants {
 		// Desable selection
 		arbre.setEnabled(false);
 
-		EventAddPanel eventEditPanel = new EventAddPanel(facade, repositoryName);
+		EventAddPanel eventEditPanel = new EventAddPanel(facade, repositoryName,this);
 		eventEditPanel.init();
 		eventEditPanel.setVisible(true);
 	}

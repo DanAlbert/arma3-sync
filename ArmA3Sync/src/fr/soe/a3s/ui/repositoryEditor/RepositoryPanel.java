@@ -25,7 +25,6 @@ public class RepositoryPanel extends JPanel implements UIConstants {
 
 	public RepositoryPanel(Facade facade) {
 		this.facade = facade;
-		this.facade.setRepositoryPanel(this);
 		this.setLayout(new BorderLayout());
 
 		Box vertBox1 = Box.createVerticalBox();
@@ -33,15 +32,15 @@ public class RepositoryPanel extends JPanel implements UIConstants {
 		centerPanel = new JPanel();
 		centerPanel.setLayout(new CardLayout());
 		vertBox1.add(centerPanel);
-		downloadPanel = new DownloadPanel(facade);
+		downloadPanel = new DownloadPanel(facade, this);
 		downloadPanel.setBorder(BorderFactory.createTitledBorder(
 				BorderFactory.createEtchedBorder(), "Download"));
 		centerPanel.add(downloadPanel);
-		adminPanel = new AdminPanel(facade);
+		adminPanel = new AdminPanel(facade, this);
 		adminPanel.setBorder(BorderFactory.createTitledBorder(
 				BorderFactory.createEtchedBorder(), "Repository"));
 		centerPanel.add(adminPanel);
-		eventsPanel = new EventsPanel(facade);
+		eventsPanel = new EventsPanel(facade,this);
 		eventsPanel.setBorder(BorderFactory.createTitledBorder(
 				BorderFactory.createEtchedBorder(), "Events"));
 		centerPanel.add(eventsPanel);
@@ -61,7 +60,7 @@ public class RepositoryPanel extends JPanel implements UIConstants {
 		ImageIcon eventsIcon = new ImageIcon(EVENTS);
 		buttonEvents.setIcon(eventsIcon);
 		vertBox2.add(buttonEvents);
-	
+
 		this.add(vertBox2, BorderLayout.EAST);
 
 		buttonRepository.addActionListener(new ActionListener() {
@@ -96,16 +95,16 @@ public class RepositoryPanel extends JPanel implements UIConstants {
 		downloadPanel.init(repositoryName);
 		eventsPanel.init(repositoryName);
 	}
-	
-	public void init(String repositoryName,String eventName) {
-		downloadPanel.init(repositoryName,eventName);
+
+	public void init(String repositoryName, String eventName) {
+		downloadPanel.init(repositoryName, eventName);
 		buttonRepository.setVisible(false);
 		buttonEvents.setVisible(false);
 	}
-	
+
 	public void initUpdate(String repositoryName) {
 		adminPanel.init(repositoryName);
-		downloadPanel.init(repositoryName,true);
+		downloadPanel.init(repositoryName, true);
 		eventsPanel.init(repositoryName);
 	}
 
@@ -123,5 +122,17 @@ public class RepositoryPanel extends JPanel implements UIConstants {
 	private void buttonEventsPerformed() {
 		CardLayout cl = (CardLayout) centerPanel.getLayout();
 		cl.last(centerPanel);
+	}
+
+	public AdminPanel getAdminPanel() {
+		return adminPanel;
+	}
+
+	public EventsPanel getEventsPanel() {
+		return eventsPanel;
+	}
+	
+	public DownloadPanel getDownloadPanel() {
+		return downloadPanel;
 	}
 }

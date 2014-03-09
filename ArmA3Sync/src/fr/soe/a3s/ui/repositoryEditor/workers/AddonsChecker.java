@@ -92,7 +92,7 @@ public class AddonsChecker extends Thread {
 			downloadPanel.getButtonDownloadStart().setEnabled(true);
 			downloadPanel.getProgressBarCheckForAddons().setMaximum(0);
 			downloadPanel.getArbre().setEnabled(true);
-			facade.getAdminPanel().init(repositoryName);
+			downloadPanel.getRepositoryPanel().getAdminPanel().init(repositoryName);
 			facade.getSyncPanel().init();
 			this.interrupt();
 			System.gc();

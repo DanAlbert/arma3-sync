@@ -9,11 +9,12 @@ import javax.swing.JOptionPane;
 import fr.soe.a3s.dto.EventDTO;
 import fr.soe.a3s.exception.RepositoryException;
 import fr.soe.a3s.ui.Facade;
+import fr.soe.a3s.ui.repositoryEditor.EventsPanel;
 
 public class EventAddPanel extends EventEditPanel {
 
-	public EventAddPanel(Facade facade, String repositoryName) {
-		super(facade, repositoryName);
+	public EventAddPanel(Facade facade, String repositoryName,EventsPanel eventsPanel) {
+		super(facade, repositoryName,eventsPanel);
 	}
 
 	public void init() {
@@ -41,7 +42,7 @@ public class EventAddPanel extends EventEditPanel {
 			eventDTO.setName(newEventName);
 			eventDTO.setDescription(description);
 			repositoryService.addEvent(repositoryName, eventDTO);
-			facade.getEventsPanel().updateListEvents();
+			this.eventsPanel.updateListEvents();
 			this.dispose();
 		} catch (RepositoryException e) {
 			JOptionPane.showMessageDialog(facade.getMainPanel(),

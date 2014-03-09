@@ -36,6 +36,7 @@ import fr.soe.a3s.ui.UIConstants;
 public class ChangelogPanel extends JFrame implements UIConstants {
 
 	private Facade facade;
+	private AdminPanel adminPanel;
 	private JButton buttonSwitch;
 	private JButton buttonCopy;
 	private JButton buttonClose;
@@ -47,8 +48,11 @@ public class ChangelogPanel extends JFrame implements UIConstants {
 	private RepositoryService repositoryService = new RepositoryService();
 	private List<ChangelogDTO> changelogDTOs;
 
-	public ChangelogPanel(Facade facade, String repositoryName) {
+	public ChangelogPanel(Facade facade, String repositoryName,
+			AdminPanel adminPanel) {
+
 		this.facade = facade;
+		this.adminPanel = adminPanel;
 		this.repositoryName = repositoryName;
 		this.setTitle("Changelog");
 		this.setMinimumSize(new Dimension(400, 400));
@@ -123,7 +127,7 @@ public class ChangelogPanel extends JFrame implements UIConstants {
 	public void init() {
 
 		try {
-			facade.getAdminPanel().getButtonView().setEnabled(false);
+			this.adminPanel.getButtonView().setEnabled(false);
 			changelogDTOs = repositoryService.getChangelogs(repositoryName);
 			if (changelogDTOs == null || changelogDTOs.size() == 0) {
 				String message = "Changelog is not available.";
@@ -138,8 +142,8 @@ public class ChangelogPanel extends JFrame implements UIConstants {
 			textArea.setText(message);
 			textArea.setRows(1);
 			textArea.setCaretPosition(0);
-			JOptionPane.showMessageDialog(facade.getMainPanel(), e.getMessage(),
-					"Repository", JOptionPane.ERROR_MESSAGE);
+			JOptionPane.showMessageDialog(facade.getMainPanel(),
+					e.getMessage(), "Repository", JOptionPane.ERROR_MESSAGE);
 		}
 	}
 
@@ -182,7 +186,7 @@ public class ChangelogPanel extends JFrame implements UIConstants {
 
 	private void display(ChangelogDTO changelogDTO) {
 
-		textArea.append("--- Revision: " + changelogDTO.getRevision()+ " ---");
+		textArea.append("--- Revision: " + changelogDTO.getRevision() + " ---");
 		textArea.append("\nBuild date: "
 				+ changelogDTO.getBuildDate().toLocaleString());
 		textArea.append("\n");
@@ -195,7 +199,8 @@ public class ChangelogPanel extends JFrame implements UIConstants {
 			}
 		}
 		textArea.append("\n");
-		textArea.append("\nUpdated: " + changelogDTO.getUpdatedAddons().size() + "\n");
+		textArea.append("\nUpdated: " + changelogDTO.getUpdatedAddons().size()
+				+ "\n");
 		if (changelogDTO.getUpdatedAddons().isEmpty()) {
 			textArea.append("-");
 		} else {
@@ -204,7 +209,8 @@ public class ChangelogPanel extends JFrame implements UIConstants {
 			}
 		}
 		textArea.append("\n");
-		textArea.append("\nDeleted: " + changelogDTO.getDeletedAddons().size() + "\n");
+		textArea.append("\nDeleted: " + changelogDTO.getDeletedAddons().size()
+				+ "\n");
 		if (changelogDTO.getDeletedAddons().isEmpty()) {
 			textArea.append("-");
 		} else {
@@ -220,6 +226,6 @@ public class ChangelogPanel extends JFrame implements UIConstants {
 
 	private void menuExitPerformed() {
 		this.dispose();
-		facade.getAdminPanel().getButtonView().setEnabled(true);
+		this.adminPanel.getButtonView().setEnabled(true);
 	}
 }

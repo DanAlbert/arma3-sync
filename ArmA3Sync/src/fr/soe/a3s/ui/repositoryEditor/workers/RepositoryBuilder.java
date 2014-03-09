@@ -57,6 +57,7 @@ public class RepositoryBuilder extends Thread {
 			adminPanel.getBuildProgressBar().setMaximum(0);
 			adminPanel.init(repositoryName);
 			facade.getSyncPanel().init();
+			
 			System.gc();// Required for unlocking files!
 		}
 	}

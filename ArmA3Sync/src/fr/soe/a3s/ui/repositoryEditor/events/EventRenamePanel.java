@@ -18,7 +18,7 @@ public class EventRenamePanel extends EventEditPanel {
 	private EventsPanel eventsPanel;
 
 	public EventRenamePanel(Facade facade, String repositoryName,EventsPanel eventsPanel) {
-		super(facade, repositoryName);
+		super(facade, repositoryName,eventsPanel);
 		this.eventsPanel = eventsPanel;
 	}
 

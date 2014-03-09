@@ -45,6 +45,7 @@ public class AdminPanel extends JPanel implements UIConstants {
 	private JLabel labelChangelog;
 	private JButton buttonView;
 	private final Facade facade;
+	private final RepositoryPanel repositoryPanel;
 	private JButton buttonSelectFTPfolderPath, buttonBuild,
 			buttonCopyAutoConfigURL, buttonCheck;
 	private final RepositoryService repositoryService = new RepositoryService();
@@ -53,10 +54,10 @@ public class AdminPanel extends JPanel implements UIConstants {
 			textFieldAutoConfigURL;
 	private JProgressBar buildProgressBar, checkProgressBar;
 
-	public AdminPanel(Facade facade) {
+	public AdminPanel(Facade facade, RepositoryPanel repositoryPanel) {
 
 		this.facade = facade;
-		this.facade.setAdminPanel(this);
+		this.repositoryPanel = repositoryPanel;
 		setLayout(new BorderLayout());
 
 		Box vertBox1 = Box.createVerticalBox();
@@ -337,7 +338,7 @@ public class AdminPanel extends JPanel implements UIConstants {
 
 		JFileChooser fc = new JFileChooser();
 		fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-		int returnVal = fc.showOpenDialog(facade.getRepositoryPanel());
+		int returnVal = fc.showOpenDialog(this.repositoryPanel);
 		if (returnVal == JFileChooser.APPROVE_OPTION) {
 			File file = fc.getSelectedFile();
 			/* Check consistency between repository url and ftp folder path */
@@ -443,14 +444,14 @@ public class AdminPanel extends JPanel implements UIConstants {
 		}
 
 		RepositoryChecker checker = new RepositoryChecker(facade,
-				repositoryName, path);
+				repositoryName, path,this);
 		checker.start();
 	}
 
 	private void buttonViewPerformed() {
 
 		ChangelogPanel changelogPanel = new ChangelogPanel(facade,
-				repositoryName);
+				repositoryName,this);
 		changelogPanel.init();
 		changelogPanel.setVisible(true);
 	}

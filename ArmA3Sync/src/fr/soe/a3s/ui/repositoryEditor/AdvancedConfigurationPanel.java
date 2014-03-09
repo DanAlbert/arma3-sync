@@ -45,6 +45,7 @@ import fr.soe.a3s.ui.repositoryEditor.tree.AddonSyncTreeModel;
 public class AdvancedConfigurationPanel extends JFrame implements UIConstants {
 
 	private Facade facade;
+	private DownloadPanel downloadPanel;
 	private JButton buttonClose;
 	private JScrollPane scrollPane;
 	private AddonSyncTreeModel treeModel;
@@ -55,8 +56,12 @@ public class AdvancedConfigurationPanel extends JFrame implements UIConstants {
 	private ConfigurationService configurationService = new ConfigurationService();
 	private String defaultDestinationPath;// may be null
 
-	public AdvancedConfigurationPanel(Facade facade, SyncTreeDirectoryDTO racine, String defaultDestinationPath) {
+	public AdvancedConfigurationPanel(Facade facade,
+			SyncTreeDirectoryDTO racine, String defaultDestinationPath,
+			DownloadPanel downloadPanel) {
+
 		this.facade = facade;
+		this.downloadPanel = downloadPanel;
 		this.racine = racine;
 		this.defaultDestinationPath = defaultDestinationPath;
 		this.setTitle("Advanced configuration");
@@ -153,12 +158,12 @@ public class AdvancedConfigurationPanel extends JFrame implements UIConstants {
 
 	private void buttonClosePerformed() {
 		this.dispose();
-		facade.getDownloadPanel().getButtonAdvancedConfiguration().setEnabled(true);
+		this.downloadPanel.getButtonAdvancedConfiguration().setEnabled(true);
 	}
-	
+
 	private void menuExitPerformed() {
 		this.dispose();
-		facade.getDownloadPanel().getButtonAdvancedConfiguration().setEnabled(true);
+		this.downloadPanel.getButtonAdvancedConfiguration().setEnabled(true);
 	}
 
 	class ButtonRenderer extends JButton implements TableCellRenderer {
@@ -249,11 +254,15 @@ public class AdvancedConfigurationPanel extends JFrame implements UIConstants {
 				SyncTreeNodeDTO node = (SyncTreeNodeDTO) outlineModel
 						.getValueAt(index, -1);
 
-				String currentFolderPath = node.getDestinationPath() + "/" + node.getName();
-				
+				String currentFolderPath = node.getDestinationPath() + "/"
+						+ node.getName();
+
 				if (new File(currentFolderPath).exists()) {
-					JOptionPane.showMessageDialog(AdvancedConfigurationPanel.this,
-							"Destination folder can't be changed. \n" + "Folder " + node.getName() + " already exists.", "Download",
+					JOptionPane.showMessageDialog(
+							AdvancedConfigurationPanel.this,
+							"Destination folder can't be changed. \n"
+									+ "Folder " + node.getName()
+									+ " already exists.", "Download",
 							JOptionPane.WARNING_MESSAGE);
 					return null;
 				}
@@ -284,7 +293,8 @@ public class AdvancedConfigurationPanel extends JFrame implements UIConstants {
 					if (!contains) {
 						configurationService.getAddonSearchDirectoryPaths()
 								.add(newPath);
-						facade.getAddonOptionsPanel().updateAddonSearchDirectories();
+						facade.getAddonOptionsPanel()
+								.updateAddonSearchDirectories();
 					}
 				}
 			}

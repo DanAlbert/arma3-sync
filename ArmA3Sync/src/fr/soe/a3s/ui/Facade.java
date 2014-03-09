@@ -14,18 +14,13 @@ import fr.soe.a3s.ui.mainEditor.OnlinePanel;
 import fr.soe.a3s.ui.mainEditor.PreferencesPanel;
 import fr.soe.a3s.ui.mainEditor.SyncPanel;
 import fr.soe.a3s.ui.profileEditor.ProfilePanel;
-import fr.soe.a3s.ui.repositoryEditor.AdminPanel;
 import fr.soe.a3s.ui.repositoryEditor.ConnectionPanel;
-import fr.soe.a3s.ui.repositoryEditor.DestinationFolderPanel;
-import fr.soe.a3s.ui.repositoryEditor.DownloadPanel;
-import fr.soe.a3s.ui.repositoryEditor.EventsPanel;
 import fr.soe.a3s.ui.repositoryEditor.RepositoryEditPanel;
-import fr.soe.a3s.ui.repositoryEditor.RepositoryPanel;
 import fr.soe.a3s.ui.tfarEditor.FirstPageTFARInstallerPanel;
 
 public class Facade {
 
-	/** Views */
+	/** Views single instance */
 	private MainPanel mainPanel;
 	private InfoPanel infoPanel;
 	private AddonsPanel addonsPanel;
@@ -39,15 +34,10 @@ public class Facade {
 	private ExternalApplicationsEditionPanel externalApplicationsEditionPanel;
 	private PreferencesPanel preferencesPanel;
 	private RepositoryEditPanel repositoryEditPanel;
-	private RepositoryPanel repositoryPanel;
-	private AdminPanel adminPanel;
-	private DownloadPanel downloadPanel;
-	private DestinationFolderPanel destinationFolderPanel;
 	private ConnectionPanel connectiongPanel;
 	private FirstPageACREInstallerPanel firstPageInstallerPanel;
-	private EventsPanel eventsPanel;
-	private InfoUpdatedRepositoryPanel infoUpdatedRepositoryPanel;
 	private FirstPageTFARInstallerPanel firstPageTFARInstallerPanel;
+	private InfoUpdatedRepositoryPanel infoUpdatedRepositoryPanel;
 
 	/** Dev mode */
 	private boolean devMode = false;
@@ -167,39 +157,6 @@ public class Facade {
 		this.preferencesPanel = preferencesPanel;
 	}
 
-	public RepositoryPanel getRepositoryPanel() {
-		return repositoryPanel;
-	}
-
-	public void setRepositoryPanel(RepositoryPanel repositoryPanel) {
-		this.repositoryPanel = repositoryPanel;
-	}
-
-	public AdminPanel getAdminPanel() {
-		return adminPanel;
-	}
-
-	public void setAdminPanel(AdminPanel adminPanel) {
-		this.adminPanel = adminPanel;
-	}
-
-	public DownloadPanel getDownloadPanel() {
-		return downloadPanel;
-	}
-
-	public void setDownloadPanel(DownloadPanel downloadPanel) {
-		this.downloadPanel = downloadPanel;
-	}
-
-	public DestinationFolderPanel getDestinationFolderPanel() {
-		return destinationFolderPanel;
-	}
-
-	public void setDestinationFolderPanel(
-			DestinationFolderPanel destinationFolderPanel) {
-		this.destinationFolderPanel = destinationFolderPanel;
-	}
-
 	public void setConnectiongPanel(ConnectionPanel connectiongPanel) {
 		this.connectiongPanel = connectiongPanel;
 	}
@@ -215,14 +172,6 @@ public class Facade {
 
 	public FirstPageACREInstallerPanel getFirstPageInstallerPanel() {
 		return firstPageInstallerPanel;
-	}
-
-	public void setEventsPanel(EventsPanel eventsPanel) {
-		this.eventsPanel = eventsPanel;
-	}
-
-	public EventsPanel getEventsPanel() {
-		return eventsPanel;
 	}
 
 	public void setInfoUpdatedRepositoryPanel(
