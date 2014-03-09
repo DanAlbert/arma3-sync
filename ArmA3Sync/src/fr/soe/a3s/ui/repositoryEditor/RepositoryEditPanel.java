@@ -38,6 +38,7 @@ import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 
 import fr.soe.a3s.constant.Protocole;
+import fr.soe.a3s.dao.DataAccessConstants;
 import fr.soe.a3s.dto.AutoConfigDTO;
 import fr.soe.a3s.dto.ProtocoleDTO;
 import fr.soe.a3s.dto.RepositoryDTO;
@@ -61,7 +62,8 @@ import fr.soe.a3s.ui.UIConstants;
  * PURCHASED FOR THIS MACHINE, SO JIGLOO OR THIS CODE CANNOT BE USED LEGALLY FOR
  * ANY CORPORATE OR COMMERCIAL PURPOSE.
  */
-public class RepositoryEditPanel extends JDialog implements UIConstants {
+public class RepositoryEditPanel extends JDialog implements UIConstants,
+		DataAccessConstants {
 
 	private final Facade facade;
 
@@ -407,14 +409,23 @@ public class RepositoryEditPanel extends JDialog implements UIConstants {
 			@Override
 			public void run() {
 
+				// Check autoconfig url spelling
 				String url = textFieldAutoConfigUrl.getText().trim();
+				boolean invalid = false;
+				int index = url.lastIndexOf("/");
+				if (index != -1) {
+					String autoconfigWord = url.substring(index+1);
+					if (!autoconfigWord.equals(DataAccessConstants.AUTOCONFIG)) {
+						invalid = true;
+					}
+				} else {
+					invalid = true;
+				}
 
-				// Url must ends with /autoconfig
-
-				String autoconfigEndUrl = url.substring(url.length() - 10);
-				if (!autoconfigEndUrl.equals("autoconfig")) {
+				if (invalid) {
 					JOptionPane.showMessageDialog(facade.getMainPanel(),
-							"Url must ends with " + "\"" + "autoconfig" + "\""
+							"Url must ends with " + "\""
+									+ DataAccessConstants.AUTOCONFIG + "\""
 									+ ".", "Warning",
 							JOptionPane.WARNING_MESSAGE);
 					return;
@@ -433,11 +444,12 @@ public class RepositoryEditPanel extends JDialog implements UIConstants {
 
 				labelConnection.setText("Connecting to repository...");
 				labelConnection.setFont(new Font("Tohama", Font.ITALIC, 11));
+				labelConnection.setForeground(Color.BLACK);
 
+				// Init fields
 				try {
 					AutoConfigDTO autoConfigDTO = connexion
 							.importAutoConfig(url);
-					// Init fields
 					if (autoConfigDTO != null) {
 						labelConnection.setText("Connetion success!");
 						labelConnection.setFont(new Font("Tohama", Font.ITALIC,
@@ -469,8 +481,10 @@ public class RepositoryEditPanel extends JDialog implements UIConstants {
 					labelConnection
 							.setFont(new Font("Tohama", Font.ITALIC, 11));
 					labelConnection.setForeground(Color.RED);
-					JOptionPane.showMessageDialog(facade.getMainPanel(),
-							e.getMessage(), "Error!", JOptionPane.ERROR_MESSAGE);
+					JOptionPane
+							.showMessageDialog(facade.getMainPanel(),
+									e.getMessage(), "Error!",
+									JOptionPane.ERROR_MESSAGE);
 				} catch (HttpException e) {
 					labelConnection.setText("Url is not reachable!");
 					labelConnection
