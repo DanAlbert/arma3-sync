@@ -49,6 +49,7 @@ public class ArmA3Sync {
 	public static void main(String[] args) {
 
 		checkJRE();
+		checkAdmin();
 		Facade facade = new Facade();
 
 		if (args.length == 0) {
@@ -72,14 +73,16 @@ public class ArmA3Sync {
 			Console console = new Console(false);
 			String repositoryName = args[1];
 			console.build(repositoryName);
-		}else if (args.length == 2 && args[0].equalsIgnoreCase("-check")){
+		} else if (args.length == 2 && args[0].equalsIgnoreCase("-check")) {
 			Console console = new Console(false);
 			String repositoryName = args[1];
 			console.check(repositoryName);
-		}else {
+		} else {
 			System.out.println("ArmA3Sync - bad command.");
-			System.out.println("-BUILD " + "\"" + "NameOfRepository" + "\"" + ": build repository.");
-			System.out.println("-CHECK " + "\"" + "NameOfRepository" + "\"" + ": check repository.");
+			System.out.println("-BUILD " + "\"" + "NameOfRepository" + "\""
+					+ ": build repository.");
+			System.out.println("-CHECK " + "\"" + "NameOfRepository" + "\""
+					+ ": check repository.");
 			System.out.println("-CONSOLE: run ArmASync console management.");
 		}
 	}
@@ -97,6 +100,33 @@ public class ArmA3Sync {
 			} else {
 				System.out.println(message);
 			}
+		}
+	}
+
+	private static void checkAdmin() {
+
+		try {
+			String osName = System.getProperty("os.name");
+			if (osName.contains("Windows")) {
+				boolean isAdmin = false;
+				String groups[] = (new com.sun.security.auth.module.NTSystem())
+						.getGroupIDs();
+				for (String group : groups) {
+					if (group.equals("S-1-5-32-544")) {
+						isAdmin = true;
+						break;
+					}
+				}
+				if (!isAdmin) {
+					String message = "ArmA3Sync required Administrator privileges to run.\nClosing application now.";
+					JFrame frame = new JFrame();
+					JOptionPane.showMessageDialog(frame, message, "ArmA3Sync",
+							JOptionPane.INFORMATION_MESSAGE);
+					System.exit(0);
+				}
+			}
+		} catch (Exception e) {
+			// may happens if non oracle JRE is running.
 		}
 	}
 
