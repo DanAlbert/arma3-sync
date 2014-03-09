@@ -38,31 +38,19 @@ import fr.soe.a3s.ui.repositoryEditor.workers.RepositoryChecker;
 public class AdminPanel extends JPanel implements UIConstants {
 
 	private JLabel labelRevision, labelRevisionValue;
-
 	private JLabel labelDate, labelDateValue;
-
 	private JLabel labelStatus, labelStatusValue;
-
 	private JLabel labelNbFiles, labelNbFilesValue;
-
 	private JLabel labelTotalSize, labelTotalSizeValue;
-
 	private JLabel labelChangelog;
-
 	private JButton buttonView;
-
 	private final Facade facade;
-
 	private JButton buttonSelectFTPfolderPath, buttonBuild,
 			buttonCopyAutoConfigURL, buttonCheck;
-
 	private final RepositoryService repositoryService = new RepositoryService();
-
 	private String repositoryName;
-
 	private JTextField textFieldftpSharedFolderLocation,
 			textFieldAutoConfigURL;
-
 	private JProgressBar buildProgressBar, checkProgressBar;
 
 	public AdminPanel(Facade facade) {
