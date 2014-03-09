@@ -96,7 +96,7 @@ public class HttpDAO extends AbstractConnexionDAO {
 			}
 		} catch (IOException e) {
 			String message = "Failed to connect to repository " + "\""
-					+ repository.getName() + "\"" + ".\n" + e.getMessage();
+					+ repository.getName() + "\"" + ".";
 			throw new HttpException(message);
 		}
 	}
