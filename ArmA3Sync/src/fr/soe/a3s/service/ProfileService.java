@@ -85,6 +85,8 @@ public class ProfileService extends ObjectDTOtransformer {
 		TreeDirectory treeDirectory = profile.getTree();
 		TreeDirectory duplicateTreeDirectory = duplicateProfile.getTree();
 		duplicateTree(treeDirectory, duplicateTreeDirectory);
+		duplicateProfile.setAddonSearchDirectoryPaths(profile
+				.getAddonSearchDirectoryPaths());
 		duplicateProfile.setAdditionalParameters(profile
 				.getAdditionalParameters());
 		duplicateLauncherOptions(profile.getLauncherOptions(),
