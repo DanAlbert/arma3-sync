@@ -297,7 +297,8 @@ public class FileMaker {
 								.getLength() - (i * mfr.getBlocksize() + mfr
 								.getBlocksize())));
 					}
-					if (data.length != 0) {
+
+					try {
 						buffer.put(
 								data,
 								(range - rangeList.size()) * mfr.getBlocksize(),
@@ -309,8 +310,10 @@ public class FileMaker {
 						if (rangeList.isEmpty()) {
 							rangeQueue = false;
 						}
-					} else {
-						System.out.println("Data is empty!");
+					} catch (Exception e) {
+						System.out
+								.println("ERROR: .zsync file metadata don't match for target file "
+										+ targetFile.getAbsolutePath());
 						error = true;
 						break;
 					}
