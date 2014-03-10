@@ -5,10 +5,6 @@ import java.awt.GraphicsEnvironment;
 import java.io.File;
 import java.io.RandomAccessFile;
 import java.nio.channels.FileLock;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Scanner;
 
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
@@ -16,20 +12,6 @@ import javax.swing.UIManager;
 import javax.swing.plaf.FontUIResource;
 
 import fr.soe.a3s.console.Console;
-import fr.soe.a3s.constant.ConsoleCommands;
-import fr.soe.a3s.constant.EncryptionMode;
-import fr.soe.a3s.constant.MinimizationType;
-import fr.soe.a3s.controller.ObserverFileSize;
-import fr.soe.a3s.dto.ProtocoleDTO;
-import fr.soe.a3s.dto.RepositoryDTO;
-import fr.soe.a3s.exception.CheckException;
-import fr.soe.a3s.exception.LoadingException;
-import fr.soe.a3s.exception.RepositoryCheckException;
-import fr.soe.a3s.exception.RepositoryException;
-import fr.soe.a3s.exception.ServerInfoNotFoundException;
-import fr.soe.a3s.exception.SyncFileNotFoundException;
-import fr.soe.a3s.exception.WritingException;
-import fr.soe.a3s.service.RepositoryService;
 import fr.soe.a3s.ui.Facade;
 import fr.soe.a3s.ui.mainEditor.MainPanel;
 
@@ -49,7 +31,6 @@ public class ArmA3Sync {
 	public static void main(String[] args) {
 
 		checkJRE();
-		checkAdmin();
 		Facade facade = new Facade();
 
 		if (args.length == 0) {
@@ -100,33 +81,7 @@ public class ArmA3Sync {
 			} else {
 				System.out.println(message);
 			}
-		}
-	}
-
-	private static void checkAdmin() {
-
-		try {
-			String osName = System.getProperty("os.name");
-			if (osName.contains("Windows")) {
-				boolean isAdmin = false;
-				String groups[] = (new com.sun.security.auth.module.NTSystem())
-						.getGroupIDs();
-				for (String group : groups) {
-					if (group.equals("S-1-5-32-544")) {
-						isAdmin = true;
-						break;
-					}
-				}
-				if (!isAdmin) {
-					String message = "ArmA3Sync required Administrator privileges to run.\nClosing application now.";
-					JFrame frame = new JFrame();
-					JOptionPane.showMessageDialog(frame, message, "ArmA3Sync",
-							JOptionPane.INFORMATION_MESSAGE);
-					System.exit(0);
-				}
-			}
-		} catch (Exception e) {
-			// may happens if non oracle JRE is running.
+			System.exit(0);
 		}
 	}
 
@@ -247,6 +202,7 @@ public class ArmA3Sync {
 			final FileLock fileLock = randomAccessFile.getChannel().tryLock();
 			if (fileLock != null) {
 				Runtime.getRuntime().addShutdownHook(new Thread() {
+					@Override
 					public void run() {
 						try {
 							fileLock.release();
