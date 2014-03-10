@@ -9,14 +9,12 @@ import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
-import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.io.IOException;
 import java.util.Arrays;
 
 import javax.swing.BorderFactory;
@@ -113,9 +111,9 @@ public class RepositoryEditPanel extends JDialog implements UIConstants,
 
 	private JComboBox<Object> comboBoxProtocole;
 
-	private JPopupMenu popup;
+	private final JPopupMenu popup;
 
-	private JMenuItem menuItemPaste;
+	private final JMenuItem menuItemPaste;
 
 	public RepositoryEditPanel(Facade facade) {
 		super(facade.getMainPanel(), "New repository", true);
@@ -308,6 +306,7 @@ public class RepositoryEditPanel extends JDialog implements UIConstants,
 
 		menuItemPaste = new JMenuItem("Paste");
 		menuItemPaste.addActionListener(new ActionListener() {
+			@Override
 			public void actionPerformed(ActionEvent evt) {
 				popupActionPerformed(evt);
 			}
@@ -316,6 +315,7 @@ public class RepositoryEditPanel extends JDialog implements UIConstants,
 		popup.add(menuItemPaste);
 
 		textFieldAutoConfigUrl.addMouseListener(new MouseAdapter() {
+			@Override
 			public void mouseReleased(MouseEvent e) {
 				if (e.isPopupTrigger()) {
 					popup.show((JComponent) e.getSource(), e.getX(), e.getY());
@@ -551,7 +551,7 @@ public class RepositoryEditPanel extends JDialog implements UIConstants,
 
 		SynchronizingPanel synchronizingPanel = new SynchronizingPanel(facade);
 		synchronizingPanel.setVisible(true);
-		synchronizingPanel.init();
+		synchronizingPanel.init(name);
 
 		this.dispose();
 	}
@@ -620,7 +620,7 @@ public class RepositoryEditPanel extends JDialog implements UIConstants,
 			try {
 				result = (String) contents
 						.getTransferData(DataFlavor.stringFlavor);
-			} catch (UnsupportedFlavorException | IOException ex) {
+			} catch (Exception ex) {
 				System.out.println(ex);
 				ex.printStackTrace();
 			}

@@ -9,13 +9,12 @@ import java.util.List;
 import fr.soe.a3s.dto.RepositoryDTO;
 import fr.soe.a3s.service.AbstractConnexionService;
 import fr.soe.a3s.service.ConnexionServiceFactory;
-import fr.soe.a3s.service.FtpService;
 import fr.soe.a3s.service.RepositoryService;
 import fr.soe.a3s.ui.Facade;
 
 public class SynchronizingPanel extends ProgressPanel {
 
-	private RepositoryService repositoryService = new RepositoryService();
+	private final RepositoryService repositoryService = new RepositoryService();
 	private AbstractConnexionService connexion;
 
 	public SynchronizingPanel(Facade facade) {
@@ -30,33 +29,46 @@ public class SynchronizingPanel extends ProgressPanel {
 		});
 		// Add Listeners
 		addWindowListener(new WindowAdapter() {
+			@Override
 			public void windowClosing(WindowEvent e) {
 				menuExitPerformed();
 			}
 		});
 	}
 
-	public void init() {
+	public void init(final String repositoryName) {
 
 		facade.getSyncPanel().getButtonSync().setEnabled(false);
 		progressBar.setIndeterminate(true);
 		Thread t = new Thread(new Runnable() {
 			@Override
 			public void run() {
-				List<RepositoryDTO> list = repositoryService.getRepositories();
-				for (final RepositoryDTO repositoryDTO : list) {
-					if (canceled) {
-						break;
+				if (repositoryName == null) {
+					List<RepositoryDTO> list = repositoryService
+							.getRepositories();
+					for (final RepositoryDTO repositoryDTO : list) {
+						if (canceled) {
+							break;
+						}
+						try {
+							connexion = ConnexionServiceFactory
+									.getServiceFromRepository(repositoryDTO
+											.getName());
+							connexion.checkRepository(repositoryDTO.getName());
+						} catch (Exception e) {
+							System.out.println(e.getMessage());
+						}
 					}
+				} else {
 					try {
 						connexion = ConnexionServiceFactory
-								.getServiceFromRepository(repositoryDTO
-										.getName());
-						connexion.checkRepository(repositoryDTO.getName());
+								.getServiceFromRepository(repositoryName);
+						connexion.checkRepository(repositoryName);
 					} catch (Exception e) {
 						System.out.println(e.getMessage());
 					}
 				}
+
 				facade.getSyncPanel().init();
 				progressBar.setIndeterminate(false);
 				dispose();

@@ -7,17 +7,15 @@ import java.awt.event.WindowEvent;
 
 import javax.swing.JOptionPane;
 
-import fr.soe.a3s.exception.FtpException;
 import fr.soe.a3s.exception.RepositoryException;
 import fr.soe.a3s.service.AbstractConnexionService;
 import fr.soe.a3s.service.ConnexionServiceFactory;
-import fr.soe.a3s.service.FtpService;
 import fr.soe.a3s.ui.Facade;
 
 public class UploadPanel extends ProgressPanel {
 
 	private AbstractConnexionService connexion;
-	private String repositoryName;
+	private final String repositoryName;
 	private Thread t;
 
 	public UploadPanel(Facade facade, String repositoryName) {
@@ -33,6 +31,7 @@ public class UploadPanel extends ProgressPanel {
 		});
 		// Add Listeners
 		addWindowListener(new WindowAdapter() {
+			@Override
 			public void windowClosing(WindowEvent e) {
 				menuExitPerformed();
 			}
@@ -63,7 +62,7 @@ public class UploadPanel extends ProgressPanel {
 						SynchronizingPanel synchronizingPanel = new SynchronizingPanel(
 								facade);
 						synchronizingPanel.setVisible(true);
-						synchronizingPanel.init();
+						synchronizingPanel.init(repositoryName);
 					}
 				} catch (RepositoryException e) {
 					setVisible(false);
