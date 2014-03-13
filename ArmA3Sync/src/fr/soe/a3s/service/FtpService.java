@@ -123,13 +123,11 @@ public class FtpService extends AbstractConnexionService implements
 		ftpClient = new FTPClient();
 		ftpClient.setConnectTimeout(15000);// 15 sec
 		boolean isLoged = false;
-		boolean remotePathExists = false;
 		int reply = 0;
 		try {
 			ftpClient.connect(hostname, Integer.parseInt(port));
 			isLoged = ftpClient.login(login, password);
 			ftpClient.setFileType(FTP.BINARY_FILE_TYPE);
-			remotePathExists = ftpClient.changeWorkingDirectory(remotePath);
 			ftpClient.enterLocalPassiveMode();// passive mode
 			reply = ftpClient.getReplyCode();
 		} catch (Exception e) {
@@ -145,7 +143,7 @@ public class FtpService extends AbstractConnexionService implements
 					+ "Wrong login or password.");
 		}
 
-		if (!FTPReply.isPositiveCompletion(reply) || !remotePathExists) {
+		if (!FTPReply.isPositiveCompletion(reply)) {
 			System.out.println("Connection to " + repository.getName()
 					+ " failed.");
 			throw new FtpException("Failed to connect to repository "
