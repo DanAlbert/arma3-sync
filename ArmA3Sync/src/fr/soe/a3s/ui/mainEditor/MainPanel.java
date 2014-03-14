@@ -41,7 +41,6 @@ import javax.swing.JTabbedPane;
 import javax.swing.SwingUtilities;
 
 import fr.soe.a3s.constant.MinimizationType;
-import fr.soe.a3s.dto.ChangelogDTO;
 import fr.soe.a3s.dto.RepositoryDTO;
 import fr.soe.a3s.dto.ServerInfoDTO;
 import fr.soe.a3s.dto.configuration.LauncherOptionsDTO;
@@ -89,17 +88,17 @@ public class MainPanel extends JFrame implements UIConstants {
 			menuItemAutoConfigExport;
 	private JTabbedPane tabbedPane;
 	private JPanel infoPanel, launchPanel;
-	private ConfigurationService configurationService = new ConfigurationService();
-	private ProfileService profileService = new ProfileService();
-	private CommonService commonService = new CommonService();
-	private PreferencesService preferencesService = new PreferencesService();
-	private RepositoryService repositoryService = new RepositoryService();
+	private final ConfigurationService configurationService = new ConfigurationService();
+	private final ProfileService profileService = new ProfileService();
+	private final CommonService commonService = new CommonService();
+	private final PreferencesService preferencesService = new PreferencesService();
+	private final RepositoryService repositoryService = new RepositoryService();
 	private SystemTray tray;
 	private TrayIcon trayIcon;
 	private PopupMenu popup;
 	private MenuItem launchItem, exitItem;
-	private Map<String, Integer> mapTabIndexes = new LinkedHashMap<String, Integer>();
-	private Container contenu;
+	private final Map<String, Integer> mapTabIndexes = new LinkedHashMap<String, Integer>();
+	private final Container contenu;
 	private JMenuItem menuItemAddGroup;
 	private JMenuItem menuItemRenameGroup;
 	private JMenuItem menuItemRemoveGroup;
@@ -230,6 +229,7 @@ public class MainPanel extends JFrame implements UIConstants {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
 				SwingUtilities.invokeLater(new Runnable() {
+					@Override
 					public void run() {
 						menuItemACREwizardPerformed();
 					}
@@ -240,6 +240,7 @@ public class MainPanel extends JFrame implements UIConstants {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
 				SwingUtilities.invokeLater(new Runnable() {
+					@Override
 					public void run() {
 						menuItemTFARwizardPerformed();
 					}
@@ -250,6 +251,7 @@ public class MainPanel extends JFrame implements UIConstants {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
 				SwingUtilities.invokeLater(new Runnable() {
+					@Override
 					public void run() {
 						menuItemAiAwizardPerformed();
 					}
@@ -596,13 +598,9 @@ public class MainPanel extends JFrame implements UIConstants {
 
 	public void menuExitPerformed() {
 
-		// Save Height and Width
-		configurationService.setHeight(this.getHeight());
-		configurationService.setWidth(this.getWidth());
-
 		/* Write configuration and profiles. */
 		try {
-			commonService.saveAllParameters();
+			commonService.saveAllParameters(this.getHeight(), this.getWidth());
 		} catch (WritingException e) {
 			JOptionPane.showMessageDialog(this,
 					"An error occured.\n" + e.getMessage(), "Error",
@@ -688,7 +686,12 @@ public class MainPanel extends JFrame implements UIConstants {
 							"Update", JOptionPane.OK_CANCEL_OPTION);
 
 					if (response == 0) {
-						menuExitPerformed();
+						try {
+							commonService.saveAllParameters(getHeight(),
+									getWidth());
+						} catch (WritingException e) {
+							e.printStackTrace();
+						}
 						// Proceed update
 						String command = "java -jar -Djava.net.preferIPv4Stack=true ArmA3Sync-Updater.jar";
 						if (facade.isDevMode()) {
@@ -735,6 +738,7 @@ public class MainPanel extends JFrame implements UIConstants {
 				menuItemProfile.setSelected(true);
 			}
 			menuItemProfile.addActionListener(new ActionListener() {
+				@Override
 				public void actionPerformed(final ActionEvent evt) {
 					menuItemProfilePerformed(evt);
 				}

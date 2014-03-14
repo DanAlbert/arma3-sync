@@ -24,8 +24,11 @@ public class CommonService {
 	private static String WIKI = "http://www.sonsofexiled.fr/wiki/index.php/1._ArmA3Sync";
 	private static String BIS = "http://forums.bistudio.com/showthread.php?162236-ArmA3Sync-launcher-and-addons-synchronization-software-for-ArmA-3&p=2477805#post2477805";
 
-	public void saveAllParameters() throws WritingException {
+	public void saveAllParameters(int height, int width)
+			throws WritingException {
 
+		configurationDAO.getConfiguration().setHeight(height);
+		configurationDAO.getConfiguration().setWidth(width);
 		configurationDAO.write();
 		profileDAO.writeProfiles();
 		preferencesDAO.write();
@@ -39,8 +42,8 @@ public class CommonService {
 		AutoConfig autoConfig = new AutoConfig();
 
 		for (String profileName : listSelectedProfileNames) {
-			Profile profile = (Profile) profileDAO.getMap().get(profileName);
-			profile.setLauncherOptions(null);//clear launcher options
+			Profile profile = profileDAO.getMap().get(profileName);
+			profile.setLauncherOptions(null);// clear launcher options
 			if (profile != null) {
 				autoConfig.getProfiles().add(profile);
 			}
@@ -59,7 +62,8 @@ public class CommonService {
 		for (String repositoryName : listSelectedRepositoryNames) {
 			Repository repository = repositoryDAO.getMap().get(repositoryName);
 			if (repository != null) {
-			    Repository clonedRepository = new Repository(repository.getName(), repository.getProtocole());
+				Repository clonedRepository = new Repository(
+						repository.getName(), repository.getProtocole());
 				autoConfig.getRepositories().add(clonedRepository);
 			}
 		}
@@ -94,8 +98,8 @@ public class CommonService {
 		List<FavoriteServer> favoriteServers = autoConfig.getFavoriteServers();
 
 		for (FavoriteServer favoriteServer : favoriteServers) {
-				configurationDAO.getConfiguration().getFavoriteServers()
-						.add(favoriteServer);
+			configurationDAO.getConfiguration().getFavoriteServers()
+					.add(favoriteServer);
 		}
 
 		List<Repository> repositories = autoConfig.getRepositories();
@@ -105,14 +109,14 @@ public class CommonService {
 				repositoryDAO.getMap().put(repository.getName(), repository);
 			}
 		}
-		
+
 	}
 
 	public String getWiki() {
 		return WIKI;
 	}
-	
-	public String getBIS(){
+
+	public String getBIS() {
 		return BIS;
 	}
 }

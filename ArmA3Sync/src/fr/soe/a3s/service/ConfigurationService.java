@@ -368,16 +368,8 @@ public class ConfigurationService extends ObjectDTOtransformer {
 		return configurationDAO.getConfiguration().getWidth();
 	}
 
-	public void setHeight(int height) {
-		configurationDAO.getConfiguration().setHeight(height);
-	}
-
-	public void setWidth(int width) {
-		configurationDAO.getConfiguration().setWidth(width);
-	}
-
 	public void setLauncherOptions(LauncherOptionsDTO launcherOptionsDTO) {
-		
+
 		setGameProfile(launcherOptionsDTO.getGameProfile());
 		setCheckBoxShowScriptErrors(launcherOptionsDTO.isShowScriptError());
 		setCheckBoxNoPause(launcherOptionsDTO.isNoPause());
