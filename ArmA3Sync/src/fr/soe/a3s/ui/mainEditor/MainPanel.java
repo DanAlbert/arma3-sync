@@ -699,7 +699,7 @@ public class MainPanel extends JFrame implements UIConstants {
 						}
 						try {
 							Runtime.getRuntime().exec(command);
-
+							System.exit(0);
 						} catch (IOException ex) {
 							ex.printStackTrace();
 							JOptionPane.showMessageDialog(
