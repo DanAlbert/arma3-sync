@@ -23,9 +23,6 @@ public interface DataAccessConstants {
 	String ZSYNC_EXTENSION = ".zsync";
 	String PART_EXTENSION = ".part";
 	
-	/** BIN */
-	String ZSYNC_EXE = "resources\\bin\\zsync.exe";
-
 	/** FTP */
 	String UPDATE_REPOSITORY = "/ArmA3/ArmA3Sync/download";
 	String UPDATE_REPOSITORY_DEV = "/ArmA3/ArmA3Sync/development";

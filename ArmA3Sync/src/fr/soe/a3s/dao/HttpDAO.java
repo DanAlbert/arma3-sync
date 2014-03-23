@@ -284,7 +284,7 @@ public class HttpDAO extends AbstractConnexionDAO {
 			SyncTreeLeafDTO leaf = (SyncTreeLeafDTO) node;
 			String sha1 = leaf.getLocalSHA1();
 
-			Jazsync.sync(this.downloadingFile, sha1, relativeFileUrl,
+			Jazsync.sync(this.downloadingFile, sha1,relativeFileUrl,
 					relativeZsyncFileUrl, hostname, login, password, port,
 					resume, this);
 		} else {
