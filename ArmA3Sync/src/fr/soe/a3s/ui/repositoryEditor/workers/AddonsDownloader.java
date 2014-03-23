@@ -72,21 +72,16 @@ public class AddonsDownloader extends Thread {
 		int nbFiles = listFilesToUpdate.size();
 
 		repositoryService.setDownloading(repositoryName, true);
-		downloadPanel.getLabelDownloadStatus()
-				.setText("Downloading...");
-		downloadPanel.getLabelTotalFilesSizeValue()
-				.setText(UnitConverter.convertSize(totalFilesSize));
+		downloadPanel.getLabelDownloadStatus().setText("Downloading...");
+		downloadPanel.getLabelTotalFilesSizeValue().setText(
+				UnitConverter.convertSize(totalFilesSize));
 		downloadPanel.getLabelDownloadedValue().setText("");
-		downloadPanel.getButtonCheckForAddonsStart()
-				.setEnabled(false);
+		downloadPanel.getButtonCheckForAddonsStart().setEnabled(false);
 		downloadPanel.getButtonDownloadStart().setEnabled(false);
 		downloadPanel.getProgressBarDownloadAddons().setMinimum(0);
-		downloadPanel.getProgressBarDownloadAddons()
-				.setMaximum(nbFiles);
-		downloadPanel.getProgressBarDownloadSingleAddon()
-				.setMinimum(0);
-		downloadPanel.getProgressBarDownloadSingleAddon()
-				.setMaximum(100);
+		downloadPanel.getProgressBarDownloadAddons().setMaximum(nbFiles);
+		downloadPanel.getProgressBarDownloadSingleAddon().setMinimum(0);
+		downloadPanel.getProgressBarDownloadSingleAddon().setMaximum(100);
 
 		// Resuming download
 		lastIndexFileDownloaded = repositoryService
@@ -94,8 +89,8 @@ public class AddonsDownloader extends Thread {
 		incrementedFilesSize = repositoryService
 				.getIncrementedFilesSize(repositoryName);
 		resume = repositoryService.isResume(repositoryName);
-		downloadPanel.getProgressBarDownloadAddons()
-				.setValue(lastIndexFileDownloaded);
+		downloadPanel.getProgressBarDownloadAddons().setValue(
+				lastIndexFileDownloaded);
 
 		try {
 			connexionService = ConnexionServiceFactory
@@ -106,8 +101,7 @@ public class AddonsDownloader extends Thread {
 						@Override
 						public void update(int value) {
 							lastIndexFileDownloaded++;
-							downloadPanel
-									.getProgressBarDownloadAddons()
+							downloadPanel.getProgressBarDownloadAddons()
 									.setValue(lastIndexFileDownloaded);
 							SyncTreeNodeDTO node = listFilesToUpdate
 									.get(lastIndexFileDownloaded - 1);
@@ -155,11 +149,8 @@ public class AddonsDownloader extends Thread {
 						@Override
 						public void update(long value) {
 							if (value != 0) {
-								downloadPanel
-										.getLabelSpeedValue()
-										.setText(
-												UnitConverter
-														.convertSpeed(value));
+								downloadPanel.getLabelSpeedValue().setText(
+										UnitConverter.convertSpeed(value));
 								long remainingFileSize = totalFilesSize
 										- incrementedFilesSize - offset;
 								long time = remainingFileSize / value;
@@ -183,12 +174,12 @@ public class AddonsDownloader extends Thread {
 			resume = false;
 
 			/* Stop indeterminate single download */
-			downloadPanel.getProgressBarDownloadSingleAddon()
-					.setIndeterminate(false);
+			downloadPanel.getProgressBarDownloadSingleAddon().setIndeterminate(
+					false);
 
 			/* Delete extra files */
-			downloadPanel.getLabelDownloadStatus()
-					.setText("Deleting extra files...");
+			downloadPanel.getLabelDownloadStatus().setText(
+					"Deleting extra files...");
 			deleteExtraFiles();
 
 			/* End messages */
@@ -196,8 +187,7 @@ public class AddonsDownloader extends Thread {
 				JOptionPane.showMessageDialog(facade.getMainPanel(),
 						"Download is finished.", "Download",
 						JOptionPane.INFORMATION_MESSAGE);
-				downloadPanel.getLabelDownloadStatus()
-						.setText("Finished!");
+				downloadPanel.getLabelDownloadStatus().setText("Finished!");
 				repositoryService.saveDownloadParameters(repositoryName, 0, 0,
 						false);
 				/* Check for Addons */
@@ -206,35 +196,28 @@ public class AddonsDownloader extends Thread {
 				JOptionPane.showMessageDialog(facade.getMainPanel(),
 						"Download canceled.", "Download",
 						JOptionPane.INFORMATION_MESSAGE);
-				downloadPanel.getLabelDownloadStatus()
-						.setText("Canceled!");
+				downloadPanel.getLabelDownloadStatus().setText("Canceled!");
 				/* Check for Addons */
 				checkForAddons();
 			} else if (paused) {
-				downloadPanel.getLabelDownloadStatus()
-						.setText("Paused");
+				downloadPanel.getLabelDownloadStatus().setText("Paused");
 			}
 		} catch (Exception e) {
 			/* Stop indeterminate single download */
-			downloadPanel.getProgressBarDownloadSingleAddon()
-					.setIndeterminate(false);
+			downloadPanel.getProgressBarDownloadSingleAddon().setIndeterminate(
+					false);
 			downloadPanel.getLabelDownloadStatus().setText("");
 			if (!canceled && !paused) {
 				JOptionPane.showMessageDialog(facade.getMainPanel(),
 						e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-				downloadPanel.getLabelDownloadStatus()
-						.setText("Error!");
+				downloadPanel.getLabelDownloadStatus().setText("Error!");
 			}
 		} finally {
-			downloadPanel.getButtonCheckForAddonsStart()
-					.setEnabled(true);
+			downloadPanel.getButtonCheckForAddonsStart().setEnabled(true);
 			downloadPanel.getButtonDownloadStart().setEnabled(true);
-			downloadPanel.getProgressBarCheckForAddons()
-					.setMaximum(0);
-			downloadPanel.getProgressBarDownloadAddons()
-					.setMaximum(0);
-			downloadPanel.getProgressBarDownloadSingleAddon()
-					.setMaximum(0);
+			downloadPanel.getProgressBarCheckForAddons().setMaximum(0);
+			downloadPanel.getProgressBarDownloadAddons().setMaximum(0);
+			downloadPanel.getProgressBarDownloadSingleAddon().setMaximum(0);
 			downloadPanel.getLabelTotalFilesSizeValue().setText("");
 			downloadPanel.getLabelDownloadedValue().setText("");
 			downloadPanel.getLabelSpeedValue().setText("");
@@ -273,19 +256,16 @@ public class AddonsDownloader extends Thread {
 	private void checkForAddons() throws Exception {
 
 		downloadPanel.getArbre().setEnabled(false);
-		downloadPanel.getLabelCheckForAddonsStatus()
-				.setText("Checking...");
-		downloadPanel.getButtonCheckForAddonsStart()
-				.setEnabled(false);
+		downloadPanel.getLabelCheckForAddonsStatus().setText("Checking...");
+		downloadPanel.getButtonCheckForAddonsStart().setEnabled(false);
 		downloadPanel.getProgressBarCheckForAddons().setMinimum(0);
-		downloadPanel.getProgressBarCheckForAddons()
-				.setMaximum(100);
+		downloadPanel.getProgressBarCheckForAddons().setMaximum(100);
 		repositoryService.getRepositoryBuilderDAO().addObserverFilesNumber(
 				new ObserverFilesNumber() {
 					@Override
 					public void update(int value) {
-						downloadPanel
-								.getProgressBarCheckForAddons().setValue(value);
+						downloadPanel.getProgressBarCheckForAddons().setValue(
+								value);
 					}
 				});
 
@@ -310,10 +290,8 @@ public class AddonsDownloader extends Thread {
 			setEventAddonSelection();
 		}
 		downloadPanel.updateAddons(parent);
-		downloadPanel.getButtonCheckForAddonsStart()
-				.setEnabled(true);
-		downloadPanel.getLabelCheckForAddonsStatus()
-				.setText("Finished!");
+		downloadPanel.getButtonCheckForAddonsStart().setEnabled(true);
+		downloadPanel.getLabelCheckForAddonsStatus().setText("Finished!");
 		downloadPanel.getArbre().setEnabled(true);
 	}
 
