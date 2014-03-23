@@ -94,7 +94,7 @@ public class MetaFileReader {
 			http.openConnection(relativeZsyncFileUrl);
 			http.sendRequest();
 			http.getResponseHeader();
-			byte[] mfBytes = http.getResponseBody(0);
+			byte[] mfBytes = http.getResponseBodyForZsyncFile();
 			downloadedMetafile = mfBytes.length;
 			http.closeConnection();
 			readMetaFile(convertBytesToString(mfBytes));

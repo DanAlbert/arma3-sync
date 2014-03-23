@@ -28,6 +28,7 @@ package fr.soe.a3s.jazsync;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -36,6 +37,8 @@ import java.net.ProtocolException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -61,7 +64,7 @@ public class HttpConnection {
 	private String boundary;
 	private byte[] boundaryBytes;
 	private long contLen;
-	private static final int BUFFER_SIZE = 4096;// 4MB
+	private static final int BUFFER_SIZE = 4096;// 4KB
 	private long allData = 0;
 	private final HttpDAO httpDAO;
 
@@ -195,46 +198,80 @@ public class HttpConnection {
 		return offset;
 	}
 
-	/**
-	 * Downloads data block or ranges of blocks
-	 * 
-	 * @param blockLength
-	 *            Length of a data block that we are downloading
-	 * @return Content of body in byte array
-	 * @throws IOException
-	 */
-	public byte[] getResponseBody(int blockLength) throws IOException {
+	public byte[] getResponseBodyForZsyncFile() throws IOException {
 
 		// opens input stream from the HTTP connection
 		InputStream inputStream = connection.getInputStream();
 
 		ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-		httpDAO.setStartTime(System.nanoTime());
 
+		int bytesRead;
+		byte[] temp = new byte[BUFFER_SIZE];
+		while ((bytesRead = inputStream.read(temp)) != -1
+				&& !httpDAO.isCanceled()) {
+			buffer.write(temp, 0, bytesRead);
+		}
+		inputStream.close();
+		byte[] bytes = buffer.toByteArray();
+		return bytes;
+	}
+
+	/**
+	 * Downloads data block or ranges of blocks
+	 * 
+	 * @param blockLength
+	 *            Length of a data block that we are downloading
+	 * @param rangesNumber
+	 * @param targetFile
+	 * @param partFile
+	 * @return Content of body in byte array
+	 * @throws IOException
+	 */
+	public byte[] getResponseBody(int blockLength, int rangesNumber,
+			File targetFile, File parFile) throws IOException {
+
+		// opens input stream from the HTTP connection
+		InputStream inputStream = connection.getInputStream();
+
+		ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+
+		httpDAO.setStartTime(System.nanoTime());
+		long offset = parFile.length();
+		httpDAO.setOffset(offset);
 		CountingOutputStream dos = new CountingOutputStream(buffer) {
 			@Override
 			protected void afterWrite(int n) throws IOException {
 				super.afterWrite(n);
 				// System.out.println(getCount());
 				int nbBytes = getCount();
+				httpDAO.setCountFileSize(nbBytes);
 				httpDAO.setEndTime(System.nanoTime());
+				httpDAO.updateFileSizeObserver();
 				httpDAO.updateObserverSpeed(nbBytes);
 			}
 		};
 
-		int bytesRead;
-		// byte[] temp = new byte[(int) contLen];//out of memory >256M
+		int bytesRead = -1;
 		byte[] temp = new byte[BUFFER_SIZE];
+		boolean resume = false;
 		while ((bytesRead = inputStream.read(temp)) != -1
 				&& !httpDAO.isCanceled()) {
 			dos.write(temp, 0, bytesRead);
+			// System.out.println("Buffer size = " + buffer.size());
+			if (buffer.size() > rangesNumber * blockLength) {
+				resume = true;
+				break;
+			}
 		}
-		byte[] bytes = buffer.toByteArray();
-		temp = null;
-		buffer = null;
-		dos.flush();
+
+		inputStream.close();
 		dos.close();
-		System.gc();
+
+		if (resume) {
+			return null;
+		}
+
+		byte[] bytes = buffer.toByteArray();
 
 		contLen = bytes.length;
 		allData += contLen;
@@ -323,14 +360,12 @@ public class HttpConnection {
 
 		buffer = null;
 		inputStream.close();
-		outputStream.flush();
 		outputStream.close();
-		dos.flush();
 		dos.close();
-		System.gc();
 	}
 
-	public void getResumedFile(long length, File targetFile) throws IOException {
+	public boolean getResumedFile(long length, File targetFile)
+			throws IOException {
 
 		// Specify what portion of file to download.
 		connection.setRequestProperty("Range", "bytes=" + targetFile.length()
@@ -371,10 +406,14 @@ public class HttpConnection {
 
 		buffer = null;
 		inputStream.close();
-		outputStream.flush();
 		outputStream.close();
 		dos.close();
-		System.gc();
+
+		if (targetFile.length() != length && !httpDAO.isCanceled()) {
+			return false;
+		}
+
+		return true;
 	}
 
 	/**
@@ -457,4 +496,11 @@ public class HttpConnection {
 		return this.httpDAO;
 	}
 
+	public long getContLen() {
+		return contLen;
+	}
+
+	public byte[] getBoundaryBytes() {
+		return boundaryBytes;
+	}
 }
