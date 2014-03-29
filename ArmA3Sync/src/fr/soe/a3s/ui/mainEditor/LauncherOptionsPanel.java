@@ -101,6 +101,7 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener {
 		{
 			checkBoxProfiles = new JCheckBox();
 			checkBoxProfiles.setText("Profile:   ");
+			checkBoxProfiles.setFocusable(false);
 			comboBoxProfiles = new JComboBox();
 			javax.swing.filechooser.FileSystemView fsv = javax.swing.filechooser.FileSystemView
 					.getFileSystemView();
@@ -139,6 +140,7 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener {
 		{
 			checkBoxShowScriptErrors = new JCheckBox();
 			checkBoxShowScriptErrors.setText("Show script errors");
+			checkBoxShowScriptErrors.setFocusable(false);
 			checkBoxShowScriptErrors.setFont(new Font("Tohama", Font.BOLD, 11));
 			Box hBox = Box.createHorizontalBox();
 			hBox.add(checkBoxShowScriptErrors);
@@ -148,6 +150,7 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener {
 		{
 			checkBoxNoPause = new JCheckBox();
 			checkBoxNoPause.setText("No Pause");
+			checkBoxNoPause.setFocusable(false);
 			Box hBox = Box.createHorizontalBox();
 			hBox.add(checkBoxNoPause);
 			hBox.add(Box.createHorizontalGlue());
@@ -156,6 +159,7 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener {
 		{
 			checkBoxNoFilePatching = new JCheckBox();
 			checkBoxNoFilePatching.setText("No File Patching");
+			checkBoxNoFilePatching.setFocusable(false);
 			Box hBox = Box.createHorizontalBox();
 			hBox.add(checkBoxNoFilePatching);
 			hBox.add(Box.createHorizontalGlue());
@@ -164,6 +168,7 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener {
 		{
 			checkBoxWindowMode = new JCheckBox();
 			checkBoxWindowMode.setText("Window Mode");
+			checkBoxWindowMode.setFocusable(false);
 			Box hBox = Box.createHorizontalBox();
 			hBox.add(checkBoxWindowMode);
 			hBox.add(Box.createHorizontalGlue());
@@ -177,6 +182,7 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener {
 		{
 			checkBoxMaxMemory = new JCheckBox();
 			checkBoxMaxMemory.setText("Max Memory:");
+			checkBoxMaxMemory.setFocusable(false);
 			checkBoxMaxMemory.setPreferredSize(new java.awt.Dimension(90, 23));
 			comboBoxMaxMemory = new JComboBox();
 			comboBoxMaxMemory.setFocusable(false);
@@ -195,6 +201,7 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener {
 		{
 			checkBoxCpuCount = new JCheckBox();
 			checkBoxCpuCount.setText("CPU Count:");
+			checkBoxCpuCount.setFocusable(false);
 			checkBoxCpuCount.setPreferredSize(new java.awt.Dimension(90, 23));
 			comboBoxCpuCount = new JComboBox();
 			comboBoxCpuCount.setFocusable(false);
@@ -215,6 +222,7 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener {
 		{
 			checkBoxExThreads = new JCheckBox();
 			checkBoxExThreads.setText("exThreads:");
+			checkBoxExThreads.setFocusable(false);
 			checkBoxExThreads.setPreferredSize(new java.awt.Dimension(90, 23));
 			comboBoxExThreads = new JComboBox();
 			comboBoxExThreads.setFocusable(false);
@@ -229,6 +237,7 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener {
 		{
 			checkBoxNoSplashScreen = new JCheckBox();
 			checkBoxNoSplashScreen.setText("No Splash Screen");
+			checkBoxNoSplashScreen.setFocusable(false);
 			Box hBox = Box.createHorizontalBox();
 			hBox.add(checkBoxNoSplashScreen);
 			hBox.add(Box.createHorizontalGlue());
@@ -237,6 +246,7 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener {
 		{
 			checkBoxDefaultWorld = new JCheckBox();
 			checkBoxDefaultWorld.setText("Default World Empty");
+			checkBoxDefaultWorld.setFocusable(false);
 			Box hBox = Box.createHorizontalBox();
 			hBox.add(checkBoxDefaultWorld);
 			hBox.add(Box.createHorizontalGlue());
@@ -245,6 +255,7 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener {
 		{
 			checkBoxNoLogs = new JCheckBox();
 			checkBoxNoLogs.setText("No logs");
+			checkBoxNoLogs.setFocusable(false);
 			Box hBox = Box.createHorizontalBox();
 			hBox.add(checkBoxNoLogs);
 			hBox.add(Box.createHorizontalGlue());
