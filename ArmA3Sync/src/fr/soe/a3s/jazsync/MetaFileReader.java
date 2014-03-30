@@ -109,7 +109,7 @@ public class MetaFileReader {
 			e.printStackTrace();
 			throw new WritingException(
 					"Failed to retrieve .zsync file for url "
-							+ relativeZsyncFileUrl);
+							+ relativeZsyncFileUrl + "\n" + e.getMessage());
 		}
 	}
 

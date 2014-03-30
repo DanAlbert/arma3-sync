@@ -329,7 +329,7 @@ public class FtpService extends AbstractConnexionService implements
 			ftpClientUpdate.disconnect();
 
 			if (updateVersionName != null) {
-				System.out.println("Update version = " + updateVersionName);
+				System.out.println("Available update version = " + updateVersionName);
 
 				StringTokenizer stringTokenizer = new StringTokenizer(
 						updateVersionName, ".");

@@ -141,8 +141,8 @@ public class HttpService extends AbstractConnexionService implements
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
-			throw new WritingException(
-					"An unexpected error has occured.\n Download have been interrupted.");
+			throw new WritingException(e.getMessage()
+					+ "\n Download have been interrupted.");
 		}
 	}
 

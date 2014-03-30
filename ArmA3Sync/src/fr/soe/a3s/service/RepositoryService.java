@@ -815,8 +815,8 @@ public class RepositoryService implements DataAccessConstants {
 		}
 	}
 
-	public TreeDirectoryDTO getEventAddonSelection(String repositoryName)
-			throws RepositoryException {
+	public TreeDirectoryDTO getAddonTreeFromRepository(String repositoryName,
+			boolean withUserconfig) throws RepositoryException {
 
 		Repository repository = repositoryDAO.getMap().get(repositoryName);
 		if (repository != null) {
@@ -828,7 +828,7 @@ public class RepositoryService implements DataAccessConstants {
 						parentSyncTreeDirectory.getName(), null);
 				extractAddons(parentSyncTreeDirectory, parentTreeDirectory);
 
-				// keep marked directory, change terminal directory to leaf
+				// Keep marked directory, change terminal directory to leaf
 				TreeDirectory racineCleaned = new TreeDirectory("racine1", null);
 
 				for (TreeNode directory : parentTreeDirectory.getList()) {
@@ -836,17 +836,19 @@ public class RepositoryService implements DataAccessConstants {
 					cleanTree(d, racineCleaned);
 				}
 
-				// userconfig
-				for (SyncTreeNode node : parentSyncTreeDirectory.getList()) {
-					if (node.getName().toLowerCase().equals("userconfig")
-							&& !node.isLeaf()) {
-						TreeDirectory d = new TreeDirectory(node.getName(),
-								racineCleaned);
-						racineCleaned.addTreeNode(d);
-						for (SyncTreeNode n : ((SyncTreeDirectory) node)
-								.getList()) {
-							TreeLeaf l = new TreeLeaf(n.getName(), d);
-							d.addTreeNode(l);
+				// Userconfig
+				if (withUserconfig) {
+					for (SyncTreeNode node : parentSyncTreeDirectory.getList()) {
+						if (node.getName().toLowerCase().equals("userconfig")
+								&& !node.isLeaf()) {
+							TreeDirectory d = new TreeDirectory(node.getName(),
+									racineCleaned);
+							racineCleaned.addTreeNode(d);
+							for (SyncTreeNode n : ((SyncTreeDirectory) node)
+									.getList()) {
+								TreeLeaf l = new TreeLeaf(n.getName(), d);
+								d.addTreeNode(l);
+							}
 						}
 					}
 				}

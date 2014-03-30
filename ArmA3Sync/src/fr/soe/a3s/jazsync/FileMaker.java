@@ -36,6 +36,7 @@ import java.net.URL;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.security.Security;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
@@ -46,6 +47,7 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.Locale;
 
+import fr.soe.a3s.dao.FileAccessMethods;
 import fr.soe.a3s.exception.JazsyncException;
 import fr.soe.a3s.exception.WritingException;
 
@@ -69,8 +71,6 @@ public class FileMaker {
 	private long fileOffset;
 
 	private final long[] fileMap;
-
-	private SHA1 sha;
 
 	private int missing;
 
@@ -99,10 +99,16 @@ public class FileMaker {
 			String relativeFileUrl, boolean resume) throws WritingException,
 			JazsyncException {
 
+		System.out.println("");
+		System.out.println("Processing file: " + targetFile.getAbsolutePath());
+
 		if (targetFile.exists() && targetFileSha1 == null) {
-			// assert (false);
-			SHA1 sha1 = new SHA1(targetFile);
-			targetFileSha1 = sha1.SHA1sum();
+			try {
+				targetFileSha1 = FileAccessMethods.computeSHA1(targetFile);
+			} catch (Exception e) {
+				e.printStackTrace();
+				throw new WritingException(e.getMessage());
+			}
 		}
 
 		SHA1check(targetFile, targetFileSha1);
@@ -115,7 +121,7 @@ public class FileMaker {
 			} else {
 				mapMatcher(targetFile);
 				if (complete > 0) {
-					fileMaker(targetFile, relativeFileUrl);
+					fileMaker(targetFile, relativeFileUrl, targetFileSha1);
 				} else {
 					getWholeFile(targetFile, relativeFileUrl);
 				}
@@ -129,9 +135,12 @@ public class FileMaker {
 			throws WritingException, JazsyncException {
 
 		if (targetFile.exists() && targetFileSha1 == null) {
-			// assert (false);
-			SHA1 sha1 = new SHA1(targetFile);
-			targetFileSha1 = sha1.SHA1sum();
+			try {
+				targetFileSha1 = FileAccessMethods.computeSHA1(targetFile);
+			} catch (Exception e) {
+				e.printStackTrace();
+				throw new WritingException(e.getMessage());
+			}
 		}
 
 		SHA1check(targetFile, targetFileSha1);
@@ -188,7 +197,12 @@ public class FileMaker {
 			if (targetFile.exists()) {
 				targetFile.delete();
 			}
-			http.getFile(mfr.getLength(), targetFile);
+			boolean finished = http.getFile(mfr.getLength(), targetFile);
+			http.closeConnection();
+			if (!finished) {
+				System.out.println("Download is not finished.");
+				getResumedFile(targetFile, relativeFileUrl);
+			}
 			System.out.println("Target 100.0% complete.");
 			http.closeConnection();
 		} catch (Exception e) {
@@ -207,10 +221,11 @@ public class FileMaker {
 			boolean finished = http.getResumedFile(mfr.getLength(), targetFile);
 			http.closeConnection();
 			if (!finished) {
-				System.out.println("Resume is not finished.");
+				System.out.println("Download is not finished.");
 				getResumedFile(targetFile, relativeFileUrl);
 			}
 			System.out.println("Target 100.0% complete.");
+			http.closeConnection();
 		} catch (Exception e) {
 			e.printStackTrace();
 			throw new WritingException("Failed to retrieve file "
@@ -245,12 +260,14 @@ public class FileMaker {
 	/**
 	 * Method for completing file
 	 * 
+	 * @param targetFileSha1
+	 * 
 	 * @param httpURLConnection
 	 * @param targetFileSha1
 	 * @throws WritingException
 	 */
-	private void fileMaker(File targetFile, String relativeFileUrl)
-			throws WritingException {
+	private void fileMaker(File targetFile, String relativeFileUrl,
+			String targetFileSha1) throws WritingException {
 
 		try {
 			boolean error = false;
@@ -363,7 +380,10 @@ public class FileMaker {
 				System.out.println("Deleting temporary file");
 				partFile.delete();
 				getWholeFile(targetFile, relativeFileUrl);
-			} else {
+			}
+
+			else {
+
 				System.out.println("used "
 						+ (mfr.getLength() - (mfr.getBlocksize() * missing))
 						+ " " + "local, fetched "
@@ -382,10 +402,20 @@ public class FileMaker {
 				double overhead = ((double) (allData - (mfr.getBlocksize() * missing)) / ((double) (mfr
 						.getBlocksize() * missing))) * 100;
 				System.out.println("overhead: " + df.format(overhead) + "%");
-			}
 
-			if (resume) {
-				getResumedFile(targetFile, relativeFileUrl);
+				if (resume) {
+					getResumedFile(targetFile, relativeFileUrl);
+				} else {
+					targetFileSha1 = FileAccessMethods.computeSHA1(targetFile);
+					if (targetFileSha1.equals(mfr.getSha1())) {
+						System.out
+								.println("\nverifying download...checksum matches OK");
+					} else {
+						System.out
+								.println("\nverifying download...checksum don't match");
+						getWholeFile(targetFile, relativeFileUrl);
+					}
+				}
 			}
 		} catch (Exception ex) {
 			ex.printStackTrace();
