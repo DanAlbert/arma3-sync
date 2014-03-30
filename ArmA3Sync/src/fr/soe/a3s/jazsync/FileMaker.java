@@ -419,8 +419,7 @@ public class FileMaker {
 			}
 		} catch (Exception ex) {
 			ex.printStackTrace();
-			throw new WritingException(
-					"Can't read or write, check your permissions.");
+			throw new WritingException(ex.getMessage());
 		}
 	}
 
