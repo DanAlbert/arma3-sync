@@ -20,7 +20,7 @@ import fr.soe.a3s.dto.configuration.LauncherOptionsDTO;
 public class ObjectDTOtransformer {
 
 	/* Configuration */
-	
+
 	protected ExternalApplicationDTO transformExternalApplication2DTO(
 			ExternalApplication externalApplication) {
 
@@ -107,7 +107,7 @@ public class ObjectDTOtransformer {
 		aiaOptionsDTO.setAllinArmaPath(aiaOptions.getAllinArmaPath());
 		return aiaOptionsDTO;
 	}
-	
+
 	/* Profile */
 
 	protected void transformTreeDirectory2DTO(TreeDirectory treeDirectory,
@@ -125,6 +125,8 @@ public class ObjectDTOtransformer {
 				TreeDirectory treeDirectory2 = (TreeDirectory) treeNode;
 				TreeDirectoryDTO treedDirectoryDTO2 = new TreeDirectoryDTO();
 				treedDirectoryDTO2.setName(treeDirectory2.getName());
+				treedDirectoryDTO2
+						.setModsetType(treeDirectory2.getModsetType());
 				treedDirectoryDTO2.setSelected(treeDirectory2.isSelected());
 				treedDirectoryDTO2.setParent(treeDirectoryDTO);
 				treeDirectoryDTO.addTreeNode(treedDirectoryDTO2);
@@ -157,6 +159,8 @@ public class ObjectDTOtransformer {
 				TreeDirectoryDTO treeDirectoryDTO2 = (TreeDirectoryDTO) treeNodeDTO;
 				TreeDirectory treedDirectory2 = new TreeDirectory(
 						treeDirectoryDTO2.getName(), treeDirectory);
+				treedDirectory2
+						.setModsetType(treeDirectoryDTO2.getModsetType());
 				treedDirectory2.setSelected(treeDirectoryDTO2.isSelected());
 				treeDirectory.addTreeNode(treedDirectory2);
 				transform2TreeDirectory(treeDirectoryDTO2, treedDirectory2);
