@@ -381,7 +381,7 @@ public class HttpConnection {
 		outputStream.close();
 		dos.close();
 
-		if (targetFile.length() != length) {
+		if (targetFile.length() != length && !httpDAO.isCanceled()) {
 			return false;
 		}
 
@@ -430,7 +430,7 @@ public class HttpConnection {
 		outputStream.close();
 		dos.close();
 
-		if (targetFile.length() != length) {
+		if (targetFile.length() != length && !httpDAO.isCanceled()) {
 			return false;
 		}
 
