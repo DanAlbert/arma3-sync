@@ -24,6 +24,7 @@ import java.awt.event.MouseListener;
 import java.io.IOException;
 import java.util.List;
 
+import javax.swing.JOptionPane;
 import javax.swing.JTree;
 import javax.swing.SwingUtilities;
 import javax.swing.tree.TreePath;
@@ -139,14 +140,14 @@ public class TreeDnD {
 
 		@Override
 		public void dropActionChanged(DragSourceDragEvent dsde) {
-			//System.out.println("Action: " + dsde.getDropAction());
-			//System.out.println("Target Action: " + dsde.getTargetActions());
-			//System.out.println("User Action: " + dsde.getUserAction());
+			// System.out.println("Action: " + dsde.getDropAction());
+			// System.out.println("Target Action: " + dsde.getTargetActions());
+			// System.out.println("User Action: " + dsde.getUserAction());
 		}
 
 		@Override
 		public void dragDropEnd(DragSourceDropEvent dsde) {
-			//System.out.println("Drop Action End: " + dsde.getDropAction());
+			// System.out.println("Drop Action End: " + dsde.getDropAction());
 		}
 
 	}
@@ -170,7 +171,7 @@ public class TreeDnD {
 		 */
 		@Override
 		public void dragEnter(DropTargetDragEvent arg0) {
-			//System.out.println("drop handler : dragEnter");
+			// System.out.println("drop handler : dragEnter");
 		}
 
 		@Override
@@ -239,6 +240,22 @@ public class TreeDnD {
 					dtde.rejectDrop();
 					return;
 				}
+			}
+
+			TreeDirectoryDTO checkedTypeModsetTreeNode = newTreeNode
+					.getParent();
+			while (checkedTypeModsetTreeNode != null) {
+				if (checkedTypeModsetTreeNode.getModsetType() != null) {
+					JOptionPane
+							.showMessageDialog(
+									facade.getMainPanel(),
+									"Repository modset and Event modset can't be modified.",
+									"Addon group",
+									JOptionPane.INFORMATION_MESSAGE);
+					return;
+				}
+				checkedTypeModsetTreeNode = checkedTypeModsetTreeNode
+						.getParent();
 			}
 
 			if (newTreeNode.isLeaf()) {
@@ -321,7 +338,7 @@ public class TreeDnD {
 			}
 			facade.getAddonOptionsPanel().updateAddonPriorities();
 			facade.getLaunchOptionsPanel().updateRunParameters();
-			
+
 			oldPaths = null;
 			newPath = null;
 		}
