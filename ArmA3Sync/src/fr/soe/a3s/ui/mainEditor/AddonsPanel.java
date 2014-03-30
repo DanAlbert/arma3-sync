@@ -806,10 +806,15 @@ public class AddonsPanel extends JPanel implements UIConstants {
 	public void createGroupFromEvents(List<EventDTO> eventDTOs) {
 
 		for (EventDTO eventDTO : eventDTOs) {
+
+			TreeNodeDTO nodeToRemove = null;
 			for (TreeNodeDTO node : racine2.getList()) {
 				if (node.getName().equals(eventDTO.getName())) {
-					racine2.getList().remove(node);
+					nodeToRemove = node;
 				}
+			}
+			if (nodeToRemove != null) {
+				racine2.getList().remove(nodeToRemove);
 			}
 
 			TreeDirectoryDTO directory = new TreeDirectoryDTO();
