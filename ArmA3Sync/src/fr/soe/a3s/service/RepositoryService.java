@@ -260,7 +260,8 @@ public class RepositoryService implements DataAccessConstants {
 
 		determineDestinationPaths(parent,
 				repository.getDefaultDownloadLocation(), noAutoDiscover);
-		determineAddonFilesToDelete(parent, hidedFolderPaths);
+		determineAddonFilesToDelete(parent, hidedFolderPaths,
+				repository.getDefaultDownloadLocation(), noAutoDiscover);
 		determineAddonFoldersToDelete(parent, hidedFolderPaths);
 
 		if (repository.getServerInfo().getNumberOfFiles() > 0) {
@@ -347,33 +348,47 @@ public class RepositoryService implements DataAccessConstants {
 	}
 
 	private void determineAddonFilesToDelete(SyncTreeNode syncTreeNode,
-			Set<String> hidedFolderPaths) {
+			Set<String> hidedFolderPaths, String defaultDownloadLocation,
+			boolean noAutoDiscover) {
 
 		if (!syncTreeNode.isLeaf()) {
 			SyncTreeDirectory directory = (SyncTreeDirectory) syncTreeNode;
+
 			if (directory.isMarkAsAddon()
 					&& addonDAO.getMap().containsKey(
 							directory.getName().toLowerCase())) {
+
 				Addon addon = addonDAO.getMap().get(
 						directory.getName().toLowerCase());
-				File file = new File(addon.getPath() + "/" + addon.getName());
-				boolean contains = false;
-				for (String stg : hidedFolderPaths) {
-					if (file.getAbsolutePath().toLowerCase()
-							.contains(stg.toLowerCase())) {
-						contains = true;
-						break;
+
+				if (defaultDownloadLocation.equals(addon.getPath())
+						|| !noAutoDiscover) {
+					File file = new File(addon.getPath() + "/"
+							+ addon.getName());
+					boolean contains = false;
+					for (String stg : hidedFolderPaths) {
+						if (file.getAbsolutePath().toLowerCase()
+								.contains(stg.toLowerCase())) {
+							contains = true;
+							break;
+						}
 					}
-				}
-				if (!contains) {
-					directory.setHidden(false);
-					addFilesToDelete(directory, file);
+					if (!contains) {
+						directory.setHidden(false);
+						addFilesToDelete(directory, file);
+					} else {
+						directory.setHidden(true);
+					}
 				} else {
-					directory.setHidden(true);
+					for (SyncTreeNode n : directory.getList()) {
+						determineAddonFilesToDelete(n, hidedFolderPaths,
+								defaultDownloadLocation, noAutoDiscover);
+					}
 				}
 			} else {
 				for (SyncTreeNode n : directory.getList()) {
-					determineAddonFilesToDelete(n, hidedFolderPaths);
+					determineAddonFilesToDelete(n, hidedFolderPaths,
+							defaultDownloadLocation, noAutoDiscover);
 				}
 			}
 		}
