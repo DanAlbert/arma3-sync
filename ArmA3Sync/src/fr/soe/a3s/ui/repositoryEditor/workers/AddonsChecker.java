@@ -8,7 +8,11 @@ import java.util.Map;
 import javax.swing.JOptionPane;
 
 import fr.soe.a3s.controller.ObserverFilesNumber;
+import fr.soe.a3s.domain.TreeLeaf;
 import fr.soe.a3s.dto.EventDTO;
+import fr.soe.a3s.dto.TreeDirectoryDTO;
+import fr.soe.a3s.dto.TreeLeafDTO;
+import fr.soe.a3s.dto.TreeNodeDTO;
 import fr.soe.a3s.dto.sync.SyncTreeDirectoryDTO;
 import fr.soe.a3s.dto.sync.SyncTreeLeafDTO;
 import fr.soe.a3s.dto.sync.SyncTreeNodeDTO;
@@ -16,7 +20,7 @@ import fr.soe.a3s.exception.RepositoryException;
 import fr.soe.a3s.service.AbstractConnexionService;
 import fr.soe.a3s.service.AddonService;
 import fr.soe.a3s.service.ConnexionServiceFactory;
-import fr.soe.a3s.service.FtpService;
+import fr.soe.a3s.service.ProfileService;
 import fr.soe.a3s.service.RepositoryService;
 import fr.soe.a3s.ui.Facade;
 import fr.soe.a3s.ui.repositoryEditor.DownloadPanel;
@@ -32,6 +36,8 @@ public class AddonsChecker extends Thread {
 	private DownloadPanel downloadPanel;
 	/* Services */
 	private RepositoryService repositoryService = new RepositoryService();
+	private AddonService addonService = new AddonService();
+	private ProfileService profileService = new ProfileService();
 
 	public AddonsChecker(Facade facade, String repositoryName,
 			String eventName, boolean update, DownloadPanel downloadPanel) {
@@ -50,7 +56,6 @@ public class AddonsChecker extends Thread {
 		downloadPanel.getButtonDownloadStart().setEnabled(false);
 		downloadPanel.getProgressBarCheckForAddons().setMinimum(0);
 		downloadPanel.getProgressBarCheckForAddons().setMaximum(100);
-		RepositoryService repositoryService = new RepositoryService();
 		repositoryService.getRepositoryBuilderDAO().addObserverFilesNumber(
 				new ObserverFilesNumber() {
 					public synchronized void update(int value) {
@@ -63,37 +68,41 @@ public class AddonsChecker extends Thread {
 			AbstractConnexionService connexionService = ConnexionServiceFactory
 					.getServiceFromRepository(repositoryName);
 			connexionService.getSync(repositoryName);
-			AddonService addonService = new AddonService();
 			addonService.resetAvailableAddonTree();
 			addonService.getAvailableAddonsTree();
 			parent = repositoryService.getSync(repositoryName);
-			//connexionService .determineCompletion(repositoryName,parent);// slow with zsync!
-			
+			// connexionService .determineCompletion(repositoryName,parent);//
+			// slow with zsync!
 			if (eventName != null) {
 				setEventAddonSelection();
 			} else if (update) {
 				selectAllDescending(parent);
 			}
 			downloadPanel.updateAddons(parent);
+			downloadPanel.getRepositoryPanel().getAdminPanel()
+					.init(repositoryName);
+			downloadPanel.getRepositoryPanel().getEventsPanel()
+					.init(repositoryName);
+			facade.getSyncPanel().init();
+			facade.getAddonsPanel().updateModsetSelection(repositoryName);
 			downloadPanel.getLabelCheckForAddonsStatus().setText("Finished!");
 		} catch (Exception e) {
 			e.printStackTrace();
 			String message = "";
 			if (e.getMessage().isEmpty()) {
-				message = "An unexpected error has occured. \n Try to close and relaunch ArmA3Sync.";
+				message = "An unexpected error has occured. \n Try to close and run ArmA3Sync.bat file.";
 			} else {
 				message = e.getMessage();
 			}
 			JOptionPane.showMessageDialog(facade.getMainPanel(), message,
 					"Error", JOptionPane.ERROR_MESSAGE);
+			downloadPanel.getLabelCheckForAddonsStatus().setText("");
 		} finally {
 			downloadPanel.getButtonCheckForAddonsStart().setEnabled(true);
 			downloadPanel.getButtonCheckForAddonsCancel().setEnabled(true);
 			downloadPanel.getButtonDownloadStart().setEnabled(true);
 			downloadPanel.getProgressBarCheckForAddons().setMaximum(0);
 			downloadPanel.getArbre().setEnabled(true);
-			downloadPanel.getRepositoryPanel().getAdminPanel().init(repositoryName);
-			facade.getSyncPanel().init();
 			this.interrupt();
 			System.gc();
 		}

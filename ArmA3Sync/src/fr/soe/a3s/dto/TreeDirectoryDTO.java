@@ -4,13 +4,17 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class TreeDirectoryDTO  implements TreeNodeDTO {
+import fr.soe.a3s.constant.ModsetType;
+
+public class TreeDirectoryDTO implements TreeNodeDTO {
 
 	private String name;
 	private boolean selected = false;
 	private boolean missing = false;
 	private boolean optional = false;
+	private ModsetType modsetType;
 	private TreeDirectoryDTO parent;
+
 	private List<TreeNodeDTO> list = new ArrayList<TreeNodeDTO>();
 
 	@Override
@@ -58,18 +62,18 @@ public class TreeDirectoryDTO  implements TreeNodeDTO {
 			result = 0;
 		return result;
 	}
-	
-	public void addTreeNode(TreeNodeDTO treeNodeDTO){
-		
+
+	public void addTreeNode(TreeNodeDTO treeNodeDTO) {
+
 		list.add(treeNodeDTO);
-		
+
 		List<TreeDirectoryDTO> directories = new ArrayList<TreeDirectoryDTO>();
 		List<TreeLeafDTO> leafs = new ArrayList<TreeLeafDTO>();
-		for (TreeNodeDTO t:list){
-			if (t instanceof TreeDirectoryDTO){
-				directories.add((TreeDirectoryDTO)t);
-			}else {
-				leafs.add((TreeLeafDTO)t);
+		for (TreeNodeDTO t : list) {
+			if (t instanceof TreeDirectoryDTO) {
+				directories.add((TreeDirectoryDTO) t);
+			} else {
+				leafs.add((TreeLeafDTO) t);
 			}
 		}
 		Collections.sort(directories);
@@ -78,7 +82,7 @@ public class TreeDirectoryDTO  implements TreeNodeDTO {
 		list.addAll(directories);
 		list.addAll(leafs);
 	}
-	
+
 	public void removeTreeNode(TreeNodeDTO treeNodeDTO) {
 		list.remove(treeNodeDTO);
 	}
@@ -86,8 +90,8 @@ public class TreeDirectoryDTO  implements TreeNodeDTO {
 	public List<TreeNodeDTO> getList() {
 		return list;
 	}
-	
-	public String toString(){
+
+	public String toString() {
 		return name;
 	}
 
@@ -102,12 +106,19 @@ public class TreeDirectoryDTO  implements TreeNodeDTO {
 
 	@Override
 	public void setOptional(boolean value) {
-		this.optional = value;		
+		this.optional = value;
 	}
 
 	@Override
 	public boolean isOptional() {
 		return optional;
 	}
-	
+
+	public ModsetType getModsetType() {
+		return modsetType;
+	}
+
+	public void setModsetType(ModsetType modsetType) {
+		this.modsetType = modsetType;
+	}
 }

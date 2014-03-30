@@ -9,10 +9,10 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import javax.swing.BorderFactory;
@@ -22,6 +22,7 @@ import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
@@ -32,18 +33,21 @@ import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
 import javax.swing.event.TreeExpansionEvent;
 import javax.swing.event.TreeExpansionListener;
-import javax.swing.event.TreeSelectionEvent;
-import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 
+import fr.soe.a3s.constant.ModsetType;
+import fr.soe.a3s.dto.EventDTO;
+import fr.soe.a3s.dto.RepositoryDTO;
 import fr.soe.a3s.dto.TreeDirectoryDTO;
 import fr.soe.a3s.dto.TreeLeafDTO;
 import fr.soe.a3s.dto.TreeNodeDTO;
+import fr.soe.a3s.exception.RepositoryException;
 import fr.soe.a3s.service.AddonService;
 import fr.soe.a3s.service.ConfigurationService;
 import fr.soe.a3s.service.LaunchService;
 import fr.soe.a3s.service.ProfileService;
+import fr.soe.a3s.service.RepositoryService;
 import fr.soe.a3s.ui.Facade;
 import fr.soe.a3s.ui.UIConstants;
 import fr.soe.a3s.ui.mainEditor.groups.AddonsAddGroupPanel;
@@ -71,7 +75,6 @@ public class AddonsPanel extends JPanel implements UIConstants {
 	private JTree arbre1;
 	private JTree arbre2;
 	private JCheckBox checkBoxTree, checkBoxList;
-	private AddonService addonService = new AddonService();
 	private TreeDirectoryDTO racine1;
 	private TreeDirectoryDTO racine2;
 	private AddonTreeModel addonTreeModel1, addonTreeModel2;
@@ -88,6 +91,9 @@ public class AddonsPanel extends JPanel implements UIConstants {
 	private JCheckBox checkBoxSelectAll;
 	private JCheckBox checkBoxExpandAll;
 	private JButton buttonEvents;
+	// Service
+	private AddonService addonService = new AddonService();
+	private RepositoryService repositoryService = new RepositoryService();
 
 	public AddonsPanel(final Facade facade) {
 		this.facade = facade;
@@ -122,7 +128,7 @@ public class AddonsPanel extends JPanel implements UIConstants {
 		checkBoxSelectAll.setFocusable(false);
 		checkBoxExpandAll = new JCheckBox("Expand All");
 		checkBoxExpandAll.setFocusable(false);
-		buttonEvents = new JButton("Events");
+		buttonEvents = new JButton("Modsets");
 		buttonEvents.setFocusable(false);
 		ImageIcon checkIcon = new ImageIcon(CHECK);
 		buttonEvents.setIcon(checkIcon);
@@ -225,10 +231,17 @@ public class AddonsPanel extends JPanel implements UIConstants {
 							menuItemAddGroup.setEnabled(true);
 							menuItemRename.setEnabled(false);
 							menuItemRemove.setEnabled(true);
-						} else {
-							menuItemAddGroup.setEnabled(true);
-							menuItemRename.setEnabled(true);
-							menuItemRemove.setEnabled(true);
+						} else if (!nodes[0].isLeaf()) {
+							TreeDirectoryDTO directortDTO = (TreeDirectoryDTO) nodes[0];
+							if (directortDTO.getModsetType() == null) {
+								menuItemAddGroup.setEnabled(true);
+								menuItemRename.setEnabled(true);
+								menuItemRemove.setEnabled(true);
+							} else {
+								menuItemAddGroup.setEnabled(false);
+								menuItemRename.setEnabled(false);
+								menuItemRemove.setEnabled(true);
+							}
 						}
 					} else {
 						menuItemAddGroup.setEnabled(true);
@@ -379,7 +392,7 @@ public class AddonsPanel extends JPanel implements UIConstants {
 	public void init() {
 
 		addonService.resetAvailableAddonTree();
-		
+
 		/* View Mode */
 		boolean isViewTreeMode = configurationService.isViewModeTree();
 		if (isViewTreeMode) {
@@ -562,13 +575,20 @@ public class AddonsPanel extends JPanel implements UIConstants {
 			return;
 		}
 		if (!nodes[0].isLeaf()) {
-			// arbre2.setEditable(true);
-			// arbre2.startEditingAtPath(arbre2.getSelectionPath());
 			TreeNodeDTO selectedNodeDTO = nodes[0];
-			AddonsRenameGroupPanel renameGroupPanel = new AddonsRenameGroupPanel(
-					facade, racine2, selectedNodeDTO);
-			renameGroupPanel.init();
-			renameGroupPanel.setVisible(true);
+			/* Repository modset and Event modset can't be renamed */
+			TreeDirectoryDTO directoryDTO = (TreeDirectoryDTO) selectedNodeDTO;
+			ModsetType modsetType = directoryDTO.getModsetType();
+			if (modsetType == null) {
+				AddonsRenameGroupPanel renameGroupPanel = new AddonsRenameGroupPanel(
+						facade, racine2, selectedNodeDTO);
+				renameGroupPanel.init();
+				renameGroupPanel.setVisible(true);
+			} else {
+				JOptionPane.showMessageDialog(facade.getMainPanel(),
+						"Repository modset and Event modset can't be renamed.",
+						"Addon group", JOptionPane.INFORMATION_MESSAGE);
+			}
 		}
 	}
 
@@ -676,7 +696,7 @@ public class AddonsPanel extends JPanel implements UIConstants {
 		}
 	}
 
-	private void deselectAllDescending(TreeDirectoryDTO treeDirectoryDTO) {
+	public void deselectAllDescending(TreeDirectoryDTO treeDirectoryDTO) {
 		treeDirectoryDTO.setSelected(false);
 		for (TreeNodeDTO t : treeDirectoryDTO.getList()) {
 			t.setSelected(false);
@@ -744,40 +764,75 @@ public class AddonsPanel extends JPanel implements UIConstants {
 		eventSelectionPanel.setVisible(true);
 	}
 
-	public void createGroupFromEvent(String eventName,
-			Map<String, Boolean> addonNames) {
+	public void createGroupFromRepository(List<String> repositoryNames) {
 
-		for (TreeNodeDTO node : racine2.getList()) {
-			if (node.getName().equals(eventName)) {
-				return;
+		for (String repositoryName : repositoryNames) {
+
+			TreeNodeDTO nodeToRemove = null;
+			for (TreeNodeDTO node : racine2.getList()) {
+				if (node.getName().equals(repositoryName)) {
+					nodeToRemove = node;
+				}
+			}
+			if (nodeToRemove != null) {
+				racine2.getList().remove(nodeToRemove);
+			}
+
+			try {
+				TreeDirectoryDTO directory = repositoryService
+						.getAddonTreeFromRepository(repositoryName, false);
+				if (directory == null) {
+					directory = new TreeDirectoryDTO();
+
+				}
+				directory.setName(repositoryName);
+				directory.setModsetType(ModsetType.REPOSITORY);
+				directory.setParent(racine2);
+				racine2.addTreeNode(directory);
+			} catch (RepositoryException e) {
+				e.printStackTrace();
 			}
 		}
-
-		deselectAllDescending(racine2);
-
-		TreeDirectoryDTO directory = new TreeDirectoryDTO();
-		directory.setName(eventName);
-		directory.setParent(racine2);
-		racine2.addTreeNode(directory);
-		for (Iterator<String> iter = addonNames.keySet().iterator(); iter
-				.hasNext();) {
-			String name = iter.next();
-			boolean optional = addonNames.get(name);
-			TreeLeafDTO leaf = new TreeLeafDTO();
-			leaf.setName(name);
-			leaf.setOptional(optional);
-			leaf.setParent(directory);
-			leaf.setSelected(true);
-			directory.addTreeNode(leaf);
-		}
-		directory.setSelected(true);
 
 		saveAddonGroups();
 		updateAddonGroups();
 		highlightMissingAddons();
 		refreshViewArbre2();
-		// arbre2.expandPath(new
-		// TreePath(arbre2.getModel().getRoot()).pathByAddingChild(directory));
+		expandAddonGroups();
+		facade.getAddonOptionsPanel().updateAddonPriorities();
+		facade.getLaunchOptionsPanel().updateRunParameters();
+	}
+
+	public void createGroupFromEvents(List<EventDTO> eventDTOs) {
+
+		for (EventDTO eventDTO : eventDTOs) {
+			for (TreeNodeDTO node : racine2.getList()) {
+				if (node.getName().equals(eventDTO.getName())) {
+					racine2.getList().remove(node);
+				}
+			}
+
+			TreeDirectoryDTO directory = new TreeDirectoryDTO();
+			directory.setName(eventDTO.getName());
+			directory.setModsetType(ModsetType.EVENT);
+			directory.setParent(racine2);
+			racine2.addTreeNode(directory);
+			for (Iterator<String> iter = eventDTO.getAddonNames().keySet()
+					.iterator(); iter.hasNext();) {
+				String name = iter.next();
+				boolean optional = eventDTO.getAddonNames().get(name);
+				TreeLeafDTO leaf = new TreeLeafDTO();
+				leaf.setName(name);
+				leaf.setOptional(optional);
+				leaf.setParent(directory);
+				directory.addTreeNode(leaf);
+			}
+		}
+
+		saveAddonGroups();
+		updateAddonGroups();
+		highlightMissingAddons();
+		refreshViewArbre2();
 		expandAddonGroups();
 		facade.getAddonOptionsPanel().updateAddonPriorities();
 		facade.getLaunchOptionsPanel().updateRunParameters();
@@ -814,5 +869,131 @@ public class AddonsPanel extends JPanel implements UIConstants {
 
 	public JCheckBox getCheckBoxTree() {
 		return checkBoxTree;
+	}
+
+	public void updateModsetSelection(String repositoryName) {
+
+		try {
+			/* Repository modsets */
+			TreeDirectoryDTO treeDirectoryDTO = null;
+			for (TreeNodeDTO node : racine2.getList()) {
+				if (node.getName().equals(repositoryName)) {
+					treeDirectoryDTO = (TreeDirectoryDTO) node;
+					break;
+				}
+			}
+
+			if (treeDirectoryDTO != null) {
+				List<String> selectdAddonPaths = new ArrayList<String>();
+				getSelectedAddonPaths(treeDirectoryDTO, selectdAddonPaths);
+				racine2.removeTreeNode(treeDirectoryDTO);
+				TreeDirectoryDTO newTreeDirectoryDTO = repositoryService
+						.getAddonTreeFromRepository(repositoryName, false);
+				newTreeDirectoryDTO.setName(repositoryName);
+				newTreeDirectoryDTO.setParent(racine2);
+				racine2.addTreeNode(newTreeDirectoryDTO);
+				setSelectedPaths(newTreeDirectoryDTO, selectdAddonPaths);
+
+			}
+
+			/* Event modsets */
+			List<EventDTO> eventDTOs = repositoryService
+					.getEvents(repositoryName);
+
+			if (eventDTOs != null) {
+				for (EventDTO eventDTO : eventDTOs) {
+					treeDirectoryDTO = null;
+					for (TreeNodeDTO node : racine2.getList()) {
+						if (node.getName().equals(eventDTO.getName())) {
+							treeDirectoryDTO = (TreeDirectoryDTO) node;
+							break;
+						}
+					}
+
+					if (treeDirectoryDTO != null) {
+						List<String> selectdAddonPaths = new ArrayList<String>();
+						getSelectedAddonPaths(treeDirectoryDTO,
+								selectdAddonPaths);
+						racine2.removeTreeNode(treeDirectoryDTO);
+
+						TreeDirectoryDTO newTreeDirectoryDTO = new TreeDirectoryDTO();
+						newTreeDirectoryDTO.setName(eventDTO.getName());
+						newTreeDirectoryDTO.setParent(racine2);
+						racine2.addTreeNode(newTreeDirectoryDTO);
+
+						for (Iterator<String> iter = eventDTO.getAddonNames()
+								.keySet().iterator(); iter.hasNext();) {
+							String name = iter.next();
+							boolean optional = eventDTO.getAddonNames().get(
+									name);
+							TreeLeafDTO leaf = new TreeLeafDTO();
+							leaf.setName(name);
+							leaf.setOptional(optional);
+							leaf.setParent(newTreeDirectoryDTO);
+							// leaf.setSelected(true);
+							newTreeDirectoryDTO.addTreeNode(leaf);
+						}
+						setSelectedPaths(newTreeDirectoryDTO, selectdAddonPaths);
+					}
+				}
+			}
+		} catch (RepositoryException e) {
+			e.printStackTrace();
+		}
+
+		saveAddonGroups();
+		updateAddonGroups();
+		highlightMissingAddons();
+		refreshViewArbre2();
+		expandAddonGroups();
+		facade.getAddonOptionsPanel().updateAddonPriorities();
+		facade.getLaunchOptionsPanel().updateRunParameters();
+
+	}
+
+	private void getSelectedAddonPaths(TreeNodeDTO node,
+			List<String> selectedAddonPaths) {
+
+		String path = node.getName();
+		TreeNodeDTO parent = node.getParent();
+		while (parent != null) {
+			path = parent.getName() + "/" + path;
+			parent = parent.getParent();
+		}
+
+		if (node.isSelected()) {
+			selectedAddonPaths.add(path);
+		}
+
+		if (!node.isLeaf()) {
+			TreeDirectoryDTO directory = (TreeDirectoryDTO) node;
+			for (TreeNodeDTO n : directory.getList()) {
+				getSelectedAddonPaths(n, selectedAddonPaths);
+			}
+		}
+	}
+
+	private void setSelectedPaths(TreeNodeDTO node,
+			List<String> selectdAddonPaths) {
+
+		String path = node.getName();
+		TreeNodeDTO parent = node.getParent();
+		while (parent != null) {
+			path = parent.getName() + "/" + path;
+			parent = parent.getParent();
+		}
+
+		if (selectdAddonPaths.contains(path)) {
+			node.setSelected(true);
+		} else {
+			node.setSelected(false);
+		}
+
+		if (!node.isLeaf()) {
+			TreeDirectoryDTO directory = (TreeDirectoryDTO) node;
+			for (TreeNodeDTO n : directory.getList()) {
+				setSelectedPaths(n, selectdAddonPaths);
+			}
+		}
 	}
 }

@@ -1,11 +1,9 @@
 package fr.soe.a3s.dto;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
-public class EventDTO {
+public class EventDTO implements java.lang.Comparable {
 
 	private String name;
 	private String description;
@@ -34,5 +32,16 @@ public class EventDTO {
 
 	public Map<String, Boolean> getUserconfigFolderNames() {
 		return userconfigFolderNames;
+	}
+
+	@Override
+	public int compareTo(Object other) {
+		String name =  ((EventDTO) other).getName();
+		int result = 1;
+		if (name.compareToIgnoreCase(getName()) > 0)
+			result = -1;
+		else if (name.compareToIgnoreCase(getName()) == 0)
+			result = 0;
+		return result;
 	}
 }

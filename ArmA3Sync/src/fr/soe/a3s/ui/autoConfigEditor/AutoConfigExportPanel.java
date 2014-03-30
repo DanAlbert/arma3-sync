@@ -2,14 +2,11 @@ package fr.soe.a3s.ui.autoConfigEditor;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
@@ -23,18 +20,12 @@ import javax.swing.JCheckBox;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
-import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
-import javax.swing.ListCellRenderer;
-import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
-import javax.swing.UIManager;
 import javax.swing.border.BevelBorder;
-import javax.swing.border.Border;
-import javax.swing.border.EmptyBorder;
 
 import fr.soe.a3s.constant.DefaultProfileName;
 import fr.soe.a3s.dto.RepositoryDTO;
@@ -44,9 +35,9 @@ import fr.soe.a3s.service.CommonService;
 import fr.soe.a3s.service.ConfigurationService;
 import fr.soe.a3s.service.ProfileService;
 import fr.soe.a3s.service.RepositoryService;
+import fr.soe.a3s.ui.CheckBoxList;
 import fr.soe.a3s.ui.Facade;
 import fr.soe.a3s.ui.UIConstants;
-import fr.soe.a3s.ui.aiaEditor.AiaInstallerPanel;
 
 public class AutoConfigExportPanel extends JDialog implements UIConstants {
 
@@ -316,62 +307,5 @@ public class AutoConfigExportPanel extends JDialog implements UIConstants {
 
 	private void menuExitPerformed() {
 		this.dispose();
-	}
-
-	class CheckBoxList extends JList {
-
-		protected Border noFocusBorder = new EmptyBorder(1, 1, 1, 1);
-
-		public CheckBoxList() {
-			setCellRenderer(new CellRenderer());
-
-			addMouseListener(new MouseAdapter() {
-				public void mousePressed(MouseEvent e) {
-					int index = locationToIndex(e.getPoint());
-
-					if (index != -1) {
-						JCheckBox checkbox = (JCheckBox) getModel()
-								.getElementAt(index);
-						checkbox.setSelected(!checkbox.isSelected());
-						repaint();
-					}
-				}
-			});
-
-			setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-		}
-
-		public List<String> getSelectedItems() {
-			List<String> list = new ArrayList<>();
-			int size = this.getModel().getSize();
-			for (int i = 0; i < size; i++) {
-				JCheckBox checkbox = (JCheckBox) getModel().getElementAt(i);
-				if (checkbox.isSelected()) {
-					String name = checkbox.getText();
-					list.add(name);
-				}
-			}
-			return list;
-		}
-
-		protected class CellRenderer implements ListCellRenderer {
-			public Component getListCellRendererComponent(JList list,
-					Object value, int index, boolean isSelected,
-					boolean cellHasFocus) {
-				JCheckBox checkbox = (JCheckBox) value;
-				checkbox.setBackground(isSelected ? getSelectionBackground()
-						: getBackground());
-				checkbox.setForeground(isSelected ? getSelectionForeground()
-						: getForeground());
-				checkbox.setEnabled(isEnabled());
-				checkbox.setFont(getFont());
-				checkbox.setFocusPainted(false);
-				checkbox.setBorderPainted(true);
-				checkbox.setBorder(isSelected ? UIManager
-						.getBorder("List.focusCellHighlightBorder")
-						: noFocusBorder);
-				return checkbox;
-			}
-		}
 	}
 }

@@ -13,6 +13,7 @@ import fr.soe.a3s.controller.ObserverFilesNumber;
 import fr.soe.a3s.controller.ObserverSpeed;
 import fr.soe.a3s.dao.FileAccessMethods;
 import fr.soe.a3s.dto.EventDTO;
+import fr.soe.a3s.dto.RepositoryDTO;
 import fr.soe.a3s.dto.sync.SyncTreeDirectoryDTO;
 import fr.soe.a3s.dto.sync.SyncTreeLeafDTO;
 import fr.soe.a3s.dto.sync.SyncTreeNodeDTO;
@@ -269,21 +270,6 @@ public class AddonsDownloader extends Thread {
 					}
 				});
 
-		// Addons Panel: Update Available Addons
-		AddonService addonService = new AddonService();
-		addonService.resetAvailableAddonTree();
-		facade.getAddonsPanel().updateAvailableAddons();
-
-		// Addons Panel: Update Addons Group
-		ProfileService profileService = new ProfileService();
-		configurationService.setViewMode(true);// required to merge
-		facade.getAddonsPanel().getCheckBoxTree().setSelected(true);
-		profileService.merge(addonService.getAvailableAddonsTree(),
-				profileService.getAddonGroupsTree());
-		facade.getAddonsPanel().updateAddonGroups();
-		facade.getAddonsPanel().expandAddonGroups();
-		facade.getAddonOptionsPanel().updateAddonPriorities();
-
 		connexionService.getSync(repositoryName);
 		parent = repositoryService.getSync(repositoryName);
 		if (eventName != null) {
@@ -293,6 +279,23 @@ public class AddonsDownloader extends Thread {
 		downloadPanel.getButtonCheckForAddonsStart().setEnabled(true);
 		downloadPanel.getLabelCheckForAddonsStatus().setText("Finished!");
 		downloadPanel.getArbre().setEnabled(true);
+
+		// Addons Panel: Update Available Addons
+		AddonService addonService = new AddonService();
+		addonService.resetAvailableAddonTree();
+		facade.getAddonsPanel().updateAvailableAddons();
+
+		// Addons Panel: Update Addons Group
+		ProfileService profileService = new ProfileService();
+		configurationService.setViewMode(true);// required to merge
+		facade.getAddonsPanel().getCheckBoxTree().setSelected(true);
+		// profileService.merge(addonService.getAvailableAddonsTree(),
+		// profileService.getAddonGroupsTree());
+
+		facade.getAddonsPanel().updateAddonGroups();
+		facade.getAddonsPanel().expandAddonGroups();
+		facade.getAddonOptionsPanel().updateAddonPriorities();
+
 	}
 
 	private void deleteExtraFiles() {

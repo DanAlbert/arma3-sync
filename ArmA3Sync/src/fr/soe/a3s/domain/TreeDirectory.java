@@ -1,14 +1,13 @@
 package fr.soe.a3s.domain;
 
-
-
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import fr.soe.a3s.constant.ModsetType;
 
-public class TreeDirectory implements TreeNode,Serializable{
+public class TreeDirectory implements TreeNode, Serializable {
 
 	/**
 	 * 
@@ -20,23 +19,24 @@ public class TreeDirectory implements TreeNode,Serializable{
 	private List<TreeNode> list = new ArrayList<TreeNode>();
 	private boolean marked = false;
 	private boolean optional = false;
-	
-	public TreeDirectory(String name,TreeDirectory parent){
+	private ModsetType modsetType;
+
+	public TreeDirectory(String name, TreeDirectory parent) {
 		this.name = name;
 		this.parent = parent;
 	}
-	
-	public void addTreeNode(TreeNode treeNode){
-		
+
+	public void addTreeNode(TreeNode treeNode) {
+
 		list.add(treeNode);
-		
+
 		List<TreeDirectory> directories = new ArrayList<TreeDirectory>();
 		List<TreeLeaf> leafs = new ArrayList<TreeLeaf>();
-		for (TreeNode t:list){
-			if (t instanceof TreeDirectory){
-				directories.add((TreeDirectory)t);
-			}else {
-				leafs.add((TreeLeaf)t);
+		for (TreeNode t : list) {
+			if (t instanceof TreeDirectory) {
+				directories.add((TreeDirectory) t);
+			} else {
+				leafs.add((TreeLeaf) t);
 			}
 		}
 		Collections.sort(directories);
@@ -45,7 +45,7 @@ public class TreeDirectory implements TreeNode,Serializable{
 		list.addAll(directories);
 		list.addAll(leafs);
 	}
-	
+
 	@Override
 	public boolean isLeaf() {
 		return false;
@@ -60,18 +60,18 @@ public class TreeDirectory implements TreeNode,Serializable{
 	public void setSelected(boolean value) {
 		this.selected = value;
 	}
-	
+
 	public List<TreeNode> getList() {
 		return list;
 	}
-	
-	public String toString(){
+
+	public String toString() {
 		return name;
 	}
 
 	@Override
 	public int compareTo(Object other) {
-		String name =  ((TreeDirectory) other).getName();
+		String name = ((TreeDirectory) other).getName();
 		int result = 1;
 		if (name.compareToIgnoreCase(getName()) > 0)
 			result = -1;
@@ -79,7 +79,7 @@ public class TreeDirectory implements TreeNode,Serializable{
 			result = 0;
 		return result;
 	}
-	
+
 	@Override
 	public void setParent(TreeDirectory parent) {
 		this.parent = parent;
@@ -89,9 +89,9 @@ public class TreeDirectory implements TreeNode,Serializable{
 	public TreeDirectory getParent() {
 		return this.parent;
 	}
-	
-	public void setMarked(boolean value){
-		this.marked=value;
+
+	public void setMarked(boolean value) {
+		this.marked = value;
 	}
 
 	public boolean isMarked() {
@@ -101,7 +101,7 @@ public class TreeDirectory implements TreeNode,Serializable{
 	public void removeTreeNode(TreeNode treeNode) {
 		list.remove(treeNode);
 	}
-	
+
 	@Override
 	public void setName(String name) {
 		this.name = name;
@@ -119,5 +119,13 @@ public class TreeDirectory implements TreeNode,Serializable{
 	@Override
 	public boolean isOptional() {
 		return this.optional;
+	}
+
+	public ModsetType getModsetType() {
+		return modsetType;
+	}
+
+	public void setModsetType(ModsetType modsetType) {
+		this.modsetType = modsetType;
 	}
 }

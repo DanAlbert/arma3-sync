@@ -183,25 +183,6 @@ public class EventsPanel extends JPanel implements UIConstants {
 		menuItemSetOptional.setActionCommand("Set optional");
 		popup.add(menuItemSetOptional);
 
-		// popup.addPopupMenuListener(new PopupMenuListener() {
-		//
-		// @Override
-		// public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
-		// menuItemSetRequired.setEnabled(true);
-		// menuItemSetOptional.setEnabled(true);
-		// }
-		//
-		// @Override
-		// public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
-		//
-		// }
-		//
-		// @Override
-		// public void popupMenuCanceled(PopupMenuEvent e) {
-		//
-		// }
-		// });
-
 		buttonNew.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
@@ -358,7 +339,8 @@ public class EventsPanel extends JPanel implements UIConstants {
 		// Desable selection
 		arbre.setEnabled(false);
 
-		EventAddPanel eventEditPanel = new EventAddPanel(facade, repositoryName,this);
+		EventAddPanel eventEditPanel = new EventAddPanel(facade,
+				repositoryName, this);
 		eventEditPanel.init();
 		eventEditPanel.setVisible(true);
 	}
@@ -499,7 +481,7 @@ public class EventsPanel extends JPanel implements UIConstants {
 
 		try {
 			TreeDirectoryDTO treeDirectoryDTO = repositoryService
-					.getEventAddonSelection(repositoryName);
+					.getAddonTreeFromRepository(repositoryName, true);
 
 			if (treeDirectoryDTO != null) {
 				arbre.removeAll();
