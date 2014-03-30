@@ -12,6 +12,7 @@ import javax.swing.UIManager;
 import javax.swing.plaf.FontUIResource;
 
 import fr.soe.a3s.console.Console;
+import fr.soe.a3s.dao.DataAccessConstants;
 import fr.soe.a3s.ui.Facade;
 import fr.soe.a3s.ui.mainEditor.MainPanel;
 
@@ -31,6 +32,7 @@ public class ArmA3Sync {
 	public static void main(String[] args) {
 
 		checkJRE();
+
 		Facade facade = new Facade();
 
 		if (args.length == 0) {
@@ -71,16 +73,15 @@ public class ArmA3Sync {
 	private static void checkJRE() {
 
 		String version = System.getProperty("java.specification.version");
-		if(!(Double.parseDouble(version) >= 1.7)) {
+		if (!(Double.parseDouble(version) >= 1.7)) {
 			String message = "JRE installed version is: " + version + "\n"
 					+ "ArmA3Sync required JRE 1.7 (Java 7) or above to run.";
 			if (!GraphicsEnvironment.isHeadless()) {
 				JFrame frame = new JFrame();
 				JOptionPane.showMessageDialog(frame, message, "ArmA3Sync",
 						JOptionPane.INFORMATION_MESSAGE);
-			} else {
-				System.out.println(message);
 			}
+			System.out.println(message);
 			System.exit(0);
 		}
 	}
@@ -171,10 +172,11 @@ public class ArmA3Sync {
 		}
 
 		/* Single instance */
-		if (!lockInstance()) {
+		String message = lockInstance();
+		if (!message.isEmpty()) {
 			JFrame frame = new JFrame();
-			JOptionPane.showMessageDialog(frame,
-					"ArmA3Sync is already running.", "ArmA3Sync",
+			System.out.println(message);
+			JOptionPane.showMessageDialog(frame, message, "ArmA3Sync",
 					JOptionPane.INFORMATION_MESSAGE);
 			System.exit(0);
 		}
@@ -188,15 +190,21 @@ public class ArmA3Sync {
 		// Check ArmA 3 executable location
 		mainPanel.checkWellcomeDialog();
 
+		// Installed Version
+		System.out.println("Installed version = " + Version.getVersion());
+
 		// Check for updates
 		mainPanel.checkForUpdate(false);
 	}
 
-	private static boolean lockInstance() {
+	private static String lockInstance() {
 
 		final String path = "lock";
+		final File file = new File(path);
+		String message = "";
+
+		boolean response = true;
 		try {
-			final File file = new File(path);
 			final RandomAccessFile randomAccessFile = new RandomAccessFile(
 					file, "rw");
 			final FileLock fileLock = randomAccessFile.getChannel().tryLock();
@@ -209,16 +217,26 @@ public class ArmA3Sync {
 							randomAccessFile.close();
 							file.delete();
 						} catch (Exception e) {
-							System.out
-									.println(("Unable to remove lock file: " + path));
+							System.out.println("Unable to remove lock file: "
+									+ path);
 						}
 					}
 				});
-				return true;
 			}
 		} catch (Exception e) {
-			System.out.println(("Unable to create and/or lock file: " + path));
+			System.out.println("Unable to create and/or lock file: " + path);
+			if (!file.canWrite()) {
+				message = file.getAbsolutePath()
+						+ " Cannot Write."
+						+ "\n"
+						+ "ArmA3Sync requires full write permissions on his installation directory.\nTry to run with administator priviledges.";
+			}
+			response = false;
 		}
-		return false;
+
+		if (!response && message.isEmpty()) {
+			message = "ArmA3Sync is already running.";
+		}
+		return message;
 	}
 }
