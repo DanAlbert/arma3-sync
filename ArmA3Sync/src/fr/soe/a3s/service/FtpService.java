@@ -2,7 +2,6 @@ package fr.soe.a3s.service;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.net.SocketException;
 import java.util.List;
 import java.util.StringTokenizer;
 
@@ -122,6 +121,7 @@ public class FtpService extends AbstractConnexionService implements
 		String password = repository.getProtocole().getPassword();
 		ftpClient = new FTPClient();
 		ftpClient.setConnectTimeout(15000);// 15 sec
+		ftpClient.setBufferSize(1048576);// 1024*1024
 		boolean isLoged = false;
 		int reply = 0;
 		try {
@@ -329,7 +329,8 @@ public class FtpService extends AbstractConnexionService implements
 			ftpClientUpdate.disconnect();
 
 			if (updateVersionName != null) {
-				System.out.println("Available update version = " + updateVersionName);
+				System.out.println("Available update version = "
+						+ updateVersionName);
 
 				StringTokenizer stringTokenizer = new StringTokenizer(
 						updateVersionName, ".");
@@ -374,6 +375,7 @@ public class FtpService extends AbstractConnexionService implements
 		}
 	}
 
+	@Override
 	public FtpDAO getConnexionDAO() {
 		return ftpDAO;
 	}
