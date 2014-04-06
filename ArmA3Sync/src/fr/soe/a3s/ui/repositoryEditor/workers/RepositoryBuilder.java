@@ -57,7 +57,8 @@ public class RepositoryBuilder extends Thread {
 			adminPanel.getBuildProgressBar().setMaximum(0);
 			adminPanel.init(repositoryName);
 			facade.getSyncPanel().init();
-			
+			this.adminPanel.getRepositoryPanel().getEventsPanel()
+					.init(repositoryName);// update addons list
 			System.gc();// Required for unlocking files!
 		}
 	}

@@ -444,14 +444,14 @@ public class AdminPanel extends JPanel implements UIConstants {
 		}
 
 		RepositoryChecker checker = new RepositoryChecker(facade,
-				repositoryName, path,this);
+				repositoryName, path, this);
 		checker.start();
 	}
 
 	private void buttonViewPerformed() {
 
 		ChangelogPanel changelogPanel = new ChangelogPanel(facade,
-				repositoryName,this);
+				repositoryName, this);
 		changelogPanel.init();
 		changelogPanel.setVisible(true);
 	}
@@ -484,4 +484,7 @@ public class AdminPanel extends JPanel implements UIConstants {
 		return buttonView;
 	}
 
+	public RepositoryPanel getRepositoryPanel() {
+		return repositoryPanel;
+	}
 }
