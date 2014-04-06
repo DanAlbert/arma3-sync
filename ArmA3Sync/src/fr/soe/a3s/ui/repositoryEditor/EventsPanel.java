@@ -378,6 +378,7 @@ public class EventsPanel extends JPanel implements UIConstants {
 				repositoryService.removeEvent(repositoryName,
 						eventDTOs.get(index).getName());
 				updateListEvents();
+				facade.getSyncPanel().init();
 			} catch (RepositoryException e) {
 				JOptionPane.showMessageDialog(facade.getMainPanel(),
 						e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
@@ -411,6 +412,7 @@ public class EventsPanel extends JPanel implements UIConstants {
 					JOptionPane.INFORMATION_MESSAGE);
 		} else {
 			uploadInformations();
+			facade.getSyncPanel().init();
 		}
 	}
 
@@ -428,6 +430,7 @@ public class EventsPanel extends JPanel implements UIConstants {
 			JOptionPane.showMessageDialog(facade.getMainPanel(),
 					"Events informatons have been save to repository.",
 					"Information", JOptionPane.INFORMATION_MESSAGE);
+			facade.getSyncPanel().init();
 		} catch (CheckException e) {
 			JOptionPane.showMessageDialog(facade.getMainPanel(),
 					e.getMessage(), "Warning", JOptionPane.WARNING_MESSAGE);
