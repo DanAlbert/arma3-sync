@@ -129,8 +129,12 @@ public class AddonsChecker extends Thread {
 			SyncTreeDirectoryDTO newRacine = new SyncTreeDirectoryDTO();
 			newRacine.setName(parent.getName());
 			newRacine.setParent(null);
-			refineUserconfig(parent, newRacine, userconfigFolderNames);
-			refineAddons(parent, newRacine, addonNames);
+			if (!userconfigFolderNames.isEmpty()) {
+				refineUserconfig(parent, newRacine, userconfigFolderNames);
+			}
+			if (!addonNames.isEmpty()) {
+				refineAddons(parent, newRacine, addonNames);
+			}
 			parent = newRacine;
 		} catch (RepositoryException e) {
 			e.printStackTrace();
