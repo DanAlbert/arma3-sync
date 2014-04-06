@@ -1,10 +1,12 @@
 package fr.soe.a3s.ui.mainEditor;
 
+import java.awt.BorderLayout;
+import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.ComboBoxModel;
@@ -16,14 +18,10 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 
-import fr.soe.a3s.constant.GameExecutables;
 import fr.soe.a3s.constant.GameVersions;
 import fr.soe.a3s.constant.MinimizationType;
-import fr.soe.a3s.domain.configration.Configuration;
 import fr.soe.a3s.dto.configuration.FavoriteServerDTO;
-import fr.soe.a3s.dto.configuration.LauncherOptionsDTO;
 import fr.soe.a3s.exception.LaunchException;
-import fr.soe.a3s.exception.WritingException;
 import fr.soe.a3s.service.CommonService;
 import fr.soe.a3s.service.ConfigurationService;
 import fr.soe.a3s.service.LaunchService;
@@ -56,28 +54,56 @@ public class LaunchPanel extends JPanel implements UIConstants {
 
 		this.facade = facade;
 		facade.setLaunchPanel(this);
-		this.setLayout(new FlowLayout(FlowLayout.RIGHT, 10, 10));
 
-		joinServerLabel = new JLabel("Join Server");
-		this.add(joinServerLabel);
-		joinServerComboBox = new JComboBox();
-		joinServerComboBox.setFocusable(false);
-		this.add(joinServerComboBox);
-		joinServerComboBox.setPreferredSize(new java.awt.Dimension(150, 27));
-		gameVersionLabel = new JLabel("Game Version");
-		this.add(gameVersionLabel);
-		gameVersionComboBox = new JComboBox();
-		ComboBoxModel gameVersionModel = new DefaultComboBoxModel(new String[] {
-				GameVersions.ARMA3.getDescription(),
-				GameVersions.ARMA3_AIA.getDescription() });
-		gameVersionComboBox.setModel(gameVersionModel);
-		gameVersionComboBox.setFocusable(false);
-		this.add(gameVersionComboBox);
-		gameVersionComboBox.setPreferredSize(new java.awt.Dimension(100, 27));
-		startButton = new JButton("Start Game");
-		startButton.setFont(new Font("Tohama", Font.BOLD, 11));
-		this.add(startButton);
-		startButton.setPreferredSize(new java.awt.Dimension(110, 27));
+		this.setLayout(new BorderLayout());
+		{
+			JPanel panel = new JPanel();
+			panel.setLayout(new FlowLayout(FlowLayout.RIGHT, 10, 10));
+			joinServerLabel = new JLabel("Join Server");
+			panel.add(joinServerLabel);
+			this.add(panel, BorderLayout.WEST);
+		}
+		{
+			JPanel panel = new JPanel();
+			panel.setLayout(new BorderLayout());
+			joinServerComboBox = new JComboBox();
+			joinServerComboBox.setFocusable(false);
+			panel.add(joinServerComboBox, BorderLayout.CENTER);
+			this.add(panel, BorderLayout.CENTER);
+			JPanel northPanel = new JPanel();
+			northPanel.setPreferredSize(new Dimension(100, 5));
+			panel.add(northPanel, BorderLayout.NORTH);
+			JPanel southPanel = new JPanel();
+			southPanel.setPreferredSize(new Dimension(100, 5));
+			panel.add(southPanel, BorderLayout.SOUTH);
+		}
+		{
+			JPanel rightPanel = new JPanel();
+			rightPanel.setLayout(new FlowLayout(FlowLayout.RIGHT, 10, 5));
+			this.add(rightPanel, BorderLayout.EAST);
+			{
+				{
+					gameVersionLabel = new JLabel("Game Version");
+					rightPanel.add(gameVersionLabel);
+					gameVersionComboBox = new JComboBox();
+					ComboBoxModel gameVersionModel = new DefaultComboBoxModel(
+							new String[] { GameVersions.ARMA3.getDescription(),
+									GameVersions.ARMA3_AIA.getDescription() });
+					gameVersionComboBox.setModel(gameVersionModel);
+					gameVersionComboBox.setFocusable(false);
+					rightPanel.add(gameVersionComboBox);
+					gameVersionComboBox
+							.setPreferredSize(new java.awt.Dimension(100, 27));
+				}
+				{
+					startButton = new JButton("Start Game");
+					startButton.setFont(new Font("Tohama", Font.BOLD, 11));
+					rightPanel.add(startButton);
+					startButton
+							.setPreferredSize(new java.awt.Dimension(110, 27));
+				}
+			}
+		}
 
 		startButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
@@ -103,20 +129,31 @@ public class LaunchPanel extends JPanel implements UIConstants {
 	public void init() {
 
 		String serverName = configurationService.getServerName();
+		String defaultModset = configurationService.getDefaultModset();
 		String gameVersion = configurationService.getGameVersion();
+
 		List<FavoriteServerDTO> favoriteServersDTO = configurationService
 				.getFavoriteServers();
 		ComboBoxModel joinServerModel = new DefaultComboBoxModel(
 				new String[] { "" });
 		this.joinServerComboBox.setModel(joinServerModel);
-
 		for (int i = 0; i < favoriteServersDTO.size(); i++) {
-			this.joinServerComboBox
-					.addItem(favoriteServersDTO.get(i).getName());
+			String stg = favoriteServersDTO.get(i).getName();
+			if (!(favoriteServersDTO.get(i).getModsetName() == null)
+					&& !("".equals(favoriteServersDTO.get(i).getModsetName()
+							.trim()))) {
+				stg = stg + " - " + favoriteServersDTO.get(i).getModsetName();
+			}
+			this.joinServerComboBox.addItem(stg);
 		}
 
 		if (serverName != null) {
-			this.joinServerComboBox.setSelectedItem(serverName);
+			if (defaultModset != null) {
+				this.joinServerComboBox.setSelectedItem(serverName + " - "
+						+ defaultModset);
+			} else {
+				this.joinServerComboBox.setSelectedItem(serverName);
+			}
 		}
 
 		if (gameVersion != null) {
@@ -124,18 +161,40 @@ public class LaunchPanel extends JPanel implements UIConstants {
 		}
 	}
 
+	private void updatejoinServerComboBox() {
+
+		List<FavoriteServerDTO> favoriteServersDTO = configurationService
+				.getFavoriteServers();
+		ComboBoxModel joinServerModel = new DefaultComboBoxModel(
+				new String[] { "" });
+		this.joinServerComboBox.setModel(joinServerModel);
+		for (int i = 0; i < favoriteServersDTO.size(); i++) {
+			this.joinServerComboBox
+					.addItem(favoriteServersDTO.get(i).getName());
+		}
+	}
+
 	private void serverSelectionPerformed() {
 
-		String serverName = (String) this.joinServerComboBox.getSelectedItem();
-		if (serverName.isEmpty()) {
+		String selection = (String) this.joinServerComboBox.getSelectedItem();
+		if (selection.isEmpty()) {
 			configurationService.saveServerName(null);
+			configurationService.setDefautlModset(null);
 		} else {
-			configurationService.saveServerName(serverName);
-			// this.joinServerComboBox.setSelectedIndex(0);
-			// JoinServerPanel joinServerPanel = new JoinServerPanel(facade);
-			// joinServerPanel.setVisible(true);
-			// configurationService.saveServerName(null);
-			// return;
+			int index = selection.indexOf("-");
+			if (index == -1) {
+				String serverName = selection;
+				configurationService.saveServerName(serverName);
+			} else {
+				String serverName = selection.substring(0, index - 1).trim();
+				String repositoryName = selection.substring(index + 1).trim();
+				configurationService.saveServerName(serverName);
+				configurationService.setDefautlModset(repositoryName);
+				List<String> list = new ArrayList<String>();
+				list.add(repositoryName);
+				facade.getAddonsPanel().createGroupFromRepository(list);
+				facade.getAddonsPanel().selectModset(repositoryName);
+			}
 		}
 		facade.getLaunchOptionsPanel().updateRunParameters();
 	}
@@ -155,6 +214,9 @@ public class LaunchPanel extends JPanel implements UIConstants {
 		configurationService.determineAiAOptions();
 
 		try {
+			// Update join server addons selection
+			serverSelectionPerformed();
+
 			// Check selected addons
 			facade.getAddonsPanel().updateAvailableAddons();
 			String message = launchService.checkSelectedAddons();

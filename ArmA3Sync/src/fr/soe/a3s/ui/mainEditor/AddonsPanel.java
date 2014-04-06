@@ -767,28 +767,24 @@ public class AddonsPanel extends JPanel implements UIConstants {
 	public void createGroupFromRepository(List<String> repositoryNames) {
 
 		for (String repositoryName : repositoryNames) {
-
-			TreeNodeDTO nodeToRemove = null;
-			for (TreeNodeDTO node : racine2.getList()) {
-				if (node.getName().equals(repositoryName)) {
-					nodeToRemove = node;
-				}
-			}
-			if (nodeToRemove != null) {
-				racine2.getList().remove(nodeToRemove);
-			}
-
 			try {
 				TreeDirectoryDTO directory = repositoryService
 						.getAddonTreeFromRepository(repositoryName, false);
-				if (directory == null) {
-					directory = new TreeDirectoryDTO();
-
+				if (directory != null) {
+					TreeNodeDTO nodeToRemove = null;
+					for (TreeNodeDTO node : racine2.getList()) {
+						if (node.getName().equals(repositoryName)) {
+							nodeToRemove = node;
+						}
+					}
+					if (nodeToRemove != null) {
+						racine2.getList().remove(nodeToRemove);
+					}
+					directory.setName(repositoryName);
+					directory.setModsetType(ModsetType.REPOSITORY);
+					directory.setParent(racine2);
+					racine2.addTreeNode(directory);
 				}
-				directory.setName(repositoryName);
-				directory.setModsetType(ModsetType.REPOSITORY);
-				directory.setParent(racine2);
-				racine2.addTreeNode(directory);
 			} catch (RepositoryException e) {
 				e.printStackTrace();
 			}
@@ -953,7 +949,24 @@ public class AddonsPanel extends JPanel implements UIConstants {
 		expandAddonGroups();
 		facade.getAddonOptionsPanel().updateAddonPriorities();
 		facade.getLaunchOptionsPanel().updateRunParameters();
+	}
 
+	public void selectModset(String modsetName) {
+
+		for (TreeNodeDTO node : racine2.getList()) {
+			if (node.getName().equals(modsetName)) {
+				TreeDirectoryDTO treeDirectoryDTO = treeDirectoryDTO = (TreeDirectoryDTO) node;
+				selectAllDescending(treeDirectoryDTO);
+				saveAddonGroups();
+				updateAddonGroups();
+				highlightMissingAddons();
+				refreshViewArbre2();
+				expandAddonGroups();
+				facade.getAddonOptionsPanel().updateAddonPriorities();
+				facade.getLaunchOptionsPanel().updateRunParameters();
+				break;
+			}
+		}
 	}
 
 	private void getSelectedAddonPaths(TreeNodeDTO node,

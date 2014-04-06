@@ -83,6 +83,7 @@ public class ObjectDTOtransformer {
 		favoriteServerDTO.setIpAddress(favoriteServer.getIpAddress());
 		favoriteServerDTO.setPort(favoriteServer.getPort());
 		favoriteServerDTO.setPassword(favoriteServer.getPassword());
+		favoriteServerDTO.setModsetName(favoriteServer.getModsetName());
 		return favoriteServerDTO;
 	}
 
@@ -94,6 +95,7 @@ public class ObjectDTOtransformer {
 		favoriteServer.setIpAddress(favoriteServerDTO.getIpAddress());
 		favoriteServer.setPort(favoriteServerDTO.getPort());
 		favoriteServer.setPassword(favoriteServerDTO.getPassword());
+		favoriteServer.setModsetName(favoriteServerDTO.getModsetName());
 		return favoriteServer;
 	}
 

@@ -63,6 +63,14 @@ public class ConfigurationService extends ObjectDTOtransformer {
 		configurationDAO.getConfiguration().setServerName(serverName);
 	}
 
+	public String getDefaultModset() {
+		return configurationDAO.getConfiguration().getDefaultModset();
+	}
+
+	public void setDefautlModset(String defaultModset) {
+		configurationDAO.getConfiguration().setDefaultModset(defaultModset);
+	}
+
 	public String getGameVersion() {
 		return configurationDAO.getConfiguration().getGameVersion();
 	}

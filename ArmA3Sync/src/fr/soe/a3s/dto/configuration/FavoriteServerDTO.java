@@ -6,6 +6,7 @@ public class FavoriteServerDTO {
 	private String ipAddress;
 	private int port;
 	private String password;
+	private String modsetName;
 
 	public String getName() {
 		return name;
@@ -38,4 +39,14 @@ public class FavoriteServerDTO {
 	public void setPassword(String password) {
 		this.password = password;
 	}
+
+	public String getModsetName() {
+		return modsetName;
+	}
+
+	public void setModsetName(String modsetName) {
+		this.modsetName = modsetName;
+	}
+	
+	
 }

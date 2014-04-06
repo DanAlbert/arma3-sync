@@ -13,11 +13,12 @@ import fr.soe.a3s.domain.Preferences;
 public class Configuration implements Serializable {
 
 	private static final long serialVersionUID = -8310476744472497506L;
-	private int height=0;
-	private int width=0;
+	private int height = 0;
+	private int width = 0;
 	private String profileName = DefaultProfileName.DEFAULT.getDescription();
 	private String gameVersion = GameVersions.ARMA3.getDescription();
 	private String serverName;
+	private String defaultModset;
 	private boolean viewModeTree = true;
 	private Set<String> addonSearchDirectoryPaths = new TreeSet<String>();
 	private LauncherOptions launcherOptions = new LauncherOptions();
@@ -26,7 +27,7 @@ public class Configuration implements Serializable {
 	private AcreOptions acreOptions = new AcreOptions();
 	private AiAOptions aiaOptions = new AiAOptions();
 	private RptOptions rptOptions = new RptOptions();
-	
+
 	public String getProfileName() {
 		return profileName;
 	}
@@ -97,14 +98,14 @@ public class Configuration implements Serializable {
 	}
 
 	public AcreOptions getAcreOptions() {
-		if (acreOptions==null){
+		if (acreOptions == null) {
 			acreOptions = new AcreOptions();
 		}
 		return acreOptions;
 	}
 
 	public RptOptions getRptOptions() {
-		if (rptOptions==null){
+		if (rptOptions == null) {
 			rptOptions = new RptOptions();
 		}
 		return rptOptions;
@@ -126,4 +127,11 @@ public class Configuration implements Serializable {
 		this.width = width;
 	}
 
+	public String getDefaultModset() {
+		return defaultModset;
+	}
+
+	public void setDefaultModset(String defaultModset) {
+		this.defaultModset = defaultModset;
+	}
 }
