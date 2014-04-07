@@ -133,7 +133,7 @@ public class HttpConnection {
 
 		connection.setRequestMethod("GET");
 		connection.setRequestProperty("User-Agent", "jazsync");
-		if (login != null && password != null) {
+		if (!(login.equalsIgnoreCase("anonymous"))) {
 			String encoding = Base64Coder.encodeLines((login + ":" + password)
 					.getBytes());
 			connection.setRequestProperty("Authorization",
