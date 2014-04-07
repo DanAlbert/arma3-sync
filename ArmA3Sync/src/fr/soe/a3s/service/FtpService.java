@@ -269,7 +269,7 @@ public class FtpService extends AbstractConnexionService implements
 				}
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
+			// e.printStackTrace();
 			throw new WritingException(e.getMessage());
 		} finally {
 			disconnect();
