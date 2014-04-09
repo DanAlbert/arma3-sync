@@ -2,15 +2,12 @@ package fr.soe.a3s.service;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
 import java.util.concurrent.Callable;
-import java.util.concurrent.Executor;
-import java.util.concurrent.ExecutorCompletionService;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -204,7 +201,7 @@ public class LaunchService {
 		Configuration configuration = configurationDAO.getConfiguration();
 
 		String profileName = configuration.getProfileName();
-		Profile profile = (Profile) profileDAO.getMap().get(profileName);
+		Profile profile = profileDAO.getMap().get(profileName);
 		TreeDirectory racine = profile.getTree();
 		Set<String> addonNames = new TreeSet<String>();
 		getSelectedAddonNames(racine, addonNames);
@@ -240,7 +237,7 @@ public class LaunchService {
 
 		Configuration configuration = configurationDAO.getConfiguration();
 		String profileName = configuration.getProfileName();
-		Profile profile = (Profile) profileDAO.getMap().get(profileName);
+		Profile profile = profileDAO.getMap().get(profileName);
 
 		if (profile == null) {
 			return null;
@@ -471,6 +468,7 @@ public class LaunchService {
 					if (!password.isEmpty()) {
 						params.add("-password=" + password);
 					}
+					break;// needed if duplicate server with the same Name
 				}
 			}
 		}
@@ -482,7 +480,7 @@ public class LaunchService {
 		List<String> params = new ArrayList<String>();
 		String profileName = configurationDAO.getConfiguration()
 				.getProfileName();
-		Profile profile = (Profile) profileDAO.getMap().get(profileName);
+		Profile profile = profileDAO.getMap().get(profileName);
 		if (profile != null) {
 			String additionalParameters = profile.getAdditionalParameters();
 			if (additionalParameters != null) {
