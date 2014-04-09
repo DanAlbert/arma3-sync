@@ -8,6 +8,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
@@ -20,8 +22,11 @@ import javax.swing.SwingUtilities;
 
 import fr.soe.a3s.constant.GameVersions;
 import fr.soe.a3s.constant.MinimizationType;
+import fr.soe.a3s.dto.EventDTO;
+import fr.soe.a3s.dto.RepositoryDTO;
 import fr.soe.a3s.dto.configuration.FavoriteServerDTO;
 import fr.soe.a3s.exception.LaunchException;
+import fr.soe.a3s.exception.RepositoryException;
 import fr.soe.a3s.service.CommonService;
 import fr.soe.a3s.service.ConfigurationService;
 import fr.soe.a3s.service.LaunchService;
@@ -42,13 +47,17 @@ import fr.soe.a3s.ui.UIConstants;
  */
 public class LaunchPanel extends JPanel implements UIConstants {
 
-	private Facade facade;
+	private final Facade facade;
 	private JLabel gameVersionLabel, joinServerLabel;
 	private JComboBox gameVersionComboBox, joinServerComboBox;
 	private JButton startButton;
-	private ConfigurationService configurationService = new ConfigurationService();
-	private CommonService commonService = new CommonService();
-	private LaunchService launchService = new LaunchService();
+	/* Data */
+	private Map<String, Object> map = new TreeMap<String, Object>();
+	/* Services */
+	private final ConfigurationService configurationService = new ConfigurationService();
+	private final CommonService commonService = new CommonService();
+	private final LaunchService launchService = new LaunchService();
+	private final RepositoryService repositoryService = new RepositoryService();;
 
 	public LaunchPanel(Facade facade) {
 
@@ -106,8 +115,10 @@ public class LaunchPanel extends JPanel implements UIConstants {
 		}
 
 		startButton.addActionListener(new ActionListener() {
+			@Override
 			public void actionPerformed(ActionEvent arg0) {
 				SwingUtilities.invokeLater(new Runnable() {
+					@Override
 					public void run() {
 						startButtonPerformed();
 					}
@@ -115,11 +126,13 @@ public class LaunchPanel extends JPanel implements UIConstants {
 			}
 		});
 		joinServerComboBox.addActionListener(new ActionListener() {
+			@Override
 			public void actionPerformed(ActionEvent e) {
 				serverSelectionPerformed();
 			}
 		});
 		gameVersionComboBox.addActionListener(new ActionListener() {
+			@Override
 			public void actionPerformed(ActionEvent e) {
 				gameVersionSelectionPerformed();
 			}
@@ -159,6 +172,25 @@ public class LaunchPanel extends JPanel implements UIConstants {
 		if (gameVersion != null) {
 			this.gameVersionComboBox.setSelectedItem(gameVersion);
 		}
+
+		List<RepositoryDTO> repositoryDTOs = repositoryService
+				.getRepositories();
+
+		map = new TreeMap<String, Object>();
+		for (RepositoryDTO repositoryDTO : repositoryDTOs) {
+			map.put(repositoryDTO.getName(), repositoryDTO);
+			try {
+				List<EventDTO> list2 = repositoryService
+						.getEvents(repositoryDTO.getName());
+				if (list2 != null) {
+					for (EventDTO eventDTO : list2) {
+						map.put(eventDTO.getName(), eventDTO);
+					}
+				}
+			} catch (RepositoryException e) {
+				e.printStackTrace();
+			}
+		}
 	}
 
 	private void updatejoinServerComboBox() {
@@ -187,13 +219,20 @@ public class LaunchPanel extends JPanel implements UIConstants {
 				configurationService.saveServerName(serverName);
 			} else {
 				String serverName = selection.substring(0, index - 1).trim();
-				String repositoryName = selection.substring(index + 1).trim();
+				String modsetName = selection.substring(index + 1).trim();
 				configurationService.saveServerName(serverName);
-				configurationService.setDefautlModset(repositoryName);
-				List<String> list = new ArrayList<String>();
-				list.add(repositoryName);
-				facade.getAddonsPanel().createGroupFromRepository(list);
-				facade.getAddonsPanel().selectModset(repositoryName);
+				configurationService.setDefautlModset(modsetName);
+				Object objectDTO = map.get(modsetName);
+				if (objectDTO instanceof RepositoryDTO) {
+					List<String> list = new ArrayList<String>();
+					list.add(((RepositoryDTO) objectDTO).getName());
+					facade.getAddonsPanel().createGroupFromRepository(list);
+				} else if (objectDTO instanceof EventDTO) {
+					List<EventDTO> eventDTOs = new ArrayList<EventDTO>();
+					eventDTOs.add((EventDTO) objectDTO);
+					facade.getAddonsPanel().createGroupFromEvents(eventDTOs);
+				}
+				facade.getAddonsPanel().selectModset(modsetName);
 			}
 		}
 		facade.getLaunchOptionsPanel().updateRunParameters();
