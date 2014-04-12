@@ -96,8 +96,10 @@ public class HttpDAO extends AbstractConnexionDAO {
 			}
 		} catch (IOException e) {
 			String message = "Failed to connect to repository " + "\""
-					+ repository.getName() + "\"" + ".";
+					+ repository.getName() + "\"" + "." + "\n" + e.getMessage();
 			throw new HttpException(message);
+		} finally {
+			disconnect();
 		}
 	}
 
@@ -139,6 +141,8 @@ public class HttpDAO extends AbstractConnexionDAO {
 			System.out.println("Connection ok on url: " + url);
 		} else {
 			System.out.println("Connection ko on url: " + url);
+			System.out.println("Server return error " + responseCode
+					+ " on url " + url);
 			throw new HttpException("Connection failed.");
 		}
 
@@ -147,32 +151,49 @@ public class HttpDAO extends AbstractConnexionDAO {
 			File file = new File(TEMP_FOLDER_PATH + "/"
 					+ DataAccessConstants.AUTOCONFIG);
 			download(file);
-			ObjectInputStream fRo = new ObjectInputStream(new GZIPInputStream(
-					new FileInputStream(file)));
-			autoConfig = (AutoConfig) fRo.readObject();
-			fRo.close();
-			FileAccessMethods.deleteFile(file);
+			if (file.exists()) {
+				ObjectInputStream fRo = new ObjectInputStream(
+						new GZIPInputStream(new FileInputStream(file)));
+				autoConfig = (AutoConfig) fRo.readObject();
+				fRo.close();
+				FileAccessMethods.deleteFile(file);
+			}
 		} catch (Exception e) {
 			e.printStackTrace();
 			autoConfig = null;
 			throw new WritingException(e.getMessage());
+		} finally {
+			disconnect();
 		}
 		return autoConfig;
 	}
 
-	public ServerInfo downloadSeverInfo(Repository repository) {
+	public ServerInfo downloadSeverInfo(Repository repository)
+			throws HttpException, WritingException {
 
 		ServerInfo serverInfo = null;
 		try {
 			connect(repository, SERVERINFO_FILE_PATH, 5000);
 			int responseCode = httpURLConnection.getResponseCode();
-			if (responseCode == HttpURLConnection.HTTP_OK) {
-				File directory = new File(TEMP_FOLDER_PATH + "/"
-						+ repository.getName());
-				directory.mkdir();
-				File file = new File(directory + "/"
-						+ DataAccessConstants.SERVERINFO);
-				download(file);
+			if (responseCode != HttpURLConnection.HTTP_OK) {
+				String message = "Server return error " + responseCode
+						+ " on url " + repository.getProtocole().getUrl()
+						+ SERVERINFO_FILE_PATH;
+				System.out.println(message);
+				throw new HttpException(message);
+			}
+		} catch (IOException e) {
+			throw new HttpException(e.getMessage());
+		}
+
+		try {
+			File directory = new File(TEMP_FOLDER_PATH + "/"
+					+ repository.getName());
+			directory.mkdir();
+			File file = new File(directory + "/"
+					+ DataAccessConstants.SERVERINFO);
+			download(file);
+			if (file.exists()) {
 				ObjectInputStream fRo = new ObjectInputStream(
 						new GZIPInputStream(new FileInputStream(file)));
 				serverInfo = (ServerInfo) fRo.readObject();
@@ -182,23 +203,39 @@ public class HttpDAO extends AbstractConnexionDAO {
 		} catch (Exception e) {
 			e.printStackTrace();
 			serverInfo = null;
+			throw new WritingException(e.getMessage());
+		} finally {
+			disconnect();
 		}
 		return serverInfo;
 	}
 
-	public Changelogs downloadChangelog(Repository repository) {
+	public Changelogs downloadChangelog(Repository repository)
+			throws HttpException, WritingException {
 
 		Changelogs changelogs = null;
 		try {
-			connect(repository, CHANGELOG_FILE_PATH, 5000);
+			connect(repository, CHANGELOGS_FILE_PATH, 5000);
 			int responseCode = httpURLConnection.getResponseCode();
-			if (responseCode == HttpURLConnection.HTTP_OK) {
-				File directory = new File(TEMP_FOLDER_PATH + "/"
-						+ repository.getName());
-				directory.mkdir();
-				File file = new File(directory + "/"
-						+ DataAccessConstants.CHANGELOGS);
-				download(file);
+			if (responseCode != HttpURLConnection.HTTP_OK) {
+				String message = "Server return error " + responseCode
+						+ " on url " + repository.getProtocole().getUrl()
+						+ CHANGELOGS_FILE_PATH;
+				System.out.println(message);
+				throw new HttpException(message);
+			}
+		} catch (IOException e) {
+			throw new HttpException(e.getMessage());
+		}
+
+		try {
+			File directory = new File(TEMP_FOLDER_PATH + "/"
+					+ repository.getName());
+			directory.mkdir();
+			File file = new File(directory + "/"
+					+ DataAccessConstants.CHANGELOGS);
+			download(file);
+			if (file.exists()) {
 				ObjectInputStream fRo = new ObjectInputStream(
 						new GZIPInputStream(new FileInputStream(file)));
 				changelogs = (Changelogs) fRo.readObject();
@@ -208,23 +245,38 @@ public class HttpDAO extends AbstractConnexionDAO {
 		} catch (Exception e) {
 			e.printStackTrace();
 			changelogs = null;
+			throw new WritingException(e.getMessage());
+		} finally {
+			disconnect();
 		}
 		return changelogs;
 	}
 
-	public Events downloadEvent(Repository repository) {
+	public Events downloadEvent(Repository repository) throws HttpException,
+			WritingException {
 
 		Events events = null;
 		try {
 			connect(repository, EVENTS_FILE_PATH, 5000);
 			int responseCode = httpURLConnection.getResponseCode();
-			if (responseCode == HttpURLConnection.HTTP_OK) {
-				File directory = new File(TEMP_FOLDER_PATH + "/"
-						+ repository.getName());
-				directory.mkdir();
-				File file = new File(directory + "/"
-						+ DataAccessConstants.EVENTS);
-				download(file);
+			if (responseCode != HttpURLConnection.HTTP_OK) {
+				String message = "Server return error " + responseCode
+						+ " on url " + repository.getProtocole().getUrl()
+						+ EVENTS_FILE_PATH;
+				System.out.println(message);
+				throw new HttpException(message);
+			}
+		} catch (IOException e) {
+			throw new HttpException(e.getMessage());
+		}
+
+		try {
+			File directory = new File(TEMP_FOLDER_PATH + "/"
+					+ repository.getName());
+			directory.mkdir();
+			File file = new File(directory + "/" + DataAccessConstants.EVENTS);
+			download(file);
+			if (file.exists()) {
 				ObjectInputStream fRo = new ObjectInputStream(
 						new GZIPInputStream(new FileInputStream(file)));
 				events = (Events) fRo.readObject();
@@ -234,22 +286,38 @@ public class HttpDAO extends AbstractConnexionDAO {
 		} catch (Exception e) {
 			e.printStackTrace();
 			events = null;
+			throw new WritingException(e.getMessage());
+		} finally {
+			disconnect();
 		}
 		return events;
 	}
 
-	public SyncTreeDirectory downloadSync(Repository repository) {
+	public SyncTreeDirectory downloadSync(Repository repository)
+			throws HttpException, WritingException {
 
 		SyncTreeDirectory syncTreeDirectory = null;
 		try {
 			connect(repository, SYNC_FILE_PATH, 5000);
 			int responseCode = httpURLConnection.getResponseCode();
-			if (responseCode == HttpURLConnection.HTTP_OK) {
-				File directory = new File(TEMP_FOLDER_PATH + "/"
-						+ repository.getName());
-				directory.mkdir();
-				File file = new File(directory + "/" + DataAccessConstants.SYNC);
-				download(file);
+			if (responseCode != HttpURLConnection.HTTP_OK) {
+				String message = "Server return error " + responseCode
+						+ " on url " + repository.getProtocole().getUrl()
+						+ SYNC_FILE_PATH;
+				System.out.println(message);
+				throw new HttpException(message);
+			}
+		} catch (IOException e) {
+			throw new HttpException(e.getMessage());
+		}
+
+		try {
+			File directory = new File(TEMP_FOLDER_PATH + "/"
+					+ repository.getName());
+			directory.mkdir();
+			File file = new File(directory + "/" + DataAccessConstants.SYNC);
+			download(file);
+			if (file.exists()) {
 				ObjectInputStream fRo = new ObjectInputStream(
 						new GZIPInputStream(new FileInputStream(file)));
 				syncTreeDirectory = (SyncTreeDirectory) fRo.readObject();
@@ -259,6 +327,9 @@ public class HttpDAO extends AbstractConnexionDAO {
 		} catch (Exception e) {
 			e.printStackTrace();
 			syncTreeDirectory = null;
+			throw new WritingException(e.getMessage());
+		} finally {
+			disconnect();
 		}
 		return syncTreeDirectory;
 	}
@@ -284,7 +355,7 @@ public class HttpDAO extends AbstractConnexionDAO {
 			SyncTreeLeafDTO leaf = (SyncTreeLeafDTO) node;
 			String sha1 = leaf.getLocalSHA1();
 
-			Jazsync.sync(this.downloadingFile, sha1,relativeFileUrl,
+			Jazsync.sync(this.downloadingFile, sha1, relativeFileUrl,
 					relativeZsyncFileUrl, hostname, login, password, port,
 					resume, this);
 		} else {
@@ -448,7 +519,7 @@ public class HttpDAO extends AbstractConnexionDAO {
 	public void disconnect() {
 		if (httpURLConnection != null) {
 			httpURLConnection.disconnect();
-			httpURLConnection.setRequestProperty("Connection", "close");
+			// httpURLConnection.setRequestProperty("Connection", "close");
 		}
 	}
 

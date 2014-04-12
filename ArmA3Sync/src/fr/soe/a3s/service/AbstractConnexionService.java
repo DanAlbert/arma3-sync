@@ -24,10 +24,10 @@ public abstract class AbstractConnexionService {
 			throws WritingException, HttpException;
 
 	public abstract void checkRepository(String repositoryName)
-			throws FtpException, RepositoryException, HttpException;
+			throws FtpException, RepositoryException, HttpException, WritingException;
 
 	public abstract void getSync(String repositoryName)
-			throws RepositoryException, FtpException, HttpException;
+			throws RepositoryException, FtpException, HttpException, WritingException;
 
 	public abstract AbstractConnexionDAO getConnexionDAO();
 

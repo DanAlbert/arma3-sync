@@ -451,7 +451,7 @@ public class RepositoryEditPanel extends JDialog implements UIConstants,
 					AutoConfigDTO autoConfigDTO = connexion
 							.importAutoConfig(url);
 					if (autoConfigDTO != null) {
-						labelConnection.setText("Connetion success!");
+						labelConnection.setText("Connection success!");
 						labelConnection.setFont(new Font("Tohama", Font.ITALIC,
 								11));
 						labelConnection.setForeground(new Color(45, 125, 45));

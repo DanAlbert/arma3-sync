@@ -37,7 +37,7 @@ public interface DataAccessConstants {
 	String SERVERINFO_FILE_PATH = "/.a3s/serverinfo";
 	String SYNC_FILE_PATH = "/.a3s/sync";
 	String AUTOCONFIG_FILE_PATH = "/.a3s/autoconfig";
-	String CHANGELOG_FILE_PATH = "/.a3s/changelogs";
+	String CHANGELOGS_FILE_PATH = "/.a3s/changelogs";
 	String EVENTS_FILE_PATH = "/.a3s/events";
 	String AUTOCONFIG = "autoconfig";
 	String SERVERINFO = "serverinfo";

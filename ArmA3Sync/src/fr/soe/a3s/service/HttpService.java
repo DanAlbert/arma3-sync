@@ -52,7 +52,7 @@ public class HttpService extends AbstractConnexionService implements
 
 	@Override
 	public void checkRepository(String repositoryName)
-			throws RepositoryException, HttpException {
+			throws RepositoryException, HttpException, WritingException {
 
 		Repository repository = repositoryDAO.getMap().get(repositoryName);
 		if (repository == null) {
@@ -62,19 +62,36 @@ public class HttpService extends AbstractConnexionService implements
 
 		httpDAO.connectToRepository(repository);
 
-		SyncTreeDirectory syncTreeDirectory = httpDAO.downloadSync(repository);
-		repository.setSync(syncTreeDirectory);// null if not found
-		ServerInfo serverInfo = httpDAO.downloadSeverInfo(repository);
-		repository.setServerInfo(serverInfo);// null if not found
-		Changelogs changelogs = httpDAO.downloadChangelog(repository);
-		repository.setChangelogs(changelogs);// null if not found
-		Events events = httpDAO.downloadEvent(repository);
-		repository.setEvents(events);// null if not found
+		try {
+			SyncTreeDirectory syncTreeDirectory = httpDAO
+					.downloadSync(repository);
+			repository.setSync(syncTreeDirectory);// null if not found
+		} catch (HttpException e) {
+			// error http 404 may happen if repository has not been built so far
+		}
+		try {
+			ServerInfo serverInfo = httpDAO.downloadSeverInfo(repository);
+			repository.setServerInfo(serverInfo);// null if not found
+		} catch (HttpException e) {
+			// error http 404 may happen if repository has not been built so far
+		}
+		try {
+			Changelogs changelogs = httpDAO.downloadChangelog(repository);
+			repository.setChangelogs(changelogs);// null if not found
+		} catch (HttpException e) {
+			// error http 404 may happen if repository has not been built so far
+		}
+		try {
+			Events events = httpDAO.downloadEvent(repository);
+			repository.setEvents(events);// null if not found
+		} catch (HttpException e) {
+			// error http 404 may happen if no events exists in repository
+		}
 	}
 
 	@Override
 	public void getSync(String repositoryName) throws RepositoryException,
-			HttpException {
+			HttpException, WritingException {
 
 		Repository repository = repositoryDAO.getMap().get(repositoryName);
 		if (repository == null) {

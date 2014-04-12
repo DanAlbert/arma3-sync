@@ -248,7 +248,7 @@ public class RepositoryBuilderDAO implements DataAccessConstants,
 
 			// Changelogs file
 			File changelogsFile = new File(file.getAbsolutePath()
-					+ CHANGELOG_FILE_PATH);
+					+ CHANGELOGS_FILE_PATH);
 			if (changelogs != null) {
 				ObjectOutputStream fWo = new ObjectOutputStream(
 						new GZIPOutputStream(new FileOutputStream(
@@ -516,7 +516,7 @@ public class RepositoryBuilderDAO implements DataAccessConstants,
 		Changelogs changelogs = null;
 		try {
 			File changelogsFile = new File(file.getAbsolutePath()
-					+ CHANGELOG_FILE_PATH);
+					+ CHANGELOGS_FILE_PATH);
 			if (changelogsFile.exists()) {
 				ObjectInputStream fRo = new ObjectInputStream(
 						new GZIPInputStream(new FileInputStream(changelogsFile)));
