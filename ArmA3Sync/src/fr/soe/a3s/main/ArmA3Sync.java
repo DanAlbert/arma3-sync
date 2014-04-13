@@ -19,7 +19,7 @@ import fr.soe.a3s.ui.mainEditor.MainPanel;
 public class ArmA3Sync {
 
 	/**
-	 * This is the entry point for ArmA3Sync. ArmA3Sync is free software and
+	 * This is the entry point for ArmA3Sync. ArmA3Sync is a free software and
 	 * agree the GNU Global Public Licence in version 3.
 	 * 
 	 * @author Major_Shepard for the [S.o.E] Team, visit us at
@@ -229,7 +229,7 @@ public class ArmA3Sync {
 				message = file.getAbsolutePath()
 						+ " Cannot Write."
 						+ "\n"
-						+ "ArmA3Sync requires full write permissions on his installation directory.\nTry to run with administator priviledges.";
+						+ "ArmA3Sync requires full write permissions on its installation directory.\nTry to run with administator priviledges.";
 			}
 			response = false;
 		}
