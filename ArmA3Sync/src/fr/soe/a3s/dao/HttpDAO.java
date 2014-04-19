@@ -45,6 +45,13 @@ public class HttpDAO extends AbstractConnexionDAO {
 	private static final int BUFFER_SIZE = 4096;
 	private File downloadingFile;
 
+	private void connect(String url) throws IOException {
+
+		URL urlObject = new URL(url);
+		httpURLConnection = (HttpURLConnection) urlObject.openConnection();
+		httpURLConnection.setConnectTimeout(5000);
+	}
+
 	private void connect(Repository repository,
 			String relativePathFromRepository, int timeout) throws IOException {
 
@@ -62,9 +69,7 @@ public class HttpDAO extends AbstractConnexionDAO {
 		String login = repository.getProtocole().getLogin();
 		String password = repository.getProtocole().getPassword();
 
-		URL urlObject = null;
-
-		urlObject = new URL("http", hostname, Integer.parseInt(port),
+		URL urlObject = new URL("http", hostname, Integer.parseInt(port),
 				remotePath);
 		httpURLConnection = (HttpURLConnection) urlObject.openConnection();
 		httpURLConnection.setConnectTimeout(timeout);
@@ -80,7 +85,29 @@ public class HttpDAO extends AbstractConnexionDAO {
 	public void connectToRepository(Repository repository) throws HttpException {
 
 		try {
-			connect(repository, "", 5000);
+			String url = repository.getProtocole().getUrl();
+			String hostname = url;
+			int index = url.indexOf("/");
+			if (index != -1) {
+				hostname = url.substring(0, index);
+			}
+
+			String port = repository.getProtocole().getPort();
+			String login = repository.getProtocole().getLogin();
+			String password = repository.getProtocole().getPassword();
+
+			URL urlObject = new URL("http", hostname, Integer.parseInt(port),
+					"");
+			httpURLConnection = (HttpURLConnection) urlObject.openConnection();
+			httpURLConnection.setConnectTimeout(5000);
+
+			if (!(login.equalsIgnoreCase("anonymous"))) {
+				String encoding = Base64Coder
+						.encodeLines((login + ":" + password).getBytes());
+				httpURLConnection.setRequestProperty("Authorization", "Basic "
+						+ encoding.substring(0, encoding.length() - 1));
+			}
+
 			int responseCode = httpURLConnection.getResponseCode();
 			if (responseCode == HttpURLConnection.HTTP_OK) {
 				System.out.println("Connection to " + repository.getName()
@@ -94,9 +121,9 @@ public class HttpDAO extends AbstractConnexionDAO {
 				System.out.println(message);
 				throw new HttpException(message);
 			}
-		} catch (IOException e) {
+		} catch (Exception e) {
 			String message = "Failed to connect to repository " + "\""
-					+ repository.getName() + "\"" + "." + "\n" + e.getMessage();
+					+ repository.getName() + "\"";
 			throw new HttpException(message);
 		} finally {
 			disconnect();
@@ -129,9 +156,7 @@ public class HttpDAO extends AbstractConnexionDAO {
 
 		int responseCode = HttpURLConnection.HTTP_OK;
 		try {
-			URL urlObject = new URL(url);
-			httpURLConnection = (HttpURLConnection) urlObject.openConnection();
-			httpURLConnection.setConnectTimeout(5000);
+			connect(url);
 			responseCode = httpURLConnection.getResponseCode();
 		} catch (IOException e) {
 			throw new HttpException("Connection failed.");
@@ -240,8 +265,8 @@ public class HttpDAO extends AbstractConnexionDAO {
 						new GZIPInputStream(new FileInputStream(file)));
 				changelogs = (Changelogs) fRo.readObject();
 				fRo.close();
-				FileAccessMethods.deleteFile(file);
 			}
+			FileAccessMethods.deleteDirectory(directory);
 		} catch (Exception e) {
 			e.printStackTrace();
 			changelogs = null;
@@ -281,8 +306,8 @@ public class HttpDAO extends AbstractConnexionDAO {
 						new GZIPInputStream(new FileInputStream(file)));
 				events = (Events) fRo.readObject();
 				fRo.close();
-				FileAccessMethods.deleteFile(file);
 			}
+			FileAccessMethods.deleteDirectory(directory);
 		} catch (Exception e) {
 			e.printStackTrace();
 			events = null;
@@ -322,8 +347,8 @@ public class HttpDAO extends AbstractConnexionDAO {
 						new GZIPInputStream(new FileInputStream(file)));
 				syncTreeDirectory = (SyncTreeDirectory) fRo.readObject();
 				fRo.close();
-				FileAccessMethods.deleteFile(file);
 			}
+			FileAccessMethods.deleteDirectory(directory);
 		} catch (Exception e) {
 			e.printStackTrace();
 			syncTreeDirectory = null;
@@ -334,7 +359,7 @@ public class HttpDAO extends AbstractConnexionDAO {
 		return syncTreeDirectory;
 	}
 
-	public void downloadAddon(String hostname, String login, String password,
+	public void downloadFile(String hostname, String login, String password,
 			String port, String remotePath, String destinationPath,
 			SyncTreeNodeDTO node, boolean resume) throws WritingException,
 			JazsyncException {
