@@ -151,7 +151,7 @@ public class HttpService extends AbstractConnexionService implements
 					break;
 				}
 
-				httpDAO.downloadAddon(hostname, login, password, port,
+				httpDAO.downloadFile(hostname, login, password, port,
 						remotePath, destinationPath, node, resume);
 
 				resume = false;

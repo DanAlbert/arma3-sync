@@ -90,7 +90,7 @@ public class ConnectionPanel extends ProgressPanel {
 	private void menuExitPerformed() {
 		this.setVisible(false);
 		canceled = true;
-		if (connexion!=null){
+		if (connexion != null) {
 			connexion.disconnect();
 		}
 		this.dispose();
