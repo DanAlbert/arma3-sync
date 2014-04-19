@@ -78,7 +78,7 @@ public class FtpDAO extends AbstractConnexionDAO {
 		String login = repository.getProtocole().getLogin();
 		String password = repository.getProtocole().getPassword();
 		ftpClient = new FTPClient();
-		ftpClient.setConnectTimeout(5000);// 15 sec
+		ftpClient.setConnectTimeout(5000);// 5 sec
 		ftpClient.setBufferSize(1048576);// 1024*1024
 		boolean isLoged = false;
 		int reply = 0;

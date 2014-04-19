@@ -326,7 +326,7 @@ public class HttpDAO extends AbstractConnexionDAO {
 			connect(repository, SYNC_FILE_PATH, 5000);
 			int responseCode = httpURLConnection.getResponseCode();
 			if (responseCode != HttpURLConnection.HTTP_OK) {
-				String message = "Server return error " + responseCode
+				String message = "Server return HTTP error " + responseCode
 						+ " on url " + repository.getProtocole().getUrl()
 						+ SYNC_FILE_PATH;
 				System.out.println(message);
