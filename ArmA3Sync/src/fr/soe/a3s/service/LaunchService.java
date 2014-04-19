@@ -185,8 +185,8 @@ public class LaunchService {
 	private List<String> determineRunParameters() {
 
 		List<String> params = new ArrayList<String>();
-		params.addAll(getRunParameters());
 		params.addAll(getAdditionalParameters());
+		params.addAll(getRunParameters());
 		return params;
 	}
 
@@ -489,7 +489,13 @@ public class LaunchService {
 							additionalParameters, " -");
 					int nbParameters = stk.countTokens();
 					for (int i = 0; i < nbParameters; i++) {
-						params.add("-" + stk.nextToken().trim());
+						String param = stk.nextToken().trim();
+						// -malloc must be at first place
+						if (param.toLowerCase().contains("malloc")) {
+							params.add(0, "-" + param);
+						} else {
+							params.add("-" + param);
+						}
 					}
 				}
 			}
