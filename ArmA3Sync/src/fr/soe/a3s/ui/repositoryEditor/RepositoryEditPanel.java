@@ -41,6 +41,7 @@ import fr.soe.a3s.dto.AutoConfigDTO;
 import fr.soe.a3s.dto.ProtocoleDTO;
 import fr.soe.a3s.dto.RepositoryDTO;
 import fr.soe.a3s.exception.CheckException;
+import fr.soe.a3s.exception.FtpException;
 import fr.soe.a3s.exception.HttpException;
 import fr.soe.a3s.exception.RepositoryException;
 import fr.soe.a3s.exception.WritingException;
@@ -476,16 +477,15 @@ public class RepositoryEditPanel extends JDialog implements UIConstants,
 							checkBoxAnonymous.setSelected(true);
 						}
 					}
-				} catch (WritingException e) {
+				} catch (WritingException e1) {
 					labelConnection.setText("Error");
 					labelConnection
 							.setFont(new Font("Tohama", Font.ITALIC, 11));
 					labelConnection.setForeground(Color.RED);
-					JOptionPane
-							.showMessageDialog(facade.getMainPanel(),
-									e.getMessage(), "Error!",
-									JOptionPane.ERROR_MESSAGE);
-				} catch (HttpException e) {
+					JOptionPane.showMessageDialog(facade.getMainPanel(),
+							e1.getMessage(), "Error!",
+							JOptionPane.ERROR_MESSAGE);
+				} catch (HttpException | FtpException e2) {
 					labelConnection.setText("Url is not reachable!");
 					labelConnection
 							.setFont(new Font("Tohama", Font.ITALIC, 11));

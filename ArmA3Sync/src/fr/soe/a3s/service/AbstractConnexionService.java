@@ -21,7 +21,7 @@ import fr.soe.a3s.exception.WritingException;
 public abstract class AbstractConnexionService {
 
 	public abstract AutoConfigDTO importAutoConfig(String url)
-			throws WritingException, HttpException;
+			throws WritingException, HttpException, FtpException;
 
 	public abstract void checkRepository(String repositoryName)
 			throws FtpException, RepositoryException, HttpException, WritingException;

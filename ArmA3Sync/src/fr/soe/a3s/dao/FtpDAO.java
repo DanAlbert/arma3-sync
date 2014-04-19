@@ -9,66 +9,202 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.net.SocketException;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
 import org.apache.commons.io.output.CountingOutputStream;
+import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPFile;
+import org.apache.commons.net.ftp.FTPReply;
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
 import org.dom4j.Element;
 import org.dom4j.io.SAXReader;
 
+import fr.soe.a3s.constant.Protocole;
 import fr.soe.a3s.domain.repository.AutoConfig;
 import fr.soe.a3s.domain.repository.Changelogs;
 import fr.soe.a3s.domain.repository.Events;
+import fr.soe.a3s.domain.repository.Repository;
 import fr.soe.a3s.domain.repository.ServerInfo;
 import fr.soe.a3s.domain.repository.SyncTreeDirectory;
+import fr.soe.a3s.dto.AutoConfigDTO;
 import fr.soe.a3s.dto.sync.SyncTreeNodeDTO;
+import fr.soe.a3s.exception.FtpException;
+import fr.soe.a3s.exception.HttpException;
+import fr.soe.a3s.exception.WritingException;
 
 public class FtpDAO extends AbstractConnexionDAO {
 
-	public String downloadXMLupdateFile(FTPClient ftpClient, boolean devMode)
-			throws IOException, DocumentException {
+	private FTPClient ftpClient;
 
-		if (devMode) {
-			ftpClient.changeWorkingDirectory(UPDATE_REPOSITORY_DEV);
-		} else {
-			ftpClient.changeWorkingDirectory(UPDATE_REPOSITORY);
-		}
-		File file = new File(INSTALLATION_PATH + "/" + "a3s.xml");
-		FileOutputStream fos = new FileOutputStream(file);
-		boolean found = ftpClient.retrieveFile("a3s.xml", fos);
-		String nom = null;
-		fos.close();
-		if (found) {
-			SAXReader reader = new SAXReader();
-			Document documentLeaVersion = reader.read(file);
-			Element root = documentLeaVersion.getRootElement();
-			nom = root.selectSingleNode("nom").getText();
-		}
-		return nom;
+	private String connect(String url) throws NumberFormatException,
+			SocketException, IOException {
+
+		ftpClient = new FTPClient();
+		String address = url.replace(Protocole.FTP.getPrompt(), "");
+		int index1 = address.indexOf("/");
+		String hostname = address.substring(0, index1);
+		int index2 = address.lastIndexOf("/");
+		String remotePath = address.substring(index1, index2);
+
+		String port = "21";
+		String login = "anonymous";
+		String password = "";
+
+		ftpClient.setConnectTimeout(5000);// 5 sec
+		ftpClient.connect(hostname, Integer.parseInt(port));
+		ftpClient.login(login, password);
+		ftpClient.setFileType(FTP.BINARY_FILE_TYPE);
+		ftpClient.enterLocalPassiveMode();// passive mode
+
+		return remotePath;
 	}
 
-	public ServerInfo downloadSeverInfo(FTPClient ftpClient,
-			String repositoryName, String remotePath) {
+	public String connectToRepository(Repository repository)
+			throws FtpException {
 
-		ServerInfo serverInfo = null;
+		String url = repository.getProtocole().getUrl();
+		String hostname = url;
+		String remotePath = "";
+		int index = url.indexOf("/");
+		if (index != -1) {
+			hostname = url.substring(0, index);
+			remotePath = url.substring(index);
+		}
+		String port = repository.getProtocole().getPort();
+		String login = repository.getProtocole().getLogin();
+		String password = repository.getProtocole().getPassword();
+		ftpClient = new FTPClient();
+		ftpClient.setConnectTimeout(5000);// 15 sec
+		ftpClient.setBufferSize(1048576);// 1024*1024
+		boolean isLoged = false;
+		int reply = 0;
+		try {
+			ftpClient.connect(hostname, Integer.parseInt(port));
+			isLoged = ftpClient.login(login, password);
+			ftpClient.setFileType(FTP.BINARY_FILE_TYPE);
+			ftpClient.enterLocalPassiveMode();// passive mode
+			reply = ftpClient.getReplyCode();
+		} catch (Exception e) {
+			throw new FtpException("Failed to connect to repository "
+					+ repository.getName());
+		}
 
+		if (!isLoged) {
+			System.out.println("Connection to " + repository.getName()
+					+ " failed.\nWrong login or password.");
+			throw new FtpException("Failed to connect to repository " + "\""
+					+ repository.getName() + "\"" + "." + "\n"
+					+ "Wrong login or password.");
+		}
+
+		if (!FTPReply.isPositiveCompletion(reply)) {
+			System.out.println("Connection to " + repository.getName()
+					+ " failed.");
+			throw new FtpException("Failed to connect to repository "
+					+ repository.getName());
+		}
+
+		System.out.println("Connection to " + repository.getName()
+				+ " success.");
+
+		return remotePath;
+	}
+
+	private boolean download(File file, String remotePath) throws IOException {
+
+		boolean test = ftpClient.changeWorkingDirectory(remotePath);
+		FileOutputStream fos = new FileOutputStream(file);
+		boolean found = ftpClient.retrieveFile(file.getName(), fos);
+		fos.close();
+		return found;
+	}
+
+	public AutoConfig downloadAutoConfig(String url) throws FtpException,
+			WritingException {
+
+		if (url == null) {
+			return null;
+		}
+
+		int replyCode = 0;
+		String remotePath = null;
+		try {
+			remotePath = connect(url);
+			replyCode = ftpClient.getReplyCode();
+		} catch (Exception e) {
+			throw new FtpException("Connection failed.");
+		}
+
+		if (FTPReply.isPositiveCompletion(replyCode)) {
+			System.out.println("Connection ok on url: " + url);
+		} else {
+			System.out.println("Connection ko on url: " + url);
+			System.out.println("Server return error " + replyCode + " on url "
+					+ url);
+			throw new FtpException("Connection failed.");
+		}
+
+		AutoConfig autoConfig = null;
+		try {
+			File file = new File(TEMP_FOLDER_PATH + "/"
+					+ DataAccessConstants.AUTOCONFIG);
+			boolean found = download(file, remotePath);
+			if (found && file.exists()) {
+				ObjectInputStream fRo = new ObjectInputStream(
+						new GZIPInputStream(new FileInputStream(file)));
+				autoConfig = (AutoConfig) fRo.readObject();
+				fRo.close();
+				FileAccessMethods.deleteFile(file);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			autoConfig = null;
+			throw new WritingException(e.getMessage());
+		}
+		return autoConfig;
+	}
+
+	public SyncTreeDirectory downloadSync(String repositoryName,
+			String remotePath) throws WritingException {
+
+		SyncTreeDirectory syncTreeDirectory = null;
 		try {
 			remotePath = remotePath + A3S_FOlDER_PATH;
-			boolean test = ftpClient.changeWorkingDirectory(remotePath);
+			File directory = new File(TEMP_FOLDER_PATH + "/" + repositoryName);
+			directory.mkdir();
+			File file = new File(directory + "/" + DataAccessConstants.SYNC);
+			boolean found = download(file, remotePath);
+			if (found && file.exists()) {
+				ObjectInputStream fRo = new ObjectInputStream(
+						new GZIPInputStream(new FileInputStream(file)));
+				syncTreeDirectory = (SyncTreeDirectory) fRo.readObject();
+				fRo.close();
+			}
+			FileAccessMethods.deleteDirectory(directory);
+		} catch (Exception e) {
+			e.printStackTrace();
+			syncTreeDirectory = null;
+			throw new WritingException(e.getMessage());
+		}
+		return syncTreeDirectory;
+	}
+
+	public ServerInfo downloadSeverInfo(String repositoryName, String remotePath)
+			throws WritingException {
+
+		ServerInfo serverInfo = null;
+		try {
+			remotePath = remotePath + A3S_FOlDER_PATH;
 			File directory = new File(TEMP_FOLDER_PATH + "/" + repositoryName);
 			directory.mkdir();
 			File file = new File(directory + "/"
 					+ DataAccessConstants.SERVERINFO);
-			FileOutputStream fos = new FileOutputStream(file);
-			boolean found = ftpClient.retrieveFile(
-					DataAccessConstants.SERVERINFO, fos);
-			fos.close();
-
-			if (found) {
+			boolean found = download(file, remotePath);
+			if (found && file.exists()) {
 				ObjectInputStream fRo = new ObjectInputStream(
 						new GZIPInputStream(new FileInputStream(file)));
 				serverInfo = (ServerInfo) fRo.readObject();
@@ -78,34 +214,60 @@ public class FtpDAO extends AbstractConnexionDAO {
 		} catch (Exception e) {
 			e.printStackTrace();
 			serverInfo = null;
+			throw new WritingException(e.getMessage());
 		}
 		return serverInfo;
 	}
 
-	public AutoConfig downloadAutoConfig(FTPClient ftpClient, String remotePath) {
+	public Changelogs downloadChangelog(String repositoryName, String remotePath)
+			throws WritingException {
 
-		AutoConfig autoConfig = null;
-
+		Changelogs changelogs = null;
 		try {
-			boolean test = ftpClient.changeWorkingDirectory(remotePath);
-			File file = new File(TEMP_FOLDER_PATH + "/"
-					+ DataAccessConstants.AUTOCONFIG);
-			FileOutputStream fos = new FileOutputStream(file);
-			boolean found = ftpClient.retrieveFile(
-					DataAccessConstants.AUTOCONFIG, fos);
-			fos.close();
-			if (found) {
+			remotePath = remotePath + A3S_FOlDER_PATH;
+			File directory = new File(TEMP_FOLDER_PATH + "/" + repositoryName);
+			directory.mkdir();
+			File file = new File(directory + "/"
+					+ DataAccessConstants.CHANGELOGS);
+			boolean found = download(file, remotePath);
+			if (found && file.exists()) {
 				ObjectInputStream fRo = new ObjectInputStream(
 						new GZIPInputStream(new FileInputStream(file)));
-				autoConfig = (AutoConfig) fRo.readObject();
+				changelogs = (Changelogs) fRo.readObject();
 				fRo.close();
 			}
-			FileAccessMethods.deleteFile(file);
+			FileAccessMethods.deleteDirectory(directory);
 		} catch (Exception e) {
 			e.printStackTrace();
-			autoConfig = null;
+			changelogs = null;
+			throw new WritingException(e.getMessage());
 		}
-		return autoConfig;
+		return changelogs;
+	}
+
+	public Events downloadEvent(String repositoryName, String remotePath)
+			throws WritingException {
+
+		Events events = null;
+		try {
+			remotePath = remotePath + A3S_FOlDER_PATH;
+			File directory = new File(TEMP_FOLDER_PATH + "/" + repositoryName);
+			directory.mkdir();
+			File file = new File(directory + "/" + DataAccessConstants.EVENTS);
+			boolean found = download(file, remotePath);
+			if (found && file.exists()) {
+				ObjectInputStream fRo = new ObjectInputStream(
+						new GZIPInputStream(new FileInputStream(file)));
+				events = (Events) fRo.readObject();
+				fRo.close();
+			}
+			FileAccessMethods.deleteDirectory(directory);
+		} catch (Exception e) {
+			e.printStackTrace();
+			events = null;
+			throw new WritingException(e.getMessage());
+		}
+		return events;
 	}
 
 	public FTPFile[] getFiles(FTPClient ftpClient, String remotePath)
@@ -116,97 +278,8 @@ public class FtpDAO extends AbstractConnexionDAO {
 		return ftpFiles;
 	}
 
-	public SyncTreeDirectory downloadSync(FTPClient ftpClient,
-			String repositoryName, String remotePath) {
-
-		SyncTreeDirectory syncTreeDirectory = null;
-
-		try {
-			remotePath = remotePath + A3S_FOlDER_PATH;
-			boolean test = ftpClient.changeWorkingDirectory(remotePath);
-			File directory = new File(TEMP_FOLDER_PATH + "/" + repositoryName);
-			directory.mkdir();
-			File file = new File(directory + "/" + DataAccessConstants.SYNC);
-			FileOutputStream fos = new FileOutputStream(file);
-			boolean found = ftpClient.retrieveFile(DataAccessConstants.SYNC,
-					fos);
-			fos.close();
-			if (found) {
-				ObjectInputStream fRo = new ObjectInputStream(
-						new GZIPInputStream(new FileInputStream(file)));
-				syncTreeDirectory = (SyncTreeDirectory) fRo.readObject();
-				fRo.close();
-			}
-			FileAccessMethods.deleteDirectory(directory);
-		} catch (Exception e) {
-			e.printStackTrace();
-			syncTreeDirectory = null;
-		}
-		return syncTreeDirectory;
-	}
-
-	public Changelogs downloadChangelog(FTPClient ftpClient,
-			String repositoryName, String remotePath) {
-
-		Changelogs changelogs = null;
-
-		try {
-			remotePath = remotePath + A3S_FOlDER_PATH;
-			boolean test = ftpClient.changeWorkingDirectory(remotePath);
-			File directory = new File(TEMP_FOLDER_PATH + "/" + repositoryName);
-			directory.mkdir();
-			File file = new File(directory + "/"
-					+ DataAccessConstants.CHANGELOGS);
-			FileOutputStream fos = new FileOutputStream(file);
-			boolean found = ftpClient.retrieveFile(
-					DataAccessConstants.CHANGELOGS, fos);
-			fos.close();
-			if (found) {
-				ObjectInputStream fRo = new ObjectInputStream(
-						new GZIPInputStream(new FileInputStream(file)));
-				changelogs = (Changelogs) fRo.readObject();
-				fRo.close();
-			}
-			FileAccessMethods.deleteDirectory(directory);
-		} catch (Exception e) {
-			e.printStackTrace();
-			changelogs = null;
-		}
-		return changelogs;
-	}
-
-	public Events downloadEvent(FTPClient ftpClient, String repositoryName,
-			String remotePath) {
-
-		Events events = null;
-
-		try {
-			remotePath = remotePath + A3S_FOlDER_PATH;
-			boolean test = ftpClient.changeWorkingDirectory(remotePath);
-			File directory = new File(TEMP_FOLDER_PATH + "/" + repositoryName);
-			directory.mkdir();
-			File file = new File(directory + "/" + DataAccessConstants.EVENTS);
-			FileOutputStream fos = new FileOutputStream(file);
-			boolean found = ftpClient.retrieveFile(DataAccessConstants.EVENTS,
-					fos);
-			fos.close();
-			if (found) {
-				ObjectInputStream fRo = new ObjectInputStream(
-						new GZIPInputStream(new FileInputStream(file)));
-				events = (Events) fRo.readObject();
-				fRo.close();
-			}
-			FileAccessMethods.deleteDirectory(directory);
-		} catch (Exception e) {
-			e.printStackTrace();
-			events = null;
-		}
-		return events;
-	}
-
-	public boolean downloadAddon(FTPClient ftpClient, String remotePath,
-			String destinationPath, SyncTreeNodeDTO node, boolean resume)
-			throws IOException {
+	public boolean downloadFile(String remotePath, String destinationPath,
+			SyncTreeNodeDTO node, boolean resume) throws IOException {
 
 		boolean test = ftpClient.changeWorkingDirectory(remotePath);
 		File parentDirectory = new File(destinationPath);
@@ -254,8 +327,8 @@ public class FtpDAO extends AbstractConnexionDAO {
 		return found;
 	}
 
-	public boolean uploadEvents(FTPClient ftpClient, Events events,
-			String remotePath) throws IOException {
+	public boolean uploadEvents(Events events, String remotePath)
+			throws IOException {
 
 		remotePath = remotePath + A3S_FOlDER_PATH;
 		boolean test = ftpClient.changeWorkingDirectory(remotePath);
@@ -269,5 +342,48 @@ public class FtpDAO extends AbstractConnexionDAO {
 		boolean response = ftpClient.storeFile(EVENTS, uis);
 		ftpClient.noop();
 		return response;
+	}
+
+	public String downloadXMLupdateFile(boolean devMode) throws IOException,
+			DocumentException, FtpException {
+
+		ftpClient = new FTPClient();
+		ftpClient.connect(UPDTATE_REPOSITORY_ADRESS, UPDTATE_REPOSITORY_PORT);
+		ftpClient.login(UPDTATE_REPOSITORY_LOGIN, UPDTATE_REPOSITORY_PASS);
+		ftpClient.setFileType(FTP.BINARY_FILE_TYPE);
+		ftpClient.enterLocalPassiveMode();// passive mode
+		int reply = ftpClient.getReplyCode();
+		if (FTPReply.isPositiveCompletion(reply)) {
+			System.out.println("Connection updates repository Success");
+		} else {
+			System.out.println("Connection Failed");
+			throw new FtpException("Failed to connect to updates repository.");
+		}
+
+		File file = new File(INSTALLATION_PATH + "/" + "a3s.xml");
+		boolean found = false;
+		if (devMode) {
+			found = download(file, UPDATE_REPOSITORY_DEV);
+		} else {
+			found = download(file, UPDATE_REPOSITORY);
+		}
+
+		String nom = null;
+		if (found && file.exists()) {
+			SAXReader reader = new SAXReader();
+			Document documentLeaVersion = reader.read(file);
+			Element root = documentLeaVersion.getRootElement();
+			nom = root.selectSingleNode("nom").getText();
+		}
+		return nom;
+	}
+
+	public void disconnect() {
+		if (ftpClient != null) {
+			try {
+				ftpClient.disconnect();
+			} catch (IOException e) {
+			}
+		}
 	}
 }
