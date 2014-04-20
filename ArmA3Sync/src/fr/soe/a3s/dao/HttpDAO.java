@@ -108,22 +108,14 @@ public class HttpDAO extends AbstractConnexionDAO {
 						+ encoding.substring(0, encoding.length() - 1));
 			}
 
+			// check url validity
 			int responseCode = httpURLConnection.getResponseCode();
-			if (responseCode == HttpURLConnection.HTTP_OK) {
-				System.out.println("Connection to " + repository.getName()
-						+ " success.");
-			} else {
-				String message = "Failed to connect to repository " + "\""
-						+ repository.getName() + "\""
-						+ ".\nServer return error " + responseCode + " on url "
-						+ repository.getProtocole().getUrl()
-						+ ".\n You may need to check login and password.";
-				System.out.println(message);
-				throw new HttpException(message);
-			}
-		} catch (Exception e) {
+			System.out.println("Connection to " + repository.getName()
+					+ " success.");
+		} catch (Exception e) {// happen if host url is wrong
 			String message = "Failed to connect to repository " + "\""
-					+ repository.getName() + "\"";
+					+ repository.getName() + "\"" + " on url "
+					+ repository.getProtocole().getUrl();
 			throw new HttpException(message);
 		} finally {
 			disconnect();
