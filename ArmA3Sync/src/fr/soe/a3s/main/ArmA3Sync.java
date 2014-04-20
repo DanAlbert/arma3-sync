@@ -203,7 +203,7 @@ public class ArmA3Sync {
 		final File file = new File(path);
 		String message = "";
 
-		boolean response = true;
+		boolean response = false;
 		try {
 			final RandomAccessFile randomAccessFile = new RandomAccessFile(
 					file, "rw");
@@ -222,6 +222,7 @@ public class ArmA3Sync {
 						}
 					}
 				});
+				response = true;
 			}
 		} catch (Exception e) {
 			System.out.println("Unable to create and/or lock file: " + path);
