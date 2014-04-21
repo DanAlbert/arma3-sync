@@ -82,6 +82,7 @@ public class HttpDAO extends AbstractConnexionDAO {
 		}
 	}
 
+	@Deprecated
 	public void connectToRepository(Repository repository) throws HttpException {
 
 		try {
@@ -199,8 +200,12 @@ public class HttpDAO extends AbstractConnexionDAO {
 				System.out.println(message);
 				throw new HttpException(message);
 			}
-		} catch (IOException e) {
-			throw new HttpException(e.getMessage());
+		} catch (IOException e) {// happens if repository url is wrong
+			String message = "Failed to connect to repository " + "\""
+					+ repository.getName() + "\"" + " on url "
+					+ repository.getProtocole().getUrl();
+			System.out.println(message);
+			throw new HttpException(message);
 		}
 
 		try {
@@ -241,8 +246,12 @@ public class HttpDAO extends AbstractConnexionDAO {
 				System.out.println(message);
 				throw new HttpException(message);
 			}
-		} catch (IOException e) {
-			throw new HttpException(e.getMessage());
+		} catch (IOException e) {// happens if repository url is wrong
+			String message = "Failed to connect to repository " + "\""
+					+ repository.getName() + "\"" + " on url "
+					+ repository.getProtocole().getUrl();
+			System.out.println(message);
+			throw new HttpException(message);
 		}
 
 		try {
@@ -283,8 +292,12 @@ public class HttpDAO extends AbstractConnexionDAO {
 				System.out.println(message);
 				throw new HttpException(message);
 			}
-		} catch (IOException e) {
-			throw new HttpException(e.getMessage());
+		} catch (IOException e) {// happens if repository url is wrong
+			String message = "Failed to connect to repository " + "\""
+					+ repository.getName() + "\"" + " on url "
+					+ repository.getProtocole().getUrl();
+			System.out.println(message);
+			throw new HttpException(message);
 		}
 
 		try {
@@ -324,8 +337,12 @@ public class HttpDAO extends AbstractConnexionDAO {
 				System.out.println(message);
 				throw new HttpException(message);
 			}
-		} catch (IOException e) {
-			throw new HttpException(e.getMessage());
+		} catch (IOException e) {// happens if repository url is wrong
+			String message = "Failed to connect to repository " + "\""
+					+ repository.getName() + "\"" + " on url "
+					+ repository.getProtocole().getUrl();
+			System.out.println(message);
+			throw new HttpException(message);
 		}
 
 		try {
@@ -536,7 +553,6 @@ public class HttpDAO extends AbstractConnexionDAO {
 	public void disconnect() {
 		if (httpURLConnection != null) {
 			httpURLConnection.disconnect();
-			// httpURLConnection.setRequestProperty("Connection", "close");
 		}
 	}
 

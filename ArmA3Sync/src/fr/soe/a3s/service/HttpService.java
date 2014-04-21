@@ -60,8 +60,6 @@ public class HttpService extends AbstractConnexionService implements
 					+ " not found!");
 		}
 
-		httpDAO.connectToRepository(repository);
-
 		try {
 			SyncTreeDirectory syncTreeDirectory = httpDAO
 					.downloadSync(repository);
@@ -99,7 +97,7 @@ public class HttpService extends AbstractConnexionService implements
 					+ " not found!");
 		}
 
-		httpDAO.connectToRepository(repository);
+		// httpDAO.connectToRepository(repository);
 
 		SyncTreeDirectory syncTreeDirectory = httpDAO.downloadSync(repository);
 		repository.setSync(syncTreeDirectory);// null if not found
@@ -115,8 +113,6 @@ public class HttpService extends AbstractConnexionService implements
 			throw new RepositoryException("Repository " + repositoryName
 					+ " not found!");
 		}
-
-		httpDAO.connectToRepository(repository);
 
 		assert (repository.getSync() != null);
 		assert (repository.getServerInfo() != null);
@@ -172,8 +168,6 @@ public class HttpService extends AbstractConnexionService implements
 			throw new RepositoryException("Repository " + repositoryName
 					+ " not found!");
 		}
-
-		httpDAO.connectToRepository(repository);
 
 		assert (repository.getSync() != null);
 		assert (repository.getServerInfo() != null);
