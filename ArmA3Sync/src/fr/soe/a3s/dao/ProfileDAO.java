@@ -28,7 +28,7 @@ public class ProfileDAO implements DataAccessConstants {
 		File directory = new File(PROFILES_FOLDER_PATH);
 		File[] subfiles = directory.listFiles();
 		boolean error = false;
-		if (subfiles!=null){
+		if (subfiles != null) {
 			for (File file : subfiles) {
 				try {
 					ObjectInputStream fRo = new ObjectInputStream(
@@ -50,29 +50,30 @@ public class ProfileDAO implements DataAccessConstants {
 			Profile profile = new Profile("Default");
 			mapProfiles.put(profile.getName(), profile);
 		}
-		
-		if (error){
+
+		if (error) {
 			throw new LoadingException();
 		}
 	}
 
 	public void writeProfiles() throws WritingException {
-		
+
 		/* Clear profiles folder */
 		File profilesFolder = new File(PROFILES_FOLDER_PATH);
 		FileAccessMethods.deleteDirectory(profilesFolder);
-		profilesFolder.mkdir();
-		
-		boolean error = false; 
-		for (Iterator<String> i = mapProfiles.keySet().iterator() ; i.hasNext() ; ){
+		profilesFolder.mkdirs();
+
+		boolean error = false;
+		for (Iterator<String> i = mapProfiles.keySet().iterator(); i.hasNext();) {
 			String profileName = i.next();
 			Profile profile = mapProfiles.get(profileName);
 			try {
 				mapProfiles.put(profile.getName(), profile);
 				String path = PROFILES_FOLDER_PATH + "/" + profile.getName()
 						+ PROFILE_EXTENSION;
+				File file = new File(path);
 				ObjectOutputStream fWo = new ObjectOutputStream(
-						new GZIPOutputStream(new FileOutputStream(path)));
+						new GZIPOutputStream(new FileOutputStream(file)));
 				if (profile != null)
 					fWo.writeObject(profile);
 				fWo.close();
@@ -81,9 +82,10 @@ public class ProfileDAO implements DataAccessConstants {
 				error = true;
 			}
 		}
-		
-		if (error){
-			throw new WritingException("Failded to write one or more profile(s).");
+
+		if (error) {
+			throw new WritingException(
+					"Failded to write one or more profile(s).");
 		}
 	}
 }
