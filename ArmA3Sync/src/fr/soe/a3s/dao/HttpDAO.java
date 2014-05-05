@@ -179,7 +179,7 @@ public class HttpDAO extends AbstractConnexionDAO {
 		} catch (Exception e) {
 			e.printStackTrace();
 			autoConfig = null;
-			throw new WritingException(e.getMessage());
+			throw new WritingException("Failded to read file /.a3s/autoconfig" + "/n" + e.getMessage());
 		} finally {
 			disconnect();
 		}
@@ -225,7 +225,7 @@ public class HttpDAO extends AbstractConnexionDAO {
 		} catch (Exception e) {
 			e.printStackTrace();
 			serverInfo = null;
-			throw new WritingException(e.getMessage());
+			throw new WritingException("Failded to read file /.a3s/serverInfo" + "/n" + e.getMessage());
 		} finally {
 			disconnect();
 		}
@@ -271,7 +271,7 @@ public class HttpDAO extends AbstractConnexionDAO {
 		} catch (Exception e) {
 			e.printStackTrace();
 			changelogs = null;
-			throw new WritingException(e.getMessage());
+			throw new WritingException("Failded to read file /.a3s/changelogs" + "/n" + e.getMessage());
 		} finally {
 			disconnect();
 		}
@@ -316,7 +316,7 @@ public class HttpDAO extends AbstractConnexionDAO {
 		} catch (Exception e) {
 			e.printStackTrace();
 			events = null;
-			throw new WritingException(e.getMessage());
+			throw new WritingException("Failded to read file /.a3s/events" + "/n" + e.getMessage());
 		} finally {
 			disconnect();
 		}
@@ -361,7 +361,7 @@ public class HttpDAO extends AbstractConnexionDAO {
 		} catch (Exception e) {
 			e.printStackTrace();
 			syncTreeDirectory = null;
-			throw new WritingException(e.getMessage());
+			throw new WritingException("Failded to read file /.a3s/sync" + "/n" + e.getMessage());
 		} finally {
 			disconnect();
 		}

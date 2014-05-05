@@ -164,7 +164,8 @@ public class FtpDAO extends AbstractConnexionDAO {
 		} catch (Exception e) {
 			e.printStackTrace();
 			autoConfig = null;
-			throw new WritingException(e.getMessage());
+			throw new WritingException("Failded to read file /.a3s/autoconfig"
+					+ "/n" + e.getMessage());
 		}
 		return autoConfig;
 	}
@@ -189,7 +190,8 @@ public class FtpDAO extends AbstractConnexionDAO {
 		} catch (Exception e) {
 			e.printStackTrace();
 			syncTreeDirectory = null;
-			throw new WritingException(e.getMessage());
+			throw new WritingException("Failded to read file /.a3s/sync" + "/n"
+					+ e.getMessage());
 		}
 		return syncTreeDirectory;
 	}
@@ -215,7 +217,8 @@ public class FtpDAO extends AbstractConnexionDAO {
 		} catch (Exception e) {
 			e.printStackTrace();
 			serverInfo = null;
-			throw new WritingException(e.getMessage());
+			throw new WritingException("Failded to read file /.a3s/serverInfo"
+					+ "/n" + e.getMessage());
 		}
 		return serverInfo;
 	}
@@ -241,7 +244,8 @@ public class FtpDAO extends AbstractConnexionDAO {
 		} catch (Exception e) {
 			e.printStackTrace();
 			changelogs = null;
-			throw new WritingException(e.getMessage());
+			throw new WritingException("Failded to read file /.a3s/changelogs"
+					+ "/n" + e.getMessage());
 		}
 		return changelogs;
 	}
@@ -266,7 +270,8 @@ public class FtpDAO extends AbstractConnexionDAO {
 		} catch (Exception e) {
 			e.printStackTrace();
 			events = null;
-			throw new WritingException(e.getMessage());
+			throw new WritingException("Failded to read file /.a3s/events"
+					+ "/n" + e.getMessage());
 		}
 		return events;
 	}
