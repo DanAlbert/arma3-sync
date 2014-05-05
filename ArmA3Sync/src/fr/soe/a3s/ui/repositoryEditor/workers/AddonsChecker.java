@@ -1,6 +1,5 @@
 package fr.soe.a3s.ui.repositoryEditor.workers;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -8,11 +7,7 @@ import java.util.Map;
 import javax.swing.JOptionPane;
 
 import fr.soe.a3s.controller.ObserverFilesNumber;
-import fr.soe.a3s.domain.TreeLeaf;
 import fr.soe.a3s.dto.EventDTO;
-import fr.soe.a3s.dto.TreeDirectoryDTO;
-import fr.soe.a3s.dto.TreeLeafDTO;
-import fr.soe.a3s.dto.TreeNodeDTO;
 import fr.soe.a3s.dto.sync.SyncTreeDirectoryDTO;
 import fr.soe.a3s.dto.sync.SyncTreeLeafDTO;
 import fr.soe.a3s.dto.sync.SyncTreeNodeDTO;
@@ -27,17 +22,17 @@ import fr.soe.a3s.ui.repositoryEditor.DownloadPanel;
 
 public class AddonsChecker extends Thread {
 
-	private Facade facade;
-	private String repositoryName;
-	private String eventName;
+	private final Facade facade;
+	private final String repositoryName;
+	private final String eventName;
 	private SyncTreeDirectoryDTO parent;
 	private boolean found;
-	private boolean update;
-	private DownloadPanel downloadPanel;
+	private final boolean update;
+	private final DownloadPanel downloadPanel;
 	/* Services */
-	private RepositoryService repositoryService = new RepositoryService();
-	private AddonService addonService = new AddonService();
-	private ProfileService profileService = new ProfileService();
+	private final RepositoryService repositoryService = new RepositoryService();
+	private final AddonService addonService = new AddonService();
+	private final ProfileService profileService = new ProfileService();
 
 	public AddonsChecker(Facade facade, String repositoryName,
 			String eventName, boolean update, DownloadPanel downloadPanel) {
@@ -48,6 +43,7 @@ public class AddonsChecker extends Thread {
 		this.downloadPanel = downloadPanel;
 	}
 
+	@Override
 	public void run() {
 
 		downloadPanel.getButtonCheckForAddonsCancel().setEnabled(true);
@@ -58,6 +54,7 @@ public class AddonsChecker extends Thread {
 		downloadPanel.getProgressBarCheckForAddons().setMaximum(100);
 		repositoryService.getRepositoryBuilderDAO().addObserverFilesNumber(
 				new ObserverFilesNumber() {
+					@Override
 					public synchronized void update(int value) {
 						downloadPanel.getProgressBarCheckForAddons().setValue(
 								value);
@@ -71,7 +68,7 @@ public class AddonsChecker extends Thread {
 			addonService.resetAvailableAddonTree();
 			addonService.getAvailableAddonsTree();
 			parent = repositoryService.getSync(repositoryName);
-			// connexionService .determineCompletion(repositoryName,parent);//
+			// connexionService .determineCompletion(repositoryName,parent);
 			// slow with zsync!
 			if (eventName != null) {
 				setEventAddonSelection();
@@ -87,7 +84,6 @@ public class AddonsChecker extends Thread {
 			facade.getAddonsPanel().updateModsetSelection(repositoryName);
 			downloadPanel.getLabelCheckForAddonsStatus().setText("Finished!");
 		} catch (Exception e) {
-			e.printStackTrace();
 			String message = "";
 			if (e.getMessage().isEmpty()) {
 				message = "An unexpected error has occured. \n Try to close and run ArmA3Sync.bat file.";
@@ -141,59 +137,6 @@ public class AddonsChecker extends Thread {
 		}
 	}
 
-	// private void retrieve(SyncTreeDirectoryDTO syncTreeDirectoryDTO,
-	// List<SyncTreeDirectoryDTO> retrievedList,
-	// Map<String, Boolean> addonNames) {
-	//
-	// for (SyncTreeNodeDTO nodeDTO : syncTreeDirectoryDTO.getList()) {
-	// if (!nodeDTO.isLeaf()) {
-	// SyncTreeDirectoryDTO directoryDTO = (SyncTreeDirectoryDTO) nodeDTO;
-	// if (directoryDTO.isMarkAsAddon()
-	// && addonNames.containsKey(nodeDTO.getName())) {
-	// boolean optional = addonNames.get(nodeDTO.getName());
-	// if (optional) {
-	// directoryDTO.setSelected(false);
-	// directoryDTO.setOptional(true);
-	// } else {
-	// directoryDTO.setSelected(true);
-	// directoryDTO.setOptional(false);
-	// }
-	// retrievedList.add(directoryDTO);
-	// } else {
-	// retrieve(directoryDTO, retrievedList, addonNames);
-	// }
-	// }
-	// }
-	// }
-
-	// private void build(SyncTreeDirectoryDTO syncTreeDirectoryDTO,
-	// SyncTreeDirectoryDTO newSyncTreeDirectoryDTO,
-	// List<SyncTreeDirectoryDTO> retrievedList) {
-	//
-	// for (SyncTreeNodeDTO nodeDTO : retrievedList) {
-	// if (nodeDTO.getParent().getName().contains("racine")) {
-	// newSyncTreeDirectoryDTO.addTreeNode(nodeDTO);
-	// nodeDTO.setParent(newSyncTreeDirectoryDTO);
-	// } else {
-	// SyncTreeDirectoryDTO newParent = new SyncTreeDirectoryDTO();
-	// newParent.setName(nodeDTO.getParent().getName());
-	// SyncTreeDirectoryDTO p = nodeDTO.getParent().getParent();
-	// SyncTreeDirectoryDTO previousParent = newParent;
-	// while (!p.getName().contains("racine")) {
-	// SyncTreeDirectoryDTO newP = new SyncTreeDirectoryDTO();
-	// newP.setName(p.getName());
-	// previousParent.setParent(newP);
-	// newP.addTreeNode(previousParent);
-	// previousParent = newP;
-	// p = p.getParent();
-	// }
-	// newSyncTreeDirectoryDTO.addTreeNode(previousParent);
-	// newParent.addTreeNode(nodeDTO);
-	// nodeDTO.setParent(newParent);
-	// }
-	// }
-	// }
-
 	private void refineAddons(SyncTreeDirectoryDTO oldSyncTreeDirectoryDTO,
 			SyncTreeDirectoryDTO newSyncTreeDirectoryDTO,
 			Map<String, Boolean> addonNames) {
@@ -218,6 +161,7 @@ public class AddonsChecker extends Thread {
 						newDirectory.setSelected(true);
 						selectAllAscending(newDirectory);
 					}
+					newSyncTreeDirectoryDTO.setHidden(directoryDTO.isHidden());
 					newSyncTreeDirectoryDTO.addTreeNode(newDirectory);
 					fill(directoryDTO, newDirectory);
 				} else if (!directoryDTO.isMarkAsAddon()) {
@@ -250,6 +194,14 @@ public class AddonsChecker extends Thread {
 				newLeafDTO.setSize(leafDTO.getSize());
 				newLeafDTO.setDestinationPath(leafDTO.getDestinationPath());
 				newDirectoryDTO.addTreeNode(newLeafDTO);
+				if (newLeafDTO.isUpdated() || newLeafDTO.isDeleted()) {
+					SyncTreeDirectoryDTO parent = newLeafDTO.getParent();
+					while (parent != null) {
+						parent.setUpdated(true);
+						parent = parent.getParent();
+					}
+				}
+
 			} else {
 				SyncTreeDirectoryDTO dDTO = (SyncTreeDirectoryDTO) nodeDTO;
 				SyncTreeDirectoryDTO newdDTO = new SyncTreeDirectoryDTO();
@@ -260,6 +212,7 @@ public class AddonsChecker extends Thread {
 				newdDTO.setSelected(newDirectoryDTO.isSelected());
 				newdDTO.setDestinationPath(dDTO.getDestinationPath());
 				newdDTO.setMarkAsAddon(dDTO.isMarkAsAddon());
+				newdDTO.setHidden(dDTO.isHidden());
 				newDirectoryDTO.addTreeNode(newdDTO);
 				fill(dDTO, newdDTO);
 			}
@@ -290,31 +243,63 @@ public class AddonsChecker extends Thread {
 			if (!nodeDTO.isLeaf()
 					&& nodeDTO.getName().toLowerCase().equals("userconfig")) {
 				SyncTreeDirectoryDTO userconfig = (SyncTreeDirectoryDTO) nodeDTO;
-				SyncTreeDirectoryDTO newDirectory = new SyncTreeDirectoryDTO();
-				newDirectory.setName(userconfig.getName());
-				newDirectory
+				SyncTreeDirectoryDTO newUserconfig = new SyncTreeDirectoryDTO();
+				newUserconfig.setName(userconfig.getName());
+				newUserconfig
 						.setDestinationPath(userconfig.getDestinationPath());
-				newDirectory.setParent(newSyncTreeDirectoryDTO);
-				newSyncTreeDirectoryDTO.addTreeNode(newDirectory);
+				newUserconfig.setParent(newSyncTreeDirectoryDTO);
+				newUserconfig.setHidden(userconfig.isHidden());
+				newSyncTreeDirectoryDTO.addTreeNode(newUserconfig);
 
 				for (SyncTreeNodeDTO d : userconfig.getList()) {
 					if (userconfigFolderNames.containsKey(d.getName())) {
-						SyncTreeDirectoryDTO folder = new SyncTreeDirectoryDTO();
-						folder.setName(d.getName());
-						folder.setDestinationPath(d.getDestinationPath());
-						folder.setParent(newSyncTreeDirectoryDTO);
-						boolean optional = userconfigFolderNames.get(d
-								.getName());
-						if (optional) {
-							folder.setOptional(true);
-							folder.setSelected(false);
+						if (!d.isLeaf()) {
+							SyncTreeDirectoryDTO folder = new SyncTreeDirectoryDTO();
+							folder.setName(d.getName());
+							folder.setDestinationPath(d.getDestinationPath());
+							folder.setParent(newUserconfig);
+							boolean optional = userconfigFolderNames.get(d
+									.getName());
+							if (optional) {
+								folder.setOptional(true);
+								folder.setSelected(false);
+							} else {
+								folder.setOptional(false);
+								folder.setSelected(true);
+								selectAllAscending(newUserconfig);
+							}
+							newUserconfig.addTreeNode(folder);
+							folder.setHidden(((SyncTreeDirectoryDTO) d)
+									.isHidden());
+							fill((SyncTreeDirectoryDTO) d, folder);
 						} else {
-							folder.setOptional(false);
-							folder.setSelected(true);
-							selectAllAscending(newDirectory);
+							SyncTreeLeafDTO leaf = new SyncTreeLeafDTO();
+							leaf.setName(d.getName());
+							leaf.setDestinationPath(d.getDestinationPath());
+							leaf.setParent(newSyncTreeDirectoryDTO);
+							leaf.setDeleted(d.isDeleted());
+							leaf.setUpdated(d.isUpdated());
+							leaf.setSelected(d.isSelected());
+							leaf.setSize(((SyncTreeLeafDTO) d).getSize());
+							boolean optional = userconfigFolderNames.get(d
+									.getName());
+							if (optional) {
+								leaf.setOptional(true);
+								leaf.setSelected(false);
+							} else {
+								leaf.setOptional(false);
+								leaf.setSelected(true);
+								selectAllAscending(newUserconfig);
+							}
+							newUserconfig.addTreeNode(leaf);
+							if (leaf.isUpdated() || leaf.isDeleted()) {
+								SyncTreeDirectoryDTO parent = leaf.getParent();
+								while (parent != null) {
+									parent.setUpdated(true);
+									parent = parent.getParent();
+								}
+							}
 						}
-						newDirectory.addTreeNode(folder);
-						fill((SyncTreeDirectoryDTO) d, folder);
 					}
 				}
 			}

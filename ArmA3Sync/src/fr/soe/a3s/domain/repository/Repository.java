@@ -4,10 +4,12 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import fr.soe.a3s.domain.AbstractProtocole;
+import fr.soe.a3s.domain.configration.FavoriteServer;
 
 public class Repository implements Serializable {
 
@@ -24,9 +26,14 @@ public class Repository implements Serializable {
 	private String defaultDownloadLocation;
 	private boolean outOfSynk = false;
 	private boolean noAutoDiscover = true;
-	/* Hide extra local folder content */
+	/* Build options */
+	private List<FavoriteServer> favoriteServersSetToAutoconfig = new ArrayList<FavoriteServer>();
+	// Path of file excluded from build tolowercase!
+	private Set<String> excludedFilesFromBuild = new HashSet<String>();
+	private Set<String> excludedFoldersFromSync = new HashSet<String>();
+	/* Local data: Hide extra local folder content */
 	private Set<String> hidedFolderPaths = new HashSet<String>();
-	/* SHA1 computation <Path,FileAttrbutes> */
+	/* Local data: SHA1 computation <Path,FileAttrbutes> */
 	private Map<String, FileAttributes> mapFiles = new HashMap<String, FileAttributes>();
 	/* Remote files */
 	private transient ServerInfo serverInfo;
@@ -191,10 +198,31 @@ public class Repository implements Serializable {
 		this.noAutoDiscover = noAutoDiscover;
 	}
 
-	public Set<String> getHidedFolderPath() {
+	public Set<String> getHiddenFolderPath() {
 		if (hidedFolderPaths == null) {
 			hidedFolderPaths = new HashSet<String>();
 		}
 		return hidedFolderPaths;
+	}
+
+	public List<FavoriteServer> getFavoriteServersSetToAutoconfig() {
+		if (favoriteServersSetToAutoconfig == null) {
+			favoriteServersSetToAutoconfig = new ArrayList<FavoriteServer>();
+		}
+		return favoriteServersSetToAutoconfig;
+	}
+
+	public Set<String> getExcludedFilesFromBuild() {
+		if (excludedFilesFromBuild == null) {
+			excludedFilesFromBuild = new HashSet<String>();
+		}
+		return excludedFilesFromBuild;
+	}
+
+	public Set<String> getExcludedFoldersFromSync() {
+		if (excludedFoldersFromSync == null) {
+			excludedFoldersFromSync = new HashSet<String>();
+		}
+		return excludedFoldersFromSync;
 	}
 }

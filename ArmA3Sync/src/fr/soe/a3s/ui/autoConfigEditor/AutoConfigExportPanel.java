@@ -41,7 +41,7 @@ import fr.soe.a3s.ui.UIConstants;
 
 public class AutoConfigExportPanel extends JDialog implements UIConstants {
 
-	private Facade facade;
+	private final Facade facade;
 	private JButton buttonOK;
 	private JButton buttonCancel;
 	private CheckBoxList checkBoxListProfiles;
@@ -50,18 +50,19 @@ public class AutoConfigExportPanel extends JDialog implements UIConstants {
 	private JScrollPane scrollPane2;
 	private CheckBoxList checkBoxListRepositories;
 	private JScrollPane scrollPane3;
-	private ProfileService profileService = new ProfileService();
-	private ConfigurationService configurationService = new ConfigurationService();
-	private RepositoryService repositoryService = new RepositoryService();
 	private JTextField textFieldDestinationDirectory;
 	private JButton buttonSelect;
+	/* Services */
+	private final ProfileService profileService = new ProfileService();
+	private final ConfigurationService configurationService = new ConfigurationService();
+	private final RepositoryService repositoryService = new RepositoryService();
 
 	public AutoConfigExportPanel(Facade facade) {
 		super(facade.getMainPanel(), "Export auto-config", true);
 		this.facade = facade;
 		setLocationRelativeTo(facade.getMainPanel());
-		this.setResizable(false);
-		this.setSize(400, 500);
+		this.setResizable(true);
+		this.setMinimumSize(new Dimension(400, 500));
 		setIconImage(ICON);
 		this.setLocation(
 				(int) facade.getMainPanel().getLocation().getX()
@@ -174,6 +175,7 @@ public class AutoConfigExportPanel extends JDialog implements UIConstants {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
 				SwingUtilities.invokeLater(new Runnable() {
+					@Override
 					public void run() {
 						buttonOKPerformed();
 					}
@@ -188,6 +190,7 @@ public class AutoConfigExportPanel extends JDialog implements UIConstants {
 		});
 		// Add Listeners
 		addWindowListener(new WindowAdapter() {
+			@Override
 			public void windowClosing(WindowEvent e) {
 				menuExitPerformed();
 			}

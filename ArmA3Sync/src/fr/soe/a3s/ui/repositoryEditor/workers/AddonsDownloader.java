@@ -2,9 +2,7 @@ package fr.soe.a3s.ui.repositoryEditor.workers;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import javax.swing.JOptionPane;
 
@@ -12,17 +10,13 @@ import fr.soe.a3s.controller.ObserverFileSize;
 import fr.soe.a3s.controller.ObserverFilesNumber;
 import fr.soe.a3s.controller.ObserverSpeed;
 import fr.soe.a3s.dao.FileAccessMethods;
-import fr.soe.a3s.dto.EventDTO;
-import fr.soe.a3s.dto.RepositoryDTO;
 import fr.soe.a3s.dto.sync.SyncTreeDirectoryDTO;
 import fr.soe.a3s.dto.sync.SyncTreeLeafDTO;
 import fr.soe.a3s.dto.sync.SyncTreeNodeDTO;
-import fr.soe.a3s.exception.RepositoryException;
 import fr.soe.a3s.service.AbstractConnexionService;
 import fr.soe.a3s.service.AddonService;
 import fr.soe.a3s.service.ConfigurationService;
 import fr.soe.a3s.service.ConnexionServiceFactory;
-import fr.soe.a3s.service.ProfileService;
 import fr.soe.a3s.service.RepositoryService;
 import fr.soe.a3s.ui.Facade;
 import fr.soe.a3s.ui.repositoryEditor.DownloadPanel;
@@ -45,11 +39,12 @@ public class AddonsDownloader extends Thread {
 	private final String eventName;
 	private SyncTreeDirectoryDTO parent;
 	private boolean found;
-	private DownloadPanel downloadPanel;
+	private final DownloadPanel downloadPanel;
 	/* Services */
 	private AbstractConnexionService connexionService;
 	private final RepositoryService repositoryService = new RepositoryService();
 	private final ConfigurationService configurationService = new ConfigurationService();
+	private final AddonService addonService = new AddonService();;
 
 	public AddonsDownloader(Facade facade, String repositoryName,
 			SyncTreeDirectoryDTO racine, long totalFilesSize, String eventName,
@@ -83,6 +78,8 @@ public class AddonsDownloader extends Thread {
 		downloadPanel.getProgressBarDownloadAddons().setMaximum(nbFiles);
 		downloadPanel.getProgressBarDownloadSingleAddon().setMinimum(0);
 		downloadPanel.getProgressBarDownloadSingleAddon().setMaximum(100);
+		downloadPanel.getProgressBarDownloadSingleAddon()
+				.setIndeterminate(true);
 
 		// Resuming download
 		lastIndexFileDownloaded = repositoryService
@@ -125,9 +122,9 @@ public class AddonsDownloader extends Thread {
 					new ObserverFileSize() {
 						@Override
 						public void update(long value) {
-
+							downloadPanel.getProgressBarDownloadSingleAddon()
+									.setIndeterminate(false);
 							offset = value;
-
 							SyncTreeNodeDTO node = listFilesToUpdate
 									.get(lastIndexFileDownloaded);
 							if (node.isLeaf()) {
@@ -191,15 +188,11 @@ public class AddonsDownloader extends Thread {
 				downloadPanel.getLabelDownloadStatus().setText("Finished!");
 				repositoryService.saveDownloadParameters(repositoryName, 0, 0,
 						false);
-				/* Check for Addons */
-				checkForAddons();
 			} else if (canceled) {
 				JOptionPane.showMessageDialog(facade.getMainPanel(),
 						"Download canceled.", "Download",
 						JOptionPane.INFORMATION_MESSAGE);
 				downloadPanel.getLabelDownloadStatus().setText("Canceled!");
-				/* Check for Addons */
-				checkForAddons();
 			} else if (paused) {
 				downloadPanel.getLabelDownloadStatus().setText("Paused");
 			}
@@ -224,6 +217,14 @@ public class AddonsDownloader extends Thread {
 			downloadPanel.getLabelSpeedValue().setText("");
 			downloadPanel.getLabelRemainingTimeValue().setText("");
 			repositoryService.setDownloading(repositoryName, false);
+			if (!paused) {
+				downloadPanel.checkForAddons();
+				addonService.resetAvailableAddonTree();
+				facade.getAddonsPanel().updateAvailableAddons();
+				facade.getAddonsPanel().updateAddonGroups();
+				facade.getAddonsPanel().expandAddonGroups();
+				facade.getAddonOptionsPanel().updateAddonPriorities();
+			}
 			this.interrupt();
 			System.gc();
 		}
@@ -254,50 +255,6 @@ public class AddonsDownloader extends Thread {
 		}
 	}
 
-	private void checkForAddons() throws Exception {
-
-		downloadPanel.getArbre().setEnabled(false);
-		downloadPanel.getLabelCheckForAddonsStatus().setText("Checking...");
-		downloadPanel.getButtonCheckForAddonsStart().setEnabled(false);
-		downloadPanel.getProgressBarCheckForAddons().setMinimum(0);
-		downloadPanel.getProgressBarCheckForAddons().setMaximum(100);
-		repositoryService.getRepositoryBuilderDAO().addObserverFilesNumber(
-				new ObserverFilesNumber() {
-					@Override
-					public void update(int value) {
-						downloadPanel.getProgressBarCheckForAddons().setValue(
-								value);
-					}
-				});
-
-		connexionService.getSync(repositoryName);
-		parent = repositoryService.getSync(repositoryName);
-		if (eventName != null) {
-			setEventAddonSelection();
-		}
-		downloadPanel.updateAddons(parent);
-		downloadPanel.getButtonCheckForAddonsStart().setEnabled(true);
-		downloadPanel.getLabelCheckForAddonsStatus().setText("Finished!");
-		downloadPanel.getArbre().setEnabled(true);
-
-		// Addons Panel: Update Available Addons
-		AddonService addonService = new AddonService();
-		addonService.resetAvailableAddonTree();
-		facade.getAddonsPanel().updateAvailableAddons();
-
-		// Addons Panel: Update Addons Group
-		ProfileService profileService = new ProfileService();
-		configurationService.setViewMode(true);// required to merge
-		facade.getAddonsPanel().getCheckBoxTree().setSelected(true);
-		// profileService.merge(addonService.getAvailableAddonsTree(),
-		// profileService.getAddonGroupsTree());
-
-		facade.getAddonsPanel().updateAddonGroups();
-		facade.getAddonsPanel().expandAddonGroups();
-		facade.getAddonOptionsPanel().updateAddonPriorities();
-
-	}
-
 	private void deleteExtraFiles() {
 
 		for (SyncTreeNodeDTO node : listFilesToDelete) {
@@ -306,6 +263,15 @@ public class AddonsDownloader extends Thread {
 				File file = new File(path);
 				if (file.isFile()) {
 					FileAccessMethods.deleteFile(file);
+					File parent = file.getParentFile();
+					if (parent.exists()) {// delete empty directory
+						File[] subfiles = parent.listFiles();
+						if (subfiles == null) {
+							FileAccessMethods.deleteFile(parent);
+						} else if (subfiles.length == 0) {
+							FileAccessMethods.deleteFile(parent);
+						}
+					}
 				} else if (file.isDirectory()) {
 					FileAccessMethods.deleteDirectory(file);
 				}
@@ -332,119 +298,6 @@ public class AddonsDownloader extends Thread {
 
 	public long getIncrementedFilesSize() {
 		return incrementedFilesSize;
-	}
-
-	private void setEventAddonSelection() {
-
-		try {
-			List<EventDTO> eventDTOs = repositoryService
-					.getEvents(this.repositoryName);
-			Map<String, Boolean> addonNames = new HashMap<String, Boolean>();
-			if (eventDTOs != null) {
-				for (EventDTO eventDTO : eventDTOs) {
-					if (eventDTO.getName().equals(eventName)) {
-						addonNames = eventDTO.getAddonNames();
-						break;
-					}
-				}
-			}
-
-			SyncTreeDirectoryDTO newRacine = new SyncTreeDirectoryDTO();
-			newRacine.setName(parent.getName());
-			newRacine.setParent(null);
-			refine(parent, newRacine, addonNames);
-			parent = newRacine;
-		} catch (RepositoryException e) {
-			e.printStackTrace();
-		}
-	}
-
-	private void refine(SyncTreeDirectoryDTO oldSyncTreeDirectoryDTO,
-			SyncTreeDirectoryDTO newSyncTreeDirectoryDTO,
-			Map<String, Boolean> addonNames) {
-
-		for (SyncTreeNodeDTO nodeDTO : oldSyncTreeDirectoryDTO.getList()) {
-			if (!nodeDTO.isLeaf()) {
-				SyncTreeDirectoryDTO directoryDTO = (SyncTreeDirectoryDTO) nodeDTO;
-				if (directoryDTO.isMarkAsAddon()
-						&& addonNames.containsKey(nodeDTO.getName())) {
-					SyncTreeDirectoryDTO newDirectory = new SyncTreeDirectoryDTO();
-					newDirectory.setName(directoryDTO.getName());
-					newDirectory.setDestinationPath(directoryDTO
-							.getDestinationPath());
-					newDirectory.setParent(newSyncTreeDirectoryDTO);
-					newDirectory.setMarkAsAddon(true);
-					boolean optional = addonNames.get(nodeDTO.getName());
-					if (optional) {
-						newDirectory.setOptional(true);
-						newDirectory.setSelected(false);
-					} else {
-						newDirectory.setOptional(false);
-						newDirectory.setSelected(true);
-						selectAllAscending(newDirectory);
-					}
-					newSyncTreeDirectoryDTO.addTreeNode(newDirectory);
-					fill(directoryDTO, newDirectory);
-				} else if (!directoryDTO.isMarkAsAddon()) {
-					found = false;
-					seek(directoryDTO, addonNames);
-					if (found) {
-						SyncTreeDirectoryDTO newDirectory = new SyncTreeDirectoryDTO();
-						newDirectory.setName(directoryDTO.getName());
-						newSyncTreeDirectoryDTO.addTreeNode(newDirectory);
-						newDirectory.setParent(newSyncTreeDirectoryDTO);
-						refine(directoryDTO, newDirectory, addonNames);
-					}
-				}
-			}
-		}
-	}
-
-	private void fill(SyncTreeDirectoryDTO directoryDTO,
-			SyncTreeDirectoryDTO newDirectoryDTO) {
-
-		for (SyncTreeNodeDTO nodeDTO : directoryDTO.getList()) {
-			if (nodeDTO.isLeaf()) {
-				SyncTreeLeafDTO leafDTO = (SyncTreeLeafDTO) nodeDTO;
-				SyncTreeLeafDTO newLeafDTO = new SyncTreeLeafDTO();
-				newLeafDTO.setName(leafDTO.getName());
-				newLeafDTO.setParent(newDirectoryDTO);
-				newLeafDTO.setDeleted(leafDTO.isDeleted());
-				newLeafDTO.setUpdated(leafDTO.isUpdated());
-				newLeafDTO.setSelected(newDirectoryDTO.isSelected());
-				newLeafDTO.setSize(leafDTO.getSize());
-				newLeafDTO.setDestinationPath(leafDTO.getDestinationPath());
-				newDirectoryDTO.addTreeNode(newLeafDTO);
-			} else {
-				SyncTreeDirectoryDTO dDTO = (SyncTreeDirectoryDTO) nodeDTO;
-				SyncTreeDirectoryDTO newdDTO = new SyncTreeDirectoryDTO();
-				newdDTO.setName(dDTO.getName());
-				newdDTO.setParent(newDirectoryDTO);
-				newdDTO.setUpdated(dDTO.isUpdated());
-				newdDTO.setDeleted(dDTO.isDeleted());
-				newdDTO.setSelected(newDirectoryDTO.isSelected());
-				newdDTO.setDestinationPath(dDTO.getDestinationPath());
-				newdDTO.setMarkAsAddon(dDTO.isMarkAsAddon());
-				newDirectoryDTO.addTreeNode(newdDTO);
-				fill(dDTO, newdDTO);
-			}
-		}
-	}
-
-	private void seek(SyncTreeDirectoryDTO seakDirectory,
-			Map<String, Boolean> addonNames) {
-
-		for (SyncTreeNodeDTO nodeDTO : seakDirectory.getList()) {
-			if (!nodeDTO.isLeaf()) {
-				SyncTreeDirectoryDTO directoryDTO = (SyncTreeDirectoryDTO) nodeDTO;
-				if (directoryDTO.isMarkAsAddon()
-						&& addonNames.containsKey(nodeDTO.getName())) {
-					found = true;
-				} else {
-					seek(directoryDTO, addonNames);
-				}
-			}
-		}
 	}
 
 	private void selectAllAscending(SyncTreeNodeDTO syncTreeNodeDTO) {

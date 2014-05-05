@@ -1,7 +1,10 @@
 package fr.soe.a3s.domain.repository;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
 
 public class ServerInfo implements Serializable{
 
@@ -13,6 +16,8 @@ public class ServerInfo implements Serializable{
 	private Date buildDate;
 	private long numberOfFiles;
 	private long totalFilesSize;
+	/* Server data: Hide extra local folder content */
+	private Set<String> hiddenFolderPaths = new HashSet<String>();
 	
 	public int getRevision() {
 		return revision;
@@ -38,5 +43,12 @@ public class ServerInfo implements Serializable{
 	public void setTotalFilesSize(long totalFilesSize) {
 		this.totalFilesSize = totalFilesSize;
 	}
+	public Set<String> getHiddenFolderPaths() {
+		if (this.hiddenFolderPaths==null){
+			this.hiddenFolderPaths = new HashSet<String>();
+		}
+		return hiddenFolderPaths;
+	}
+	
 
 }

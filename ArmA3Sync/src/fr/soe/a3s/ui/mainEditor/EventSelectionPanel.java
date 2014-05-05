@@ -1,6 +1,7 @@
 package fr.soe.a3s.ui.mainEditor;
 
 import java.awt.BorderLayout;
+import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
@@ -14,7 +15,6 @@ import javax.swing.Box;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JDialog;
-import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.border.BevelBorder;
@@ -42,8 +42,8 @@ public class EventSelectionPanel extends JDialog implements UIConstants {
 	public EventSelectionPanel(Facade facade) {
 		super(facade.getMainPanel(), "Modsets", true);
 		this.facade = facade;
-		setResizable(false);
-		this.setSize(400, 430);
+		setResizable(true);
+		this.setMinimumSize(new Dimension(400, 430));
 		setIconImage(ICON);
 		this.setLocation(
 				(int) facade.getMainPanel().getLocation().getX()

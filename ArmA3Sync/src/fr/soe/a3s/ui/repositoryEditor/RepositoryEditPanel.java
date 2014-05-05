@@ -15,6 +15,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.net.ConnectException;
 import java.util.Arrays;
 
 import javax.swing.BorderFactory;
@@ -65,56 +66,32 @@ public class RepositoryEditPanel extends JDialog implements UIConstants,
 		DataAccessConstants {
 
 	private final Facade facade;
-
 	private JButton buttonOK, buttonCancel;
-
 	private JLabel labelRepositoryName;
-
 	private JLabel labelPort;
-
 	private JLabel labelConnection;
-
 	private JComboBox comboBoxEncryption;
-
 	private JLabel labelProtocole;
-
 	private JButton buttonImport;
-
 	private JTextField textFieldAutoConfigUrl;
-
 	private JLabel labelAutoConfigUrl;
-
 	private JCheckBox checkBoxAnonymous;
-
 	private JLabel labelPassword;
-
 	private JTextField textFieldLogin;
-
 	private JLabel labelLogin;
-
 	private JTextField textFieldPort;
-
 	private JTextField textFieldHost;
-
 	private JLabel labelHost;
-
 	private JTextField textFieldRepositoryName;
-
 	private JPanel repositoryPanel, connectionPanel, protocolePanel;
-
 	private JPasswordField passwordField;
-
 	private char[] password;
-
-	private final RepositoryService repositoryService = new RepositoryService();
-
 	private String initialRepositoryName = "";
-
 	private JComboBox<Object> comboBoxProtocole;
-
 	private final JPopupMenu popup;
-
 	private final JMenuItem menuItemPaste;
+	/* Service */
+	private final RepositoryService repositoryService = new RepositoryService();
 
 	public RepositoryEditPanel(Facade facade) {
 		super(facade.getMainPanel(), "New repository", true);
@@ -447,11 +424,11 @@ public class RepositoryEditPanel extends JDialog implements UIConstants,
 				labelConnection.setFont(new Font("Tohama", Font.ITALIC, 11));
 				labelConnection.setForeground(Color.BLACK);
 
-				// Init fields
 				try {
 					AutoConfigDTO autoConfigDTO = connexion
 							.importAutoConfig(url);
 					if (autoConfigDTO != null) {
+						// Init UI fields
 						labelConnection.setText("Connection success!");
 						labelConnection.setFont(new Font("Tohama", Font.ITALIC,
 								11));
@@ -476,6 +453,8 @@ public class RepositoryEditPanel extends JDialog implements UIConstants,
 							passwordField.setEnabled(false);
 							checkBoxAnonymous.setSelected(true);
 						}
+						// Update online panel
+						facade.getOnlinePanel().init();
 					}
 				} catch (WritingException e1) {
 					labelConnection.setText("Error");
@@ -485,7 +464,7 @@ public class RepositoryEditPanel extends JDialog implements UIConstants,
 					JOptionPane.showMessageDialog(facade.getMainPanel(),
 							e1.getMessage(), "Error!",
 							JOptionPane.ERROR_MESSAGE);
-				} catch (HttpException | FtpException e2) {
+				} catch (ConnectException | HttpException | FtpException e2) {
 					labelConnection.setText("Url is not reachable!");
 					labelConnection
 							.setFont(new Font("Tohama", Font.ITALIC, 11));

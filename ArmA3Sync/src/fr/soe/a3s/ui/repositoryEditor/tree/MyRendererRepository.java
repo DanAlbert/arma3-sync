@@ -11,35 +11,41 @@ import fr.soe.a3s.dto.sync.SyncTreeDirectoryDTO;
 import fr.soe.a3s.dto.sync.SyncTreeNodeDTO;
 import fr.soe.a3s.ui.UIConstants;
 
-public class MyRendererRepository extends DefaultTreeCellRenderer implements UIConstants {
+public class MyRendererRepository extends DefaultTreeCellRenderer implements
+		UIConstants {
 
-    @Override
-    public Component getTreeCellRendererComponent(JTree tree, Object value, boolean sel,
-            boolean expanded, boolean isLeaf, int row, boolean hasFocus) {
-        super.getTreeCellRendererComponent(tree, value, sel, expanded, isLeaf, row, hasFocus);
+	@Override
+	public Component getTreeCellRendererComponent(JTree tree, Object value,
+			boolean sel, boolean expanded, boolean isLeaf, int row,
+			boolean hasFocus) {
+		super.getTreeCellRendererComponent(tree, value, sel, expanded, isLeaf,
+				row, hasFocus);
 
-        TreePath path = tree.getPathForRow(row);
-        if (path != null) {
-            SyncTreeNodeDTO syncTreeNodeDTO = (SyncTreeNodeDTO) value;
-            setIcon(syncTreeNodeDTO);
-        }
-        return this;
-    }
+		TreePath path = tree.getPathForRow(row);
+		if (path != null) {
+			SyncTreeNodeDTO syncTreeNodeDTO = (SyncTreeNodeDTO) value;
+			setIcon(syncTreeNodeDTO);
+		}
+		return this;
+	}
 
-    private void setIcon(SyncTreeNodeDTO syncTreeNodeDTO) {
-        if (!syncTreeNodeDTO.isLeaf()) {
-            SyncTreeDirectoryDTO syncTreeDirectoryDTO = (SyncTreeDirectoryDTO) syncTreeNodeDTO;
+	private void setIcon(SyncTreeNodeDTO syncTreeNodeDTO) {
+		if (!syncTreeNodeDTO.isLeaf()) {
+			SyncTreeDirectoryDTO syncTreeDirectoryDTO = (SyncTreeDirectoryDTO) syncTreeNodeDTO;
 
-            if (syncTreeDirectoryDTO.isMarkAsAddon()) {
-                setIcon(new ImageIcon());
-            }
+			if (syncTreeDirectoryDTO.isUpdated()
+					|| (syncTreeDirectoryDTO.isDeleted())) {
+				setIcon(new ImageIcon(EXCLAMATION));
+			} else if (syncTreeDirectoryDTO.isMarkAsAddon()) {
+				setIcon(new ImageIcon());
+			}
 
-            for (SyncTreeNodeDTO n : syncTreeDirectoryDTO.getList()) {
-                if (n.isUpdated() || n.isDeleted()) {
-                    setIcon(new ImageIcon(EXCLAMATION));
-                    break;
-                }
-            }
-        }
-    }
+			for (SyncTreeNodeDTO n : syncTreeDirectoryDTO.getList()) {
+				if (n.isUpdated() || n.isDeleted()) {
+					setIcon(new ImageIcon(EXCLAMATION));
+					break;
+				}
+			}
+		}
+	}
 }

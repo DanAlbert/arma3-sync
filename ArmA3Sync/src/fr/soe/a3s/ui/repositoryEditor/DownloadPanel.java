@@ -48,7 +48,6 @@ import javax.swing.tree.TreeSelectionModel;
 import fr.soe.a3s.dto.sync.SyncTreeDirectoryDTO;
 import fr.soe.a3s.dto.sync.SyncTreeLeafDTO;
 import fr.soe.a3s.dto.sync.SyncTreeNodeDTO;
-import fr.soe.a3s.exception.RepositoryException;
 import fr.soe.a3s.exception.WritingException;
 import fr.soe.a3s.service.ConfigurationService;
 import fr.soe.a3s.service.LaunchService;
@@ -112,8 +111,8 @@ public class DownloadPanel extends JPanel implements UIConstants {
 	private JCheckBox checkBoxAutoDiscover;
 	private JPopupMenu popup;
 	/* Services */
-	private RepositoryService repositoryService = new RepositoryService();
-	private ConfigurationService configurationService = new ConfigurationService();
+	private final RepositoryService repositoryService = new RepositoryService();
+	private final ConfigurationService configurationService = new ConfigurationService();
 	private JMenuItem menuItemHideExtraLocalContent;
 	private JMenuItem menuItemShowExtraLocalContent;
 
@@ -386,6 +385,7 @@ public class DownloadPanel extends JPanel implements UIConstants {
 		menuItemHideExtraLocalContent = new JMenuItem(
 				"Hide  extra local content");
 		menuItemHideExtraLocalContent.addActionListener(new ActionListener() {
+			@Override
 			public void actionPerformed(ActionEvent evt) {
 				popupActionPerformed(evt);
 			}
@@ -396,6 +396,7 @@ public class DownloadPanel extends JPanel implements UIConstants {
 		menuItemShowExtraLocalContent = new JMenuItem(
 				"Show extra local content");
 		menuItemShowExtraLocalContent.addActionListener(new ActionListener() {
+			@Override
 			public void actionPerformed(ActionEvent evt) {
 				popupActionPerformed(evt);
 			}
@@ -447,10 +448,12 @@ public class DownloadPanel extends JPanel implements UIConstants {
 			}
 		});
 		arbre.addTreeExpansionListener(new TreeExpansionListener() {
+			@Override
 			public void treeExpanded(TreeExpansionEvent event) {
 				onArbre2Expanded();
 			}
 
+			@Override
 			public void treeCollapsed(TreeExpansionEvent event) {
 				onArbre2Collapsed();
 			}
@@ -463,6 +466,7 @@ public class DownloadPanel extends JPanel implements UIConstants {
 			}
 		});
 		arbre.addMouseListener(new MouseAdapter() {
+			@Override
 			public void mouseClicked(MouseEvent e) {
 				if (arbreTreePath == null) {
 					return;
@@ -524,6 +528,7 @@ public class DownloadPanel extends JPanel implements UIConstants {
 				});
 			}
 
+			@Override
 			public void mouseReleased(MouseEvent e) {
 				if (e.isPopupTrigger()) {
 					popup.show((JComponent) e.getSource(), e.getX(), e.getY());
@@ -543,9 +548,11 @@ public class DownloadPanel extends JPanel implements UIConstants {
 			public void popupMenuWillBecomeVisible(PopupMenuEvent arg0) {
 				updateDefaultFolderDestination();
 			}
+
 			@Override
 			public void popupMenuWillBecomeInvisible(PopupMenuEvent arg0) {
 			}
+
 			@Override
 			public void popupMenuCanceled(PopupMenuEvent arg0) {
 			}
@@ -600,46 +607,13 @@ public class DownloadPanel extends JPanel implements UIConstants {
 				.setToolTipText("Auto-discover addons within all destination folders");
 	}
 
-	public void init(String repositoryName) {
-
-		this.repositoryName = repositoryName;
-		this.eventName = null;
-		this.update = false;
-		updateDefaultFolderDestination();
-		updateAutoDiscoverSelection();
-	}
-
-	public void init(String repositoryName, String eventName) {
+	public void init(String repositoryName, String eventName, boolean update) {
 
 		this.repositoryName = repositoryName;
 		this.eventName = eventName;
-		this.update = false;
+		this.update = update;
 		updateDefaultFolderDestination();
 		updateAutoDiscoverSelection();
-		// Lock user action on addons tree
-		arbre.setEnabled(false);
-		// Check addons repository
-		addonsChecker = new AddonsChecker(facade, repositoryName, eventName,
-				update, this);
-		addonsChecker.start();
-	}
-
-	public void init(String repositoryName, boolean update) {
-
-		this.repositoryName = repositoryName;
-		this.eventName = null;
-		this.update = true;
-		updateDefaultFolderDestination();
-		updateAutoDiscoverSelection();
-		// Repository status changed to ok
-		repositoryService.updateRepositoryRevision(repositoryName);
-		repositoryService.setOutOfSync(repositoryName, false);
-		// Lock user action on addons tree
-		arbre.setEnabled(false);
-		// Check addons repository and update
-		addonsChecker = new AddonsChecker(facade, repositoryName, eventName,
-				update, this);
-		addonsChecker.start();
 	}
 
 	private void popupActionPerformed(ActionEvent evt) {
@@ -657,10 +631,14 @@ public class DownloadPanel extends JPanel implements UIConstants {
 				.getLastSelectedPathComponent();
 
 		SyncTreeDirectoryDTO directory = (SyncTreeDirectoryDTO) syncTreeNodeDTO;
-		String path = new File(directory.getDestinationPath() + "/"
-				+ directory.getName()).getAbsolutePath();
+		String relativePath = directory.getName();
+		SyncTreeDirectoryDTO parent = directory.getParent();
+		while (!parent.getName().equals("racine")) {
+			relativePath = parent.getName() + "/" + relativePath;
+			parent = directory.getParent();
+		}
 
-		repositoryService.addFilesToHide(path, repositoryName);
+		repositoryService.addFilesToHide(relativePath, repositoryName);
 
 		// Check addons repository
 		addonsChecker = new AddonsChecker(facade, repositoryName, eventName,
@@ -674,10 +652,16 @@ public class DownloadPanel extends JPanel implements UIConstants {
 				.getLastSelectedPathComponent();
 
 		SyncTreeDirectoryDTO directory = (SyncTreeDirectoryDTO) syncTreeNodeDTO;
-		String path = new File(directory.getDestinationPath() + "/"
-				+ directory.getName()).getAbsolutePath();
+		// String path = new File(directory.getDestinationPath() + "/"
+		// + directory.getName()).getAbsolutePath();
+		String relativePath = directory.getName();
+		SyncTreeDirectoryDTO parent = directory.getParent();
+		while (!parent.getName().equals("racine")) {
+			relativePath = parent.getName() + "/" + relativePath;
+			parent = directory.getParent();
+		}
 
-		repositoryService.removeFilesToHide(path, repositoryName);
+		repositoryService.removeFilesToHide(relativePath, repositoryName);
 
 		// Check addons repository
 		addonsChecker = new AddonsChecker(facade, repositoryName, eventName,
@@ -738,9 +722,6 @@ public class DownloadPanel extends JPanel implements UIConstants {
 					defaultDownloadLocation);
 		}
 
-		// Lock user action on addons tree
-		arbre.setEnabled(false);
-
 		// Repository status changed to ok
 		repositoryService.updateRepositoryRevision(repositoryName);
 		repositoryService.setOutOfSync(repositoryName, false);
@@ -748,9 +729,15 @@ public class DownloadPanel extends JPanel implements UIConstants {
 			repositoryService.write(repositoryName);
 		} catch (WritingException e) {
 		}
-		this.repositoryPanel.init(repositoryName);
-		facade.getSyncPanel().init();
 
+		checkForAddons();
+		facade.getSyncPanel().init();
+	}
+
+	public void checkForAddons() {
+
+		// Lock user action on addons tree
+		arbre.setEnabled(false);
 		// Check addons repository
 		addonsChecker = new AddonsChecker(facade, repositoryName, eventName,
 				update, this);
@@ -866,7 +853,7 @@ public class DownloadPanel extends JPanel implements UIConstants {
 				.getDefaultDownloadLocation(repositoryName);
 
 		AdvancedConfigurationPanel advancedConfigurationPanel = new AdvancedConfigurationPanel(
-				facade, racine, defaultDestinationPath,this);
+				facade, racine, defaultDestinationPath, this);
 		advancedConfigurationPanel.setVisible(true);
 		buttonAdvancedConfigurationPerformed.setEnabled(false);
 	}
@@ -1070,8 +1057,10 @@ public class DownloadPanel extends JPanel implements UIConstants {
 
 	private void flattenSplitPane(JSplitPane jSplitPane) {
 		jSplitPane.setUI(new BasicSplitPaneUI() {
+			@Override
 			public BasicSplitPaneDivider createDefaultDivider() {
 				return new BasicSplitPaneDivider(this) {
+					@Override
 					public void setBorder(Border b) {
 					}
 				};
@@ -1141,4 +1130,5 @@ public class DownloadPanel extends JPanel implements UIConstants {
 	public RepositoryPanel getRepositoryPanel() {
 		return this.repositoryPanel;
 	}
+
 }

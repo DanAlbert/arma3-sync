@@ -11,7 +11,6 @@ import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
-import java.util.List;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -25,7 +24,6 @@ import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 
 import fr.soe.a3s.constant.RepositoryStatus;
-import fr.soe.a3s.dto.ChangelogDTO;
 import fr.soe.a3s.dto.RepositoryDTO;
 import fr.soe.a3s.dto.ServerInfoDTO;
 import fr.soe.a3s.exception.RepositoryException;
@@ -53,6 +51,7 @@ public class AdminPanel extends JPanel implements UIConstants {
 	private JTextField textFieldftpSharedFolderLocation,
 			textFieldAutoConfigURL;
 	private JProgressBar buildProgressBar, checkProgressBar;
+	private JButton buttonBuildOptions;
 
 	public AdminPanel(Facade facade, RepositoryPanel repositoryPanel) {
 
@@ -179,10 +178,16 @@ public class AdminPanel extends JPanel implements UIConstants {
 			JPanel buildPanel = new JPanel();
 			buildPanel.setLayout(new BorderLayout());
 			buildProgressBar = new JProgressBar();
+			buttonBuildOptions = new JButton("Options");
+			buttonBuildOptions.setPreferredSize(new Dimension(75, 25));
 			buttonBuild = new JButton("Build");
 			buttonBuild.setPreferredSize(new Dimension(75, 25));
 			buildPanel.add(buildProgressBar, BorderLayout.CENTER);
-			buildPanel.add(buttonBuild, BorderLayout.EAST);
+			JPanel panel = new JPanel();
+			panel.setLayout(new GridLayout(1, 2));
+			panel.add(buttonBuildOptions);
+			panel.add(buttonBuild);
+			buildPanel.add(panel, BorderLayout.EAST);
 			vBox.add(buildPanel);
 		}
 		vBox.add(Box.createVerticalStrut(5));
@@ -242,6 +247,12 @@ public class AdminPanel extends JPanel implements UIConstants {
 						buttonBuildPerformed();
 					}
 				});
+			}
+		});
+		buttonBuildOptions.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				buttonBuildOptionsPerformed();
 			}
 		});
 		buttonCopyAutoConfigURL.addActionListener(new ActionListener() {
@@ -411,6 +422,22 @@ public class AdminPanel extends JPanel implements UIConstants {
 		repositoryBuilder.start();
 	}
 
+	private void buttonBuildOptionsPerformed() {
+
+		// Repository main folder location must be set
+		if (textFieldftpSharedFolderLocation.getText().isEmpty()) {
+			JOptionPane.showMessageDialog(facade.getMainPanel(),
+					"Please set the repository main folder location first.",
+					"Build repository", JOptionPane.INFORMATION_MESSAGE);
+			return;
+		}
+
+		BuildOptionsPanel buildOptionsPanel = new BuildOptionsPanel(facade,
+				repositoryName);
+		buildOptionsPanel.init();
+		buildOptionsPanel.setVisible(true);
+	}
+
 	private void buttonCopyAutoConfigPerformed() {
 
 		try {
@@ -486,5 +513,9 @@ public class AdminPanel extends JPanel implements UIConstants {
 
 	public RepositoryPanel getRepositoryPanel() {
 		return repositoryPanel;
+	}
+
+	public JButton getButtonBuildOptions() {
+		return buttonBuildOptions;
 	}
 }

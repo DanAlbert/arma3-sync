@@ -16,12 +16,12 @@ import fr.soe.a3s.ui.UIConstants;
 
 public class RepositoryPanel extends JPanel implements UIConstants {
 
-	private Facade facade;
-	private JButton buttonRepository, buttonDownload, buttonEvents;
-	private JPanel centerPanel;
-	private AdminPanel adminPanel;
-	private DownloadPanel downloadPanel;
-	private EventsPanel eventsPanel;
+	private final Facade facade;
+	private final JButton buttonRepository, buttonDownload, buttonEvents;
+	private final JPanel centerPanel;
+	private final AdminPanel adminPanel;
+	private final DownloadPanel downloadPanel;
+	private final EventsPanel eventsPanel;
 
 	public RepositoryPanel(Facade facade) {
 		this.facade = facade;
@@ -40,7 +40,7 @@ public class RepositoryPanel extends JPanel implements UIConstants {
 		adminPanel.setBorder(BorderFactory.createTitledBorder(
 				BorderFactory.createEtchedBorder(), "Repository"));
 		centerPanel.add(adminPanel);
-		eventsPanel = new EventsPanel(facade,this);
+		eventsPanel = new EventsPanel(facade, this);
 		eventsPanel.setBorder(BorderFactory.createTitledBorder(
 				BorderFactory.createEtchedBorder(), "Events"));
 		centerPanel.add(eventsPanel);
@@ -90,22 +90,16 @@ public class RepositoryPanel extends JPanel implements UIConstants {
 		buttonEvents.setToolTipText("Events");
 	}
 
-	public void init(String repositoryName) {
-		adminPanel.init(repositoryName);
-		downloadPanel.init(repositoryName);
-		eventsPanel.init(repositoryName);
-	}
-
-	public void init(String repositoryName, String eventName) {
-		downloadPanel.init(repositoryName, eventName);
-		buttonRepository.setVisible(false);
-		buttonEvents.setVisible(false);
-	}
-
-	public void initUpdate(String repositoryName) {
-		adminPanel.init(repositoryName);
-		downloadPanel.init(repositoryName, true);
-		eventsPanel.init(repositoryName);
+	public void init(String repositoryName, String eventName, boolean update) {
+		if (eventName != null) {
+			downloadPanel.init(repositoryName, eventName, update);
+			buttonRepository.setVisible(false);
+			buttonEvents.setVisible(false);
+		} else {
+			adminPanel.init(repositoryName);
+			downloadPanel.init(repositoryName, eventName, update);
+			eventsPanel.init(repositoryName);
+		}
 	}
 
 	private void buttonDownloadPerformed() {
@@ -131,7 +125,7 @@ public class RepositoryPanel extends JPanel implements UIConstants {
 	public EventsPanel getEventsPanel() {
 		return eventsPanel;
 	}
-	
+
 	public DownloadPanel getDownloadPanel() {
 		return downloadPanel;
 	}

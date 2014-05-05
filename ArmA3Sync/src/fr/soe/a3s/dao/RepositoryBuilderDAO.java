@@ -57,8 +57,7 @@ public class RepositoryBuilderDAO implements DataAccessConstants,
 	private long cumulativeFileSize;
 	private boolean error;
 	private List<Callable<Integer>> callables;
-	private Map<String, FileAttributes> currentMapFiles;
-	private Map<String, FileAttributes> newMapFiles;
+	private Map<String, FileAttributes> mapFiles;
 
 	@SuppressWarnings("unchecked")
 	public void buildRepository(Repository repository)
@@ -99,7 +98,7 @@ public class RepositoryBuilderDAO implements DataAccessConstants,
 			callables = new ArrayList<Callable<Integer>>();
 			final SyncTreeDirectory sync = new SyncTreeDirectory("racine", null);
 			for (File f : file.listFiles()) {
-				generateSync(sync, f);
+				generateSync(repository.getExcludedFilesFromBuild(), sync, f);
 			}
 
 			ExecutorService executor = Executors.newFixedThreadPool(Runtime
@@ -124,10 +123,26 @@ public class RepositoryBuilderDAO implements DataAccessConstants,
 			serverInfo.setNumberOfFiles(nbFiles);
 			serverInfo.setTotalFilesSize(totalFilesSize);
 
+			int index = repository.getPath().lastIndexOf("\\");
+			String repositoryName = repository.getPath().substring(index + 1);
+
+			Iterator iterator = repository.getExcludedFoldersFromSync()
+					.iterator();
+			while (iterator.hasNext()) {
+				String path = (String) iterator.next();
+				index = path.toLowerCase().indexOf(
+						"\\" + repositoryName.toLowerCase());
+				String folderPath = path.substring(index
+						+ repositoryName.length() + 2);
+				serverInfo.getHiddenFolderPaths().add(folderPath);
+			}
+
 			/* AutoConfig */
 			AutoConfig autoConfig = new AutoConfig();
 			autoConfig.setRepositoryName(repository.getName());
 			autoConfig.setProtocole(repository.getProtocole());
+			autoConfig.getFavoriteServers().addAll(
+					repository.getFavoriteServersSetToAutoconfig());
 
 			/* Changelogs */
 			if (changelogs == null || changelogs.getList().isEmpty()) {
@@ -317,21 +332,26 @@ public class RepositoryBuilderDAO implements DataAccessConstants,
 		}
 	}
 
-	private void generateSync(final SyncTreeDirectory parent, final File file)
-			throws Exception {
+	private void generateSync(Set<String> excludedFilesFromBuild,
+			final SyncTreeDirectory parent, final File file) throws Exception {
 
 		if (file.isDirectory()) {
 			SyncTreeDirectory syncTreeDirectory = new SyncTreeDirectory(
 					file.getName(), parent);
 			parent.addTreeNode(syncTreeDirectory);
+
 			for (File f : file.listFiles()) {
 				if (f.getName().toLowerCase().equals("addons")) {
 					syncTreeDirectory.setMarkAsAddon(true);
 				}
-				generateSync(syncTreeDirectory, f);
+				generateSync(excludedFilesFromBuild, syncTreeDirectory, f);
 			}
-		} else if (!file.getName().contains(ZSYNC_EXTENSION)) {// exclude .zsync
-																// files
+		}
+		// exclude .zsync files
+		else if (!file.getName().contains(ZSYNC_EXTENSION)
+				&& !excludedFilesFromBuild.contains(file.getAbsolutePath()
+						.toLowerCase())) {
+
 			final SyncTreeLeaf treeSyncTreeLeaf = new SyncTreeLeaf(
 					file.getName(), parent);
 			parent.addTreeNode(treeSyncTreeLeaf);
@@ -362,8 +382,26 @@ public class RepositoryBuilderDAO implements DataAccessConstants,
 		this.totalNbFiles = repository.getServerInfo().getNumberOfFiles();
 		this.nbFiles = 0;
 		this.callables = new ArrayList<Callable<Integer>>();
-		this.currentMapFiles = repository.getMapFiles();
-		this.newMapFiles = new HashMap<String, FileAttributes>();
+		// this.currentMapFiles = repository.getMapFiles();
+		// this.newMapFiles = new HashMap<String, FileAttributes>();
+		this.mapFiles = repository.getMapFiles();
+
+		// Remove no more existing files on disk from mapFiles
+		List<String> paths = new ArrayList<String>();
+		for (Iterator<String> iter = mapFiles.keySet().iterator(); iter
+				.hasNext();) {
+			String path = iter.next();
+			File file = new File(path);
+			if (!file.exists()) {
+				paths.add(path);
+			}
+		}
+
+		for (String path : paths) {
+			mapFiles.remove(path);
+		}
+
+		// Compute SHA1 for files on disk
 		generateLocalSHA1(parent);
 
 		ExecutorService executor = Executors.newFixedThreadPool(Runtime
@@ -372,7 +410,7 @@ public class RepositoryBuilderDAO implements DataAccessConstants,
 
 		executor.shutdownNow();
 		System.gc();
-		repository.setMapFiles(newMapFiles);// to be write on disk
+		repository.setMapFiles(mapFiles);// to be write on disk
 	}
 
 	private void generateLocalSHA1(SyncTreeNode syncTreeNode) throws Exception {
@@ -390,8 +428,7 @@ public class RepositoryBuilderDAO implements DataAccessConstants,
 					boolean compute = false;
 					final String path = file.getAbsolutePath();
 					final long lastModified = file.lastModified();
-					FileAttributes currentFileAttributes = currentMapFiles
-							.get(path);
+					FileAttributes currentFileAttributes = mapFiles.get(path);
 					if (currentFileAttributes != null) {
 						String currentSHA1 = currentFileAttributes.getSha1();
 						long currentLastModified = currentFileAttributes
@@ -415,7 +452,7 @@ public class RepositoryBuilderDAO implements DataAccessConstants,
 								leaf.setLocalSHA1(sha1);
 								increment();
 								updateFilesNumberObserver();
-								newMapFiles.put(path, new FileAttributes(sha1,
+								mapFiles.put(path, new FileAttributes(sha1,
 										lastModified));
 								return 0;
 							}
@@ -426,8 +463,6 @@ public class RepositoryBuilderDAO implements DataAccessConstants,
 						leaf.setLocalSHA1(sha1);
 						increment();
 						updateFilesNumberObserver();
-						newMapFiles.put(path, new FileAttributes(sha1,
-								lastModified));
 					}
 				}
 			}
@@ -450,11 +485,12 @@ public class RepositoryBuilderDAO implements DataAccessConstants,
 
 		File parentFile = new File(repository.getPath());
 		SyncTreeDirectory parentTree = repository.getSync();
-		check(parentFile, parentTree);
+		Set<String> excludesFiles = repository.getExcludedFilesFromBuild();
+		check(parentFile, parentTree, excludesFiles);
 	}
 
-	private void check(File file, SyncTreeNode syncTreeNode)
-			throws RepositoryCheckException {
+	private void check(File file, SyncTreeNode syncTreeNode,
+			Set<String> excludesFiles) throws RepositoryCheckException {
 
 		if (file.isDirectory()) {
 			if (!syncTreeNode.getName().equals("racine")) {
@@ -474,7 +510,9 @@ public class RepositoryBuilderDAO implements DataAccessConstants,
 				if (!file.listFiles()[i].getName().equals(
 						DataAccessConstants.A3S_FOlDER_NAME)
 						&& !file.listFiles()[i].getName().contains(
-								ZSYNC_EXTENSION)) {
+								ZSYNC_EXTENSION)
+						&& !excludesFiles.contains(file.listFiles()[i]
+								.getAbsolutePath().toLowerCase())) {
 					set1.add(file.listFiles()[i]);
 				}
 			}
@@ -497,11 +535,14 @@ public class RepositoryBuilderDAO implements DataAccessConstants,
 			}
 
 			for (int i = 0; i < list1.size(); i++) {
-				check(list1.get(i), list2.get(i));
+				check(list1.get(i), list2.get(i), excludesFiles);
 			}
 		} else {
 			String name = file.getName();
 			if (file.getName().contains(ZSYNC_EXTENSION)) {
+				return;
+			} else if (excludesFiles.contains(file.getAbsolutePath()
+					.toLowerCase())) {
 				return;
 			} else if (!syncTreeNode.isLeaf()) {
 				throw new RepositoryCheckException();

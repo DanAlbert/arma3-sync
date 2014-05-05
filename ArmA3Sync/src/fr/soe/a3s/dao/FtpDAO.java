@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.net.ConnectException;
 import java.net.SocketException;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
@@ -64,7 +65,7 @@ public class FtpDAO extends AbstractConnexionDAO {
 	}
 
 	public String connectToRepository(Repository repository)
-			throws FtpException {
+			throws FtpException, ConnectException {
 
 		String url = repository.getProtocole().getUrl();
 		String hostname = url;
@@ -89,7 +90,7 @@ public class FtpDAO extends AbstractConnexionDAO {
 			ftpClient.enterLocalPassiveMode();// passive mode
 			reply = ftpClient.getReplyCode();
 		} catch (Exception e) {
-			throw new FtpException("Failed to connect to repository "
+			throw new ConnectException("Failed to connect to repository "
 					+ repository.getName());
 		}
 
@@ -124,7 +125,7 @@ public class FtpDAO extends AbstractConnexionDAO {
 	}
 
 	public AutoConfig downloadAutoConfig(String url) throws FtpException,
-			WritingException {
+			WritingException, ConnectException {
 
 		if (url == null) {
 			return null;
@@ -136,7 +137,7 @@ public class FtpDAO extends AbstractConnexionDAO {
 			remotePath = connect(url);
 			replyCode = ftpClient.getReplyCode();
 		} catch (Exception e) {
-			throw new FtpException("Connection failed.");
+			throw new ConnectException("Connection failed.");
 		}
 
 		if (FTPReply.isPositiveCompletion(replyCode)) {

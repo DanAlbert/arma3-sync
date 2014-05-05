@@ -5,17 +5,21 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.Authenticator;
+import java.net.ConnectException;
 import java.net.HttpURLConnection;
 import java.net.PasswordAuthentication;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.io.output.CountingOutputStream;
 
 import fr.soe.a3s.constant.Protocole;
+import fr.soe.a3s.dao.ConfigurationDAO;
 import fr.soe.a3s.dao.DataAccessConstants;
 import fr.soe.a3s.dao.HttpDAO;
 import fr.soe.a3s.dao.RepositoryDAO;
+import fr.soe.a3s.domain.configration.FavoriteServer;
 import fr.soe.a3s.domain.repository.AutoConfig;
 import fr.soe.a3s.domain.repository.Changelogs;
 import fr.soe.a3s.domain.repository.Events;
@@ -37,13 +41,37 @@ public class HttpService extends AbstractConnexionService implements
 
 	private final HttpDAO httpDAO = new HttpDAO();
 	private static final RepositoryDAO repositoryDAO = new RepositoryDAO();
+	private static final ConfigurationDAO configurationDAO = new ConfigurationDAO();
 
 	@Override
 	public AutoConfigDTO importAutoConfig(String url) throws WritingException,
-			HttpException {
+			HttpException, ConnectException {
 
 		AutoConfig autoConfig = httpDAO.downloadAutoConfig(url);
+		disconnect();
 		if (autoConfig != null) {
+			List<FavoriteServer> list1 = autoConfig.getFavoriteServers();
+			List<FavoriteServer> list2 = configurationDAO.getConfiguration()
+					.getFavoriteServers();
+			List<FavoriteServer> newList = new ArrayList<FavoriteServer>();
+			newList.addAll(list1);
+			for (FavoriteServer favoriteServer2 : list2) {
+				boolean contains = false;
+				for (FavoriteServer favoriteServer : newList) {
+					if (favoriteServer.getName().equals(
+							favoriteServer2.getName())) {
+						contains = true;
+						break;
+					}
+				}
+				if (!contains) {
+					newList.add(favoriteServer2);
+				}
+			}
+
+			configurationDAO.getConfiguration().getFavoriteServers().clear();
+			configurationDAO.getConfiguration().getFavoriteServers()
+					.addAll(newList);
 			return transformAutoConfig2DTO(autoConfig);
 		} else {
 			return null;
@@ -52,7 +80,7 @@ public class HttpService extends AbstractConnexionService implements
 
 	@Override
 	public void checkRepository(String repositoryName)
-			throws RepositoryException, HttpException, WritingException {
+			throws RepositoryException, WritingException, ConnectException {
 
 		Repository repository = repositoryDAO.getMap().get(repositoryName);
 		if (repository == null) {
@@ -64,40 +92,30 @@ public class HttpService extends AbstractConnexionService implements
 			SyncTreeDirectory syncTreeDirectory = httpDAO
 					.downloadSync(repository);
 			repository.setSync(syncTreeDirectory);// null if not found
-		} catch (HttpException e) {
-			// error http 404 may happen if repository has not been built so far
-		}
-		try {
 			ServerInfo serverInfo = httpDAO.downloadSeverInfo(repository);
 			repository.setServerInfo(serverInfo);// null if not found
-		} catch (HttpException e) {
-			// error http 404 may happen if repository has not been built so far
-		}
-		try {
+			if (serverInfo != null) {
+				repository.getHiddenFolderPath().addAll(
+						serverInfo.getHiddenFolderPaths());
+			}
 			Changelogs changelogs = httpDAO.downloadChangelog(repository);
 			repository.setChangelogs(changelogs);// null if not found
-		} catch (HttpException e) {
-			// error http 404 may happen if repository has not been built so far
-		}
-		try {
 			Events events = httpDAO.downloadEvent(repository);
 			repository.setEvents(events);// null if not found
 		} catch (HttpException e) {
-			// error http 404 may happen if no events exists in repository
+			// error http 404 may happen if repository has not been built so far
 		}
 	}
 
 	@Override
 	public void getSync(String repositoryName) throws RepositoryException,
-			HttpException, WritingException {
+			HttpException, WritingException, ConnectException {
 
 		Repository repository = repositoryDAO.getMap().get(repositoryName);
 		if (repository == null) {
 			throw new RepositoryException("Repository " + repositoryName
 					+ " not found!");
 		}
-
-		// httpDAO.connectToRepository(repository);
 
 		SyncTreeDirectory syncTreeDirectory = httpDAO.downloadSync(repository);
 		repository.setSync(syncTreeDirectory);// null if not found

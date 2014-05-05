@@ -222,7 +222,7 @@ public class LaunchPanel extends JPanel implements UIConstants {
 				String modsetName = selection.substring(index + 1).trim();
 				configurationService.saveServerName(serverName);
 				configurationService.setDefautlModset(modsetName);
-				Object objectDTO = map.get(modsetName);
+				Object objectDTO = map.get(modsetName);// null if not found
 				if (objectDTO instanceof RepositoryDTO) {
 					List<String> list = new ArrayList<String>();
 					list.add(((RepositoryDTO) objectDTO).getName());

@@ -2,137 +2,130 @@ package fr.soe.a3s.dto.sync;
 
 public class SyncTreeLeafDTO implements SyncTreeNodeDTO {
 
-    private String name;
+	private String name;
+	private SyncTreeDirectoryDTO parent;
+	private boolean updated;
+	private boolean selected;
+	private long size;
+	private double complete;
+	private String localSHA1;
+	private String destinationPath;
+	private boolean deleted;
+	private boolean optional;
 
-    private SyncTreeDirectoryDTO parent;
+	@Override
+	public String getName() {
+		return this.name;
+	}
 
-    private boolean updated;
+	@Override
+	public void setName(String name) {
+		this.name = name;
+	}
 
-    private boolean selected;
+	@Override
+	public SyncTreeDirectoryDTO getParent() {
+		return this.parent;
+	}
 
-    private long size;
+	@Override
+	public void setParent(SyncTreeDirectoryDTO parent) {
+		this.parent = parent;
+	}
 
-    private double complete;
+	@Override
+	public boolean isLeaf() {
+		return true;
+	}
 
-    private String localSHA1;
+	@Override
+	public boolean isUpdated() {
+		return updated;
+	}
 
-    private String destinationPath;
+	@Override
+	public void setUpdated(boolean value) {
+		this.updated = value;
 
-    private boolean deleted;
+	}
 
-    private boolean optional;
+	@Override
+	public boolean isSelected() {
+		return this.selected;
+	}
 
-    @Override
-    public String getName() {
-        return this.name;
-    }
+	@Override
+	public void setSelected(boolean value) {
+		this.selected = value;
+	}
 
-    @Override
-    public void setName(String name) {
-        this.name = name;
-    }
+	public long getSize() {
+		return size;
+	}
 
-    @Override
-    public SyncTreeDirectoryDTO getParent() {
-        return this.parent;
-    }
+	public void setSize(long size) {
+		this.size = size;
+	}
 
-    @Override
-    public void setParent(SyncTreeDirectoryDTO parent) {
-        this.parent = parent;
-    }
+	@Override
+	public String toString() {
+		return this.name;
+	}
 
-    @Override
-    public boolean isLeaf() {
-        return true;
-    }
+	@Override
+	public int compareTo(Object other) {
+		String name = ((SyncTreeLeafDTO) other).getName();
+		int result = 1;
+		if (name.compareToIgnoreCase(getName()) > 0)
+			result = -1;
+		else if (name.compareToIgnoreCase(getName()) == 0)
+			result = 0;
+		return result;
+	}
 
-    @Override
-    public boolean isUpdated() {
-        return updated;
-    }
+	@Override
+	public String getDestinationPath() {
+		return destinationPath;
+	}
 
-    @Override
-    public void setUpdated(boolean value) {
-        this.updated = value;
+	@Override
+	public void setDestinationPath(String destinationPath) {
+		this.destinationPath = destinationPath;
+	}
 
-    }
+	@Override
+	public void setDeleted(boolean value) {
+		this.deleted = value;
+	}
 
-    @Override
-    public boolean isSelected() {
-        return this.selected;
-    }
+	@Override
+	public boolean isDeleted() {
+		return deleted;
+	}
 
-    @Override
-    public void setSelected(boolean value) {
-        this.selected = value;
-    }
+	@Override
+	public void setOptional(boolean value) {
+		this.optional = value;
+	}
 
-    public long getSize() {
-        return size;
-    }
+	@Override
+	public boolean isOptional() {
+		return this.optional;
+	}
 
-    public void setSize(long size) {
-        this.size = size;
-    }
+	public String getLocalSHA1() {
+		return localSHA1;
+	}
 
-    @Override
-    public String toString() {
-        return this.name;
-    }
+	public void setLocalSHA1(String localSHA1) {
+		this.localSHA1 = localSHA1;
+	}
 
-    @Override
-    public int compareTo(Object other) {
-        String name = ((SyncTreeLeafDTO) other).getName();
-        int result = 1;
-        if (name.compareToIgnoreCase(getName()) > 0) result = -1;
-        else if (name.compareToIgnoreCase(getName()) == 0) result = 0;
-        return result;
-    }
+	public double getComplete() {
+		return complete;
+	}
 
-    @Override
-    public String getDestinationPath() {
-        return destinationPath;
-    }
-
-    @Override
-    public void setDestinationPath(String destinationPath) {
-        this.destinationPath = destinationPath;
-    }
-
-    @Override
-    public void setDeleted(boolean value) {
-        this.deleted = value;
-    }
-
-    @Override
-    public boolean isDeleted() {
-        return deleted;
-    }
-
-    @Override
-    public void setOptional(boolean value) {
-        this.optional = value;
-    }
-
-    @Override
-    public boolean isOptional() {
-        return this.optional;
-    }
-
-    public String getLocalSHA1() {
-        return localSHA1;
-    }
-
-    public void setLocalSHA1(String localSHA1) {
-        this.localSHA1 = localSHA1;
-    }
-
-    public double getComplete() {
-        return complete;
-    }
-
-    public void setComplete(double complete) {
-        this.complete = complete;
-    }
+	public void setComplete(double complete) {
+		this.complete = complete;
+	}
 }

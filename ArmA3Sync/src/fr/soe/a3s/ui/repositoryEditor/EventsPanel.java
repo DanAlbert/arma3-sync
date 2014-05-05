@@ -77,7 +77,7 @@ public class EventsPanel extends JPanel implements UIConstants {
 	private JMenuItem menuItemSetOptional;
 	private JButton buttonSaveToDisk;
 	// Services
-	private RepositoryService repositoryService = new RepositoryService();
+	private final RepositoryService repositoryService = new RepositoryService();
 	// Data
 	private String repositoryName;
 	private List<EventDTO> eventDTOs;
@@ -167,6 +167,7 @@ public class EventsPanel extends JPanel implements UIConstants {
 
 		menuItemSetRequired = new JMenuItem("Set reqired");
 		menuItemSetRequired.addActionListener(new ActionListener() {
+			@Override
 			public void actionPerformed(ActionEvent evt) {
 				popupActionPerformed(evt);
 			}
@@ -176,6 +177,7 @@ public class EventsPanel extends JPanel implements UIConstants {
 
 		menuItemSetOptional = new JMenuItem("Set optional");
 		menuItemSetOptional.addActionListener(new ActionListener() {
+			@Override
 			public void actionPerformed(ActionEvent evt) {
 				popupActionPerformed(evt);
 			}
@@ -231,6 +233,7 @@ public class EventsPanel extends JPanel implements UIConstants {
 		});
 		arbre.addMouseListener(new MouseAdapter() {
 
+			@Override
 			public void mouseClicked(MouseEvent e) {
 
 				if (arbreTreePath == null) {
@@ -278,6 +281,7 @@ public class EventsPanel extends JPanel implements UIConstants {
 				refreshViewArbre();
 			}
 
+			@Override
 			public void mouseReleased(MouseEvent e) {
 				if (e.isPopupTrigger()) {
 					popup.show((JComponent) e.getSource(), e.getX(), e.getY());
@@ -287,10 +291,12 @@ public class EventsPanel extends JPanel implements UIConstants {
 			}
 		});
 		arbre.addTreeExpansionListener(new TreeExpansionListener() {
+			@Override
 			public void treeExpanded(TreeExpansionEvent event) {
 				onArbreExpanded(event.getPath());
 			}
 
+			@Override
 			public void treeCollapsed(TreeExpansionEvent event) {
 				onArbreCollapsed(event.getPath());
 			}
@@ -639,8 +645,10 @@ public class EventsPanel extends JPanel implements UIConstants {
 
 	private void flattenSplitPane(JSplitPane jSplitPane) {
 		jSplitPane.setUI(new BasicSplitPaneUI() {
+			@Override
 			public BasicSplitPaneDivider createDefaultDivider() {
 				return new BasicSplitPaneDivider(this) {
+					@Override
 					public void setBorder(Border b) {
 					}
 				};

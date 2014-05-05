@@ -1,7 +1,10 @@
 package fr.soe.a3s.service;
 
+import java.util.Iterator;
 import java.util.List;
 
+import fr.soe.a3s.constant.Protocole;
+import fr.soe.a3s.domain.Http;
 import fr.soe.a3s.domain.TreeDirectory;
 import fr.soe.a3s.domain.TreeLeaf;
 import fr.soe.a3s.domain.TreeNode;
@@ -9,6 +12,18 @@ import fr.soe.a3s.domain.configration.AiAOptions;
 import fr.soe.a3s.domain.configration.ExternalApplication;
 import fr.soe.a3s.domain.configration.FavoriteServer;
 import fr.soe.a3s.domain.configration.LauncherOptions;
+import fr.soe.a3s.domain.repository.Changelog;
+import fr.soe.a3s.domain.repository.Event;
+import fr.soe.a3s.domain.repository.Repository;
+import fr.soe.a3s.domain.repository.ServerInfo;
+import fr.soe.a3s.domain.repository.SyncTreeDirectory;
+import fr.soe.a3s.domain.repository.SyncTreeLeaf;
+import fr.soe.a3s.domain.repository.SyncTreeNode;
+import fr.soe.a3s.dto.ChangelogDTO;
+import fr.soe.a3s.dto.EventDTO;
+import fr.soe.a3s.dto.ProtocoleDTO;
+import fr.soe.a3s.dto.RepositoryDTO;
+import fr.soe.a3s.dto.ServerInfoDTO;
 import fr.soe.a3s.dto.TreeDirectoryDTO;
 import fr.soe.a3s.dto.TreeLeafDTO;
 import fr.soe.a3s.dto.TreeNodeDTO;
@@ -16,6 +31,8 @@ import fr.soe.a3s.dto.configuration.AiAOptionsDTO;
 import fr.soe.a3s.dto.configuration.ExternalApplicationDTO;
 import fr.soe.a3s.dto.configuration.FavoriteServerDTO;
 import fr.soe.a3s.dto.configuration.LauncherOptionsDTO;
+import fr.soe.a3s.dto.sync.SyncTreeDirectoryDTO;
+import fr.soe.a3s.dto.sync.SyncTreeLeafDTO;
 
 public class ObjectDTOtransformer {
 
@@ -177,6 +194,189 @@ public class ObjectDTOtransformer {
 		treeLeaf.setSelected(treeLeafDTO.isSelected());
 		treeLeaf.setOptional(treeLeafDTO.isOptional());
 		return treeLeaf;
+	}
+
+	/* Repository */
+
+	protected RepositoryDTO transformRepository2DTO(Repository repository) {
+		final RepositoryDTO repositoryDTO = new RepositoryDTO();
+		repositoryDTO.setName(repository.getName());
+		repositoryDTO.setNotify(repository.isNotify());
+		ProtocoleDTO protocoleDTO = new ProtocoleDTO();
+		protocoleDTO.setUrl(repository.getProtocole().getUrl());
+		protocoleDTO.setLogin(repository.getProtocole().getLogin());
+		protocoleDTO.setPassword(repository.getProtocole().getPassword());
+		protocoleDTO.setPort(repository.getProtocole().getPort());
+		protocoleDTO.setEncryptionMode(repository.getProtocole()
+				.getEncryptionMode());
+		if (repository.getProtocole() instanceof Http) {
+			protocoleDTO.setProtocole(Protocole.HTTP);
+		} else {
+			protocoleDTO.setProtocole(Protocole.FTP);
+		}
+		repositoryDTO.setProtocoleDTO(protocoleDTO);
+		repositoryDTO.setPath(repository.getPath());
+		repositoryDTO.setRevision(repository.getRevision());
+		repositoryDTO.setAutoConfigURL(repository.getAutoConfigURL());
+		repositoryDTO.setOutOfSynk(repository.isOutOfSynk());
+		return repositoryDTO;
+	}
+
+	protected ServerInfoDTO transformServerInfo2DTO(ServerInfo serverInfo) {
+
+		final ServerInfoDTO serverInfoDTO = new ServerInfoDTO();
+		serverInfoDTO.setBuildDate(serverInfo.getBuildDate());
+		serverInfoDTO.setNumberOfFiles(serverInfo.getNumberOfFiles());
+		serverInfoDTO.setRevision(serverInfo.getRevision());
+		serverInfoDTO.setTotalFilesSize(serverInfo.getTotalFilesSize());
+		return serverInfoDTO;
+	}
+
+	protected ServerInfo transformDTO2ServerInfo(ServerInfoDTO serverInfoDTO) {
+
+		final ServerInfo serverInfo = new ServerInfo();
+		serverInfo.setBuildDate(serverInfoDTO.getBuildDate());
+		serverInfo.setNumberOfFiles(serverInfoDTO.getNumberOfFiles());
+		serverInfo.setRevision(serverInfoDTO.getRevision());
+		serverInfo.setTotalFilesSize(serverInfoDTO.getTotalFilesSize());
+		return serverInfo;
+	}
+
+	protected void transformSyncTreeDirectory2DTO(
+			SyncTreeDirectory syncTreeDirectory,
+			SyncTreeDirectoryDTO syncTreeDirectoryDTO) {
+
+		List<SyncTreeNode> list = syncTreeDirectory.getList();
+
+		for (SyncTreeNode node : list) {
+			if (node.isLeaf()) {
+				SyncTreeLeaf syncTreeLeaf = (SyncTreeLeaf) node;
+				SyncTreeLeafDTO syncTreeLeafDTO = transformSyncTreeLeaf2DTO(syncTreeLeaf);
+				syncTreeLeafDTO.setParent(syncTreeDirectoryDTO);
+				syncTreeDirectoryDTO.addTreeNode(syncTreeLeafDTO);
+				if (syncTreeLeafDTO.isUpdated() || syncTreeLeafDTO.isDeleted()) {
+					SyncTreeDirectoryDTO parent = syncTreeLeafDTO.getParent();
+					parent.setUpdated(true);
+					while (parent != null) {
+						parent.setUpdated(true);
+						parent = parent.getParent();
+					}
+				}
+			} else {
+				SyncTreeDirectory syncTreeDirectory2 = (SyncTreeDirectory) node;
+				SyncTreeDirectoryDTO syncTreedDirectoryDTO2 = new SyncTreeDirectoryDTO();
+				syncTreedDirectoryDTO2.setName(syncTreeDirectory2.getName());
+				syncTreedDirectoryDTO2.setParent(syncTreeDirectoryDTO);
+				syncTreedDirectoryDTO2.setMarkAsAddon(syncTreeDirectory2
+						.isMarkAsAddon());
+				syncTreedDirectoryDTO2.setDestinationPath(syncTreeDirectory2
+						.getDestinationPath());
+				syncTreedDirectoryDTO2.setSelected(false);
+				syncTreedDirectoryDTO2.setUpdated(false);
+				syncTreedDirectoryDTO2.setDeleted(syncTreeDirectory2
+						.isDeleted());
+				syncTreedDirectoryDTO2.setHidden(syncTreeDirectory2.isHidden());
+				syncTreeDirectoryDTO.addTreeNode(syncTreedDirectoryDTO2);
+				transformSyncTreeDirectory2DTO(syncTreeDirectory2,
+						syncTreedDirectoryDTO2);
+			}
+		}
+	}
+
+	protected SyncTreeLeafDTO transformSyncTreeLeaf2DTO(
+			SyncTreeLeaf syncTreeLeaf) {
+
+		if (syncTreeLeaf.getName().equals("test.txt")) {
+			System.out.println();
+		}
+
+		SyncTreeLeafDTO syncTreeLeafDTO = new SyncTreeLeafDTO();
+		syncTreeLeafDTO.setName(syncTreeLeaf.getName());
+		syncTreeLeafDTO.setSize(syncTreeLeaf.getSize());
+		syncTreeLeafDTO.setSelected(false);
+		syncTreeLeafDTO.setDeleted(syncTreeLeaf.isDeleted());
+		String remoteSHA1 = syncTreeLeaf.getSha1();
+		String localSHA1 = syncTreeLeaf.getLocalSHA1();
+		if (remoteSHA1 == null) {// remote does not exists => file to delete
+			syncTreeLeafDTO.setUpdated(false);
+		} else if (!remoteSHA1.equals(localSHA1)) {
+			syncTreeLeafDTO.setUpdated(true);
+		} else {
+			syncTreeLeafDTO.setUpdated(false);
+		}
+		syncTreeLeafDTO.setLocalSHA1(localSHA1);
+		syncTreeLeafDTO.setDestinationPath(syncTreeLeaf.getDestinationPath());
+		return syncTreeLeafDTO;
+	}
+
+	private void propagateUpdatedStatus(
+			SyncTreeDirectoryDTO syncTreeDirectoryDTO) {
+
+		if (syncTreeDirectoryDTO != null) {
+			syncTreeDirectoryDTO.setUpdated(true);
+			SyncTreeDirectoryDTO parentDTO = syncTreeDirectoryDTO.getParent();
+			propagateUpdatedStatus(parentDTO);
+		}
+	}
+
+	private void propagateDeletedStatus(
+			SyncTreeDirectoryDTO syncTreeDirectoryDTO) {
+
+		if (syncTreeDirectoryDTO != null) {
+			syncTreeDirectoryDTO.setDeleted(true);
+			SyncTreeDirectoryDTO parentDTO = syncTreeDirectoryDTO.getParent();
+			propagateDeletedStatus(parentDTO);
+		}
+	}
+
+	protected ChangelogDTO transformChangelog2DTO(Changelog changelog) {
+
+		final ChangelogDTO changelogDTO = new ChangelogDTO();
+		changelogDTO.setRevision(changelog.getRevision());
+		changelogDTO.setBuildDate(changelog.getBuildDate());
+		for (String stg : changelog.getUpdatedAddons()) {
+			changelogDTO.getUpdatedAddons().add(stg);
+		}
+		for (String stg : changelog.getNewAddons()) {
+			changelogDTO.getNewAddons().add(stg);
+		}
+		for (String stg : changelog.getDeletedAddons()) {
+			changelogDTO.getDeletedAddons().add(stg);
+		}
+		return changelogDTO;
+	}
+
+	protected Event transformDTO2Event(EventDTO eventDTO) {
+
+		final Event event = new Event(eventDTO.getName());
+		event.setDescription(eventDTO.getDescription());
+		for (Iterator<String> iter = eventDTO.getAddonNames().keySet()
+				.iterator(); iter.hasNext();) {
+			String key = iter.next();
+			boolean value = eventDTO.getAddonNames().get(key);
+			event.getAddonNames().put(key, value);
+		}
+		return event;
+	}
+
+	protected EventDTO transformEvent2DTO(Event event) {
+
+		final EventDTO eventDTO = new EventDTO();
+		eventDTO.setName(event.getName());
+		eventDTO.setDescription(event.getDescription());
+		for (Iterator<String> iter = event.getAddonNames().keySet().iterator(); iter
+				.hasNext();) {
+			String key = iter.next();
+			boolean value = event.getAddonNames().get(key);
+			eventDTO.getAddonNames().put(key, value);
+		}
+		for (Iterator<String> iter = event.getUserconfigFolderNames().keySet()
+				.iterator(); iter.hasNext();) {
+			String key = iter.next();
+			boolean value = event.getUserconfigFolderNames().get(key);
+			eventDTO.getUserconfigFolderNames().put(key, value);
+		}
+		return eventDTO;
 	}
 
 }

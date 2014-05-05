@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class SyncTreeDirectory implements SyncTreeNode,Serializable {
+public class SyncTreeDirectory implements SyncTreeNode, Serializable {
 
 	/**
 	 * 
@@ -69,7 +69,7 @@ public class SyncTreeDirectory implements SyncTreeNode,Serializable {
 	public boolean isLeaf() {
 		return false;
 	}
-	
+
 	public List<SyncTreeNode> getList() {
 		return list;
 	}
@@ -81,7 +81,7 @@ public class SyncTreeDirectory implements SyncTreeNode,Serializable {
 	public void setMarkAsAddon(boolean markAsAddon) {
 		this.markAsAddon = markAsAddon;
 	}
-	
+
 	public String getDestinationPath() {
 		return destinationPath;
 	}

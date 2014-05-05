@@ -2,6 +2,8 @@ package fr.soe.a3s.service;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.net.ConnectException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
 
@@ -10,9 +12,11 @@ import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPReply;
 
 import fr.soe.a3s.constant.Protocole;
+import fr.soe.a3s.dao.ConfigurationDAO;
 import fr.soe.a3s.dao.DataAccessConstants;
 import fr.soe.a3s.dao.FtpDAO;
 import fr.soe.a3s.dao.RepositoryDAO;
+import fr.soe.a3s.domain.configration.FavoriteServer;
 import fr.soe.a3s.domain.repository.AutoConfig;
 import fr.soe.a3s.domain.repository.Changelogs;
 import fr.soe.a3s.domain.repository.Events;
@@ -34,14 +38,37 @@ public class FtpService extends AbstractConnexionService implements
 
 	private final FtpDAO ftpDAO = new FtpDAO();
 	private static final RepositoryDAO repositoryDAO = new RepositoryDAO();
+	private static final ConfigurationDAO configurationDAO = new ConfigurationDAO();
 
 	@Override
 	public AutoConfigDTO importAutoConfig(String url) throws FtpException,
-			WritingException {
+			WritingException, ConnectException {
 
 		AutoConfig autoConfig = ftpDAO.downloadAutoConfig(url);
 		disconnect();
 		if (autoConfig != null) {
+			List<FavoriteServer> list1 = autoConfig.getFavoriteServers();
+			List<FavoriteServer> list2 = configurationDAO.getConfiguration()
+					.getFavoriteServers();
+			List<FavoriteServer> newList = new ArrayList<FavoriteServer>();
+			newList.addAll(list1);
+			for (FavoriteServer favoriteServer2 : list2) {
+				boolean contains = false;
+				for (FavoriteServer favoriteServer : newList) {
+					if (favoriteServer.getName().equals(
+							favoriteServer2.getName())) {
+						contains = true;
+						break;
+					}
+				}
+				if (!contains) {
+					newList.add(favoriteServer2);
+				}
+			}
+
+			configurationDAO.getConfiguration().getFavoriteServers().clear();
+			configurationDAO.getConfiguration().getFavoriteServers()
+					.addAll(newList);
 			return transformAutoConfig2DTO(autoConfig);
 		} else {
 			return null;
@@ -50,7 +77,7 @@ public class FtpService extends AbstractConnexionService implements
 
 	@Override
 	public void checkRepository(String repositoryName) throws FtpException,
-			RepositoryException, WritingException {
+			RepositoryException, WritingException, ConnectException {
 
 		Repository repository = repositoryDAO.getMap().get(repositoryName);
 		if (repository == null) {
@@ -66,6 +93,9 @@ public class FtpService extends AbstractConnexionService implements
 		ServerInfo serverInfo = ftpDAO.downloadSeverInfo(repositoryName,
 				remotePath);
 		repository.setServerInfo(serverInfo);// null if not found
+		if (serverInfo!=null){
+			repository.getHiddenFolderPath().addAll(serverInfo.getHiddenFolderPaths());
+		}
 		Changelogs changelogs = ftpDAO.downloadChangelog(repositoryName,
 				remotePath);
 		repository.setChangelogs(changelogs);// null if not found
@@ -77,7 +107,7 @@ public class FtpService extends AbstractConnexionService implements
 
 	@Override
 	public void getSync(String repositoryName) throws RepositoryException,
-			FtpException, WritingException {
+			FtpException, WritingException, ConnectException {
 
 		Repository repository = repositoryDAO.getMap().get(repositoryName);
 		if (repository == null) {
@@ -96,7 +126,7 @@ public class FtpService extends AbstractConnexionService implements
 
 	@Override
 	public boolean upLoadEvents(String repositoryName)
-			throws RepositoryException, FtpException {
+			throws RepositoryException, FtpException, ConnectException {
 
 		Repository repository = repositoryDAO.getMap().get(repositoryName);
 		if (repository == null) {
@@ -104,9 +134,10 @@ public class FtpService extends AbstractConnexionService implements
 					+ " not found!");
 		}
 
+		String remotePath = ftpDAO.connectToRepository(repository);
+
 		boolean response = false;
 		try {
-			String remotePath = ftpDAO.connectToRepository(repository);
 			response = ftpDAO.uploadEvents(repository.getEvents(), remotePath);
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -120,7 +151,8 @@ public class FtpService extends AbstractConnexionService implements
 	@Override
 	public void downloadAddons(String repositoryName,
 			List<SyncTreeNodeDTO> listFiles, boolean resume)
-			throws RepositoryException, FtpException, WritingException {
+			throws RepositoryException, FtpException, WritingException,
+			ConnectException {
 
 		Repository repository = repositoryDAO.getMap().get(repositoryName);
 		if (repository == null) {

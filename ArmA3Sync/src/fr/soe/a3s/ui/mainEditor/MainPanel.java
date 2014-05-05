@@ -827,7 +827,6 @@ public class MainPanel extends JFrame implements UIConstants {
 										.getName());
 						connexion.checkRepository(repositoryDTO.getName());
 					} catch (Exception e) {
-						System.out.println(e.getMessage());
 					}
 				}
 				facade.getSyncPanel().init();
@@ -868,12 +867,17 @@ public class MainPanel extends JFrame implements UIConstants {
 
 		if (!mapTabIndexes.containsKey(title)) {
 			RepositoryPanel repositoryPanel = new RepositoryPanel(facade);
-			if (eventName == null && !update) {
-				repositoryPanel.init(repositoryName);
-			} else if (eventName == null && update) {
-				repositoryPanel.initUpdate(repositoryName);
+			if (update) {
+				// Repository status changed to ok
+				repositoryService.updateRepositoryRevision(repositoryName);
+				repositoryService.setOutOfSync(repositoryName, false);
+				repositoryPanel.init(repositoryName, null, true);
+				repositoryPanel.getDownloadPanel().checkForAddons();
+			} else if (eventName != null) {
+				repositoryPanel.init(repositoryName, eventName, false);
+				repositoryPanel.getDownloadPanel().checkForAddons();
 			} else {
-				repositoryPanel.init(repositoryName, eventName);
+				repositoryPanel.init(repositoryName, null, false);
 			}
 			// tabbedPane.addTab(title, repositoryPanel);
 			addClosableTab(repositoryPanel, repositoryName);

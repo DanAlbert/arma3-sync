@@ -1,6 +1,7 @@
 package fr.soe.a3s.service;
 
 import java.io.FileNotFoundException;
+import java.net.ConnectException;
 import java.util.List;
 
 import fr.soe.a3s.constant.Protocole;
@@ -21,27 +22,31 @@ import fr.soe.a3s.exception.WritingException;
 public abstract class AbstractConnexionService {
 
 	public abstract AutoConfigDTO importAutoConfig(String url)
-			throws WritingException, HttpException, FtpException;
+			throws WritingException, HttpException, FtpException,
+			ConnectException;
 
 	public abstract void checkRepository(String repositoryName)
-			throws FtpException, RepositoryException, HttpException, WritingException;
+			throws FtpException, RepositoryException, WritingException,
+			ConnectException;
 
 	public abstract void getSync(String repositoryName)
-			throws RepositoryException, FtpException, HttpException, WritingException;
+			throws RepositoryException, FtpException, HttpException,
+			WritingException, ConnectException;
 
 	public abstract AbstractConnexionDAO getConnexionDAO();
 
 	public abstract void downloadAddons(String repositoryName,
 			List<SyncTreeNodeDTO> newListFiles, boolean resume)
 			throws RepositoryException, FtpException, WritingException,
-			FileNotFoundException, HttpException;
+			FileNotFoundException, HttpException, ConnectException;
 
 	public abstract void stopDownload(boolean resumable);
 
 	public abstract void disconnect();
 
 	public abstract boolean upLoadEvents(String repositoryName)
-			throws RepositoryException, FtpException, HttpException;
+			throws RepositoryException, FtpException, HttpException,
+			ConnectException;
 
 	public abstract void determineCompletion(String repositoryName,
 			SyncTreeDirectoryDTO parent) throws RepositoryException,
