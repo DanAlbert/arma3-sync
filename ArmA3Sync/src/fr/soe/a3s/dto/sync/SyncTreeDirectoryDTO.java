@@ -16,6 +16,7 @@ public class SyncTreeDirectoryDTO implements SyncTreeNodeDTO {
 	private boolean deleted;
 	private boolean optional;
 	private boolean hidden;
+	private boolean changed;
 
 	@Override
 	public String getName() {
@@ -150,5 +151,13 @@ public class SyncTreeDirectoryDTO implements SyncTreeNodeDTO {
 
 	public void setHidden(boolean hidden) {
 		this.hidden = hidden;
+	}
+
+	public boolean isChanged() {
+		return changed;
+	}
+
+	public void setChanged(boolean value) {
+		this.changed = value;
 	}
 }

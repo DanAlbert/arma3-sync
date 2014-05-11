@@ -34,7 +34,8 @@ public class MyRendererRepository extends DefaultTreeCellRenderer implements
 			SyncTreeDirectoryDTO syncTreeDirectoryDTO = (SyncTreeDirectoryDTO) syncTreeNodeDTO;
 
 			if (syncTreeDirectoryDTO.isUpdated()
-					|| (syncTreeDirectoryDTO.isDeleted())) {
+					|| syncTreeDirectoryDTO.isDeleted()
+					|| syncTreeDirectoryDTO.isChanged()) {
 				setIcon(new ImageIcon(EXCLAMATION));
 			} else if (syncTreeDirectoryDTO.isMarkAsAddon()) {
 				setIcon(new ImageIcon());
@@ -44,6 +45,12 @@ public class MyRendererRepository extends DefaultTreeCellRenderer implements
 				if (n.isUpdated() || n.isDeleted()) {
 					setIcon(new ImageIcon(EXCLAMATION));
 					break;
+				} else if (!n.isLeaf()) {
+					SyncTreeDirectoryDTO directory = (SyncTreeDirectoryDTO) n;
+					if (directory.isChanged()) {
+						setIcon(new ImageIcon(EXCLAMATION));
+						break;
+					}
 				}
 			}
 		}

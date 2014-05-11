@@ -10,6 +10,7 @@ import fr.soe.a3s.controller.ObserverFileSize;
 import fr.soe.a3s.controller.ObserverFilesNumber;
 import fr.soe.a3s.controller.ObserverSpeed;
 import fr.soe.a3s.dao.FileAccessMethods;
+import fr.soe.a3s.domain.repository.SyncTreeNode;
 import fr.soe.a3s.dto.sync.SyncTreeDirectoryDTO;
 import fr.soe.a3s.dto.sync.SyncTreeLeafDTO;
 import fr.soe.a3s.dto.sync.SyncTreeNodeDTO;
@@ -198,6 +199,7 @@ public class AddonsDownloader extends Thread {
 			}
 		} catch (Exception e) {
 			/* Stop indeterminate single download */
+			e.printStackTrace();
 			downloadPanel.getProgressBarDownloadSingleAddon().setIndeterminate(
 					false);
 			downloadPanel.getLabelDownloadStatus().setText("");
@@ -250,7 +252,23 @@ public class AddonsDownloader extends Thread {
 				listFilesToUpdate.add(syncTreeLeafDTO);
 			} else if (syncTreeLeafDTO.isSelected()
 					&& syncTreeLeafDTO.isDeleted()) {
-				listFilesToDelete.add(syncTreeLeafDTO);
+
+				SyncTreeDirectoryDTO parent = syncTreeLeafDTO.getParent();
+				if (parent.getName().equals("racine")) {
+					listFilesToDelete.add(syncTreeLeafDTO);
+				} else {
+					int count = 0;
+					for (SyncTreeNodeDTO n : parent.getList()) {
+						if (n.isSelected() && n.isDeleted()) {
+							count++;
+						}
+					}
+					if (count == parent.getList().size()) {
+						listFilesToDelete.add(parent);
+					} else {
+						listFilesToDelete.add(syncTreeLeafDTO);
+					}
+				}
 			}
 		}
 	}
@@ -263,15 +281,6 @@ public class AddonsDownloader extends Thread {
 				File file = new File(path);
 				if (file.isFile()) {
 					FileAccessMethods.deleteFile(file);
-					File parent = file.getParentFile();
-					if (parent.exists()) {// delete empty directory
-						File[] subfiles = parent.listFiles();
-						if (subfiles == null) {
-							FileAccessMethods.deleteFile(parent);
-						} else if (subfiles.length == 0) {
-							FileAccessMethods.deleteFile(parent);
-						}
-					}
 				} else if (file.isDirectory()) {
 					FileAccessMethods.deleteDirectory(file);
 				}
