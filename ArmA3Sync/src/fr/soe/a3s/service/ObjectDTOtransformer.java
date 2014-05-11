@@ -12,6 +12,7 @@ import fr.soe.a3s.domain.configration.AiAOptions;
 import fr.soe.a3s.domain.configration.ExternalApplication;
 import fr.soe.a3s.domain.configration.FavoriteServer;
 import fr.soe.a3s.domain.configration.LauncherOptions;
+import fr.soe.a3s.domain.repository.AutoConfig;
 import fr.soe.a3s.domain.repository.Changelog;
 import fr.soe.a3s.domain.repository.Event;
 import fr.soe.a3s.domain.repository.Repository;
@@ -19,6 +20,7 @@ import fr.soe.a3s.domain.repository.ServerInfo;
 import fr.soe.a3s.domain.repository.SyncTreeDirectory;
 import fr.soe.a3s.domain.repository.SyncTreeLeaf;
 import fr.soe.a3s.domain.repository.SyncTreeNode;
+import fr.soe.a3s.dto.AutoConfigDTO;
 import fr.soe.a3s.dto.ChangelogDTO;
 import fr.soe.a3s.dto.EventDTO;
 import fr.soe.a3s.dto.ProtocoleDTO;
@@ -221,6 +223,26 @@ public class ObjectDTOtransformer {
 		repositoryDTO.setOutOfSynk(repository.isOutOfSynk());
 		return repositoryDTO;
 	}
+	
+	protected AutoConfigDTO transformAutoConfig2DTO(AutoConfig autoConfig) {
+
+		final AutoConfigDTO autoConfigDTO = new AutoConfigDTO();
+		autoConfigDTO.setRepositoryName(autoConfig.getRepositoryName());
+		ProtocoleDTO protocoleDTO = new ProtocoleDTO();
+		autoConfigDTO.setProtocoleDTO(protocoleDTO);
+		protocoleDTO.setUrl(autoConfig.getProtocole().getUrl());
+		protocoleDTO.setPort(autoConfig.getProtocole().getPort());
+		protocoleDTO.setPassword(autoConfig.getProtocole().getPassword());
+		protocoleDTO.setLogin(autoConfig.getProtocole().getLogin());
+		protocoleDTO.setEncryptionMode(autoConfig.getProtocole()
+				.getEncryptionMode());
+		if (autoConfig.getProtocole() instanceof Http) {
+			protocoleDTO.setProtocole(Protocole.HTTP);
+		} else {
+			protocoleDTO.setProtocole(Protocole.FTP);
+		}
+		return autoConfigDTO;
+	}
 
 	protected ServerInfoDTO transformServerInfo2DTO(ServerInfo serverInfo) {
 
@@ -256,9 +278,8 @@ public class ObjectDTOtransformer {
 				syncTreeDirectoryDTO.addTreeNode(syncTreeLeafDTO);
 				if (syncTreeLeafDTO.isUpdated() || syncTreeLeafDTO.isDeleted()) {
 					SyncTreeDirectoryDTO parent = syncTreeLeafDTO.getParent();
-					parent.setUpdated(true);
 					while (parent != null) {
-						parent.setUpdated(true);
+						parent.setChanged(true);
 						parent = parent.getParent();
 					}
 				}
@@ -286,10 +307,6 @@ public class ObjectDTOtransformer {
 	protected SyncTreeLeafDTO transformSyncTreeLeaf2DTO(
 			SyncTreeLeaf syncTreeLeaf) {
 
-		if (syncTreeLeaf.getName().equals("test.txt")) {
-			System.out.println();
-		}
-
 		SyncTreeLeafDTO syncTreeLeafDTO = new SyncTreeLeafDTO();
 		syncTreeLeafDTO.setName(syncTreeLeaf.getName());
 		syncTreeLeafDTO.setSize(syncTreeLeaf.getSize());
@@ -299,7 +316,7 @@ public class ObjectDTOtransformer {
 		String localSHA1 = syncTreeLeaf.getLocalSHA1();
 		if (remoteSHA1 == null) {// remote does not exists => file to delete
 			syncTreeLeafDTO.setUpdated(false);
-		} else if (!remoteSHA1.equals(localSHA1)) {
+		} else if (!remoteSHA1.equals(localSHA1)) {//localSHA1 == null if file does not exists locally
 			syncTreeLeafDTO.setUpdated(true);
 		} else {
 			syncTreeLeafDTO.setUpdated(false);
