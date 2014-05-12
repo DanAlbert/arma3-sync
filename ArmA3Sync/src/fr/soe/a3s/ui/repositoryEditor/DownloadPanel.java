@@ -635,7 +635,7 @@ public class DownloadPanel extends JPanel implements UIConstants {
 		SyncTreeDirectoryDTO parent = directory.getParent();
 		while (!parent.getName().equals("racine")) {
 			relativePath = parent.getName() + "/" + relativePath;
-			parent = directory.getParent();
+			parent = parent.getParent();
 		}
 
 		repositoryService.addFilesToHide(relativePath, repositoryName);
@@ -658,7 +658,7 @@ public class DownloadPanel extends JPanel implements UIConstants {
 		SyncTreeDirectoryDTO parent = directory.getParent();
 		while (!parent.getName().equals("racine")) {
 			relativePath = parent.getName() + "/" + relativePath;
-			parent = directory.getParent();
+			parent = parent.getParent();
 		}
 
 		repositoryService.removeFilesToHide(relativePath, repositoryName);
