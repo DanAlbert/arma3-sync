@@ -171,6 +171,8 @@ public class BuildOptionsPanel extends JDialog implements UIConstants {
 			centerPanel.add(excludedFoldersWithExtraLocalContentPanel);
 		}
 		{
+			JPanel panelNorth = new JPanel();
+			this.add(panelNorth, BorderLayout.NORTH);
 			JPanel panelEast = new JPanel();
 			this.add(panelEast, BorderLayout.EAST);
 			JPanel panelWest = new JPanel();
