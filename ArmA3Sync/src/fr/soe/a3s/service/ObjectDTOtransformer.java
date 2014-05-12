@@ -223,7 +223,7 @@ public class ObjectDTOtransformer {
 		repositoryDTO.setOutOfSynk(repository.isOutOfSynk());
 		return repositoryDTO;
 	}
-	
+
 	protected AutoConfigDTO transformAutoConfig2DTO(AutoConfig autoConfig) {
 
 		final AutoConfigDTO autoConfigDTO = new AutoConfigDTO();
@@ -316,7 +316,8 @@ public class ObjectDTOtransformer {
 		String localSHA1 = syncTreeLeaf.getLocalSHA1();
 		if (remoteSHA1 == null) {// remote does not exists => file to delete
 			syncTreeLeafDTO.setUpdated(false);
-		} else if (!remoteSHA1.equals(localSHA1)) {//localSHA1 == null if file does not exists locally
+		} else if (!remoteSHA1.equals(localSHA1)) {// localSHA1 == null if file
+													// does not exists locally
 			syncTreeLeafDTO.setUpdated(true);
 		} else {
 			syncTreeLeafDTO.setUpdated(false);
