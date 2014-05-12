@@ -72,17 +72,21 @@ public class ArmA3Sync {
 
 	private static void checkJRE() {
 
-		String version = System.getProperty("java.specification.version");
-		if (!(Double.parseDouble(version) >= 1.7)) {
-			String message = "JRE installed version is: " + version + "\n"
+		String version = System.getProperty("java.version");
+		String specification = System.getProperty("java.specification.version");
+		if (!(Double.parseDouble(specification) >= 1.7)) {
+			String message = "JRE installed version = " + version + "\n"
 					+ "ArmA3Sync required JRE 1.7 (Java 7) or above to run.";
+			System.out.println(message);
 			if (!GraphicsEnvironment.isHeadless()) {
 				JFrame frame = new JFrame();
 				JOptionPane.showMessageDialog(frame, message, "ArmA3Sync",
 						JOptionPane.INFORMATION_MESSAGE);
 			}
-			System.out.println(message);
 			System.exit(0);
+		} else {
+			String message = "JRE installed version = " + version;
+			System.out.println(message);
 		}
 	}
 
