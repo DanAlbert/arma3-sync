@@ -241,7 +241,16 @@ public class AddonsDownloader extends Thread {
 				listFilesToUpdate.add(syncTreeDirectoryDTO);
 			} else if (syncTreeDirectoryDTO.isSelected()
 					&& syncTreeDirectoryDTO.isDeleted()) {
-				listFilesToDelete.add(syncTreeDirectoryDTO);
+				
+				int count = 0;
+				for (SyncTreeNodeDTO n : syncTreeDirectoryDTO.getList()) {
+					if (n.isSelected() && n.isDeleted()) {
+						count++;
+					}
+				}
+				if (count == syncTreeDirectoryDTO.getList().size()) {
+					listFilesToDelete.add(syncTreeDirectoryDTO);
+				}
 			}
 			for (SyncTreeNodeDTO n : syncTreeDirectoryDTO.getList()) {
 				getFiles(n);

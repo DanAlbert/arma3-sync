@@ -197,11 +197,10 @@ public class AddonsChecker extends Thread {
 				if (newLeafDTO.isUpdated() || newLeafDTO.isDeleted()) {
 					SyncTreeDirectoryDTO parent = newLeafDTO.getParent();
 					while (parent != null) {
-						parent.setUpdated(true);
+						parent.setChanged(true);
 						parent = parent.getParent();
 					}
 				}
-
 			} else {
 				SyncTreeDirectoryDTO dDTO = (SyncTreeDirectoryDTO) nodeDTO;
 				SyncTreeDirectoryDTO newdDTO = new SyncTreeDirectoryDTO();
@@ -209,11 +208,20 @@ public class AddonsChecker extends Thread {
 				newdDTO.setParent(newDirectoryDTO);
 				newdDTO.setUpdated(dDTO.isUpdated());
 				newdDTO.setDeleted(dDTO.isDeleted());
+				newdDTO.setChanged(dDTO.isChanged());
 				newdDTO.setSelected(newDirectoryDTO.isSelected());
 				newdDTO.setDestinationPath(dDTO.getDestinationPath());
 				newdDTO.setMarkAsAddon(dDTO.isMarkAsAddon());
 				newdDTO.setHidden(dDTO.isHidden());
 				newDirectoryDTO.addTreeNode(newdDTO);
+				if (newdDTO.isUpdated() || newdDTO.isDeleted()
+						|| newdDTO.isChanged()) {
+					SyncTreeDirectoryDTO parent = newdDTO.getParent();
+					while (parent != null) {
+						parent.setChanged(true);
+						parent = parent.getParent();
+					}
+				}
 				fill(dDTO, newdDTO);
 			}
 		}
@@ -245,8 +253,8 @@ public class AddonsChecker extends Thread {
 				SyncTreeDirectoryDTO userconfig = (SyncTreeDirectoryDTO) nodeDTO;
 				SyncTreeDirectoryDTO newUserconfig = new SyncTreeDirectoryDTO();
 				newUserconfig.setName(userconfig.getName());
-				newUserconfig
-						.setDestinationPath(userconfig.getDestinationPath());
+				newUserconfig.setDestinationPath(userconfig
+						.getDestinationPath());
 				newUserconfig.setParent(newSyncTreeDirectoryDTO);
 				newUserconfig.setHidden(userconfig.isHidden());
 				newSyncTreeDirectoryDTO.addTreeNode(newUserconfig);
@@ -271,6 +279,14 @@ public class AddonsChecker extends Thread {
 							newUserconfig.addTreeNode(folder);
 							folder.setHidden(((SyncTreeDirectoryDTO) d)
 									.isHidden());
+							folder.setUpdated(d.isUpdated());
+							folder.setDeleted(d.isDeleted());
+							folder.setChanged(((SyncTreeDirectoryDTO) d)
+									.isChanged());
+							if (folder.isUpdated() || folder.isDeleted()
+									|| folder.isChanged()) {
+								newUserconfig.setChanged(true);
+							}
 							fill((SyncTreeDirectoryDTO) d, folder);
 						} else {
 							SyncTreeLeafDTO leaf = new SyncTreeLeafDTO();
@@ -293,11 +309,7 @@ public class AddonsChecker extends Thread {
 							}
 							newUserconfig.addTreeNode(leaf);
 							if (leaf.isUpdated() || leaf.isDeleted()) {
-								SyncTreeDirectoryDTO parent = leaf.getParent();
-								while (parent != null) {
-									parent.setUpdated(true);
-									parent = parent.getParent();
-								}
+								newUserconfig.setChanged(true);
 							}
 						}
 					}
