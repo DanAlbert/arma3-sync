@@ -357,7 +357,7 @@ public class RepositoryService extends ObjectDTOtransformer implements
 			boolean contains = false;
 			for (String stg : hiddenFolderPaths) {
 				if (file.getAbsolutePath().toLowerCase()
-						.contains(stg.toLowerCase())) {
+						.contains(new File(stg.toLowerCase()).getPath())) {
 					contains = true;
 					break;
 				}
