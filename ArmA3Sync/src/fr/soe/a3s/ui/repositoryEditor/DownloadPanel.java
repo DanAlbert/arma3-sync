@@ -652,8 +652,6 @@ public class DownloadPanel extends JPanel implements UIConstants {
 				.getLastSelectedPathComponent();
 
 		SyncTreeDirectoryDTO directory = (SyncTreeDirectoryDTO) syncTreeNodeDTO;
-		// String path = new File(directory.getDestinationPath() + "/"
-		// + directory.getName()).getAbsolutePath();
 		String relativePath = directory.getName();
 		SyncTreeDirectoryDTO parent = directory.getParent();
 		while (!parent.getName().equals("racine")) {
