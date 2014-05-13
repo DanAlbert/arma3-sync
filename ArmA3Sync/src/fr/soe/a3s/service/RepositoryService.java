@@ -280,14 +280,12 @@ public class RepositoryService extends ObjectDTOtransformer implements
 
 		determineFilesToDelete(parent);
 
-		if (repository.getServerInfo().getNumberOfFiles() > 0) {
-			repositoryBuilderDAO.determineLocalSHA1(parent, repository);
-			try {
-				Cipher cipher = getEncryptionCipher();
-				repositoryDAO.write(cipher, repositoryName);
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
+		repositoryBuilderDAO.determineLocalSHA1(parent, repository);
+		try {
+			Cipher cipher = getEncryptionCipher();
+			repositoryDAO.write(cipher, repositoryName);
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
 
 		SyncTreeDirectoryDTO parentDTO = new SyncTreeDirectoryDTO();
