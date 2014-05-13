@@ -232,7 +232,7 @@ public class HttpDAO extends AbstractConnexionDAO {
 		return serverInfo;
 	}
 
-	public Changelogs downloadChangelog(Repository repository)
+	public Changelogs downloadChangelogs(Repository repository)
 			throws HttpException, WritingException {
 
 		Changelogs changelogs = null;

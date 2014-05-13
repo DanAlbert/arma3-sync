@@ -98,7 +98,7 @@ public class HttpService extends AbstractConnexionService implements
 				repository.getHiddenFolderPath().addAll(
 						serverInfo.getHiddenFolderPaths());
 			}
-			Changelogs changelogs = httpDAO.downloadChangelog(repository);
+			Changelogs changelogs = httpDAO.downloadChangelogs(repository);
 			repository.setChangelogs(changelogs);// null if not found
 			Events events = httpDAO.downloadEvent(repository);
 			repository.setEvents(events);// null if not found
@@ -119,6 +119,35 @@ public class HttpService extends AbstractConnexionService implements
 
 		SyncTreeDirectory syncTreeDirectory = httpDAO.downloadSync(repository);
 		repository.setSync(syncTreeDirectory);// null if not found
+	}
+
+	@Override
+	public void getServerInfo(String repositoryName)
+			throws RepositoryException, ConnectException, WritingException,
+			HttpException {
+
+		Repository repository = repositoryDAO.getMap().get(repositoryName);
+		if (repository == null) {
+			throw new RepositoryException("Repository " + repositoryName
+					+ " not found!");
+		}
+
+		ServerInfo serverInfo = httpDAO.downloadSeverInfo(repository);
+		repository.setServerInfo(serverInfo);// null if not found
+	}
+
+	@Override
+	public void getChangelogs(String repositoryName) throws ConnectException,
+			RepositoryException, WritingException, HttpException {
+
+		Repository repository = repositoryDAO.getMap().get(repositoryName);
+		if (repository == null) {
+			throw new RepositoryException("Repository " + repositoryName
+					+ " not found!");
+		}
+
+		Changelogs changelogs = httpDAO.downloadChangelogs(repository);
+		repository.setChangelogs(changelogs);// null if not found
 	}
 
 	@Override

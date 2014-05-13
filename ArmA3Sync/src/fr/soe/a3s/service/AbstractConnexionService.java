@@ -51,4 +51,9 @@ public abstract class AbstractConnexionService extends ObjectDTOtransformer {
 	public abstract void determineCompletion(String repositoryName,
 			SyncTreeDirectoryDTO parent) throws RepositoryException,
 			HttpException, WritingException;
+
+	public abstract void getServerInfo(String repositoryName) throws RepositoryException, ConnectException, FtpException, WritingException, HttpException;
+
+	public abstract void getChangelogs(String repositoryName) throws ConnectException, FtpException, RepositoryException, WritingException, HttpException;
+
 }

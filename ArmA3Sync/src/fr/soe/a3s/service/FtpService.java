@@ -96,7 +96,7 @@ public class FtpService extends AbstractConnexionService implements
 		if (serverInfo!=null){
 			repository.getHiddenFolderPath().addAll(serverInfo.getHiddenFolderPaths());
 		}
-		Changelogs changelogs = ftpDAO.downloadChangelog(repositoryName,
+		Changelogs changelogs = ftpDAO.downloadChangelogs(repositoryName,
 				remotePath);
 		repository.setChangelogs(changelogs);// null if not found
 		Events events = ftpDAO.downloadEvent(repositoryName, remotePath);
@@ -120,6 +120,42 @@ public class FtpService extends AbstractConnexionService implements
 		SyncTreeDirectory syncTreeDirectory = ftpDAO.downloadSync(
 				repositoryName, remotePath);
 		repository.setSync(syncTreeDirectory);
+
+		disconnect();
+	}
+	
+	@Override
+	public void getServerInfo(String repositoryName) throws RepositoryException, ConnectException, FtpException, WritingException {
+		
+		Repository repository = repositoryDAO.getMap().get(repositoryName);
+		if (repository == null) {
+			throw new RepositoryException("Repository " + repositoryName
+					+ " not found!");
+		}
+
+		String remotePath = ftpDAO.connectToRepository(repository);
+
+		ServerInfo serverInfo = ftpDAO.downloadSeverInfo(repositoryName,
+				remotePath);
+		repository.setServerInfo(serverInfo);
+
+		disconnect();
+	}
+	
+	@Override
+	public void getChangelogs(String repositoryName) throws ConnectException, FtpException, RepositoryException, WritingException {
+		
+		Repository repository = repositoryDAO.getMap().get(repositoryName);
+		if (repository == null) {
+			throw new RepositoryException("Repository " + repositoryName
+					+ " not found!");
+		}
+
+		String remotePath = ftpDAO.connectToRepository(repository);
+
+		Changelogs changelogs = ftpDAO.downloadChangelogs(repositoryName,
+				remotePath);
+		repository.setChangelogs(changelogs);
 
 		disconnect();
 	}

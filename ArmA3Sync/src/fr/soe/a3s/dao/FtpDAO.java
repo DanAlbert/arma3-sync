@@ -223,7 +223,7 @@ public class FtpDAO extends AbstractConnexionDAO {
 		return serverInfo;
 	}
 
-	public Changelogs downloadChangelog(String repositoryName, String remotePath)
+	public Changelogs downloadChangelogs(String repositoryName, String remotePath)
 			throws WritingException {
 
 		Changelogs changelogs = null;
