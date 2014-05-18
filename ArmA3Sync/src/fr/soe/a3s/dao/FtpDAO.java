@@ -326,6 +326,7 @@ public class FtpDAO extends AbstractConnexionDAO {
 			dos.close();
 		} else {// directory
 			file.mkdir();
+			found = true;
 		}
 		countFilesNumber++;
 		updateFilesNumberObserver();
