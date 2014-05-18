@@ -293,7 +293,8 @@ public class ObjectDTOtransformer {
 				syncTreedDirectoryDTO2.setDestinationPath(syncTreeDirectory2
 						.getDestinationPath());
 				syncTreedDirectoryDTO2.setSelected(false);
-				syncTreedDirectoryDTO2.setUpdated(false);
+				syncTreedDirectoryDTO2.setUpdated(syncTreeDirectory2
+						.isUpdated());
 				syncTreedDirectoryDTO2.setDeleted(syncTreeDirectory2
 						.isDeleted());
 				syncTreedDirectoryDTO2.setHidden(syncTreeDirectory2.isHidden());
@@ -311,17 +312,10 @@ public class ObjectDTOtransformer {
 		syncTreeLeafDTO.setName(syncTreeLeaf.getName());
 		syncTreeLeafDTO.setSize(syncTreeLeaf.getSize());
 		syncTreeLeafDTO.setSelected(false);
+		syncTreeLeafDTO.setUpdated(syncTreeLeaf.isUpdated());
 		syncTreeLeafDTO.setDeleted(syncTreeLeaf.isDeleted());
 		String remoteSHA1 = syncTreeLeaf.getSha1();
 		String localSHA1 = syncTreeLeaf.getLocalSHA1();
-		if (remoteSHA1 == null) {// remote does not exists => file to delete
-			syncTreeLeafDTO.setUpdated(false);
-		} else if (!remoteSHA1.equals(localSHA1)) {// localSHA1 == null if file
-													// does not exists locally
-			syncTreeLeafDTO.setUpdated(true);
-		} else {
-			syncTreeLeafDTO.setUpdated(false);
-		}
 		syncTreeLeafDTO.setLocalSHA1(localSHA1);
 		syncTreeLeafDTO.setDestinationPath(syncTreeLeaf.getDestinationPath());
 		return syncTreeLeafDTO;

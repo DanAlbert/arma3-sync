@@ -10,5 +10,7 @@ public interface SyncTreeNode extends java.lang.Comparable{
 	public boolean isLeaf();
 	public void setDeleted(boolean value);
 	public boolean isDeleted();
+	public void setUpdated(boolean value);
+	public boolean isUpdated();
 	
 }

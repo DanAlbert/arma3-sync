@@ -24,7 +24,6 @@ public class CheckTreeCellRendererRepository extends JPanel implements
 
 	public CheckTreeCellRendererRepository(TreeCellRenderer delegate) {
 		this.delegate = delegate;
-		// this.selectionModel = selectionModel;
 		setLayout(new BorderLayout());
 		setOpaque(false);
 		checkBox.setOpaque(false);
@@ -41,12 +40,11 @@ public class CheckTreeCellRendererRepository extends JPanel implements
 		if (path != null) {
 			SyncTreeNodeDTO syncTreeNodeDTO = (SyncTreeNodeDTO) value;
 			// Deleted addons
-			if (!syncTreeNodeDTO.isUpdated() && syncTreeNodeDTO.isDeleted()
-					&& syncTreeNodeDTO.isLeaf()) {
+			if (!syncTreeNodeDTO.isUpdated() && syncTreeNodeDTO.isDeleted()) {
 				renderer.setForeground(Color.BLUE);
 			}
 			// Updated addons
-			else if (syncTreeNodeDTO.isUpdated() && syncTreeNodeDTO.isLeaf()) {
+			else if (syncTreeNodeDTO.isUpdated()) {
 				renderer.setForeground(Color.RED);
 			} else {
 				renderer.setBackground(UIManager

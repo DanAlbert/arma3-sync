@@ -270,23 +270,27 @@ public class RepositoryService extends ObjectDTOtransformer implements
 
 		SyncTreeDirectory parent = repository.getSync();
 
+		// 1. Set destination file path
 		determineDestinationPaths(parent,
 				repository.getDefaultDownloadLocation(), noAutoDiscover);
+
+		// 2. Compute sha1 for local files on disk
+		repositoryBuilderDAO.determineLocalSHA1(parent, repository);
+		Cipher cipher = getEncryptionCipher();
+		repositoryDAO.write(cipher, repositoryName);
+
+		// 3. Determine new or updated files
+		determineNewAndUpdatedFiles(parent);
+
+		// 4. Determine extra local files to hide
 		determineHiddenFiles(parent, hiddenFolderPaths);
 
 		// determineAddonFilesToDelete(parent, hiddenFolderPaths,
 		// repository.getDefaultDownloadLocation(), noAutoDiscover);
 		// determineAddonFoldersToDelete(parent, hiddenFolderPaths);
 
-		determineFilesToDelete(parent);
-
-		repositoryBuilderDAO.determineLocalSHA1(parent, repository);
-		try {
-			Cipher cipher = getEncryptionCipher();
-			repositoryDAO.write(cipher, repositoryName);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+		// 5. Determine extra local files to delete
+		determineExtraLocalFilesToDelete(parent);
 
 		SyncTreeDirectoryDTO parentDTO = new SyncTreeDirectoryDTO();
 		parentDTO.setName("racine");
@@ -338,6 +342,43 @@ public class RepositoryService extends ObjectDTOtransformer implements
 		}
 	}
 
+	private void determineNewAndUpdatedFiles(SyncTreeNode node) {
+
+		if (!node.isLeaf()) {
+			SyncTreeDirectory directory = (SyncTreeDirectory) node;
+			SyncTreeNode parent = directory.getParent();
+			if (parent == null) {
+				for (SyncTreeNode n : directory.getList()) {
+					determineNewAndUpdatedFiles(n);
+				}
+			}
+
+			File file = new File(directory.getDestinationPath() + "/"
+					+ directory.getName());
+			if (!file.exists()) {
+				node.setUpdated(true);
+			} else {
+				node.setUpdated(false);
+			}
+			for (SyncTreeNode n : directory.getList()) {
+				determineNewAndUpdatedFiles(n);
+			}
+		} else {
+			SyncTreeLeaf leaf = (SyncTreeLeaf) node;
+			File file = new File(leaf.getDestinationPath() + "/"
+					+ leaf.getName());
+			if (!file.exists() || leaf.getLocalSHA1() == null) {
+				node.setUpdated(true);
+			} else {
+				if (!leaf.getLocalSHA1().equals(leaf.getSha1())) {
+					node.setUpdated(true);
+				} else {
+					node.setUpdated(false);
+				}
+			}
+		}
+	}
+
 	private void determineHiddenFiles(SyncTreeNode node,
 			Set<String> hiddenFolderPaths) {
 
@@ -371,14 +412,14 @@ public class RepositoryService extends ObjectDTOtransformer implements
 		}
 	}
 
-	private void determineFilesToDelete(SyncTreeNode node) {
+	private void determineExtraLocalFilesToDelete(SyncTreeNode node) {
 
 		if (!node.isLeaf()) {
 			SyncTreeDirectory directory = (SyncTreeDirectory) node;
 			SyncTreeNode parent = directory.getParent();
 			if (parent == null) {
 				for (SyncTreeNode n : directory.getList()) {
-					determineFilesToDelete(n);
+					determineExtraLocalFilesToDelete(n);
 				}
 			} else if (!directory.isHidden()) {
 				File file = new File(directory.getDestinationPath() + "/"
@@ -415,7 +456,7 @@ public class RepositoryService extends ObjectDTOtransformer implements
 					}
 				}
 				for (SyncTreeNode n : directory.getList()) {
-					determineFilesToDelete(n);
+					determineExtraLocalFilesToDelete(n);
 				}
 			}
 		}

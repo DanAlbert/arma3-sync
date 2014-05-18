@@ -15,6 +15,7 @@ public class SyncTreeLeaf implements SyncTreeNode, Serializable {
 	private transient long complete;// file completion in %
 	private transient String destinationPath;
 	private transient String localSHA1;
+	private boolean updated = false;
 	private boolean deleted = false;
 
 	public SyncTreeLeaf(String name, SyncTreeDirectory parent) {
@@ -107,5 +108,15 @@ public class SyncTreeLeaf implements SyncTreeNode, Serializable {
 	@Override
 	public boolean isDeleted() {
 		return this.deleted;
+	}
+
+	@Override
+	public void setUpdated(boolean value) {
+		this.updated = updated;
+	}
+
+	@Override
+	public boolean isUpdated() {
+		return this.updated;
 	}
 }

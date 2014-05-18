@@ -16,6 +16,7 @@ public class SyncTreeDirectory implements SyncTreeNode, Serializable {
 	private List<SyncTreeNode> list = new ArrayList<SyncTreeNode>();
 	private boolean markAsAddon = false;
 	private transient String destinationPath;
+	private boolean updated = false;
 	private boolean deleted = false;
 	private boolean hidden = false;
 
@@ -117,5 +118,15 @@ public class SyncTreeDirectory implements SyncTreeNode, Serializable {
 
 	public void setHidden(boolean hidden) {
 		this.hidden = hidden;
+	}
+
+	@Override
+	public void setUpdated(boolean value) {
+		this.updated = value;
+	}
+
+	@Override
+	public boolean isUpdated() {
+		return this.updated;
 	}
 }
