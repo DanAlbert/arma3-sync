@@ -93,8 +93,9 @@ public class FtpService extends AbstractConnexionService implements
 		ServerInfo serverInfo = ftpDAO.downloadSeverInfo(repositoryName,
 				remotePath);
 		repository.setServerInfo(serverInfo);// null if not found
-		if (serverInfo!=null){
-			repository.getHiddenFolderPath().addAll(serverInfo.getHiddenFolderPaths());
+		if (serverInfo != null) {
+			repository.getHiddenFolderPath().addAll(
+					serverInfo.getHiddenFolderPaths());
 		}
 		Changelogs changelogs = ftpDAO.downloadChangelogs(repositoryName,
 				remotePath);
@@ -123,10 +124,12 @@ public class FtpService extends AbstractConnexionService implements
 
 		disconnect();
 	}
-	
+
 	@Override
-	public void getServerInfo(String repositoryName) throws RepositoryException, ConnectException, FtpException, WritingException {
-		
+	public void getServerInfo(String repositoryName)
+			throws RepositoryException, ConnectException, FtpException,
+			WritingException {
+
 		Repository repository = repositoryDAO.getMap().get(repositoryName);
 		if (repository == null) {
 			throw new RepositoryException("Repository " + repositoryName
@@ -141,10 +144,11 @@ public class FtpService extends AbstractConnexionService implements
 
 		disconnect();
 	}
-	
+
 	@Override
-	public void getChangelogs(String repositoryName) throws ConnectException, FtpException, RepositoryException, WritingException {
-		
+	public void getChangelogs(String repositoryName) throws ConnectException,
+			FtpException, RepositoryException, WritingException {
+
 		Repository repository = repositoryDAO.getMap().get(repositoryName);
 		if (repository == null) {
 			throw new RepositoryException("Repository " + repositoryName
@@ -229,7 +233,7 @@ public class FtpService extends AbstractConnexionService implements
 				}
 			}
 		} catch (Exception e) {
-			// e.printStackTrace();
+			e.printStackTrace();
 			throw new WritingException(e.getMessage());
 		} finally {
 			disconnect();
