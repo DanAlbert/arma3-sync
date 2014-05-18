@@ -223,8 +223,8 @@ public class FtpDAO extends AbstractConnexionDAO {
 		return serverInfo;
 	}
 
-	public Changelogs downloadChangelogs(String repositoryName, String remotePath)
-			throws WritingException {
+	public Changelogs downloadChangelogs(String repositoryName,
+			String remotePath) throws WritingException {
 
 		Changelogs changelogs = null;
 		try {
@@ -326,7 +326,6 @@ public class FtpDAO extends AbstractConnexionDAO {
 			dos.close();
 		} else {// directory
 			file.mkdir();
-			found = ftpClient.changeWorkingDirectory(file.getName());
 		}
 		countFilesNumber++;
 		updateFilesNumberObserver();
