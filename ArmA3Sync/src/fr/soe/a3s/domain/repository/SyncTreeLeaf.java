@@ -112,7 +112,7 @@ public class SyncTreeLeaf implements SyncTreeNode, Serializable {
 
 	@Override
 	public void setUpdated(boolean value) {
-		this.updated = updated;
+		this.updated = value;
 	}
 
 	@Override
