@@ -96,7 +96,6 @@ public class RepositoryEditPanel extends JDialog implements UIConstants,
 	public RepositoryEditPanel(Facade facade) {
 		super(facade.getMainPanel(), "New repository", true);
 		this.facade = facade;
-		this.facade.setRepositoryEditPanel(this);
 		this.setResizable(false);
 		this.setSize(405, 400);
 		setIconImage(ICON);

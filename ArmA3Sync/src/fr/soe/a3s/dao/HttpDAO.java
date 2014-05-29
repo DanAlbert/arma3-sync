@@ -14,7 +14,6 @@ import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
@@ -114,9 +113,10 @@ public class HttpDAO extends AbstractConnexionDAO {
 			System.out.println("Connection to " + repository.getName()
 					+ " success.");
 		} catch (Exception e) {// happen if host url is wrong
-			String message = "Failed to connect to repository " + "\""
-					+ repository.getName() + "\"" + " on url "
+			String message = "Failed to connect to repository "
+					+ repository.getName() + " on url " + "http://"
 					+ repository.getProtocole().getUrl();
+			System.out.println(message);
 			throw new HttpException(message);
 		} finally {
 			disconnect();
@@ -179,7 +179,8 @@ public class HttpDAO extends AbstractConnexionDAO {
 		} catch (Exception e) {
 			e.printStackTrace();
 			autoConfig = null;
-			throw new WritingException("Failded to read file /.a3s/autoconfig" + "/n" + e.getMessage());
+			throw new WritingException("Failded to read file /.a3s/autoconfig"
+					+ "\n" + e.getMessage());
 		} finally {
 			disconnect();
 		}
@@ -201,8 +202,8 @@ public class HttpDAO extends AbstractConnexionDAO {
 				throw new HttpException(message);
 			}
 		} catch (IOException e) {// happens if repository url is wrong
-			String message = "Failed to connect to repository " + "\""
-					+ repository.getName() + "\"" + " on url "
+			String message = "Failed to connect to repository "
+					+ repository.getName() + " on url " + "http://"
 					+ repository.getProtocole().getUrl();
 			System.out.println(message);
 			throw new HttpException(message);
@@ -225,7 +226,8 @@ public class HttpDAO extends AbstractConnexionDAO {
 		} catch (Exception e) {
 			e.printStackTrace();
 			serverInfo = null;
-			throw new WritingException("Failded to read file /.a3s/serverInfo" + "/n" + e.getMessage());
+			throw new WritingException("Failded to read file /.a3s/serverInfo"
+					+ "\n" + e.getMessage());
 		} finally {
 			disconnect();
 		}
@@ -247,8 +249,8 @@ public class HttpDAO extends AbstractConnexionDAO {
 				throw new HttpException(message);
 			}
 		} catch (IOException e) {// happens if repository url is wrong
-			String message = "Failed to connect to repository " + "\""
-					+ repository.getName() + "\"" + " on url "
+			String message = "Failed to connect to repository "
+					+ repository.getName() + " on url " + "http://"
 					+ repository.getProtocole().getUrl();
 			System.out.println(message);
 			throw new HttpException(message);
@@ -271,7 +273,8 @@ public class HttpDAO extends AbstractConnexionDAO {
 		} catch (Exception e) {
 			e.printStackTrace();
 			changelogs = null;
-			throw new WritingException("Failded to read file /.a3s/changelogs" + "/n" + e.getMessage());
+			throw new WritingException("Failded to read file /.a3s/changelogs"
+					+ "\n" + e.getMessage());
 		} finally {
 			disconnect();
 		}
@@ -293,8 +296,8 @@ public class HttpDAO extends AbstractConnexionDAO {
 				throw new HttpException(message);
 			}
 		} catch (IOException e) {// happens if repository url is wrong
-			String message = "Failed to connect to repository " + "\""
-					+ repository.getName() + "\"" + " on url "
+			String message = "Failed to connect to repository "
+					+ repository.getName() + " on url " + "http://"
 					+ repository.getProtocole().getUrl();
 			System.out.println(message);
 			throw new HttpException(message);
@@ -316,7 +319,8 @@ public class HttpDAO extends AbstractConnexionDAO {
 		} catch (Exception e) {
 			e.printStackTrace();
 			events = null;
-			throw new WritingException("Failded to read file /.a3s/events" + "/n" + e.getMessage());
+			throw new WritingException("Failded to read file /.a3s/events"
+					+ "\n" + e.getMessage());
 		} finally {
 			disconnect();
 		}
@@ -338,8 +342,8 @@ public class HttpDAO extends AbstractConnexionDAO {
 				throw new HttpException(message);
 			}
 		} catch (IOException e) {// happens if repository url is wrong
-			String message = "Failed to connect to repository " + "\""
-					+ repository.getName() + "\"" + " on url "
+			String message = "Failed to connect to repository "
+					+ repository.getName() + " on url " + "http://"
 					+ repository.getProtocole().getUrl();
 			System.out.println(message);
 			throw new HttpException(message);
@@ -361,7 +365,8 @@ public class HttpDAO extends AbstractConnexionDAO {
 		} catch (Exception e) {
 			e.printStackTrace();
 			syncTreeDirectory = null;
-			throw new WritingException("Failded to read file /.a3s/sync" + "/n" + e.getMessage());
+			throw new WritingException("Failded to read file /.a3s/sync" + "\n"
+					+ e.getMessage());
 		} finally {
 			disconnect();
 		}
@@ -542,7 +547,8 @@ public class HttpDAO extends AbstractConnexionDAO {
 		return false;
 	}
 
-	public void stopDownload(boolean resumable) {
+	@Override
+	public void cancel(boolean resumable) {
 		canceled = true;
 		disconnect();
 		if (!resumable) {

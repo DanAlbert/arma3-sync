@@ -12,6 +12,7 @@ public class SyncTreeLeafDTO implements SyncTreeNodeDTO {
 	private String destinationPath;
 	private boolean deleted;
 	private boolean optional;
+	private String sha1;
 
 	@Override
 	public String getName() {
@@ -127,5 +128,28 @@ public class SyncTreeLeafDTO implements SyncTreeNodeDTO {
 
 	public void setComplete(double complete) {
 		this.complete = complete;
+	}
+
+	public String getSha1() {
+		return sha1;
+	}
+
+	public void setSha1(String sha1) {
+		this.sha1 = sha1;
+	}
+
+	@Override
+	public String getRelativePath() {
+		String path = this.name;
+		SyncTreeDirectoryDTO p = this.parent;
+		if (p == null) {
+			return "";
+		} else {
+			while (p != null && !RACINE.equals(p.getName())) {
+				path = p.getName() + "/" + path;
+				p = p.getParent();
+			}
+		}
+		return path;
 	}
 }

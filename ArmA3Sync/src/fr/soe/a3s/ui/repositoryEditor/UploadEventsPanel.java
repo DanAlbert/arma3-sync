@@ -7,18 +7,25 @@ import java.awt.event.WindowEvent;
 
 import javax.swing.JOptionPane;
 
+import fr.soe.a3s.constant.Protocole;
+import fr.soe.a3s.dto.ProtocoleDTO;
+import fr.soe.a3s.dto.RepositoryDTO;
+import fr.soe.a3s.exception.CheckException;
 import fr.soe.a3s.exception.RepositoryException;
 import fr.soe.a3s.service.AbstractConnexionService;
 import fr.soe.a3s.service.ConnexionServiceFactory;
+import fr.soe.a3s.service.RepositoryService;
 import fr.soe.a3s.ui.Facade;
 
-public class UploadPanel extends ProgressPanel {
+public class UploadEventsPanel extends ProgressPanel {
 
 	private AbstractConnexionService connexion;
 	private final String repositoryName;
 	private Thread t;
+	/* Service */
+	private final RepositoryService repositoryService = new RepositoryService();
 
-	public UploadPanel(Facade facade, String repositoryName) {
+	public UploadEventsPanel(Facade facade, String repositoryName) {
 		super(facade);
 		this.repositoryName = repositoryName;
 		labelTitle.setText("Uploading events informations...");
@@ -39,6 +46,33 @@ public class UploadPanel extends ProgressPanel {
 	}
 
 	public void init() {
+		try {
+			// 1. Check repository upload protocole
+			RepositoryDTO repositoryDTO = repositoryService
+					.getRepository(repositoryName);
+			ProtocoleDTO protocoleDTO = repositoryDTO.getProtocoleDTO();
+			Protocole protocole = protocoleDTO.getProtocole();
+			ProtocoleDTO uploadProtocoleDTO = repositoryDTO
+					.getRepositoryUploadProtocoleDTO();
+			if (uploadProtocoleDTO == null && protocole.equals(Protocole.FTP)) {
+				repositoryService.setRepositoryUploadProtocole(repositoryName,
+						protocoleDTO.getUrl(), protocoleDTO.getPort(),
+						protocoleDTO.getLogin(), protocoleDTO.getPassword(),
+						protocole);
+			} else if (uploadProtocoleDTO == null) {
+				String message = "Please use the upload options to configure a connection.";
+				throw new CheckException(message);
+			}
+		} catch (CheckException e) {
+			JOptionPane.showMessageDialog(facade.getMainPanel(),
+					e.getMessage(), "Inforamation",
+					JOptionPane.INFORMATION_MESSAGE);
+			return;
+		} catch (Exception e) {
+			JOptionPane.showMessageDialog(facade.getMainPanel(),
+					e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+			return;
+		}
 
 		progressBar.setIndeterminate(true);
 		t = new Thread(new Runnable() {
@@ -46,7 +80,7 @@ public class UploadPanel extends ProgressPanel {
 			public void run() {
 				try {
 					connexion = ConnexionServiceFactory
-							.getServiceFromRepository(repositoryName);
+							.getRepositoryUploadServiceFromRepository(repositoryName);
 					boolean response = connexion.upLoadEvents(repositoryName);
 					setVisible(false);
 					if (response == false) {

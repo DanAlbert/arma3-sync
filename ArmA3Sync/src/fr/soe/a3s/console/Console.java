@@ -1,6 +1,7 @@
 package fr.soe.a3s.console;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.InputStreamReader;
 import java.util.Collections;
 import java.util.Iterator;
@@ -12,6 +13,7 @@ import fr.soe.a3s.constant.Protocole;
 import fr.soe.a3s.controller.ObserverFileSize;
 import fr.soe.a3s.dto.RepositoryDTO;
 import fr.soe.a3s.exception.CheckException;
+import fr.soe.a3s.exception.FtpException;
 import fr.soe.a3s.exception.LoadingException;
 import fr.soe.a3s.exception.RepositoryCheckException;
 import fr.soe.a3s.exception.RepositoryException;
@@ -235,6 +237,16 @@ public class Console {
 			System.out.print("Enter root shared folder path: ");
 			path = c.nextLine();
 		}
+		while (!new File(path).exists()) {
+			System.out.print("Target folder does not exists!");
+			System.out.print("Enter root shared folder path: ");
+			path = c.nextLine();
+		}
+		while (!new File(path).isDirectory()) {
+			System.out.print("Target folder does not exists!");
+			System.out.print("Enter root shared folder path: ");
+			path = c.nextLine();
+		}
 
 		Protocole protocole = Protocole.getEnum(prot);
 		RepositoryService repositoryService = new RepositoryService();
@@ -323,7 +335,7 @@ public class Console {
 			execute();
 		}
 	}
-	
+
 	private void buildRepository() {
 
 		System.out.println("");
@@ -367,7 +379,7 @@ public class Console {
 		} catch (Exception e) {
 			System.out.println("Failed to build repository.");
 			System.out.println(e.getMessage());
-		}finally {
+		} finally {
 			System.out.println("");
 			execute();
 		}
@@ -405,9 +417,15 @@ public class Console {
 
 		System.out.println("");
 		System.out.println("Check for updates.");
-		
+
 		FtpService ftpService = new FtpService();
-		String availableVersion = ftpService.checkForUpdate(devMode);
+		String availableVersion = null;
+		try {
+			availableVersion = ftpService.checkForUpdate(devMode);
+		} catch (FtpException e) {
+			System.out.println(e.getMessage());
+			return;
+		}
 
 		if (availableVersion != null) {
 			// Proceed update
@@ -453,7 +471,7 @@ public class Console {
 		System.out.println("ArmA3Sync exited.");
 		System.exit(0);
 	}
-	
+
 	public void build(String repositoryName) {
 
 		RepositoryService repositoryService = new RepositoryService();
@@ -486,13 +504,13 @@ public class Console {
 		} catch (Exception e) {
 			System.out.println("Failed to build repository.");
 			System.out.println(e.getMessage());
-		}finally{
+		} finally {
 			System.exit(0);
 		}
 	}
 
 	public void check(String repositoryName) {
-		
+
 		System.out.println("");
 		System.out.println("Check repository.");
 
@@ -500,9 +518,11 @@ public class Console {
 
 		try {
 			repositoryService.readAll();
-			RepositoryDTO repositoryDTO = repositoryService.getRepository(repositoryName);
+			RepositoryDTO repositoryDTO = repositoryService
+					.getRepository(repositoryName);
 			System.out.println("Checking repository...");
-			repositoryService.checkRepository(repositoryName, repositoryDTO.getPath());
+			repositoryService.checkRepository(repositoryName,
+					repositoryDTO.getPath());
 			System.out.println("Repository is synchronized.");
 		} catch (LoadingException e) {
 			System.out.println("Failded to load on or more repositories");

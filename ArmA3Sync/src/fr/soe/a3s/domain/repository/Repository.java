@@ -40,11 +40,20 @@ public class Repository implements Serializable {
 	private transient SyncTreeDirectory sync;
 	private transient Changelogs changelogs;
 	private transient Events events;
+	private transient AutoConfig autoConfig;
+	/* Local files */
+	private transient ServerInfo localServerInfo;
+	private transient SyncTreeDirectory localSync;
+	private transient Changelogs localChangelogs;
+	private transient AutoConfig localAutoConfig;
 	/* Resuming download */
 	private transient boolean downloading;
-	private transient int lastIndexFileDownloaded;
+	private transient int lastIndexFileTransfered;
 	private transient long incrementedFilesSize;
 	private transient boolean resume;
+	/* Repository upload */
+	private transient boolean uploading;
+	private AbstractProtocole repositoryUploadProtocole;
 
 	public Repository(String name, AbstractProtocole protocole) {
 		this.name = name;
@@ -139,12 +148,12 @@ public class Repository implements Serializable {
 		this.downloading = downloading;
 	}
 
-	public int getLastIndexFileDownloaded() {
-		return lastIndexFileDownloaded;
+	public int getLastIndexFileTransfered() {
+		return lastIndexFileTransfered;
 	}
 
-	public void setLastIndexFileDownloaded(int lastIndexFileDownloaded) {
-		this.lastIndexFileDownloaded = lastIndexFileDownloaded;
+	public void setLastIndexFileTransfered(int lastIndexFileTransfered) {
+		this.lastIndexFileTransfered = lastIndexFileTransfered;
 	}
 
 	public long getIncrementedFilesSize() {
@@ -224,5 +233,56 @@ public class Repository implements Serializable {
 			excludedFoldersFromSync = new HashSet<String>();
 		}
 		return excludedFoldersFromSync;
+	}
+
+	public boolean isUploading() {
+		return this.uploading;
+	}
+
+	public void setUploading(boolean value) {
+		this.uploading = value;
+	}
+
+	public AbstractProtocole getRepositoryUploadProtocole() {
+		return repositoryUploadProtocole;
+	}
+
+	public void setRepositoryUploadProtocole(
+			AbstractProtocole repositoryUploadProtocole) {
+		this.repositoryUploadProtocole = repositoryUploadProtocole;
+	}
+
+	/* Local files */
+
+	public SyncTreeDirectory getLocalSync() {
+		return localSync;
+	}
+
+	public void setLocalSync(SyncTreeDirectory localSync) {
+		this.localSync = localSync;
+	}
+
+	public ServerInfo getLocalServerInfo() {
+		return localServerInfo;
+	}
+
+	public void setLocalServerInfo(ServerInfo localServerInfo) {
+		this.localServerInfo = localServerInfo;
+	}
+
+	public Changelogs getLocalChangelogs() {
+		return localChangelogs;
+	}
+
+	public void setLocalChangelogs(Changelogs localChangelogs) {
+		this.localChangelogs = localChangelogs;
+	}
+
+	public AutoConfig getLocalAutoConfig() {
+		return localAutoConfig;
+	}
+
+	public void setLocalAutoConfig(AutoConfig localaAutoConfig) {
+		this.localAutoConfig = localaAutoConfig;
 	}
 }

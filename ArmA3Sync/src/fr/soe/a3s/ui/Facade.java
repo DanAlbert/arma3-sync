@@ -33,7 +33,6 @@ public class Facade {
 	private SyncPanel syncPanel;
 	private ExternalApplicationsEditionPanel externalApplicationsEditionPanel;
 	private PreferencesPanel preferencesPanel;
-	private RepositoryEditPanel repositoryEditPanel;
 	private ConnectionPanel connectiongPanel;
 	private FirstPageACREInstallerPanel firstPageInstallerPanel;
 	private FirstPageTFARInstallerPanel firstPageTFARInstallerPanel;
@@ -139,14 +138,6 @@ public class Facade {
 
 	public void setDevMode(boolean value) {
 		this.devMode = value;
-	}
-
-	public void setRepositoryEditPanel(RepositoryEditPanel repositoryEditPanel) {
-		this.repositoryEditPanel = repositoryEditPanel;
-	}
-
-	public RepositoryEditPanel getRepositoryEditPanel() {
-		return repositoryEditPanel;
 	}
 
 	public PreferencesPanel getPreferencesPanel() {

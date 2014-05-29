@@ -45,6 +45,7 @@ import fr.soe.a3s.dto.RepositoryDTO;
 import fr.soe.a3s.dto.ServerInfoDTO;
 import fr.soe.a3s.dto.configuration.LauncherOptionsDTO;
 import fr.soe.a3s.dto.configuration.PreferencesDTO;
+import fr.soe.a3s.exception.FtpException;
 import fr.soe.a3s.exception.LoadingException;
 import fr.soe.a3s.exception.ProfileException;
 import fr.soe.a3s.exception.RepositoryException;
@@ -676,8 +677,19 @@ public class MainPanel extends JFrame implements UIConstants {
 			@Override
 			public void run() {
 				FtpService ftpService = new FtpService();
-				String availableVersion = ftpService.checkForUpdate(facade
-						.isDevMode());
+				String availableVersion = null;
+
+				try {
+					availableVersion = ftpService.checkForUpdate(facade
+							.isDevMode());
+				} catch (FtpException e) {
+					if (withInfoMessage) {
+						JOptionPane.showMessageDialog(facade.getMainPanel(),
+								e.getMessage(), "Update",
+								JOptionPane.ERROR_MESSAGE);
+					}
+					return;
+				}
 
 				if (availableVersion != null) {
 					int response = JOptionPane.showConfirmDialog(
@@ -966,8 +978,9 @@ public class MainPanel extends JFrame implements UIConstants {
 				}
 
 				boolean isDownloading = repositoryService.isDownloading(title);
+				boolean isUploading = repositoryService.isUploading(title);
 
-				if (contains && !isDownloading) {
+				if (contains && !isDownloading && !isUploading) {
 					int count = 0;
 					for (Iterator<String> i = mapTabIndexes.keySet().iterator(); i
 							.hasNext();) {
@@ -980,6 +993,8 @@ public class MainPanel extends JFrame implements UIConstants {
 					}
 					mapTabIndexes.remove(title);
 					tabbedPane.remove(tabbedPane.getSelectedComponent());
+					repositoryService.saveTransfertParameters(title, 0, 0,
+							false);
 				}
 			}
 		};

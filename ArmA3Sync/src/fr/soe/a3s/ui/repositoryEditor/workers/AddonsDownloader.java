@@ -10,7 +10,6 @@ import fr.soe.a3s.controller.ObserverFileSize;
 import fr.soe.a3s.controller.ObserverFilesNumber;
 import fr.soe.a3s.controller.ObserverSpeed;
 import fr.soe.a3s.dao.FileAccessMethods;
-import fr.soe.a3s.domain.repository.SyncTreeNode;
 import fr.soe.a3s.dto.sync.SyncTreeDirectoryDTO;
 import fr.soe.a3s.dto.sync.SyncTreeLeafDTO;
 import fr.soe.a3s.dto.sync.SyncTreeNodeDTO;
@@ -69,6 +68,7 @@ public class AddonsDownloader extends Thread {
 		int nbFiles = listFilesToUpdate.size();
 
 		repositoryService.setDownloading(repositoryName, true);
+
 		downloadPanel.getLabelDownloadStatus().setText("Downloading...");
 		downloadPanel.getLabelTotalFilesSizeValue().setText(
 				UnitConverter.convertSize(totalFilesSize));
@@ -84,7 +84,7 @@ public class AddonsDownloader extends Thread {
 
 		// Resuming download
 		lastIndexFileDownloaded = repositoryService
-				.getLastIndexFileDownloaded(repositoryName);
+				.getLastIndexFileTransfered(repositoryName);
 		incrementedFilesSize = repositoryService
 				.getIncrementedFilesSize(repositoryName);
 		resume = repositoryService.isResume(repositoryName);
@@ -187,7 +187,7 @@ public class AddonsDownloader extends Thread {
 						"Download is finished.", "Download",
 						JOptionPane.INFORMATION_MESSAGE);
 				downloadPanel.getLabelDownloadStatus().setText("Finished!");
-				repositoryService.saveDownloadParameters(repositoryName, 0, 0,
+				repositoryService.saveTransfertParameters(repositoryName, 0, 0,
 						false);
 			} else if (canceled) {
 				JOptionPane.showMessageDialog(facade.getMainPanel(),
@@ -199,15 +199,14 @@ public class AddonsDownloader extends Thread {
 			}
 		} catch (Exception e) {
 			/* Stop indeterminate single download */
-			e.printStackTrace();
 			downloadPanel.getProgressBarDownloadSingleAddon().setIndeterminate(
 					false);
 			downloadPanel.getLabelDownloadStatus().setText("");
-			if (!canceled && !paused) {
-				JOptionPane.showMessageDialog(facade.getMainPanel(),
-						e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-				downloadPanel.getLabelDownloadStatus().setText("Error!");
-			}
+			// if (!canceled && !paused) {
+			JOptionPane.showMessageDialog(facade.getMainPanel(),
+					e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+			downloadPanel.getLabelDownloadStatus().setText("Error!");
+			// }
 		} finally {
 			downloadPanel.getButtonCheckForAddonsStart().setEnabled(true);
 			downloadPanel.getButtonDownloadStart().setEnabled(true);
@@ -241,7 +240,7 @@ public class AddonsDownloader extends Thread {
 				listFilesToUpdate.add(syncTreeDirectoryDTO);
 			} else if (syncTreeDirectoryDTO.isSelected()
 					&& syncTreeDirectoryDTO.isDeleted()) {
-				
+
 				int count = 0;
 				for (SyncTreeNodeDTO n : syncTreeDirectoryDTO.getList()) {
 					if (n.isSelected() && n.isDeleted()) {
@@ -299,14 +298,14 @@ public class AddonsDownloader extends Thread {
 
 	public void cancel() {
 		this.canceled = true;
-		connexionService.stopDownload(false);
-		repositoryService.saveDownloadParameters(repositoryName, 0, 0, false);
+		connexionService.cancel(false);
+		repositoryService.saveTransfertParameters(repositoryName, 0, 0, false);
 	}
 
 	public void pause() {
 		this.paused = true;
-		connexionService.stopDownload(true);
-		repositoryService.saveDownloadParameters(repositoryName,
+		connexionService.cancel(true);
+		repositoryService.saveTransfertParameters(repositoryName,
 				incrementedFilesSize, lastIndexFileDownloaded, true);
 	}
 

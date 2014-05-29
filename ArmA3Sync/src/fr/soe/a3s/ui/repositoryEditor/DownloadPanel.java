@@ -818,7 +818,6 @@ public class DownloadPanel extends JPanel implements UIConstants {
 			addonsDownloader.pause();
 			addonsDownloader.interrupt();
 			addonsDownloader = null;
-			repositoryService.setDownloading(repositoryName, false);
 		}
 		buttonDownloadStart.setEnabled(true);
 	}
@@ -829,11 +828,6 @@ public class DownloadPanel extends JPanel implements UIConstants {
 			addonsDownloader.cancel();
 			addonsDownloader.interrupt();
 			addonsDownloader = null;
-			repositoryService.setDownloading(repositoryName, false);
-		} else {
-			labelDownloadStatus.setText("Canceled!");
-			repositoryService.saveDownloadParameters(repositoryName, 0, 0,
-					false);
 		}
 		buttonDownloadStart.setEnabled(true);
 	}

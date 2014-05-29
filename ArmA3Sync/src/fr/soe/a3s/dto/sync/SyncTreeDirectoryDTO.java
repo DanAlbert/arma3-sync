@@ -160,4 +160,19 @@ public class SyncTreeDirectoryDTO implements SyncTreeNodeDTO {
 	public void setChanged(boolean value) {
 		this.changed = value;
 	}
+
+	@Override
+	public String getRelativePath() {
+		String path = this.name;
+		SyncTreeDirectoryDTO p = this.parent;
+		if (p == null) {
+			return "";
+		} else {
+			while (p != null && !RACINE.equals(p.getName())) {
+				path = p.getName() + "/" + path;
+				p = p.getParent();
+			}
+		}
+		return path;
+	}
 }

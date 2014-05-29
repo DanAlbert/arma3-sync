@@ -68,7 +68,7 @@ public class AddonsChecker extends Thread {
 			connexionService.getServerInfo(repositoryName);
 			connexionService.getChangelogs(repositoryName);
 
-			parent = repositoryService.getSync(repositoryName);
+			parent = repositoryService.getSyncForCheckForAddons(repositoryName);
 
 			// connexionService .determineCompletion(repositoryName,parent);
 			// slow with zsync!

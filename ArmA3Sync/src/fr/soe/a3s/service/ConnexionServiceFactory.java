@@ -44,4 +44,22 @@ public class ConnexionServiceFactory {
 							+ repositoryName + ".");
 		}
 	}
+
+	public static AbstractConnexionService getRepositoryUploadServiceFromRepository(
+			String repositoryName) throws RepositoryException, CheckException {
+
+		Repository repository = repositoryDAO.getMap().get(repositoryName);
+		if (repository == null) {
+			throw new RepositoryException("Repository " + repositoryName
+					+ " not found!");
+		} else if (repository.getRepositoryUploadProtocole() instanceof Ftp) {
+			return new FtpService();
+		} else if (repository.getRepositoryUploadProtocole() instanceof Http) {
+			return new HttpService();
+		} else {
+			throw new CheckException(
+					"Unknown or unsupported protocole for repository "
+							+ repositoryName + ".");
+		}
+	}
 }

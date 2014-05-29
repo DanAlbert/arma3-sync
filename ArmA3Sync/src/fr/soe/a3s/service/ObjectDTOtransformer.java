@@ -204,6 +204,7 @@ public class ObjectDTOtransformer {
 		final RepositoryDTO repositoryDTO = new RepositoryDTO();
 		repositoryDTO.setName(repository.getName());
 		repositoryDTO.setNotify(repository.isNotify());
+		// Protocole
 		ProtocoleDTO protocoleDTO = new ProtocoleDTO();
 		protocoleDTO.setUrl(repository.getProtocole().getUrl());
 		protocoleDTO.setLogin(repository.getProtocole().getLogin());
@@ -217,6 +218,28 @@ public class ObjectDTOtransformer {
 			protocoleDTO.setProtocole(Protocole.FTP);
 		}
 		repositoryDTO.setProtocoleDTO(protocoleDTO);
+		// Repository upload protocole
+		ProtocoleDTO repositoryUploadProtocoleDTO = new ProtocoleDTO();
+		if (repository.getRepositoryUploadProtocole() != null) {
+			repositoryUploadProtocoleDTO.setUrl(repository
+					.getRepositoryUploadProtocole().getUrl());
+			repositoryUploadProtocoleDTO.setLogin(repository
+					.getRepositoryUploadProtocole().getLogin());
+			repositoryUploadProtocoleDTO.setPassword(repository
+					.getRepositoryUploadProtocole().getPassword());
+			repositoryUploadProtocoleDTO.setPort(repository
+					.getRepositoryUploadProtocole().getPort());
+			repositoryUploadProtocoleDTO.setEncryptionMode(repository
+					.getRepositoryUploadProtocole().getEncryptionMode());
+			if (repository.getRepositoryUploadProtocole() instanceof Http) {
+				repositoryUploadProtocoleDTO.setProtocole(Protocole.HTTP);
+			} else {
+				repositoryUploadProtocoleDTO.setProtocole(Protocole.FTP);
+			}
+			repositoryDTO
+					.setRepositoryUploadProtocoleDTO(repositoryUploadProtocoleDTO);
+		}
+		//
 		repositoryDTO.setPath(repository.getPath());
 		repositoryDTO.setRevision(repository.getRevision());
 		repositoryDTO.setAutoConfigURL(repository.getAutoConfigURL());
@@ -317,6 +340,7 @@ public class ObjectDTOtransformer {
 		String remoteSHA1 = syncTreeLeaf.getSha1();
 		String localSHA1 = syncTreeLeaf.getLocalSHA1();
 		syncTreeLeafDTO.setLocalSHA1(localSHA1);
+		syncTreeLeafDTO.setSha1(syncTreeLeaf.getSha1());
 		syncTreeLeafDTO.setDestinationPath(syncTreeLeaf.getDestinationPath());
 		return syncTreeLeafDTO;
 	}

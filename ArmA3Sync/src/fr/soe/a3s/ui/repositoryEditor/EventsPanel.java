@@ -70,7 +70,7 @@ public class EventsPanel extends JPanel implements UIConstants {
 	private JButton buttonEdit;
 	private TreeDirectoryDTO racine1;
 	private AddonTreeModel addonTreeModel1;
-	private JButton buttonSaveUpload;
+	private JButton buttonUpload;
 	private TreePath arbreTreePath;
 	private JPopupMenu popup;
 	private JMenuItem menuItemSetRequired;
@@ -82,6 +82,7 @@ public class EventsPanel extends JPanel implements UIConstants {
 	private String repositoryName;
 	private List<EventDTO> eventDTOs;
 	private JButton buttonDeleteFromDisk;
+	private JButton buttonUploadOptions;
 
 	public EventsPanel(Facade facade, RepositoryPanel repositoryPanel) {
 
@@ -110,10 +111,14 @@ public class EventsPanel extends JPanel implements UIConstants {
 				ImageIcon deleteIcon = new ImageIcon(DELETE);
 				buttonRemove.setIcon(deleteIcon);
 				hBox.add(buttonRemove);
-				buttonSaveUpload = new JButton("");
+				buttonUpload = new JButton("");
 				ImageIcon saveUploadIcon = new ImageIcon(UPLOAD);
-				buttonSaveUpload.setIcon(saveUploadIcon);
-				hBox.add(buttonSaveUpload);
+				buttonUpload.setIcon(saveUploadIcon);
+				hBox.add(buttonUpload);
+				buttonUploadOptions = new JButton();
+				ImageIcon uploadOptionIcon = new ImageIcon(PREFERENCES);
+				buttonUploadOptions.setIcon(uploadOptionIcon);
+				hBox.add(buttonUploadOptions);
 				buttonSaveToDisk = new JButton("");
 				ImageIcon saveToDiskIcon = new ImageIcon(SAVE);
 				buttonSaveToDisk.setIcon(saveToDiskIcon);
@@ -203,10 +208,16 @@ public class EventsPanel extends JPanel implements UIConstants {
 				buttonRemovePerformed();
 			}
 		});
-		buttonSaveUpload.addActionListener(new ActionListener() {
+		buttonUpload.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
 				buttonUploadPerformed();
+			}
+		});
+		buttonUploadOptions.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				buttonUploadOptionsPerformed();
 			}
 		});
 		buttonSaveToDisk.addActionListener(new ActionListener() {
@@ -309,7 +320,8 @@ public class EventsPanel extends JPanel implements UIConstants {
 		buttonNew.setToolTipText("Add a new event");
 		buttonEdit.setToolTipText("Edit selected event");
 		buttonRemove.setToolTipText("Remove selected event");
-		buttonSaveUpload.setToolTipText("Upload events informations");
+		buttonUpload.setToolTipText("Upload events informations");
+		buttonUploadOptions.setToolTipText("Set upload options");
 		buttonSaveToDisk.setToolTipText("Save to disk (local repository)");
 	}
 
@@ -394,23 +406,23 @@ public class EventsPanel extends JPanel implements UIConstants {
 
 	private void buttonUploadPerformed() {
 
-		try {
-			RepositoryDTO r = repositoryService.getRepository(repositoryName);
-			ProtocoleDTO protocoleDTO = r.getProtocoleDTO();
-			if (protocoleDTO.getProtocole().equals(Protocole.HTTP)) {
-				JOptionPane
-						.showMessageDialog(
-								facade.getMainPanel(),
-								"Uploading events is not currently available with http based repository.\n Use Save to Disk command on the host machine instead.",
-								"Information", JOptionPane.INFORMATION_MESSAGE);
-				return;
-			}
-
-		} catch (RepositoryException e) {
-			JOptionPane.showMessageDialog(facade.getMainPanel(),
-					e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-			return;
-		}
+		// try {
+		// RepositoryDTO r = repositoryService.getRepository(repositoryName);
+		// ProtocoleDTO protocoleDTO = r.getProtocoleDTO();
+		// if (protocoleDTO.getProtocole().equals(Protocole.HTTP)) {
+		// JOptionPane
+		// .showMessageDialog(
+		// facade.getMainPanel(),
+		// "Uploading events is not currently available with http based repository.\n Use Save to Disk command on the host machine instead.",
+		// "Information", JOptionPane.INFORMATION_MESSAGE);
+		// return;
+		// }
+		//
+		// } catch (RepositoryException e) {
+		// JOptionPane.showMessageDialog(facade.getMainPanel(),
+		// e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+		// return;
+		// }
 
 		if (eventDTOs == null) {
 			JOptionPane.showMessageDialog(facade.getMainPanel(),
@@ -421,10 +433,19 @@ public class EventsPanel extends JPanel implements UIConstants {
 			facade.getSyncPanel().init();
 		}
 	}
+	
+	private void buttonUploadOptionsPerformed() {
+		
+		UploadRepositoryOptionsPanel uploadRepositoryOptionsPanel = new UploadRepositoryOptionsPanel(
+				facade);
+		uploadRepositoryOptionsPanel.init(repositoryName);
+		uploadRepositoryOptionsPanel.setVisible(true);
+	}
 
 	private void uploadInformations() {
 
-		UploadPanel uploadPanel = new UploadPanel(facade, repositoryName);
+		UploadEventsPanel uploadPanel = new UploadEventsPanel(facade,
+				repositoryName);
 		uploadPanel.setVisible(true);
 		uploadPanel.init();
 	}

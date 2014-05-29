@@ -28,6 +28,7 @@ import fr.soe.a3s.domain.TreeDirectory;
 import fr.soe.a3s.domain.TreeLeaf;
 import fr.soe.a3s.domain.TreeNode;
 import fr.soe.a3s.domain.configration.FavoriteServer;
+import fr.soe.a3s.domain.repository.AutoConfig;
 import fr.soe.a3s.domain.repository.Changelog;
 import fr.soe.a3s.domain.repository.Changelogs;
 import fr.soe.a3s.domain.repository.Event;
@@ -44,6 +45,8 @@ import fr.soe.a3s.dto.ServerInfoDTO;
 import fr.soe.a3s.dto.TreeDirectoryDTO;
 import fr.soe.a3s.dto.configuration.FavoriteServerDTO;
 import fr.soe.a3s.dto.sync.SyncTreeDirectoryDTO;
+import fr.soe.a3s.exception.AutoConfigNotFoundException;
+import fr.soe.a3s.exception.ChangelogsNotFoundException;
 import fr.soe.a3s.exception.CheckException;
 import fr.soe.a3s.exception.LoadingException;
 import fr.soe.a3s.exception.RepositoryCheckException;
@@ -249,7 +252,8 @@ public class RepositoryService extends ObjectDTOtransformer implements
 		repositoryBuilderDAO.buildRepository(repository);
 	}
 
-	public SyncTreeDirectoryDTO getSync(String repositoryName) throws Exception {
+	public SyncTreeDirectoryDTO getSyncForCheckForAddons(String repositoryName)
+			throws Exception {
 
 		Repository repository = repositoryDAO.getMap().get(repositoryName);
 		if (repository == null) {
@@ -284,10 +288,6 @@ public class RepositoryService extends ObjectDTOtransformer implements
 
 		// 4. Determine extra local files to hide
 		determineHiddenFiles(parent, hiddenFolderPaths);
-
-		// determineAddonFilesToDelete(parent, hiddenFolderPaths,
-		// repository.getDefaultDownloadLocation(), noAutoDiscover);
-		// determineAddonFoldersToDelete(parent, hiddenFolderPaths);
 
 		// 5. Determine extra local files to delete
 		determineExtraLocalFilesToDelete(parent);
@@ -462,54 +462,6 @@ public class RepositoryService extends ObjectDTOtransformer implements
 		}
 	}
 
-	private void determineAddonFilesToDelete(SyncTreeNode syncTreeNode,
-			Set<String> hidedFolderPaths, String defaultDownloadLocation,
-			boolean noAutoDiscover) {
-
-		if (!syncTreeNode.isLeaf()) {
-			SyncTreeDirectory directory = (SyncTreeDirectory) syncTreeNode;
-
-			if (directory.isMarkAsAddon()
-					&& addonDAO.getMap().containsKey(
-							directory.getName().toLowerCase())) {
-
-				Addon addon = addonDAO.getMap().get(
-						directory.getName().toLowerCase());
-
-				if (defaultDownloadLocation.equals(addon.getPath())
-						|| !noAutoDiscover) {
-					File file = new File(addon.getPath() + "/"
-							+ addon.getName());
-					if (!directory.isHidden()) {
-						boolean contains = false;
-						for (String stg : hidedFolderPaths) {
-							if (file.getAbsolutePath().toLowerCase()
-									.contains(stg.toLowerCase())) {
-								contains = true;
-								break;
-							}
-						}
-						if (!contains) {
-							addFilesToDelete(directory, file);
-						} else {
-							directory.setHidden(true);
-						}
-					}
-				} else {
-					for (SyncTreeNode n : directory.getList()) {
-						determineAddonFilesToDelete(n, hidedFolderPaths,
-								defaultDownloadLocation, noAutoDiscover);
-					}
-				}
-			} else {
-				for (SyncTreeNode n : directory.getList()) {
-					determineAddonFilesToDelete(n, hidedFolderPaths,
-							defaultDownloadLocation, noAutoDiscover);
-				}
-			}
-		}
-	}
-
 	private void addFilesToDelete(SyncTreeDirectory directory, File file) {
 
 		File[] subFiles = file.listFiles();
@@ -556,48 +508,6 @@ public class RepositoryService extends ObjectDTOtransformer implements
 		}
 	}
 
-	private void determineAddonFoldersToDelete(SyncTreeNode syncTreeNode,
-			Set<String> hidedFolderPaths) {
-
-		if (!syncTreeNode.isLeaf()) {
-			SyncTreeDirectory directory = (SyncTreeDirectory) syncTreeNode;
-			if (!directory.isMarkAsAddon() && directory.getParent() != null) {
-				File file = new File(directory.getDestinationPath() + "/"
-						+ directory.getName());
-				// folder must exists locally and remotely
-				File[] subFiles = file.listFiles();
-				if (subFiles != null) {
-					List<String> listNames = new ArrayList<String>();
-					for (SyncTreeNode node : directory.getList()) {
-						listNames.add(node.getName().toLowerCase());
-					}
-					for (File f : subFiles) {
-						if (!listNames.contains(f.getName().toLowerCase())) {
-							if (!directory.isHidden()) {
-								boolean contains = false;
-								for (String stg : hidedFolderPaths) {
-									if (file.getAbsolutePath().toLowerCase()
-											.contains(stg.toLowerCase())) {
-										contains = true;
-										break;
-									}
-								}
-								if (!contains) {
-									addFilesToDelete(directory, file);
-								} else {
-									directory.setHidden(true);
-								}
-							}
-						}
-					}
-				}
-			}
-			for (SyncTreeNode n : directory.getList()) {
-				determineAddonFoldersToDelete(n, hidedFolderPaths);
-			}
-		}
-	}
-
 	public void addFilesToHide(String folderPath, String repositoryName) {
 
 		Repository repository = repositoryDAO.getMap().get(repositoryName);
@@ -640,19 +550,28 @@ public class RepositoryService extends ObjectDTOtransformer implements
 					+ " not found!");
 		}
 
+		SyncTreeDirectory sync = null;
 		try {
-			ServerInfo serverInfo = repositoryDAO
-					.readServerInfo(repositoryName);
-			repository.setServerInfo(serverInfo);
-		} catch (Exception e) {
-			throw new ServerInfoNotFoundException();
-		}
-
-		try {
-			SyncTreeDirectory sync = repositoryDAO.readSync(repositoryName);
+			sync = repositoryDAO.readSync(repositoryName);
 			repository.setSync(sync);
 		} catch (Exception e) {
+			e.printStackTrace();
+			throw new RepositoryException(e.getMessage());
+		}
+
+		ServerInfo serverInfo = null;
+		try {
+			serverInfo = repositoryDAO.readServerInfo(repositoryName);
+			repository.setServerInfo(serverInfo);
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new RepositoryException(e.getMessage());
+		}
+
+		if (sync == null) {
 			throw new SyncFileNotFoundException();
+		} else if (serverInfo == null) {
+			throw new ServerInfoNotFoundException();
 		}
 
 		if (!repository.getPath().equals(path) || path.isEmpty()) {
@@ -750,23 +669,23 @@ public class RepositoryService extends ObjectDTOtransformer implements
 		return response;
 	}
 
-	public void saveDownloadParameters(String repositoryName,
+	public void saveTransfertParameters(String repositoryName,
 			long incrementedFilesSize, int lastIndexFileDownloaded,
 			boolean resume) {
 
 		Repository repository = repositoryDAO.getMap().get(repositoryName);
 		if (repository != null) {
 			repository.setIncrementedFilesSize(incrementedFilesSize);
-			repository.setLastIndexFileDownloaded(lastIndexFileDownloaded);
+			repository.setLastIndexFileTransfered(lastIndexFileDownloaded);
 			repository.setResume(resume);
 		}
 	}
 
-	public int getLastIndexFileDownloaded(String repositoryName) {
+	public int getLastIndexFileTransfered(String repositoryName) {
 
 		Repository repository = repositoryDAO.getMap().get(repositoryName);
 		if (repository != null) {
-			return repository.getLastIndexFileDownloaded();
+			return repository.getLastIndexFileTransfered();
 		} else {
 			return 0;
 		}
@@ -1145,6 +1064,127 @@ public class RepositoryService extends ObjectDTOtransformer implements
 				repository.getFavoriteServersSetToAutoconfig().add(
 						favoriteServer);
 			}
+		}
+	}
+
+	public void setUploading(String repositoryName, boolean value) {
+
+		Repository repository = repositoryDAO.getMap().get(repositoryName);
+		if (repository != null) {
+			repository.setUploading(value);
+		}
+	}
+
+	public boolean isUploading(String repositoryName) {
+
+		Repository repository = repositoryDAO.getMap().get(repositoryName);
+		if (repository != null) {
+			return repository.isUploading();
+		}
+		return false;
+	}
+
+	public void setRepositoryUploadProtocole(String repositoryName, String url,
+			String port, String login, String password, Protocole protocole)
+			throws CheckException, RepositoryException {
+
+		Repository repository = repositoryDAO.getMap().get(repositoryName);
+		if (repository != null) {
+			AbstractProtocole abstractProtocole = null;
+			if (protocole.equals(Protocole.FTP)) {
+				abstractProtocole = new Ftp(url, port, login, password);
+			} else if (protocole.equals(Protocole.HTTP)) {
+				abstractProtocole = new Http(url, port, login, password);
+			} else {
+				throw new CheckException("Protocole not supported yet.");
+			}
+			abstractProtocole.checkData();
+			repository.setRepositoryUploadProtocole(abstractProtocole);
+
+		} else {
+			throw new RepositoryException("Repository " + repositoryName
+					+ " not found!");
+		}
+	}
+
+	public void readLocalRepository(String repositoryName)
+			throws SyncFileNotFoundException, ServerInfoNotFoundException,
+			ChangelogsNotFoundException, AutoConfigNotFoundException,
+			RepositoryException {
+
+		Repository repository = repositoryDAO.getMap().get(repositoryName);
+		if (repository == null) {
+			throw new RepositoryException("Repository " + repositoryName
+					+ " not found!");
+		}
+
+		SyncTreeDirectory sync = null;
+		ServerInfo serverInfo = null;
+		Changelogs changelogs = null;
+		AutoConfig autoConfig = null;
+		try {
+			sync = repositoryDAO.readSync(repositoryName);
+			serverInfo = repositoryDAO.readServerInfo(repositoryName);
+			changelogs = repositoryDAO.readChangelogs(repositoryName);
+			autoConfig = repositoryDAO.readAutoConfig(repositoryName);
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new RepositoryException(e.getMessage());
+		}
+
+		if (sync == null) {
+			throw new SyncFileNotFoundException();
+		} else if (serverInfo == null) {
+			throw new ServerInfoNotFoundException();
+		} else if (changelogs == null) {
+			throw new ChangelogsNotFoundException();
+		} else if (autoConfig == null) {
+			throw new AutoConfigNotFoundException();
+		}
+
+		repository.setLocalSync(sync);
+		repository.setLocalServerInfo(serverInfo);
+		repository.setLocalChangelogs(changelogs);
+		repository.setLocalAutoConfig(autoConfig);
+	}
+
+	public SyncTreeDirectoryDTO getSync(String repositoryName)
+			throws RepositoryException {
+
+		Repository repository = repositoryDAO.getMap().get(repositoryName);
+		if (repository == null) {
+			throw new RepositoryException("Repository " + repositoryName
+					+ " not found!");
+		}
+
+		if (repository.getSync() == null) {
+			return null;
+		} else {
+			SyncTreeDirectoryDTO parentDTO = new SyncTreeDirectoryDTO();
+			parentDTO.setName("racine");
+			parentDTO.setParent(null);
+			transformSyncTreeDirectory2DTO(repository.getSync(), parentDTO);
+			return parentDTO;
+		}
+	}
+
+	public SyncTreeDirectoryDTO getLocalSync(String repositoryName)
+			throws RepositoryException {
+
+		Repository repository = repositoryDAO.getMap().get(repositoryName);
+		if (repository == null) {
+			throw new RepositoryException("Repository " + repositoryName
+					+ " not found!");
+		}
+
+		if (repository.getLocalSync() == null) {
+			return null;
+		} else {
+			SyncTreeDirectoryDTO parentDTO = new SyncTreeDirectoryDTO();
+			parentDTO.setName("racine");
+			parentDTO.setParent(null);
+			transformSyncTreeDirectory2DTO(repository.getLocalSync(), parentDTO);
+			return parentDTO;
 		}
 	}
 

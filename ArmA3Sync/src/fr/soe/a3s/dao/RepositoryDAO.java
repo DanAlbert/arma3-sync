@@ -16,6 +16,8 @@ import java.util.zip.GZIPOutputStream;
 import javax.crypto.Cipher;
 import javax.crypto.SealedObject;
 
+import fr.soe.a3s.domain.repository.AutoConfig;
+import fr.soe.a3s.domain.repository.Changelogs;
 import fr.soe.a3s.domain.repository.Events;
 import fr.soe.a3s.domain.repository.Repository;
 import fr.soe.a3s.domain.repository.ServerInfo;
@@ -113,6 +115,44 @@ public class RepositoryDAO implements DataAccessConstants {
 			}
 		}
 		return serverInfo;
+	}
+	
+	public Changelogs readChangelogs(String repositoryName)
+			throws FileNotFoundException, IOException, ClassNotFoundException {
+
+		Changelogs changelogs = null;
+		Repository repository = mapRepositories.get(repositoryName);
+		if (repository != null) {
+			String path = repository.getPath();
+			String changelogsPath = path + "/" + CHANGELOGS_FILE_PATH;
+			File file = new File(changelogsPath);
+			if (file.exists()) {
+				ObjectInputStream fRo = new ObjectInputStream(
+						new GZIPInputStream(new FileInputStream(file)));
+				changelogs = (Changelogs) fRo.readObject();
+				fRo.close();
+			}
+		}
+		return changelogs;
+	}
+	
+	public AutoConfig readAutoConfig(String repositoryName)
+			throws FileNotFoundException, IOException, ClassNotFoundException {
+
+		AutoConfig autoconfig = null;
+		Repository repository = mapRepositories.get(repositoryName);
+		if (repository != null) {
+			String path = repository.getPath();
+			String autocOnfigPath = path + "/" + AUTOCONFIG_FILE_PATH;
+			File file = new File(autocOnfigPath);
+			if (file.exists()) {
+				ObjectInputStream fRo = new ObjectInputStream(
+						new GZIPInputStream(new FileInputStream(file)));
+				autoconfig = (AutoConfig) fRo.readObject();
+				fRo.close();
+			}
+		}
+		return autoconfig;
 	}
 
 	public SyncTreeDirectory readSync(String repositoryName)

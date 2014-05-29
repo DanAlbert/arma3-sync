@@ -47,7 +47,6 @@ import fr.soe.a3s.jazsync.Jazsync;
 public class RepositoryBuilderDAO implements DataAccessConstants,
 		ObservableFilesNumber, ObservableFileSize {
 
-	private String repositoryPath;
 	private Protocole protocole;
 	private String repositortUrl;
 	private ObserverFilesNumber observerFilesNumber;
@@ -64,7 +63,9 @@ public class RepositoryBuilderDAO implements DataAccessConstants,
 			throws RepositoryException, WritingException {
 
 		try {
-			repositoryPath = repository.getPath();
+			assert (repository != null);
+			String repositoryPath = repository.getPath();
+			assert (repositoryPath != null);
 			repositortUrl = repository.getProtocole().getUrl();
 			if (repository.getProtocole() instanceof Http) {
 				protocole = Protocole.HTTP;
@@ -108,8 +109,8 @@ public class RepositoryBuilderDAO implements DataAccessConstants,
 			executor.shutdownNow();
 
 			if (error) {
-				throw new RepositoryException(
-						"Build repository failed.\n An unexpected error has occured.\n Debug: try running ArmA3Sync.bat");
+				throw new RepositoryException("Build repository failed." + "\n"
+						+ "An unexpected error has occured.");
 			}
 
 			/* ServerInfo */

@@ -2,6 +2,7 @@ package fr.soe.a3s.dto.sync;
 
 public interface SyncTreeNodeDTO extends java.lang.Comparable {
 
+	public String RACINE = "racine";
 	public String getName();
 	public void setName(String name);
 	public String toString();
@@ -18,4 +19,5 @@ public interface SyncTreeNodeDTO extends java.lang.Comparable {
 	public boolean isDeleted();
 	public void setOptional(boolean value);
 	public boolean isOptional();
+	public String getRelativePath();
 }

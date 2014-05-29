@@ -11,6 +11,7 @@ public class RepositoryDTO implements java.lang.Comparable {
 	private String path;
 	private String autoConfigURL;
 	private boolean outOfSynk;
+	private ProtocoleDTO repositoryUploadProtocoleDTO;
 
 	public String getName() {
 		return name;
@@ -66,6 +67,15 @@ public class RepositoryDTO implements java.lang.Comparable {
 
 	public void setOutOfSynk(boolean outOfSynk) {
 		this.outOfSynk = outOfSynk;
+	}
+
+	public ProtocoleDTO getRepositoryUploadProtocoleDTO() {
+		return repositoryUploadProtocoleDTO;
+	}
+
+	public void setRepositoryUploadProtocoleDTO(
+			ProtocoleDTO repositoryUploadProtocoleDTO) {
+		this.repositoryUploadProtocoleDTO = repositoryUploadProtocoleDTO;
 	}
 
 	@Override

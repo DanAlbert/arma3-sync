@@ -102,7 +102,7 @@ public class AbstractConnexionDAO implements DataAccessConstants,
 		return canceled;
 	}
 
-	public void setCanceled(boolean canceled) {
+	public void cancel(boolean canceled) {
 		this.canceled = canceled;
 	}
 

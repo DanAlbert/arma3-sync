@@ -4,14 +4,8 @@ import java.io.FileNotFoundException;
 import java.net.ConnectException;
 import java.util.List;
 
-import fr.soe.a3s.constant.Protocole;
 import fr.soe.a3s.dao.AbstractConnexionDAO;
-import fr.soe.a3s.domain.Http;
-import fr.soe.a3s.domain.repository.AutoConfig;
-import fr.soe.a3s.domain.repository.ServerInfo;
 import fr.soe.a3s.dto.AutoConfigDTO;
-import fr.soe.a3s.dto.ProtocoleDTO;
-import fr.soe.a3s.dto.ServerInfoDTO;
 import fr.soe.a3s.dto.sync.SyncTreeDirectoryDTO;
 import fr.soe.a3s.dto.sync.SyncTreeNodeDTO;
 import fr.soe.a3s.exception.FtpException;
@@ -40,7 +34,7 @@ public abstract class AbstractConnexionService extends ObjectDTOtransformer {
 			throws RepositoryException, FtpException, WritingException,
 			FileNotFoundException, HttpException, ConnectException;
 
-	public abstract void stopDownload(boolean resumable);
+	public abstract void cancel(boolean resumable);
 
 	public abstract void disconnect();
 
@@ -52,8 +46,25 @@ public abstract class AbstractConnexionService extends ObjectDTOtransformer {
 			SyncTreeDirectoryDTO parent) throws RepositoryException,
 			HttpException, WritingException;
 
-	public abstract void getServerInfo(String repositoryName) throws RepositoryException, ConnectException, FtpException, WritingException, HttpException;
+	public abstract void getServerInfo(String repositoryName)
+			throws RepositoryException, ConnectException, FtpException,
+			WritingException, HttpException;
 
-	public abstract void getChangelogs(String repositoryName) throws ConnectException, FtpException, RepositoryException, WritingException, HttpException;
+	public abstract void getChangelogs(String repositoryName)
+			throws ConnectException, FtpException, RepositoryException,
+			WritingException, HttpException;
+
+	public abstract void uploadRepository(String repositoryName,
+			List<SyncTreeNodeDTO> filesToUpload,
+			List<SyncTreeNodeDTO> filesToDelete, boolean resume)
+			throws RepositoryException, ConnectException, FtpException;
+
+	public abstract void getSyncWithRepositoryUploadProtocole(
+			String repositoryName) throws RepositoryException,
+			WritingException, ConnectException, FtpException;
+
+	public abstract boolean remoteFileExists(String repositoryName,
+			SyncTreeNodeDTO remoteNode) throws RepositoryException,
+			ConnectException, FtpException;
 
 }

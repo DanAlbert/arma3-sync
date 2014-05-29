@@ -14,6 +14,7 @@ import java.io.File;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
+import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
@@ -32,6 +33,7 @@ import fr.soe.a3s.ui.Facade;
 import fr.soe.a3s.ui.UIConstants;
 import fr.soe.a3s.ui.repositoryEditor.workers.RepositoryBuilder;
 import fr.soe.a3s.ui.repositoryEditor.workers.RepositoryChecker;
+import fr.soe.a3s.ui.repositoryEditor.workers.RepositoryUploader;
 
 public class AdminPanel extends JPanel implements UIConstants {
 
@@ -48,10 +50,21 @@ public class AdminPanel extends JPanel implements UIConstants {
 			buttonCopyAutoConfigURL, buttonCheck;
 	private final RepositoryService repositoryService = new RepositoryService();
 	private String repositoryName;
-	private JTextField textFieldftpSharedFolderLocation,
+	private JTextField textFieldMainSharedFolderLocation,
 			textFieldAutoConfigURL;
 	private JProgressBar buildProgressBar, checkProgressBar;
 	private JButton buttonBuildOptions;
+	private JProgressBar uploadrogressBar;
+	private JButton buttonUploadOptions;
+	private JButton buttonUpload;
+	private JLabel uploadSizeLabelValue;
+
+	/* Workers */
+	private RepositoryUploader repositoryUploader;
+	private JLabel uploadedLabelValue;
+	private JLabel uploadSpeedLabelValue;
+	private JLabel uploadRemainingTimeValue;
+	private Box uploadInformationBox;
 
 	public AdminPanel(Facade facade, RepositoryPanel repositoryPanel) {
 
@@ -61,12 +74,11 @@ public class AdminPanel extends JPanel implements UIConstants {
 
 		Box vertBox1 = Box.createVerticalBox();
 		vertBox1.add(Box.createVerticalStrut(5));
+		this.add(vertBox1, BorderLayout.CENTER);
 
 		JPanel centerPanel = new JPanel();
-		GridLayout grid1 = new GridLayout(2, 1);
-		centerPanel.setLayout(grid1);
-		vertBox1.add(centerPanel);
-		this.add(vertBox1, BorderLayout.CENTER);
+		vertBox1.add(centerPanel, BorderLayout.CENTER);
+		centerPanel.setLayout(new BoxLayout(centerPanel, BoxLayout.Y_AXIS));
 
 		JPanel repositoryInfoPanel = new JPanel();
 		repositoryInfoPanel.setBorder(BorderFactory.createTitledBorder(
@@ -156,12 +168,12 @@ public class AdminPanel extends JPanel implements UIConstants {
 		{
 			JPanel locationPanel = new JPanel();
 			locationPanel.setLayout(new BorderLayout());
-			textFieldftpSharedFolderLocation = new JTextField();
+			textFieldMainSharedFolderLocation = new JTextField();
 			buttonSelectFTPfolderPath = new JButton("Select");
 			buttonSelectFTPfolderPath.setPreferredSize(new Dimension(75, 25));
-			textFieldftpSharedFolderLocation.setEditable(false);
-			textFieldftpSharedFolderLocation.setBackground(Color.WHITE);
-			locationPanel.add(textFieldftpSharedFolderLocation,
+			textFieldMainSharedFolderLocation.setEditable(false);
+			textFieldMainSharedFolderLocation.setBackground(Color.WHITE);
+			locationPanel.add(textFieldMainSharedFolderLocation,
 					BorderLayout.CENTER);
 			locationPanel.add(buttonSelectFTPfolderPath, BorderLayout.EAST);
 			vBox.add(locationPanel);
@@ -189,6 +201,50 @@ public class AdminPanel extends JPanel implements UIConstants {
 			panel.add(buttonBuild);
 			buildPanel.add(panel, BorderLayout.EAST);
 			vBox.add(buildPanel);
+		}
+		vBox.add(Box.createVerticalStrut(5));
+		{
+			JPanel uploadLabelPanel = new JPanel();
+			uploadLabelPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
+			JLabel uploadLabel = new JLabel("Upload repository");
+			uploadLabelPanel.add(uploadLabel);
+
+			uploadInformationBox = Box.createHorizontalBox();
+			JLabel uploadSizeLabel = new JLabel("size: ");
+			uploadInformationBox.add(uploadSizeLabel);
+			uploadSizeLabelValue = new JLabel();
+			uploadInformationBox.add(uploadSizeLabelValue);
+			JLabel uploadedLabel = new JLabel(", uploaded: ");
+			uploadInformationBox.add(uploadedLabel);
+			uploadedLabelValue = new JLabel();
+			uploadInformationBox.add(uploadedLabelValue);
+			JLabel uploadSpeedLabel = new JLabel(", speed: ");
+			uploadInformationBox.add(uploadSpeedLabel);
+			uploadSpeedLabelValue = new JLabel();
+			uploadInformationBox.add(uploadSpeedLabelValue);
+			JLabel uploadRemainingTime = new JLabel(", time: ");
+			uploadInformationBox.add(uploadRemainingTime);
+			uploadRemainingTimeValue = new JLabel();
+			uploadInformationBox.add(uploadRemainingTimeValue);
+			uploadLabelPanel.add(uploadInformationBox);
+			uploadInformationBox.setVisible(false);
+			vBox.add(uploadLabelPanel);
+		}
+		{
+			JPanel uploadPanel = new JPanel();
+			uploadPanel.setLayout(new BorderLayout());
+			uploadrogressBar = new JProgressBar();
+			buttonUploadOptions = new JButton("Options");
+			buttonUploadOptions.setPreferredSize(new Dimension(75, 25));
+			buttonUpload = new JButton("Upload");
+			buttonUpload.setPreferredSize(new Dimension(75, 25));
+			uploadPanel.add(uploadrogressBar, BorderLayout.CENTER);
+			JPanel panel = new JPanel();
+			panel.setLayout(new GridLayout(1, 2));
+			panel.add(buttonUploadOptions);
+			panel.add(buttonUpload);
+			uploadPanel.add(panel, BorderLayout.EAST);
+			vBox.add(uploadPanel);
 		}
 		vBox.add(Box.createVerticalStrut(5));
 		{
@@ -235,7 +291,7 @@ public class AdminPanel extends JPanel implements UIConstants {
 		buttonSelectFTPfolderPath.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
-				buttonSelectFTPfolderPathPerformed();
+				buttonSelectMainfolderPathPerformed();
 			}
 		});
 		buttonBuild.addActionListener(new ActionListener() {
@@ -253,6 +309,23 @@ public class AdminPanel extends JPanel implements UIConstants {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				buttonBuildOptionsPerformed();
+			}
+		});
+		buttonUpload.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				SwingUtilities.invokeLater(new Runnable() {
+					@Override
+					public void run() {
+						buttonUploadPerformed();
+					}
+				});
+			}
+		});
+		buttonUploadOptions.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				buttonUploadOptionsPerformed();
 			}
 		});
 		buttonCopyAutoConfigURL.addActionListener(new ActionListener() {
@@ -290,7 +363,7 @@ public class AdminPanel extends JPanel implements UIConstants {
 			ServerInfoDTO serverInfoDTO = repositoryService
 					.getServerInfo(repositoryName);
 
-			textFieldftpSharedFolderLocation.setText(repositoryDTO.getPath());
+			textFieldMainSharedFolderLocation.setText(repositoryDTO.getPath());
 
 			if (repositoryDTO.getAutoConfigURL() != null) {
 				textFieldAutoConfigURL.setText(repositoryDTO.getProtocoleDTO()
@@ -334,7 +407,7 @@ public class AdminPanel extends JPanel implements UIConstants {
 		}
 	}
 
-	private void buttonSelectFTPfolderPathPerformed() {
+	private void buttonSelectMainfolderPathPerformed() {
 
 		RepositoryDTO repositoryDTO = null;
 		try {
@@ -352,58 +425,66 @@ public class AdminPanel extends JPanel implements UIConstants {
 		int returnVal = fc.showOpenDialog(this.repositoryPanel);
 		if (returnVal == JFileChooser.APPROVE_OPTION) {
 			File file = fc.getSelectedFile();
-			/* Check consistency between repository url and ftp folder path */
-			String ftpFolderName = file.getName();
-			String url = repositoryDTO.getProtocoleDTO().getUrl();
-			if (url.endsWith("/")) {// there is / at the end of url
-				int lastIndex = url.lastIndexOf("/");
-				if (lastIndex != -1) {
-					url = url.substring(0, lastIndex);
-				}
-			}
-			int index = url.lastIndexOf("/");
-			if (index != -1) {// There is a folder after the root
-				String folderName = url.substring(index + 1);
-				if (!ftpFolderName.equalsIgnoreCase(folderName)) {
-					JOptionPane
-							.showMessageDialog(
-									facade.getMainPanel(),
-									"The selected FTP shared folder "
-											+ file.getName()
-											+ "\n does not correspond with the repository url: \n"
-											+ url, "Build repository",
-									JOptionPane.WARNING_MESSAGE);
-					textFieldftpSharedFolderLocation.setText("");
-					textFieldAutoConfigURL.setText("");
-				} else {
-					textFieldftpSharedFolderLocation.setText(file
-							.getAbsolutePath());
-				}
-			} else {
-				textFieldftpSharedFolderLocation
-						.setText(file.getAbsolutePath());
-			}
+			textFieldMainSharedFolderLocation.setText(file.getAbsolutePath());
 		} else {
-			textFieldftpSharedFolderLocation.setText("");
+			textFieldMainSharedFolderLocation.setText("");
 			textFieldAutoConfigURL.setText("");
 		}
 
+		// Save path to repository
 		try {
 			repositoryService.setRepositoryPath(repositoryName,
-					textFieldftpSharedFolderLocation.getText().trim());
-			if (textFieldAutoConfigURL.getText().isEmpty()) {
-				repositoryService.setAutoConfigURL(repositoryName, null);
-			}
-			repositoryService.write(repositoryName);
-		} catch (Exception e) {
+					textFieldMainSharedFolderLocation.getText());
+		} catch (RepositoryException e) {
 			JOptionPane.showMessageDialog(facade.getMainPanel(),
 					e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+			textFieldAutoConfigURL.setText("");
+		}
+
+		// Reset upload parameters
+		repositoryService.saveTransfertParameters(repositoryName, 0, 0, false);
+	}
+
+	@Deprecated
+	private void checkRepositoryPath(File file, RepositoryDTO repositoryDTO) {
+
+		/* Check consistency between repository url and main folder path */
+		String mainFolderName = file.getName();
+		String url = repositoryDTO.getProtocoleDTO().getUrl();
+		if (url.endsWith("/")) {// there is / at the end of url
+			int lastIndex = url.lastIndexOf("/");
+			if (lastIndex != -1) {
+				url = url.substring(0, lastIndex);
+			}
+		}
+		int index = url.lastIndexOf("/");
+		if (index != -1) {// There is a folder after the root
+			String folderName = url.substring(index + 1);
+			if (!mainFolderName.equalsIgnoreCase(folderName)) {
+				JOptionPane
+						.showMessageDialog(
+								facade.getMainPanel(),
+								"The selected shared folder "
+										+ file.getName()
+										+ "\n does not correspond with the repository url: \n"
+										+ url, "Build repository",
+								JOptionPane.WARNING_MESSAGE);
+				textFieldMainSharedFolderLocation.setText("");
+				textFieldAutoConfigURL.setText("");
+			} else {
+				textFieldMainSharedFolderLocation.setText(file
+						.getAbsolutePath());
+			}
+		} else {
+			textFieldMainSharedFolderLocation.setText(file.getAbsolutePath());
 		}
 	}
 
 	private void buttonBuildPerformed() {
 
-		final String path = textFieldftpSharedFolderLocation.getText().trim();
+		// Cancel repository upload
+
+		final String path = textFieldMainSharedFolderLocation.getText().trim();
 
 		if (path.isEmpty()) {
 			JOptionPane.showMessageDialog(facade.getMainPanel(),
@@ -417,6 +498,9 @@ public class AdminPanel extends JPanel implements UIConstants {
 			return;
 		}
 
+		// Reset upload parameters
+		repositoryService.saveTransfertParameters(repositoryName, 0, 0, false);
+
 		RepositoryBuilder repositoryBuilder = new RepositoryBuilder(facade,
 				repositoryName, path, this);
 		repositoryBuilder.start();
@@ -425,7 +509,7 @@ public class AdminPanel extends JPanel implements UIConstants {
 	private void buttonBuildOptionsPerformed() {
 
 		// Repository main folder location must be set
-		if (textFieldftpSharedFolderLocation.getText().isEmpty()) {
+		if (textFieldMainSharedFolderLocation.getText().isEmpty()) {
 			JOptionPane.showMessageDialog(facade.getMainPanel(),
 					"Please set the repository main folder location first.",
 					"Build repository", JOptionPane.INFORMATION_MESSAGE);
@@ -454,9 +538,47 @@ public class AdminPanel extends JPanel implements UIConstants {
 		}
 	}
 
+	private void buttonUploadPerformed() {
+
+		if (repositoryUploader == null
+				|| !repositoryService.isUploading(repositoryName)) {
+			String path = textFieldMainSharedFolderLocation.getText();
+			// Repository main folder location must be set
+			if (path.isEmpty()) {
+				JOptionPane
+						.showMessageDialog(
+								facade.getMainPanel(),
+								"Please set the repository main folder location first.",
+								"Build repository",
+								JOptionPane.INFORMATION_MESSAGE);
+				return;
+			}
+			repositoryUploader = new RepositoryUploader(facade, repositoryName,
+					path, this);
+			repositoryUploader.setDaemon(true);
+			repositoryUploader.start();
+		} else if (repositoryUploader != null
+				&& repositoryService.isUploading(repositoryName)) {
+			repositoryUploader.cancel();
+			repositoryUploader.interrupt();
+			repositoryUploader = null;
+			JOptionPane.showMessageDialog(facade.getMainPanel(),
+					"Repository upload stopped.", "Repository upload",
+					JOptionPane.INFORMATION_MESSAGE);
+		}
+	}
+
+	private void buttonUploadOptionsPerformed() {
+
+		UploadRepositoryOptionsPanel uploadRepositoryOptionsPanel = new UploadRepositoryOptionsPanel(
+				facade);
+		uploadRepositoryOptionsPanel.init(repositoryName);
+		uploadRepositoryOptionsPanel.setVisible(true);
+	}
+
 	private void buttonCheckPerformed() {
 
-		final String path = textFieldftpSharedFolderLocation.getText().trim();
+		final String path = textFieldMainSharedFolderLocation.getText().trim();
 
 		if (path.isEmpty()) {
 			JOptionPane.showMessageDialog(facade.getMainPanel(),
@@ -517,5 +639,37 @@ public class AdminPanel extends JPanel implements UIConstants {
 
 	public JButton getButtonBuildOptions() {
 		return buttonBuildOptions;
+	}
+
+	public JButton getButtonUpload() {
+		return buttonUpload;
+	}
+
+	public JButton getButtonUploadOptions() {
+		return buttonUploadOptions;
+	}
+
+	public JProgressBar getUploadrogressBar() {
+		return uploadrogressBar;
+	}
+
+	public JLabel getUploadSizeLabelValue() {
+		return uploadSizeLabelValue;
+	}
+
+	public JLabel getUploadedLabelValue() {
+		return uploadedLabelValue;
+	}
+
+	public JLabel getUploadSpeedLabelValue() {
+		return uploadSpeedLabelValue;
+	}
+
+	public JLabel getUploadRemainingTimeValue() {
+		return uploadRemainingTimeValue;
+	}
+
+	public Box getUploadInformationBox() {
+		return uploadInformationBox;
 	}
 }

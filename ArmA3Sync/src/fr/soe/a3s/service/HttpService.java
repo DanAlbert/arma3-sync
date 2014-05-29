@@ -1,20 +1,9 @@
 package fr.soe.a3s.service;
 
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.Authenticator;
 import java.net.ConnectException;
-import java.net.HttpURLConnection;
-import java.net.PasswordAuthentication;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.io.output.CountingOutputStream;
-
-import fr.soe.a3s.constant.Protocole;
 import fr.soe.a3s.dao.ConfigurationDAO;
 import fr.soe.a3s.dao.DataAccessConstants;
 import fr.soe.a3s.dao.HttpDAO;
@@ -32,7 +21,6 @@ import fr.soe.a3s.dto.sync.SyncTreeLeafDTO;
 import fr.soe.a3s.dto.sync.SyncTreeNodeDTO;
 import fr.soe.a3s.exception.FtpException;
 import fr.soe.a3s.exception.HttpException;
-import fr.soe.a3s.exception.JazsyncException;
 import fr.soe.a3s.exception.RepositoryException;
 import fr.soe.a3s.exception.WritingException;
 
@@ -200,12 +188,17 @@ public class HttpService extends AbstractConnexionService implements
 				resume = false;
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
-			throw new WritingException(e.getMessage()
-					+ "\n Download have been interrupted.");
+			if (!httpDAO.isCanceled()) {
+				e.printStackTrace();
+				throw new WritingException(e.getMessage()
+						+ "\n Download have been interrupted.");
+			}
+		} finally {
+			httpDAO.disconnect();
 		}
 	}
 
+	@Override
 	public void determineCompletion(String repositoryName,
 			SyncTreeDirectoryDTO parent) throws RepositoryException,
 			HttpException, WritingException {
@@ -263,32 +256,6 @@ public class HttpService extends AbstractConnexionService implements
 				determineCompletion(repositoryName, directory);
 			}
 		}
-
-	}
-
-	private String determinePath(SyncTreeNodeDTO syncTreeNodeDTO) {
-
-		assert (syncTreeNodeDTO.getParent() != null);
-		String path = "";
-		while (syncTreeNodeDTO.getParent().getName() != "racine") {
-			path = syncTreeNodeDTO.getParent().getName() + "/" + path;
-			syncTreeNodeDTO = syncTreeNodeDTO.getParent();
-		}
-		return path;
-	}
-
-	@Override
-	public void stopDownload(boolean resumable) {
-		httpDAO.stopDownload(resumable);
-	}
-
-	public void disconnect() {
-		httpDAO.disconnect();
-	}
-
-	@Override
-	public HttpDAO getConnexionDAO() {
-		return httpDAO;
 	}
 
 	@Override
@@ -303,5 +270,54 @@ public class HttpService extends AbstractConnexionService implements
 
 		boolean response = httpDAO.uploadEvents(repository);
 		return response;
+	}
+
+	private String determinePath(SyncTreeNodeDTO syncTreeNodeDTO) {
+
+		assert (syncTreeNodeDTO.getParent() != null);
+		String path = "";
+		while (syncTreeNodeDTO.getParent().getName() != "racine") {
+			path = syncTreeNodeDTO.getParent().getName() + "/" + path;
+			syncTreeNodeDTO = syncTreeNodeDTO.getParent();
+		}
+		return path;
+	}
+
+	@Override
+	public void getSyncWithRepositoryUploadProtocole(String repositoryName)
+			throws RepositoryException, WritingException, ConnectException,
+			FtpException {
+		// unimplemented
+	}
+
+	@Override
+	public void uploadRepository(String repositoryName,
+			List<SyncTreeNodeDTO> filesToUpload,
+			List<SyncTreeNodeDTO> filesToDelete, boolean resume)
+			throws RepositoryException, ConnectException, FtpException {
+		// unimplemented
+	}
+
+	@Override
+	public boolean remoteFileExists(String repositoryName,
+			SyncTreeNodeDTO remoteNode) throws RepositoryException,
+			ConnectException, FtpException {
+		// unimplemented
+		return false;
+	}
+
+	@Override
+	public void cancel(boolean resumable) {
+		httpDAO.cancel(resumable);
+	}
+
+	@Override
+	public void disconnect() {
+		httpDAO.disconnect();
+	}
+
+	@Override
+	public HttpDAO getConnexionDAO() {
+		return httpDAO;
 	}
 }
