@@ -101,8 +101,6 @@ public class DownloadPanel extends JPanel implements UIConstants {
 	private int totalFilesUpdated;
 	private int totalFilesDeleted;
 	private JButton buttonAdvancedConfigurationPerformed;
-	private AddonsChecker addonsChecker;
-	private AddonsDownloader addonsDownloader;
 	private JCheckBox checkBoxSelectAll;
 	private JCheckBox checkBoxExpandAll;
 	private JCheckBox checkBoxUpdated;
@@ -110,11 +108,14 @@ public class DownloadPanel extends JPanel implements UIConstants {
 	private boolean update;
 	private JCheckBox checkBoxAutoDiscover;
 	private JPopupMenu popup;
+	private JMenuItem menuItemHideExtraLocalContent;
+	private JMenuItem menuItemShowExtraLocalContent;
 	/* Services */
 	private final RepositoryService repositoryService = new RepositoryService();
 	private final ConfigurationService configurationService = new ConfigurationService();
-	private JMenuItem menuItemHideExtraLocalContent;
-	private JMenuItem menuItemShowExtraLocalContent;
+	/* Workers */
+	private AddonsChecker addonsChecker;
+	private AddonsDownloader addonsDownloader;
 
 	public DownloadPanel(Facade facade, RepositoryPanel repositoryPanel) {
 
@@ -546,11 +547,12 @@ public class DownloadPanel extends JPanel implements UIConstants {
 		comBoxDestinationFolder.addPopupMenuListener(new PopupMenuListener() {
 			@Override
 			public void popupMenuWillBecomeVisible(PopupMenuEvent arg0) {
-				updateDefaultFolderDestination();
+				defaultFolderDestinationSelection();
 			}
 
 			@Override
 			public void popupMenuWillBecomeInvisible(PopupMenuEvent arg0) {
+				defaultFolderDestinationReleased();
 			}
 
 			@Override
@@ -612,7 +614,7 @@ public class DownloadPanel extends JPanel implements UIConstants {
 		this.repositoryName = repositoryName;
 		this.eventName = eventName;
 		this.update = update;
-		updateDefaultFolderDestination();
+		defaultFolderDestinationSelection();
 		updateAutoDiscoverSelection();
 	}
 
@@ -667,7 +669,7 @@ public class DownloadPanel extends JPanel implements UIConstants {
 		addonsChecker.start();
 	}
 
-	public void updateDefaultFolderDestination() {
+	private void defaultFolderDestinationSelection() {
 
 		Set<String> directories = configurationService
 				.getAddonSearchDirectoryPaths();
@@ -687,6 +689,17 @@ public class DownloadPanel extends JPanel implements UIConstants {
 			comBoxDestinationFolder.setSelectedIndex(0);
 		} else {
 			comBoxDestinationFolder.setSelectedItem(path);
+		}
+	}
+
+	private void defaultFolderDestinationReleased() {
+
+		int index = comBoxDestinationFolder.getSelectedIndex();
+
+		if (index != -1 && addonsChecker != null) {
+			String path = (String) comBoxDestinationFolder.getSelectedItem();
+			repositoryService.setDefaultDownloadLocation(repositoryName, path);
+			checkForAddons();
 		}
 	}
 
