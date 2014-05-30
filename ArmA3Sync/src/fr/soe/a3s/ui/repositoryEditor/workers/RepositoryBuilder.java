@@ -30,6 +30,9 @@ public class RepositoryBuilder extends Thread {
 		adminPanel.getButtonCopyAutoConfigURL().setEnabled(false);
 		adminPanel.getButtonCheck().setEnabled(false);
 		adminPanel.getButtonBuildOptions().setEnabled(false);
+		adminPanel.getButtonUpload().setEnabled(false);
+		adminPanel.getButtonUploadOptions().setEnabled(false);
+		adminPanel.getButtonView().setEnabled(false);
 
 		adminPanel.getBuildProgressBar().setMinimum(0);
 		adminPanel.getBuildProgressBar().setMaximum(100);
@@ -57,6 +60,9 @@ public class RepositoryBuilder extends Thread {
 			adminPanel.getButtonCopyAutoConfigURL().setEnabled(true);
 			adminPanel.getButtonCheck().setEnabled(true);
 			adminPanel.getButtonBuildOptions().setEnabled(true);
+			adminPanel.getButtonUpload().setEnabled(true);
+			adminPanel.getButtonUploadOptions().setEnabled(true);
+			adminPanel.getButtonView().setEnabled(true);
 			adminPanel.getBuildProgressBar().setMaximum(0);
 			adminPanel.init(repositoryName);
 			facade.getSyncPanel().init();
