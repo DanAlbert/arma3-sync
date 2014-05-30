@@ -193,7 +193,7 @@ public class SecondPageTFARInstallerPanel extends TfarInstallerPanel {
 
 	@Override
 	public void buttonFistPerformed() {
-		facade.getFirstPageInstallerPanel().setVisible(true);
+		facade.getFirstPageTFARInstallerPanel().setVisible(true);
 		this.dispose();
 	}
 

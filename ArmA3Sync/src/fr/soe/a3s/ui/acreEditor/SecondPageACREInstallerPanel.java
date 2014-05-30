@@ -192,7 +192,7 @@ public class SecondPageACREInstallerPanel extends AcreInstallerPanel {
 
 	@Override
 	public void buttonFistPerformed() {
-		facade.getFirstPageInstallerPanel().setVisible(true);
+		facade.getFirstPageACREInstallerPanel().setVisible(true);
 		this.dispose();
 	}
 

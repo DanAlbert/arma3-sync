@@ -34,7 +34,7 @@ public class Facade {
 	private ExternalApplicationsEditionPanel externalApplicationsEditionPanel;
 	private PreferencesPanel preferencesPanel;
 	private ConnectionPanel connectiongPanel;
-	private FirstPageACREInstallerPanel firstPageInstallerPanel;
+	private FirstPageACREInstallerPanel firstPageACREInstallerPanel;
 	private FirstPageTFARInstallerPanel firstPageTFARInstallerPanel;
 	private InfoUpdatedRepositoryPanel infoUpdatedRepositoryPanel;
 
@@ -156,13 +156,13 @@ public class Facade {
 		return connectiongPanel;
 	}
 
-	public void setFirstPageInstallerPanel(
+	public void setFirstPageACREInstallerPanel(
 			FirstPageACREInstallerPanel firstPageInstallerPanel) {
-		this.firstPageInstallerPanel = firstPageInstallerPanel;
+		this.firstPageACREInstallerPanel = firstPageInstallerPanel;
 	}
 
-	public FirstPageACREInstallerPanel getFirstPageInstallerPanel() {
-		return firstPageInstallerPanel;
+	public FirstPageACREInstallerPanel getFirstPageACREInstallerPanel() {
+		return firstPageACREInstallerPanel;
 	}
 
 	public void setInfoUpdatedRepositoryPanel(
@@ -172,6 +172,10 @@ public class Facade {
 
 	public InfoUpdatedRepositoryPanel getInfoUpdatedRepositoryPanel() {
 		return infoUpdatedRepositoryPanel;
+	}
+	
+	public FirstPageTFARInstallerPanel getFirstPageTFARInstallerPanel() {
+		return firstPageTFARInstallerPanel;
 	}
 
 	public void setFirstPageTFARInstallerPanel(

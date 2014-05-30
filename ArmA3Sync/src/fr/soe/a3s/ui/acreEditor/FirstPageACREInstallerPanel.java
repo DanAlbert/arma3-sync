@@ -64,7 +64,7 @@ public class FirstPageACREInstallerPanel extends AcreInstallerPanel implements
 		buttonFist.setText("Proceed");
 		buttonSecond.setText("Cancel");
 		getRootPane().setDefaultButton(buttonFist);
-		this.facade.setFirstPageInstallerPanel(this);
+		this.facade.setFirstPageACREInstallerPanel(this);
 		{
 			JPanel centerPanel = new JPanel();
 			this.add(centerPanel, BorderLayout.CENTER);
