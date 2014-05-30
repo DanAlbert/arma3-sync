@@ -104,6 +104,7 @@ public class MainPanel extends JFrame implements UIConstants {
 	private JMenuItem menuItemRenameGroup;
 	private JMenuItem menuItemRemoveGroup;
 	private JMenuItem menuItemTFARwizard;
+	private JMenuItem menuDonate;
 
 	public MainPanel(Facade facade) {
 
@@ -172,10 +173,13 @@ public class MainPanel extends JFrame implements UIConstants {
 		menuHelp.add(menuItemuUpdates);
 		JSeparator s2 = new JSeparator();
 		menuHelp.add(s2);
+		menuDonate = new JMenuItem("Donate");
+		menuHelp.add(menuDonate);
+		JSeparator s3 = new JSeparator();
+		menuHelp.add(s3);
 		menuItemAbout = new JMenuItem("About", new ImageIcon(ABOUT));
 		menuHelp.add(menuItemAbout);
 		menuBar.add(menuHelp);
-
 		setJMenuBar(menuBar);
 
 		/* Info panel */
@@ -299,6 +303,12 @@ public class MainPanel extends JFrame implements UIConstants {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
 				menuItemuUpdatesPerformed();
+			}
+		});
+		menuDonate.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				menuDonatePerformed();
 			}
 		});
 		menuItemAbout.addActionListener(new ActionListener() {
@@ -584,6 +594,23 @@ public class MainPanel extends JFrame implements UIConstants {
 	private void menuItemAboutPerformed() {
 		AboutPanel about = new AboutPanel(facade);
 		about.setVisible(true);
+	}
+
+	private void menuDonatePerformed() {
+
+		String urlValue = commonService.getPayPal();
+		try {
+			URI url = new java.net.URI(urlValue);
+			if (Desktop.isDesktopSupported()) {
+				Desktop desktop = Desktop.getDesktop();
+				desktop.browse(url);
+			}
+		} catch (Exception e) {
+			JOptionPane.showMessageDialog(this,
+					"Can't open system web browser.", "Error",
+					JOptionPane.ERROR_MESSAGE);
+			e.printStackTrace();
+		}
 	}
 
 	private void menuIconifiedPerformed() {

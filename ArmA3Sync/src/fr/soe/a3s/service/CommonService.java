@@ -23,6 +23,7 @@ public class CommonService {
 	private static final CommonDAO commonDAO = new CommonDAO();
 	private static String WIKI = "http://www.sonsofexiled.fr/wiki/index.php/1._ArmA3Sync";
 	private static String BIS = "http://forums.bistudio.com/showthread.php?162236-ArmA3Sync-launcher-and-addons-synchronization-software-for-ArmA-3&p=2477805#post2477805";
+	private static String PayPal = "https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=JS65JS4FUGZWC";
 
 	public void saveAllParameters(int height, int width)
 			throws WritingException {
@@ -117,5 +118,9 @@ public class CommonService {
 
 	public String getBIS() {
 		return BIS;
+	}
+
+	public String getPayPal() {
+		return PayPal;
 	}
 }
