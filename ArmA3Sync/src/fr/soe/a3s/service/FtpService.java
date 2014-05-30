@@ -100,6 +100,27 @@ public class FtpService extends AbstractConnexionService implements
 		repository.setChangelogs(changelogs);// null if not found
 		Events events = ftpDAO.downloadEvent(repositoryName, remotePath);
 		repository.setEvents(events);
+		AutoConfig autoConfig = ftpDAO.downloadAutoconfig(repositoryName,
+				remotePath);
+		repository.setAutoConfig(autoConfig);
+		if (autoConfig != null) {
+			List<FavoriteServer> favoriteServers = autoConfig
+					.getFavoriteServers();
+			for (FavoriteServer favoriteServer : favoriteServers) {
+				boolean contains = false;
+				for (FavoriteServer server : configurationDAO
+						.getConfiguration().getFavoriteServers()) {
+					if (favoriteServer.getName().equals(server.getName())) {
+						contains = true;
+						break;
+					}
+				}
+				if (!contains) {
+					configurationDAO.getConfiguration().getFavoriteServers()
+							.add(favoriteServer);
+				}
+			}
+		}
 
 		disconnect();
 	}
@@ -452,10 +473,9 @@ public class FtpService extends AbstractConnexionService implements
 				ftpDAO.uploadFile(sourceFile, remotePath, node, resume);
 
 				resume = false;
-				
+
 				// Add ZSync file
-				if (repository.getProtocole() instanceof Http
-						&& node.isLeaf()) {
+				if (repository.getProtocole() instanceof Http && node.isLeaf()) {
 					String zsyncFilePath = repository.getPath() + "/"
 							+ node.getRelativePath() + ZSYNC_EXTENSION;
 					File zsyncFile = new File(zsyncFilePath);

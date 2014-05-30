@@ -842,6 +842,7 @@ public class MainPanel extends JFrame implements UIConstants {
 					}
 				}
 				facade.getSyncPanel().init();
+				facade.getOnlinePanel().init();
 				List<String> repositoryNames = new ArrayList<String>();
 				for (final RepositoryDTO repositoryDTO : list) {
 					try {

@@ -108,6 +108,14 @@ public class Repository implements Serializable {
 		this.autoConfigURL = autoConfigURL;
 	}
 
+	public AutoConfig getAutoConfig() {
+		return autoConfig;
+	}
+
+	public void setAutoConfig(AutoConfig autoConfig) {
+		this.autoConfig = autoConfig;
+	}
+
 	public ServerInfo getServerInfo() {
 		return serverInfo;
 	}

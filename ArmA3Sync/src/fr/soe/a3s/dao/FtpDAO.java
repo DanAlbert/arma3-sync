@@ -176,6 +176,32 @@ public class FtpDAO extends AbstractConnexionDAO {
 		return autoConfig;
 	}
 
+	public AutoConfig downloadAutoconfig(String repositoryName,
+			String remotePath) throws WritingException {
+
+		AutoConfig autoConfig = null;
+		try {
+			remotePath = remotePath + A3S_FOlDER_PATH;
+			File directory = new File(TEMP_FOLDER_PATH + "/" + repositoryName);
+			directory.mkdir();
+			File file = new File(directory + "/" + DataAccessConstants.AUTOCONFIG);
+			boolean found = download(file, remotePath);
+			if (found && file.exists()) {
+				ObjectInputStream fRo = new ObjectInputStream(
+						new GZIPInputStream(new FileInputStream(file)));
+				autoConfig = (AutoConfig) fRo.readObject();
+				fRo.close();
+				FileAccessMethods.deleteFile(file);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			autoConfig = null;
+			throw new WritingException("Failded to read file /.a3s/autoconfig"
+					+ "\n" + e.getMessage());
+		}
+		return autoConfig;
+	}
+
 	public SyncTreeDirectory downloadSync(String repositoryName,
 			String remotePath) throws WritingException {
 
