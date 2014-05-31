@@ -21,6 +21,7 @@ import fr.soe.a3s.service.RepositoryService;
 import fr.soe.a3s.ui.Facade;
 import fr.soe.a3s.ui.repositoryEditor.DownloadPanel;
 import fr.soe.a3s.ui.repositoryEditor.UnitConverter;
+import fr.soe.a3s.ui.tfarEditor.FirstPageTFARInstallerPanel;
 
 public class AddonsDownloader extends Thread {
 
@@ -39,6 +40,8 @@ public class AddonsDownloader extends Thread {
 	private final String eventName;
 	private SyncTreeDirectoryDTO parent;
 	private boolean found;
+	private boolean tfarIsUpdated = false;
+	private boolean acreIsUpdated = false;
 	private final DownloadPanel downloadPanel;
 	/* Services */
 	private AbstractConnexionService connexionService;
@@ -66,6 +69,11 @@ public class AddonsDownloader extends Thread {
 		}
 
 		int nbFiles = listFilesToUpdate.size();
+
+		// Check if @TFAR and @ACRE have been updated
+		for (SyncTreeNodeDTO node : listFilesToUpdate) {
+			checkTFARandACREupdate(node);
+		}
 
 		repositoryService.setDownloading(repositoryName, true);
 
@@ -225,9 +233,49 @@ public class AddonsDownloader extends Thread {
 				facade.getAddonsPanel().updateAddonGroups();
 				facade.getAddonsPanel().expandAddonGroups();
 				facade.getAddonOptionsPanel().updateAddonPriorities();
+				if (tfarIsUpdated) {
+					int response = JOptionPane
+							.showConfirmDialog(
+									facade.getMainPanel(),
+									"TFAR files have changed. Proceed with TFAR installer?",
+									"TFAR installer",
+									JOptionPane.OK_CANCEL_OPTION);
+					if (response == 0) {
+						FirstPageTFARInstallerPanel firstPage = new FirstPageTFARInstallerPanel(
+								facade);
+						firstPage.init();
+						firstPage.setVisible(true);
+					}
+				}
 			}
 			this.interrupt();
 			System.gc();
+		}
+	}
+
+	private void checkTFARandACREupdate(SyncTreeNodeDTO node) {
+
+		if (node.isLeaf()) {
+			SyncTreeDirectoryDTO parent = node.getParent();
+			if (parent != null) {
+				checkTFARandACREupdate(parent);
+			}
+		} else {
+			SyncTreeDirectoryDTO directory = (SyncTreeDirectoryDTO) node;
+			if (node.getName().equalsIgnoreCase("@task_force_radio")) {
+				if (directory.isUpdated() || directory.isChanged()) {
+					tfarIsUpdated = true;
+				}
+			} else if (node.getName().equalsIgnoreCase("@acre")) {
+				if (directory.isUpdated() || directory.isChanged()) {
+					acreIsUpdated = true;
+				}
+			} else {
+				SyncTreeDirectoryDTO parent = node.getParent();
+				if (parent != null) {
+					checkTFARandACREupdate(parent);
+				}
+			}
 		}
 	}
 
