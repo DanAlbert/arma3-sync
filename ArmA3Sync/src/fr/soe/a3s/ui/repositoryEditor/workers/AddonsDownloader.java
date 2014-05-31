@@ -228,11 +228,6 @@ public class AddonsDownloader extends Thread {
 			repositoryService.setDownloading(repositoryName, false);
 			if (!paused) {
 				downloadPanel.checkForAddons();
-				addonService.resetAvailableAddonTree();
-				facade.getAddonsPanel().updateAvailableAddons();
-				facade.getAddonsPanel().updateAddonGroups();
-				facade.getAddonsPanel().expandAddonGroups();
-				facade.getAddonOptionsPanel().updateAddonPriorities();
 				if (tfarIsUpdated) {
 					int response = JOptionPane
 							.showConfirmDialog(

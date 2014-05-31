@@ -45,6 +45,12 @@ public class AddonsChecker extends Thread {
 
 	@Override
 	public void run() {
+		
+		addonService.resetAvailableAddonTree();
+		facade.getAddonsPanel().updateAvailableAddons();
+		facade.getAddonsPanel().updateAddonGroups();
+		facade.getAddonsPanel().expandAddonGroups();
+		facade.getAddonOptionsPanel().updateAddonPriorities();
 
 		downloadPanel.getButtonCheckForAddonsCancel().setEnabled(true);
 		downloadPanel.getLabelCheckForAddonsStatus().setText("");
