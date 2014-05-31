@@ -452,8 +452,7 @@ public class FtpService extends AbstractConnexionService implements
 				}
 				String parentPath = remotePath + "/"
 						+ node.getParent().getRelativePath();
-				boolean ok = ftpDAO.deleteFile(node.getName(), node.isLeaf(),
-						parentPath);
+				ftpDAO.deleteFile(node.getName(), node.isLeaf(), parentPath);
 			}
 
 			for (SyncTreeNodeDTO node : filesToUpload) {

@@ -58,8 +58,6 @@ public class RepositoryUploader extends Thread implements DataAccessConstants {
 	public void run() {
 
 		disable();
-		// adminPanel.getUploadrogressBar().setForeground(new Color(255, 150,
-		// 0));
 		adminPanel.getUploadrogressBar().setIndeterminate(true);
 		adminPanel.getUploadrogressBar().setString("Computing files...");
 
@@ -131,6 +129,8 @@ public class RepositoryUploader extends Thread implements DataAccessConstants {
 									upload = false;
 								}
 							}
+						} else if (!localNode.isLeaf() && !remoteNode.isLeaf()) {
+							upload = false;
 						}
 					}
 

@@ -184,7 +184,8 @@ public class FtpDAO extends AbstractConnexionDAO {
 			remotePath = remotePath + A3S_FOlDER_PATH;
 			File directory = new File(TEMP_FOLDER_PATH + "/" + repositoryName);
 			directory.mkdir();
-			File file = new File(directory + "/" + DataAccessConstants.AUTOCONFIG);
+			File file = new File(directory + "/"
+					+ DataAccessConstants.AUTOCONFIG);
 			boolean found = download(file, remotePath);
 			if (found && file.exists()) {
 				ObjectInputStream fRo = new ObjectInputStream(
@@ -545,32 +546,33 @@ public class FtpDAO extends AbstractConnexionDAO {
 		fis.close();
 	}
 
-	public boolean deleteFile(String fileName, boolean isFile, String remotePath)
+	public void deleteFile(String fileName, boolean isFile, String remotePath)
 			throws IOException {
+
 		boolean exists = ftpClient.changeWorkingDirectory(remotePath);
 		if (exists) {
 			if (isFile) {
-				return ftpClient.deleteFile(fileName);
+				ftpClient.deleteFile(fileName);
 			} else {
-				return removeDirectory(fileName, remotePath);
+				removeDirectory(fileName, remotePath);
 			}
 		}
-		return false;
 	}
 
-	private boolean removeDirectory(String fileName, String remotePath)
+	private void removeDirectory(String folderName, String remotePath)
 			throws IOException {
 
-		FTPFile[] subFiles = ftpClient.listFiles(fileName);
+		FTPFile[] subFiles = ftpClient.listFiles(folderName);
 		if (subFiles != null && subFiles.length > 0) {
 			for (FTPFile aFile : subFiles) {
-				remotePath = remotePath + "/" + aFile.getName();
-				return deleteFile(fileName, aFile.isFile(), remotePath);
+				String newRemotePath = remotePath + "/" + folderName;
+				deleteFile(aFile.getName(), aFile.isFile(), newRemotePath);
 			}
-		} else {
-			return ftpClient.removeDirectory(fileName);
 		}
-		return false;
+		boolean exists = ftpClient.changeWorkingDirectory(remotePath);
+		if (exists) {
+			ftpClient.removeDirectory(folderName);
+		}
 	}
 
 	public void uploadSync(SyncTreeDirectory sync, String remotePath)
