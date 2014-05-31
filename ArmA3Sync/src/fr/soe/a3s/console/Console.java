@@ -380,6 +380,7 @@ public class Console {
 			System.out.println("Failed to build repository.");
 			System.out.println(e.getMessage());
 		} finally {
+			System.gc();
 			System.out.println("");
 			execute();
 		}
