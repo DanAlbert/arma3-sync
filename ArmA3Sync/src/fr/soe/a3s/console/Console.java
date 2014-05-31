@@ -331,6 +331,7 @@ public class Console {
 		} catch (SyncFileNotFoundException e) {
 			System.out.println(e.getMessage());
 		} finally {
+			System.gc();
 			System.out.println("");
 			execute();
 		}
