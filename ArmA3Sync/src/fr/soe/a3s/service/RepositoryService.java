@@ -991,6 +991,14 @@ public class RepositoryService extends ObjectDTOtransformer implements
 		return list;
 	}
 
+	public void clearExcludedFilesPathFromBuild(String repositoryName) {
+
+		Repository repository = repositoryDAO.getMap().get(repositoryName);
+		if (repository != null) {
+			repository.getExcludedFilesFromBuild().clear();
+		}
+	}
+
 	public void removeExcludedFilesPathFromBuild(String repositoryName,
 			String path) {
 
@@ -1001,9 +1009,26 @@ public class RepositoryService extends ObjectDTOtransformer implements
 	}
 
 	public void addExcludedFoldersFromSync(String repositoryName, String path) {
+
 		Repository repository = repositoryDAO.getMap().get(repositoryName);
 		if (repository != null) {
 			repository.getExcludedFoldersFromSync().add(path);
+		}
+	}
+
+	public void clearExcludedFoldersFromSync(String repositoryName) {
+
+		Repository repository = repositoryDAO.getMap().get(repositoryName);
+		if (repository != null) {
+			repository.getExcludedFoldersFromSync().clear();
+		}
+	}
+
+	public void removeExcludedFoldersFromSync(String repositoryName, String path) {
+
+		Repository repository = repositoryDAO.getMap().get(repositoryName);
+		if (repository != null) {
+			repository.getExcludedFoldersFromSync().remove(path);
 		}
 	}
 
@@ -1027,14 +1052,6 @@ public class RepositoryService extends ObjectDTOtransformer implements
 			list.addAll(repository.getExcludedFoldersFromSync());
 		}
 		return list;
-	}
-
-	public void removeExcludedFoldersFromSync(String repositoryName, String path) {
-
-		Repository repository = repositoryDAO.getMap().get(repositoryName);
-		if (repository != null) {
-			repository.getExcludedFoldersFromSync().remove(path);
-		}
 	}
 
 	public List<FavoriteServerDTO> getFavoriteServerToAutoconfig(

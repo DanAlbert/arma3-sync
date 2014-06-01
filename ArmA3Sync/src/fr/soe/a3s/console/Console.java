@@ -360,6 +360,39 @@ public class Console {
 			System.exit(0);
 		}
 
+		repositoryService.clearExcludedFilesPathFromBuild(name);
+		repositoryService.clearExcludedFoldersFromSync(name);
+
+		System.out
+				.print("Add file path to exclude from build (leave blank to pass): ");
+		String excludedFilePath = c.nextLine();
+		while (!excludedFilePath.isEmpty()) {
+			if (!(new File(excludedFilePath)).exists()) {
+				System.out.println("Wrong path, file does not exists.");
+			} else {
+				repositoryService.addExcludedFilesPathFromBuild(name,
+						excludedFilePath.toLowerCase());
+			}
+			System.out
+					.print("Add file path to exclude from build (leave blank to pass): ");
+			excludedFilePath = c.nextLine();
+		}
+
+		System.out
+				.print("Add folder path to exclude extra local content when sync (leave blank to pass): ");
+		String excludedFoldersFromSync = c.nextLine();
+		while (!excludedFoldersFromSync.isEmpty()) {
+			if (!(new File(excludedFoldersFromSync)).exists()) {
+				System.out.println("Wrong path, file does not exists.");
+			} else {
+				repositoryService.addExcludedFoldersFromSync(name,
+						excludedFoldersFromSync.toLowerCase());
+			}
+			System.out
+					.print("Add folder path to exclude extra local content when sync (leave blank to pass): ");
+			excludedFoldersFromSync = c.nextLine();
+		}
+
 		this.value = 0;
 
 		repositoryService.getRepositoryBuilderDAO().addObserverFileSize(
