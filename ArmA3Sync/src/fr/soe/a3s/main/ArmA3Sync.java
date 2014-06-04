@@ -74,6 +74,7 @@ public class ArmA3Sync {
 
 		String version = System.getProperty("java.version");
 		String specification = System.getProperty("java.specification.version");
+
 		if (!(Double.parseDouble(specification) >= 1.7)) {
 			String message = "JRE installed version = " + version + "\n"
 					+ "ArmA3Sync required JRE 1.7 (Java 7) or above to run.";
@@ -84,9 +85,6 @@ public class ArmA3Sync {
 						JOptionPane.INFORMATION_MESSAGE);
 			}
 			System.exit(0);
-		} else {
-			String message = "JRE installed version = " + version;
-			System.out.println(message);
 		}
 	}
 
@@ -96,6 +94,9 @@ public class ArmA3Sync {
 			System.out.println("Can't start ArmA3Sync. GUI is missing.");
 			System.exit(1);
 		}
+
+		String version = System.getProperty("java.version");
+		System.out.println("JRE installed version = " + version);
 
 		/* Set ui properties */
 		try {
@@ -195,7 +196,7 @@ public class ArmA3Sync {
 		mainPanel.checkWellcomeDialog();
 
 		// Installed Version
-		System.out.println("Installed version = " + Version.getVersion());
+		System.out.println("ArmA3Sync Installed version = " + Version.getVersion());
 
 		// Check for updates
 		mainPanel.checkForUpdate(false);

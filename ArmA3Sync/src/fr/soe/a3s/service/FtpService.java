@@ -300,7 +300,7 @@ public class FtpService extends AbstractConnexionService implements
 			String updateVersionName = ftpDAO.downloadXMLupdateFile(devMode);
 			disconnect();
 			if (updateVersionName != null) {
-				System.out.println("Available update version = "
+				System.out.println("ArmA3Sync Available update version = "
 						+ updateVersionName);
 
 				StringTokenizer stringTokenizer = new StringTokenizer(
