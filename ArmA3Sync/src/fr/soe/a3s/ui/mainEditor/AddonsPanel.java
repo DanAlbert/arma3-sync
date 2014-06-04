@@ -171,6 +171,7 @@ public class AddonsPanel extends JPanel implements UIConstants {
 		this.add(mainPanel, BorderLayout.CENTER);
 
 		MyRenderer2 myRenderer2 = new MyRenderer2();
+		arbre1.setCellRenderer(myRenderer2);
 		arbre2.setCellRenderer(myRenderer2);
 
 		CheckTreeCellRenderer renderer = new CheckTreeCellRenderer(myRenderer2);
