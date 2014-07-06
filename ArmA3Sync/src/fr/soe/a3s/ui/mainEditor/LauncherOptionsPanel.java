@@ -451,6 +451,7 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener {
 		comboBoxMaxMemory.setToolTipText("Restricts memory allocation");
 		comboBoxCpuCount.setToolTipText("Restricts number of cores used");
 		comboBoxExThreads.setToolTipText("Sets number of extra threads to use");
+		checkBoxEnableHT.setToolTipText("Use all hyper-threaded cpu cores");
 		checkBoxNoSplashScreen.setToolTipText("Disables splash screens");
 		checkBoxDefaultWorld.setToolTipText("No world loaded at game startup");
 		checkBoxNoLogs.setToolTipText("Do no write errors into RPT file");
