@@ -221,6 +221,11 @@ public class ConfigurationService extends ObjectDTOtransformer {
 		configurationDAO.getConfiguration().getLauncherOptions()
 				.setExThreadsSelection(exThreads);
 	}
+	
+	public void setEnableHT(boolean value) {
+		configurationDAO.getConfiguration().getLauncherOptions()
+		.setEnableHT(value);
+	}
 
 	public void setNoSplashScreen(boolean value) {
 		configurationDAO.getConfiguration().getLauncherOptions()

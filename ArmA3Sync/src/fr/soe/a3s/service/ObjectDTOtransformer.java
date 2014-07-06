@@ -82,6 +82,7 @@ public class ObjectDTOtransformer {
 				.getCpuCountSelection());
 		launcherOptionsDTO.setExThreadsSelection(launcherOptions
 				.getExThreadsSelection());
+		launcherOptionsDTO.setEnableHT(launcherOptions.isEnableHT());
 		launcherOptionsDTO.setNoPause(launcherOptions.isNoPause());
 		launcherOptionsDTO
 				.setNoFilePatching(launcherOptions.isNoFilePatching());

@@ -66,11 +66,13 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener {
 			checkBoxNoLogs;
 	private JCheckBox checkBoxExThreads;
 	private JComboBox comboBoxExThreads;
+	private JCheckBox checkBoxEnableHT;
 	private JCheckBox checkBoxNoFilePatching;
 	private final ConfigurationService configurationService = new ConfigurationService();
 	private final ProfileService profileService = new ProfileService();
 	private final AddonService addonService = new AddonService();
 	private final LaunchService launchService = new LaunchService();
+
 
 	public LauncherOptionsPanel(Facade facade) {
 		this.facade = facade;
@@ -235,6 +237,15 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener {
 			vBox.add(hBox);
 		}
 		{
+			checkBoxEnableHT = new JCheckBox(); 
+			checkBoxEnableHT.setText("Enable HT");
+			checkBoxEnableHT.setFocusable(false);
+			Box hBox = Box.createHorizontalBox();
+			hBox.add(checkBoxEnableHT);
+			hBox.add(Box.createHorizontalGlue());
+			vBox.add(hBox);
+		}
+		{
 			checkBoxNoSplashScreen = new JCheckBox();
 			checkBoxNoSplashScreen.setText("No Splash Screen");
 			checkBoxNoSplashScreen.setFocusable(false);
@@ -389,6 +400,12 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				comboBoxExThreadsPerformed();
+			}
+		});
+		checkBoxEnableHT.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				checkBoxEnableHTPerformed();
 			}
 		});
 		checkBoxNoSplashScreen.addActionListener(new ActionListener() {
@@ -573,6 +590,13 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener {
 			checkBoxExThreads.setSelected(false);
 			configurationService.setExThreads(null);
 		}
+		updateRunParameters();
+	}
+	
+
+	private void checkBoxEnableHTPerformed() {
+		configurationService.setEnableHT(checkBoxEnableHT
+				.isSelected());
 		updateRunParameters();
 	}
 

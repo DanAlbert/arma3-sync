@@ -17,6 +17,7 @@ public class LauncherOptions implements Serializable {
 	private String maxMemorySelection;
 	private int cpuCountSelection = 0;
 	private String exThreadsSelection;
+	private boolean enableHT = false;
 	private boolean noSplashScreen = false;
 	private boolean defaultWorld = false;
 	private boolean nologs = false;
@@ -144,5 +145,13 @@ public class LauncherOptions implements Serializable {
 
 	public void setNoFilePatching(boolean value) {
 		this.noFilePatching = value;
+	}
+
+	public boolean isEnableHT() {
+		return enableHT;
+	}
+
+	public void setEnableHT(boolean value) {
+		this.enableHT = value;
 	}
 }

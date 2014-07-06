@@ -141,6 +141,7 @@ public class ProfileService extends ObjectDTOtransformer {
 				.isNoFilePatching());
 		duplicateLauncherOptions.setNoLogs(launcherOptions.isNologs());
 		duplicateLauncherOptions.setNoPause(launcherOptions.isNoPause());
+		duplicateLauncherOptions.setEnableHT(launcherOptions.isEnableHT());
 		duplicateLauncherOptions.setNoSplashScreen(launcherOptions.isNoPause());
 		duplicateLauncherOptions.setShowScriptErrors(launcherOptions
 				.isShowScriptErrors());
@@ -205,13 +206,13 @@ public class ProfileService extends ObjectDTOtransformer {
 				launcherOptions.isNoFilePatching());
 		profile.getLauncherOptions().setWindowMode(
 				launcherOptions.isWindowMode());
-
 		profile.getLauncherOptions().setMaxMemorySelection(
 				launcherOptions.getMaxMemorySelection());
 		profile.getLauncherOptions().setCpuCountSelection(
 				launcherOptions.getCpuCountSelection());
 		profile.getLauncherOptions().setExThreadsSelection(
 				launcherOptions.getExThreadsSelection());
+		profile.getLauncherOptions().setEnableHT(launcherOptions.isEnableHT());
 		profile.getLauncherOptions().setNoSplashScreen(
 				launcherOptions.isNoSplashScreen());
 		profile.getLauncherOptions().setDefaultWorld(

@@ -1,6 +1,10 @@
 package fr.soe.a3s.service;
 
+import java.io.BufferedReader;
+import java.io.DataInputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -10,6 +14,8 @@ import java.util.TreeSet;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+
+import javax.imageio.stream.FileImageInputStream;
 
 import fr.soe.a3s.constant.GameVersions;
 import fr.soe.a3s.dao.AddonDAO;
@@ -159,14 +165,17 @@ public class LaunchService {
 
 	public void launchArmA3() throws LaunchException {
 
-		/* Get steam.exe path */
+		/* Get arma3.exe path */
 		String arma3Path = configurationDAO.getConfiguration()
 				.getLauncherOptions().getArma3ExePath();
 
 		/* Run Parameters */
 		List<String> params = determineRunParameters();
-		launcherDAO = new LauncherDAO();
 
+		/* Clear My Documents\ArmA 3\Arma3.cfg */
+		// eraseArma3CfgModLauncherList();
+
+		launcherDAO = new LauncherDAO();
 		List<Callable<Integer>> runnables = new ArrayList<Callable<Integer>>();
 		try {
 			String executableName = new File(arma3Path).getName();
@@ -189,6 +198,33 @@ public class LaunchService {
 		params.addAll(getRunParameters());
 		return params;
 	}
+
+	// private void eraseArma3CfgModLauncherList() {
+	//
+	// javax.swing.filechooser.FileSystemView fsv =
+	// javax.swing.filechooser.FileSystemView
+	// .getFileSystemView();
+	// File myDocuments = fsv.getDefaultDirectory();
+	// File Arma3Cfg = new File (myDocuments.getAbsolutePath() +
+	// "/Arma 3/Arma3.cfg");
+	// if (Arma3Cfg.exists()){
+	// try {
+	// DataInputStream fRo = new DataInputStream(new FileInputStream(
+	// Arma3Cfg));
+	// BufferedReader d = new BufferedReader(
+	// new InputStreamReader(fRo));
+	// String ligne = "";
+	// while (true) {
+	// ligne = d.readLine();
+	// if (ligne == null){
+	// break;
+	// }
+	// }
+	// } catch (Exception e) {
+	// // TODO: handle exception
+	// }
+	// }
+	// }
 
 	public List<String> getMissingAddons() {
 		checkSelectedAddons();
@@ -444,6 +480,9 @@ public class LaunchService {
 		}
 		if (launcherOptions.getExThreadsSelection() != null) {
 			params.add("-exThreads=" + launcherOptions.getExThreadsSelection());
+		}
+		if (launcherOptions.isEnableHT()) {
+			params.add("-enableHT");
 		}
 		if (launcherOptions.isNoSplashScreen()) {
 			params.add("-nosplash");
