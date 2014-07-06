@@ -38,7 +38,7 @@ public class MyRendererRepository extends DefaultTreeCellRenderer implements
 					|| syncTreeDirectoryDTO.isChanged()) {
 				setIcon(new ImageIcon(EXCLAMATION));
 			} else if (syncTreeDirectoryDTO.isMarkAsAddon()) {
-				setIcon(new ImageIcon());
+				setIcon(new ImageIcon(BRICK));
 			}
 
 			for (SyncTreeNodeDTO n : syncTreeDirectoryDTO.getList()) {
