@@ -321,7 +321,7 @@ public class BuildOptionsPanel extends JDialog implements UIConstants {
 
 		JFileChooser fc = new JFileChooser(
 				repositoryService.getRepositoryPath(repositoryName));
-		fc.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
+		fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
 		int returnVal = fc.showOpenDialog(BuildOptionsPanel.this);
 		if (returnVal == JFileChooser.APPROVE_OPTION) {
 			File file = fc.getSelectedFile();
