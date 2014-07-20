@@ -12,6 +12,7 @@ public class LauncherOptions implements Serializable {
 	private boolean noPause = false;
 	private boolean noFilePatching = false;
 	private boolean windowMode = false;
+	private boolean checkSignatures = false;
 	private boolean runBeta = false;
 	private boolean xpCompatibilityMode = false;
 	private String maxMemorySelection;
@@ -153,5 +154,13 @@ public class LauncherOptions implements Serializable {
 
 	public void setEnableHT(boolean value) {
 		this.enableHT = value;
+	}
+	
+	public boolean isCheckSignatures() {
+		return checkSignatures;
+	}
+
+	public void setCheckSignatures(boolean value) {
+		this.checkSignatures = value;
 	}
 }

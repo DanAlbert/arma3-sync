@@ -63,7 +63,7 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener {
 	private JCheckBox checkBoxProfiles, checkBoxNoPause, checkBoxWindowMode,
 			checkBoxShowScriptErrors, checkBoxRunBeta, checkBoxMaxMemory,
 			checkBoxCpuCount, checkBoxNoSplashScreen, checkBoxDefaultWorld,
-			checkBoxNoLogs;
+			checkBoxNoLogs, checkBoxCheckSignatures;
 	private JCheckBox checkBoxExThreads;
 	private JComboBox comboBoxExThreads;
 	private JCheckBox checkBoxEnableHT;
@@ -72,7 +72,6 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener {
 	private final ProfileService profileService = new ProfileService();
 	private final AddonService addonService = new AddonService();
 	private final LaunchService launchService = new LaunchService();
-
 
 	public LauncherOptionsPanel(Facade facade) {
 		this.facade = facade;
@@ -176,6 +175,15 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener {
 			hBox.add(Box.createHorizontalGlue());
 			vBox.add(hBox);
 		}
+		{
+			checkBoxCheckSignatures = new JCheckBox();
+			checkBoxCheckSignatures.setText("Check signatures");
+			checkBoxCheckSignatures.setFocusable(false);
+			Box hBox = Box.createHorizontalBox();
+			hBox.add(checkBoxCheckSignatures);
+			hBox.add(Box.createHorizontalGlue());
+			vBox.add(hBox);
+		}
 
 		/* Performances */
 		performancePanel.setLayout(new FlowLayout(FlowLayout.LEFT));
@@ -237,7 +245,7 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener {
 			vBox.add(hBox);
 		}
 		{
-			checkBoxEnableHT = new JCheckBox(); 
+			checkBoxEnableHT = new JCheckBox();
 			checkBoxEnableHT.setText("Enable HT");
 			checkBoxEnableHT.setFocusable(false);
 			Box hBox = Box.createHorizontalBox();
@@ -366,6 +374,12 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener {
 				checkBoxWindowModePerformed();
 			}
 		});
+		checkBoxCheckSignatures.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				checkBoxCheckSignaturesPerformed();
+			}
+		});
 		checkBoxMaxMemory.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -433,7 +447,6 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener {
 				buttonSelectArmAExePerformed();
 			}
 		});
-
 		additionalParametersTextArea.getDocument().addDocumentListener(this);
 		setContextualHelp();
 	}
@@ -448,6 +461,8 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener {
 		checkBoxNoFilePatching.setToolTipText("Load only PBO files");
 		checkBoxWindowMode
 				.setToolTipText("Display the game windowed instead of full screen");
+		checkBoxCheckSignatures
+				.setToolTipText("Check signatures of pbo files");
 		comboBoxMaxMemory.setToolTipText("Restricts memory allocation");
 		comboBoxCpuCount.setToolTipText("Restricts number of cores used");
 		comboBoxExThreads.setToolTipText("Sets number of extra threads to use");
@@ -525,6 +540,12 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener {
 		updateRunParameters();
 	}
 
+	private void checkBoxCheckSignaturesPerformed() {
+		configurationService.setCheckBoxCheckSignatures(checkBoxCheckSignatures
+				.isSelected());
+		updateRunParameters();
+	}
+
 	private void checkBoxMaxMemoryPerformed() {
 		if (!checkBoxMaxMemory.isSelected()) {
 			comboBoxMaxMemory.setSelectedIndex(0);
@@ -593,11 +614,9 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener {
 		}
 		updateRunParameters();
 	}
-	
 
 	private void checkBoxEnableHTPerformed() {
-		configurationService.setEnableHT(checkBoxEnableHT
-				.isSelected());
+		configurationService.setEnableHT(checkBoxEnableHT.isSelected());
 		updateRunParameters();
 	}
 
@@ -736,6 +755,8 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener {
 		checkBoxNoFilePatching.setSelected(launcherOptionsDTO
 				.isNoFilePatching());
 		checkBoxWindowMode.setSelected(launcherOptionsDTO.isWindowMode());
+		checkBoxCheckSignatures.setSelected(launcherOptionsDTO
+				.isCheckSignatures());
 
 		/* Performance */
 		if (launcherOptionsDTO.getMaxMemorySelection() != null) {
@@ -762,6 +783,7 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener {
 			comboBoxExThreads.setSelectedIndex(0);
 		}
 
+		checkBoxEnableHT.setSelected(launcherOptionsDTO.isEnableHT());
 		checkBoxNoSplashScreen.setSelected(launcherOptionsDTO
 				.isNoSplashScreen());
 		checkBoxDefaultWorld.setSelected(launcherOptionsDTO.isDefaultWorld());

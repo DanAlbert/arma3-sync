@@ -8,6 +8,7 @@ public class LauncherOptionsDTO {
 	private boolean noPause;
 	private boolean noFilePatching;
 	private boolean windowMode;
+	private boolean checkSignatures;
 	private String maxMemorySelection;
 	private int cpuCountSelection;
 	private String exThreadsSelection;
@@ -130,5 +131,13 @@ public class LauncherOptionsDTO {
 
 	public void setNoFilePatching(boolean noFilePatching) {
 		this.noFilePatching = noFilePatching;
+	}
+
+	public boolean isCheckSignatures() {
+		return checkSignatures;
+	}
+
+	public void setCheckSignatures(boolean checkSignatures) {
+		this.checkSignatures = checkSignatures;
 	}
 }

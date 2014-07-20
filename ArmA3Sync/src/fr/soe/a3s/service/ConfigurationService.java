@@ -192,6 +192,11 @@ public class ConfigurationService extends ObjectDTOtransformer {
 				.setWindowMode(value);
 	}
 
+	public void setCheckBoxCheckSignatures(boolean value) {
+		configurationDAO.getConfiguration().getLauncherOptions()
+				.setCheckSignatures(value);
+	}
+
 	public void setCheckBoxRun(boolean value) {
 		configurationDAO.getConfiguration().getLauncherOptions()
 				.setRunBeta(value);
@@ -221,10 +226,10 @@ public class ConfigurationService extends ObjectDTOtransformer {
 		configurationDAO.getConfiguration().getLauncherOptions()
 				.setExThreadsSelection(exThreads);
 	}
-	
+
 	public void setEnableHT(boolean value) {
 		configurationDAO.getConfiguration().getLauncherOptions()
-		.setEnableHT(value);
+				.setEnableHT(value);
 	}
 
 	public void setNoSplashScreen(boolean value) {
@@ -388,12 +393,14 @@ public class ConfigurationService extends ObjectDTOtransformer {
 		setCheckBoxNoPause(launcherOptionsDTO.isNoPause());
 		setCheckBoxNoFilePatching(launcherOptionsDTO.isNoFilePatching());
 		setCheckBoxWindowMode(launcherOptionsDTO.isWindowMode());
+		setCheckBoxCheckSignatures(launcherOptionsDTO.isCheckSignatures());
 		setMaxMemory(launcherOptionsDTO.getMaxMemorySelection());
 		setCpuCount(Integer.toString(launcherOptionsDTO.getCpuCountSelection()));
 		setExThreads(launcherOptionsDTO.getExThreadsSelection());
 		setNoSplashScreen(launcherOptionsDTO.isNoSplashScreen());
 		setDefaultWorld(launcherOptionsDTO.isDefaultWorld());
 		setNoLogs(launcherOptionsDTO.isNoLogs());
+		setEnableHT(launcherOptionsDTO.isEnableHT());
 		setArmA3ExePath(launcherOptionsDTO.getArma3ExePath());
 	}
 }

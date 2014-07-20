@@ -469,6 +469,9 @@ public class LaunchService {
 		if (launcherOptions.isWindowMode()) {
 			params.add("-window");
 		}
+		if (launcherOptions.isCheckSignatures()) {
+			params.add("-checkSignatures");
+		}
 		if (launcherOptions.isXpCompatibilityMode()) {
 			params.add("-winxp");
 		}

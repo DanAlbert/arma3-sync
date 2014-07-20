@@ -91,6 +91,8 @@ public class ObjectDTOtransformer {
 		launcherOptionsDTO.setShowScriptError(launcherOptions
 				.isShowScriptErrors());
 		launcherOptionsDTO.setWindowMode(launcherOptions.isWindowMode());
+		launcherOptionsDTO.setCheckSignatures(launcherOptions
+				.isCheckSignatures());
 
 		return launcherOptionsDTO;
 	}

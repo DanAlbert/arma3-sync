@@ -104,6 +104,7 @@ public class DownloadPanel extends JPanel implements UIConstants {
 	private JCheckBox checkBoxSelectAll;
 	private JCheckBox checkBoxExpandAll;
 	private JCheckBox checkBoxUpdated;
+	private JCheckBox checkBoxExactMatch;
 	private String eventName;
 	private boolean update;
 	private JCheckBox checkBoxAutoDiscover;
@@ -338,25 +339,41 @@ public class DownloadPanel extends JPanel implements UIConstants {
 			comBoxDestinationFolder = new JComboBox();
 			comBoxDestinationFolder.setFocusable(false);
 			comBoxDestinationFolder.setPreferredSize(new Dimension(this
-					.getWidth(), 22));
+					.getWidth(), 25));
 			locationPanel.add(comBoxDestinationFolder, BorderLayout.CENTER);
 			vBox.add(locationPanel);
-			vBox.add(Box.createVerticalStrut(5));
 		}
 		{
 			JPanel selectionPanel = new JPanel();
 			selectionPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
-			checkBoxSelectAll = new JCheckBox("Select All");
+			selectionPanel.setPreferredSize(new Dimension(this.getWidth(), 25));
+			checkBoxSelectAll = new JCheckBox("Select All  ");
 			checkBoxSelectAll.setFocusable(false);
-			checkBoxExpandAll = new JCheckBox("Expand All");
-			checkBoxExpandAll.setFocusable(false);
 			checkBoxAutoDiscover = new JCheckBox("Auto-discover");
 			checkBoxAutoDiscover.setFocusable(false);
-			selectionPanel.add(checkBoxSelectAll);
-			selectionPanel.add(checkBoxExpandAll);
-			selectionPanel.add(checkBoxAutoDiscover);
+			Box hBox = Box.createHorizontalBox();
+			hBox.add(checkBoxSelectAll);
+			hBox.add(Box.createHorizontalStrut(20));
+			hBox.add(checkBoxAutoDiscover);
+			selectionPanel.add(hBox);
 			vBox.add(selectionPanel);
 		}
+		{
+			JPanel selectionPanel = new JPanel();
+			selectionPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
+			selectionPanel.setPreferredSize(new Dimension(this.getWidth(), 25));
+			checkBoxExpandAll = new JCheckBox("Expand All");
+			checkBoxExpandAll.setFocusable(false);
+			checkBoxExactMatch = new JCheckBox("Exact match");
+			checkBoxExactMatch.setFocusable(false);
+			Box hBox = Box.createHorizontalBox();
+			hBox.add(checkBoxExpandAll);
+			hBox.add(Box.createHorizontalStrut(20));
+			hBox.add(checkBoxExactMatch);
+			selectionPanel.add(hBox);
+			vBox.add(selectionPanel);
+		}
+		vBox.add(Box.createVerticalStrut(5));
 		{
 			JPanel addonsPanel = new JPanel();
 			addonsPanel.setLayout(new BorderLayout());

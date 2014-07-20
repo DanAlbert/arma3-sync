@@ -146,6 +146,8 @@ public class ProfileService extends ObjectDTOtransformer {
 		duplicateLauncherOptions.setShowScriptErrors(launcherOptions
 				.isShowScriptErrors());
 		duplicateLauncherOptions.setWindowMode(launcherOptions.isWindowMode());
+		duplicateLauncherOptions.setCheckSignatures(launcherOptions
+				.isCheckSignatures());
 		duplicateLauncherOptions.setArma3ExePath(launcherOptions
 				.getArma3ExePath());
 	}
@@ -206,6 +208,8 @@ public class ProfileService extends ObjectDTOtransformer {
 				launcherOptions.isNoFilePatching());
 		profile.getLauncherOptions().setWindowMode(
 				launcherOptions.isWindowMode());
+		profile.getLauncherOptions().setCheckSignatures(
+				launcherOptions.isCheckSignatures());
 		profile.getLauncherOptions().setMaxMemorySelection(
 				launcherOptions.getMaxMemorySelection());
 		profile.getLauncherOptions().setCpuCountSelection(
