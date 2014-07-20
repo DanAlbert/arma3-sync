@@ -262,11 +262,13 @@ public class RepositoryService extends ObjectDTOtransformer implements
 		}
 
 		if (repository.getServerInfo() == null) {
-			throw new ServerInfoNotFoundException();
+			throw new ServerInfoNotFoundException(repository.getProtocole()
+					.getUrl());
 		}
 
 		if (repository.getSync() == null) {
-			throw new SyncFileNotFoundException();
+			throw new SyncFileNotFoundException(repository.getProtocole()
+					.getUrl());
 		}
 
 		boolean noAutoDiscover = repository.isNoAutoDiscover();
@@ -569,9 +571,11 @@ public class RepositoryService extends ObjectDTOtransformer implements
 		}
 
 		if (sync == null) {
-			throw new SyncFileNotFoundException();
+			throw new SyncFileNotFoundException(repository.getProtocole()
+					.getUrl());
 		} else if (serverInfo == null) {
-			throw new ServerInfoNotFoundException();
+			throw new ServerInfoNotFoundException(repository.getProtocole()
+					.getUrl());
 		}
 
 		if (!repository.getPath().equals(path) || path.isEmpty()) {
@@ -1150,13 +1154,17 @@ public class RepositoryService extends ObjectDTOtransformer implements
 		}
 
 		if (sync == null) {
-			throw new SyncFileNotFoundException();
+			throw new SyncFileNotFoundException(repository.getProtocole()
+					.getUrl());
 		} else if (serverInfo == null) {
-			throw new ServerInfoNotFoundException();
+			throw new ServerInfoNotFoundException(repository.getProtocole()
+					.getUrl());
 		} else if (changelogs == null) {
-			throw new ChangelogsNotFoundException();
+			throw new ChangelogsNotFoundException(repository.getProtocole()
+					.getUrl());
 		} else if (autoConfig == null) {
-			throw new AutoConfigNotFoundException();
+			throw new AutoConfigNotFoundException(repository.getProtocole()
+					.getUrl());
 		}
 
 		repository.setLocalSync(sync);
