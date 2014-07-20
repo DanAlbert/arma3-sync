@@ -505,8 +505,21 @@ public class FtpDAO extends AbstractConnexionDAO {
 
 	public void makeDir(String remotePath, String dirTree) throws IOException {
 
-		ftpClient.changeWorkingDirectory(remotePath);
-		boolean dirExists = true;
+		boolean dirExists = ftpClient.changeWorkingDirectory(remotePath);
+		if (!dirExists) {
+			if (!ftpClient.makeDirectory(remotePath)) {
+				throw new IOException("Unable to create remote directory '"
+						+ remotePath + "'.  error='"
+						+ ftpClient.getReplyString() + "'");
+			}
+			if (!ftpClient.changeWorkingDirectory(remotePath)) {
+				throw new IOException(
+						"Unable to change into newly created remote directory '"
+								+ remotePath + "'.  error='"
+								+ ftpClient.getReplyString() + "'");
+			}
+		}
+
 		// tokenize the string and attempt to change into each directory level.
 		// If you cannot, then start creating.
 		String[] directories = dirTree.split("/");
