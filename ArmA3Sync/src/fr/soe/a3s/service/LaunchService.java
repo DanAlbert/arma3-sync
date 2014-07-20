@@ -49,7 +49,8 @@ public class LaunchService {
 		String arma3ExePath = configuration.getLauncherOptions()
 				.getArma3ExePath();
 
-		if (arma3ExePath == null || "".equals(arma3ExePath)) {
+		if (arma3ExePath == null || "".equals(arma3ExePath)
+				|| !(new File(arma3ExePath)).exists()) {
 			throw new LaunchException(
 					"ArmA 3 Executable location is wrong or missing.\n Please checkout Launcher Options panel.");
 		}
