@@ -64,7 +64,7 @@ public class SyncPanel extends JPanel implements UIConstants {
 	private JList listEvents;
 	private MyTableModel model;
 	private JScrollPane scrollPane1, scrollPane2;
-	private JButton buttonNew, buttonEdit, buttonRemove, buttonSync;
+	private JButton buttonNew, buttonEdit, buttonRemove, buttonSync1;
 	private final RepositoryService repositoryService = new RepositoryService();
 	private JButton buttonConnectToRepository;
 	private boolean isModifying = false;
@@ -76,6 +76,7 @@ public class SyncPanel extends JPanel implements UIConstants {
 	private List<String> eventTexts;
 	/** Event index in eventNames list, Repository name */
 	private Map<Integer, String> mapEvents;
+	private JButton buttonSync2;
 
 	public SyncPanel(final Facade facade) {
 		this.facade = facade;
@@ -148,10 +149,10 @@ public class SyncPanel extends JPanel implements UIConstants {
 				ImageIcon deleteIcon = new ImageIcon(DELETE);
 				buttonRemove.setIcon(deleteIcon);
 				vertBox.add(buttonRemove);
-				buttonSync = new JButton("");
+				buttonSync1 = new JButton("");
 				ImageIcon syncIcon = new ImageIcon(REFRESH);
-				buttonSync.setIcon(syncIcon);
-				vertBox.add(buttonSync);
+				buttonSync1.setIcon(syncIcon);
+				vertBox.add(buttonSync1);
 				buttonConnectToRepository = new JButton("");
 				ImageIcon joinIcon = new ImageIcon(CONNECT);
 				buttonConnectToRepository.setIcon(joinIcon);
@@ -181,6 +182,10 @@ public class SyncPanel extends JPanel implements UIConstants {
 				ImageIcon checkIcon = new ImageIcon(CONNECT);
 				buttonCheckEvent.setIcon(checkIcon);
 				vertBox.add(buttonCheckEvent);
+				buttonSync2 = new JButton("");
+				ImageIcon syncIcon = new ImageIcon(REFRESH);
+				buttonSync2.setIcon(syncIcon);
+				vertBox.add(buttonSync2);
 				vertBox.add(Box.createVerticalStrut(86));
 				eventsPanel.add(vertBox, BorderLayout.EAST);
 			}
@@ -203,7 +208,13 @@ public class SyncPanel extends JPanel implements UIConstants {
 				buttonRemovePerformed();
 			}
 		});
-		buttonSync.addActionListener(new ActionListener() {
+		buttonSync1.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				buttonSyncPerformed();
+			}
+		});
+		buttonSync2.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
 				buttonSyncPerformed();
@@ -263,9 +274,10 @@ public class SyncPanel extends JPanel implements UIConstants {
 		buttonNew.setToolTipText("Add a new repsository");
 		buttonEdit.setToolTipText("Edit selected repository");
 		buttonRemove.setToolTipText("Remove selected repository");
-		buttonSync.setToolTipText("Check repositories status");
+		buttonSync1.setToolTipText("Refresh");
 		buttonConnectToRepository.setToolTipText("Connect to repository");
 		buttonCheckEvent.setToolTipText("Check event");
+		buttonSync2.setToolTipText("Refresh");
 	}
 
 	public void init() {
@@ -447,8 +459,12 @@ public class SyncPanel extends JPanel implements UIConstants {
 		}
 	}
 
-	public JButton getButtonSync() {
-		return buttonSync;
+	public JButton getButtonSync1() {
+		return buttonSync1;
+	}
+
+	public JButton getButtonSync2() {
+		return buttonSync2;
 	}
 
 	class MyTableModel extends AbstractTableModel {

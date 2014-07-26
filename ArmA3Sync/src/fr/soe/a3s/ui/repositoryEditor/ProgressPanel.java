@@ -13,16 +13,16 @@ import fr.soe.a3s.ui.Facade;
 import fr.soe.a3s.ui.UIConstants;
 
 public abstract class ProgressPanel extends JDialog implements UIConstants {
-	
+
 	protected Facade facade;
 	protected JLabel labelTitle;
 	protected JButton buttonCancel;
 	protected JProgressBar progressBar;
 	protected boolean canceled = false;
 
-	public ProgressPanel(Facade facade){
+	public ProgressPanel(Facade facade) {
 		super(facade.getMainPanel(), "Repository", false);
-		
+
 		this.facade = facade;
 		this.setResizable(false);
 		this.setSize(200, 120);

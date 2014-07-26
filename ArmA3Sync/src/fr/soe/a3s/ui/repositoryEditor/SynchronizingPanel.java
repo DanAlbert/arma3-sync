@@ -19,7 +19,7 @@ public class SynchronizingPanel extends ProgressPanel {
 
 	public SynchronizingPanel(Facade facade) {
 		super(facade);
-		labelTitle.setText("Checking repository status...");
+		labelTitle.setText("Checking repositories...");
 
 		buttonCancel.addActionListener(new ActionListener() {
 			@Override
@@ -38,7 +38,8 @@ public class SynchronizingPanel extends ProgressPanel {
 
 	public void init(final String repositoryName) {
 
-		facade.getSyncPanel().getButtonSync().setEnabled(false);
+		facade.getSyncPanel().getButtonSync1().setEnabled(false);
+		facade.getSyncPanel().getButtonSync2().setEnabled(false);
 		progressBar.setIndeterminate(true);
 		Thread t = new Thread(new Runnable() {
 			@Override
@@ -73,7 +74,8 @@ public class SynchronizingPanel extends ProgressPanel {
 				facade.getOnlinePanel().init();
 				progressBar.setIndeterminate(false);
 				dispose();
-				facade.getSyncPanel().getButtonSync().setEnabled(true);
+				facade.getSyncPanel().getButtonSync1().setEnabled(true);
+				facade.getSyncPanel().getButtonSync2().setEnabled(true);
 			}
 		});
 		t.start();
