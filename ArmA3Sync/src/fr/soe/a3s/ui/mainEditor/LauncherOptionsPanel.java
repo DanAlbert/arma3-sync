@@ -462,7 +462,7 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener {
 		checkBoxWindowMode
 				.setToolTipText("Display the game windowed instead of full screen");
 		checkBoxCheckSignatures
-				.setToolTipText("Check signatures of pbo files");
+				.setToolTipText("Check signatures of PBO files");
 		comboBoxMaxMemory.setToolTipText("Restricts memory allocation");
 		comboBoxCpuCount.setToolTipText("Restricts number of cores used");
 		comboBoxExThreads.setToolTipText("Sets number of extra threads to use");
