@@ -449,7 +449,7 @@ public class SyncPanel extends JPanel implements UIConstants {
 	private void buttonCheckEventPerformed() {
 
 		int index = listEvents.getSelectedIndex();
-		if (index != -1 || !(index > listEvents.getVisibleRowCount())) {
+		if (index != -1 && !(index > listEvents.getVisibleRowCount())) {
 			String eventName = eventNames.get(index);
 			String repositoryName = mapEvents.get(index);
 			ConnectionPanel connectionPanel = new ConnectionPanel(facade,
