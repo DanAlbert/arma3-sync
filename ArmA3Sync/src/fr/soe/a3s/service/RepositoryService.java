@@ -294,6 +294,9 @@ public class RepositoryService extends ObjectDTOtransformer implements
 		// 5. Determine extra local files to delete
 		determineExtraLocalFilesToDelete(parent);
 
+		// 6. Determine exact match at root
+		// determineExactMatch(parent, true);
+
 		SyncTreeDirectoryDTO parentDTO = new SyncTreeDirectoryDTO();
 		parentDTO.setName("racine");
 		parentDTO.setParent(null);
@@ -418,14 +421,17 @@ public class RepositoryService extends ObjectDTOtransformer implements
 
 		if (!node.isLeaf()) {
 			SyncTreeDirectory directory = (SyncTreeDirectory) node;
-			SyncTreeNode parent = directory.getParent();
-			if (parent == null) {
-				for (SyncTreeNode n : directory.getList()) {
-					determineExtraLocalFilesToDelete(n);
-				}
-			} else if (!directory.isHidden()) {
+			// SyncTreeNode parent = directory.getParent();
+			// if (parent == null) {
+			// for (SyncTreeNode n : directory.getList()) {
+			// determineExtraLocalFilesToDelete(n);
+			// }
+			// }
+
+			if (!directory.isHidden()) {
 				File file = new File(directory.getDestinationPath() + "/"
 						+ directory.getName());
+
 				// folder must exists locally and remotely
 				File[] subFiles = file.listFiles();
 				if (subFiles != null) {
@@ -464,51 +470,51 @@ public class RepositoryService extends ObjectDTOtransformer implements
 		}
 	}
 
-	private void addFilesToDelete(SyncTreeDirectory directory, File file) {
-
-		File[] subFiles = file.listFiles();
-
-		if (subFiles == null) {
-			return;
-		}
-
-		List<SyncTreeNode> nodes = directory.getList();
-		List<String> listNames = new ArrayList<String>();
-		for (SyncTreeNode node : nodes) {
-			listNames.add(node.getName().toLowerCase());
-		}
-		for (File f : subFiles) {
-			if (!listNames.contains(f.getName().toLowerCase())
-					&& !f.getName().contains(PART_EXTENSION)) {
-				if (f.isDirectory()) {
-					SyncTreeDirectory d = new SyncTreeDirectory(f.getName(),
-							directory);
-					directory.addTreeNode(d);
-					d.setDeleted(true);
-					d.setDestinationPath(directory.getDestinationPath() + "/"
-							+ directory.getName());
-				} else {
-					SyncTreeLeaf l = new SyncTreeLeaf(f.getName(), directory);
-					directory.addTreeNode(l);
-					l.setDeleted(true);
-					l.setDestinationPath(directory.getDestinationPath() + "/"
-							+ directory.getName());
-				}
-			}
-		}
-
-		for (File f : subFiles) {
-			if (f.isDirectory()) {
-				for (SyncTreeNode node : nodes) {
-					if (node.getName().equals(f.getName()) && !node.isLeaf()) {
-						SyncTreeDirectory d = (SyncTreeDirectory) node;
-						addFilesToDelete(d, f);
-						break;
-					}
-				}
-			}
-		}
-	}
+	// private void addFilesToDelete(SyncTreeDirectory directory, File file) {
+	//
+	// File[] subFiles = file.listFiles();
+	//
+	// if (subFiles == null) {
+	// return;
+	// }
+	//
+	// List<SyncTreeNode> nodes = directory.getList();
+	// List<String> listNames = new ArrayList<String>();
+	// for (SyncTreeNode node : nodes) {
+	// listNames.add(node.getName().toLowerCase());
+	// }
+	// for (File f : subFiles) {
+	// if (!listNames.contains(f.getName().toLowerCase())
+	// && !f.getName().contains(PART_EXTENSION)) {
+	// if (f.isDirectory()) {
+	// SyncTreeDirectory d = new SyncTreeDirectory(f.getName(),
+	// directory);
+	// directory.addTreeNode(d);
+	// d.setDeleted(true);
+	// d.setDestinationPath(directory.getDestinationPath() + "/"
+	// + directory.getName());
+	// } else {
+	// SyncTreeLeaf l = new SyncTreeLeaf(f.getName(), directory);
+	// directory.addTreeNode(l);
+	// l.setDeleted(true);
+	// l.setDestinationPath(directory.getDestinationPath() + "/"
+	// + directory.getName());
+	// }
+	// }
+	// }
+	//
+	// for (File f : subFiles) {
+	// if (f.isDirectory()) {
+	// for (SyncTreeNode node : nodes) {
+	// if (node.getName().equals(f.getName()) && !node.isLeaf()) {
+	// SyncTreeDirectory d = (SyncTreeDirectory) node;
+	// addFilesToDelete(d, f);
+	// break;
+	// }
+	// }
+	// }
+	// }
+	// }
 
 	public void addFilesToHide(String folderPath, String repositoryName) {
 
@@ -753,7 +759,16 @@ public class RepositoryService extends ObjectDTOtransformer implements
 				List<EventDTO> eventDTOs = new ArrayList<EventDTO>();
 				for (Event event : list) {
 					EventDTO eventDTO = transformEvent2DTO(event);
-					eventDTOs.add(eventDTO);
+					// Ensure no duplicate
+					boolean contains = false;
+					for (EventDTO evt : eventDTOs) {
+						if (evt.getName().equals(eventDTO.getName())) {
+							contains = true;
+						}
+					}
+					if (!contains) {
+						eventDTOs.add(eventDTO);
+					}
 				}
 				return eventDTOs;
 			} else {

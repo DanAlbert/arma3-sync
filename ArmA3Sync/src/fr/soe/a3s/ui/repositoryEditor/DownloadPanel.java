@@ -175,7 +175,7 @@ public class DownloadPanel extends JPanel implements UIConstants {
 			checkForAddonsControls.add(hBox, BorderLayout.EAST);
 			vBox.add(checkForAddonsControls);
 		}
-		vBox.add(Box.createVerticalStrut(20));
+		vBox.add(Box.createVerticalStrut(34));
 		{
 			JPanel filesPanel = new JPanel();
 			filesPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
