@@ -26,6 +26,7 @@ public class Repository implements Serializable {
 	private String defaultDownloadLocation;
 	private boolean outOfSynk = false;
 	private boolean noAutoDiscover = true;
+	private boolean exactMatch = false;
 	/* Build options */
 	private List<FavoriteServer> favoriteServersSetToAutoconfig = new ArrayList<FavoriteServer>();
 	// Path of file excluded from build tolowercase!
@@ -292,5 +293,13 @@ public class Repository implements Serializable {
 
 	public void setLocalAutoConfig(AutoConfig localaAutoConfig) {
 		this.localAutoConfig = localaAutoConfig;
+	}
+
+	public boolean isExactMatch() {
+		return this.exactMatch;
+	}
+
+	public void setExactMatch(boolean exactMatch) {
+		this.exactMatch = exactMatch;
 	}
 }

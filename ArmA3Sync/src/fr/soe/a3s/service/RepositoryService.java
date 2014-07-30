@@ -272,6 +272,7 @@ public class RepositoryService extends ObjectDTOtransformer implements
 		}
 
 		boolean noAutoDiscover = repository.isNoAutoDiscover();
+		boolean exactMatch = repository.isExactMatch();
 		Set<String> hiddenFolderPaths = repository.getHiddenFolderPath();
 
 		SyncTreeDirectory parent = repository.getSync();
@@ -292,10 +293,8 @@ public class RepositoryService extends ObjectDTOtransformer implements
 		determineHiddenFiles(parent, hiddenFolderPaths);
 
 		// 5. Determine extra local files to delete
-		determineExtraLocalFilesToDelete(parent);
-
-		// 6. Determine exact match at root
-		// determineExactMatch(parent, true);
+		determineExtraLocalFilesToDelete(parent,
+				repository.getDefaultDownloadLocation(), exactMatch);
 
 		SyncTreeDirectoryDTO parentDTO = new SyncTreeDirectoryDTO();
 		parentDTO.setName("racine");
@@ -417,20 +416,25 @@ public class RepositoryService extends ObjectDTOtransformer implements
 		}
 	}
 
-	private void determineExtraLocalFilesToDelete(SyncTreeNode node) {
+	private void determineExtraLocalFilesToDelete(SyncTreeNode node,
+			String defaultDestinationPath, boolean exactMatch) {
 
 		if (!node.isLeaf()) {
 			SyncTreeDirectory directory = (SyncTreeDirectory) node;
-			// SyncTreeNode parent = directory.getParent();
-			// if (parent == null) {
-			// for (SyncTreeNode n : directory.getList()) {
-			// determineExtraLocalFilesToDelete(n);
-			// }
-			// }
+			SyncTreeNode parent = directory.getParent();
+			if (parent == null) {
+				for (SyncTreeNode n : directory.getList()) {
+					determineExtraLocalFilesToDelete(n, defaultDestinationPath,
+							exactMatch);
+				}
+			}
 
 			if (!directory.isHidden()) {
 				File file = new File(directory.getDestinationPath() + "/"
 						+ directory.getName());
+				if (directory.getParent() == null && exactMatch) {
+					file = new File(defaultDestinationPath);
+				}
 
 				// folder must exists locally and remotely
 				File[] subFiles = file.listFiles();
@@ -446,25 +450,34 @@ public class RepositoryService extends ObjectDTOtransformer implements
 										f.getName(), directory);
 								directory.addTreeNode(d);
 								d.setDeleted(true);
-								d.setDestinationPath(directory
-										.getDestinationPath()
-										+ "/"
-										+ directory.getName());
+								if (directory.getDestinationPath() == null) {
+									d.setDestinationPath(defaultDestinationPath);
+								} else {
+									d.setDestinationPath(directory
+											.getDestinationPath()
+											+ "/"
+											+ directory.getName());
+								}
 							} else if (!f.getName().contains(PART_EXTENSION)) {
 								SyncTreeLeaf l = new SyncTreeLeaf(f.getName(),
 										directory);
 								directory.addTreeNode(l);
 								l.setDeleted(true);
-								l.setDestinationPath(directory
-										.getDestinationPath()
-										+ "/"
-										+ directory.getName());
+								if (directory.getDestinationPath() == null) {
+									l.setDestinationPath(defaultDestinationPath);
+								} else {
+									l.setDestinationPath(directory
+											.getDestinationPath()
+											+ "/"
+											+ directory.getName());
+								}
 							}
 						}
 					}
 				}
 				for (SyncTreeNode n : directory.getList()) {
-					determineExtraLocalFilesToDelete(n);
+					determineExtraLocalFilesToDelete(n, defaultDestinationPath,
+							exactMatch);
 				}
 			}
 		}
@@ -732,6 +745,27 @@ public class RepositoryService extends ObjectDTOtransformer implements
 		Repository repository = repositoryDAO.getMap().get(repositoryName);
 		if (repository != null) {
 			repository.setNoAutoDiscover(value);
+			try {
+				write(repositoryName);
+			} catch (WritingException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+
+	public boolean isExactMatch(String repositoryName) {
+		Repository repository = repositoryDAO.getMap().get(repositoryName);
+		if (repository != null) {
+			return repository.isExactMatch();
+		} else {
+			return false;
+		}
+	}
+
+	public void setExactMatch(boolean value, String repositoryName) {
+		Repository repository = repositoryDAO.getMap().get(repositoryName);
+		if (repository != null) {
+			repository.setExactMatch(value);
 			try {
 				write(repositoryName);
 			} catch (WritingException e) {

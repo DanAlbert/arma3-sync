@@ -465,6 +465,12 @@ public class DownloadPanel extends JPanel implements UIConstants {
 				checkBoxAutoDiscoverPerformed();
 			}
 		});
+		checkBoxExactMatch.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				checkBoxExactMatchPerformed();
+			}
+		});
 		arbre.addTreeExpansionListener(new TreeExpansionListener() {
 			@Override
 			public void treeExpanded(TreeExpansionEvent event) {
@@ -624,6 +630,7 @@ public class DownloadPanel extends JPanel implements UIConstants {
 		buttonDownloadCancel.setToolTipText("Cancel");
 		checkBoxAutoDiscover
 				.setToolTipText("Auto-discover addons within all destination folders");
+		checkBoxExactMatch.setToolTipText("Exact match repository content against default destination folder");
 	}
 
 	public void init(String repositoryName, String eventName, boolean update) {
@@ -633,6 +640,7 @@ public class DownloadPanel extends JPanel implements UIConstants {
 		this.update = update;
 		defaultFolderDestinationSelection();
 		updateAutoDiscoverSelection();
+		updateExactMatchSelection();
 	}
 
 	private void popupActionPerformed(ActionEvent evt) {
@@ -724,6 +732,12 @@ public class DownloadPanel extends JPanel implements UIConstants {
 
 		boolean value = repositoryService.isAutoDiscover(repositoryName);
 		checkBoxAutoDiscover.setSelected(!value);
+	}
+
+	private void updateExactMatchSelection() {
+
+		boolean value = repositoryService.isExactMatch(repositoryName);
+		checkBoxExactMatch.setSelected(value);
 	}
 
 	private void comBoxDestinationFolderPerformed() {
@@ -925,6 +939,23 @@ public class DownloadPanel extends JPanel implements UIConstants {
 
 		boolean value = checkBoxAutoDiscover.isSelected();
 		repositoryService.setAutoDiscover(!value, repositoryName);
+		arbre.removeAll();
+		addonSyncTreeModel = new AddonSyncTreeModel(new SyncTreeDirectoryDTO());
+		arbre.setModel(addonSyncTreeModel);
+		refreshViewArbre();
+	}
+
+	private void checkBoxExactMatchPerformed() {
+
+		boolean value = checkBoxExactMatch.isSelected();
+		repositoryService.setExactMatch(value, repositoryName);
+		checkBoxAutoDiscover.setSelected(false);
+		if (value == true) {
+			checkBoxAutoDiscover.setEnabled(false);
+			checkBoxAutoDiscover.setSelected(false);
+		} else {
+			checkBoxAutoDiscover.setEnabled(true);
+		}
 		arbre.removeAll();
 		addonSyncTreeModel = new AddonSyncTreeModel(new SyncTreeDirectoryDTO());
 		arbre.setModel(addonSyncTreeModel);
