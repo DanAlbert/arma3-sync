@@ -628,9 +628,12 @@ public class DownloadPanel extends JPanel implements UIConstants {
 		buttonDownloadStart.setToolTipText("Start/Resume");
 		buttonDownloadPause.setToolTipText("Pause");
 		buttonDownloadCancel.setToolTipText("Cancel");
+		checkBoxSelectAll.setToolTipText("Select All");
+		checkBoxExpandAll.setToolTipText("Expand All");
 		checkBoxAutoDiscover
 				.setToolTipText("Auto-discover addons within all destination folders");
-		checkBoxExactMatch.setToolTipText("Exact match repository content against default destination folder");
+		checkBoxExactMatch
+				.setToolTipText("Exact match repository content against default destination folder");
 	}
 
 	public void init(String repositoryName, String eventName, boolean update) {
@@ -738,6 +741,12 @@ public class DownloadPanel extends JPanel implements UIConstants {
 
 		boolean value = repositoryService.isExactMatch(repositoryName);
 		checkBoxExactMatch.setSelected(value);
+		if (value == true) {
+			checkBoxAutoDiscover.setSelected(false);
+			checkBoxAutoDiscover.setEnabled(false);
+		} else {
+			checkBoxAutoDiscover.setEnabled(true);
+		}
 	}
 
 	private void comBoxDestinationFolderPerformed() {

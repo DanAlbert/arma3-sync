@@ -56,6 +56,8 @@ public class SynchronizingPanel extends ProgressPanel {
 									.getServiceFromRepository(repositoryDTO
 											.getName());
 							connexion.checkRepository(repositoryDTO.getName());
+							facade.getAddonsPanel().updateModsetSelection(
+									repositoryDTO.getName());
 						} catch (Exception e) {
 							System.out.println(e.getMessage());
 						}
@@ -65,6 +67,8 @@ public class SynchronizingPanel extends ProgressPanel {
 						connexion = ConnexionServiceFactory
 								.getServiceFromRepository(repositoryName);
 						connexion.checkRepository(repositoryName);
+						facade.getAddonsPanel().updateModsetSelection(
+								repositoryName);
 					} catch (Exception e) {
 						System.out.println(e.getMessage());
 					}
