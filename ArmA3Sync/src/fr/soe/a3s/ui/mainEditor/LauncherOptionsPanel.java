@@ -158,20 +158,20 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener {
 			vBox.add(hBox);
 		}
 		{
-			checkBoxNoFilePatching = new JCheckBox();
-			checkBoxNoFilePatching.setText("No File Patching");
-			checkBoxNoFilePatching.setFocusable(false);
-			Box hBox = Box.createHorizontalBox();
-			hBox.add(checkBoxNoFilePatching);
-			hBox.add(Box.createHorizontalGlue());
-			vBox.add(hBox);
-		}
-		{
 			checkBoxWindowMode = new JCheckBox();
 			checkBoxWindowMode.setText("Window Mode");
 			checkBoxWindowMode.setFocusable(false);
 			Box hBox = Box.createHorizontalBox();
 			hBox.add(checkBoxWindowMode);
+			hBox.add(Box.createHorizontalGlue());
+			vBox.add(hBox);
+		}
+		{
+			checkBoxNoFilePatching = new JCheckBox();
+			checkBoxNoFilePatching.setText("No File Patching");
+			checkBoxNoFilePatching.setFocusable(false);
+			Box hBox = Box.createHorizontalBox();
+			hBox.add(checkBoxNoFilePatching);
 			hBox.add(Box.createHorizontalGlue());
 			vBox.add(hBox);
 		}
@@ -440,7 +440,6 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener {
 				checkBoxNoLogsPerformed();
 			}
 		});
-
 		buttonSelectArmAExe.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
@@ -461,8 +460,7 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener {
 		checkBoxNoFilePatching.setToolTipText("Load only PBO files");
 		checkBoxWindowMode
 				.setToolTipText("Display the game windowed instead of full screen");
-		checkBoxCheckSignatures
-				.setToolTipText("Check signatures of PBO files");
+		checkBoxCheckSignatures.setToolTipText("Check signatures of PBO files");
 		comboBoxMaxMemory.setToolTipText("Restricts memory allocation");
 		comboBoxCpuCount.setToolTipText("Restricts number of cores used");
 		comboBoxExThreads.setToolTipText("Sets number of extra threads to use");
