@@ -7,6 +7,8 @@ import java.util.List;
 import java.util.StringTokenizer;
 import java.util.concurrent.Callable;
 
+import fr.soe.a3s.domain.configration.LauncherOptions;
+
 public class LauncherDAO implements DataAccessConstants {
 
 	public boolean isApplicationRunning(String executableName) {
@@ -34,7 +36,7 @@ public class LauncherDAO implements DataAccessConstants {
 			input.close();
 			p.destroy();
 		} catch (Exception err) {
-			//err.printStackTrace();
+			// err.printStackTrace();
 		}
 		return response;
 	}
@@ -104,7 +106,8 @@ public class LauncherDAO implements DataAccessConstants {
 	}
 
 	public Callable<Integer> call(final String executableName,
-			final String exePath, final List<String> params) throws Exception {
+			final String exePath, final List<String> params,
+			final LauncherOptions launcherOptions) throws Exception {
 
 		Callable<Integer> c = new Callable<Integer>() {
 			@Override
@@ -127,6 +130,11 @@ public class LauncherDAO implements DataAccessConstants {
 					new Thread(fluxSortie).start();
 					new Thread(fluxErreur).start();
 					p.waitFor();
+					if (launcherOptions != null) {
+						if (launcherOptions.isAutoRestart()) {
+							call();
+						}
+					}
 					response = p.exitValue();
 				} else if (executableName.contains(".bat")) {
 					String osName = System.getProperty("os.name");
@@ -144,6 +152,11 @@ public class LauncherDAO implements DataAccessConstants {
 						new Thread(fluxSortie).start();
 						new Thread(fluxErreur).start();
 						p.waitFor();
+						if (launcherOptions != null) {
+							if (launcherOptions.isAutoRestart()) {
+								call();
+							}
+						}
 						response = p.exitValue();
 					}
 				} else if (executableName.contains(".sh")) {
@@ -161,6 +174,11 @@ public class LauncherDAO implements DataAccessConstants {
 						new Thread(fluxSortie).start();
 						new Thread(fluxErreur).start();
 						p.waitFor();
+						if (launcherOptions != null) {
+							if (launcherOptions.isAutoRestart()) {
+								call();
+							}
+						}
 						response = p.exitValue();
 					}
 				}

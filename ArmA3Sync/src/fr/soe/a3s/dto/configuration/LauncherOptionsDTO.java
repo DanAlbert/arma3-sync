@@ -9,6 +9,7 @@ public class LauncherOptionsDTO {
 	private boolean noFilePatching;
 	private boolean windowMode;
 	private boolean checkSignatures;
+	private boolean autoRestart;
 	private String maxMemorySelection;
 	private int cpuCountSelection;
 	private String exThreadsSelection;
@@ -139,5 +140,13 @@ public class LauncherOptionsDTO {
 
 	public void setCheckSignatures(boolean checkSignatures) {
 		this.checkSignatures = checkSignatures;
+	}
+
+	public boolean isAutoRestart() {
+		return this.autoRestart;
+	}
+
+	public void setAutoRestart(boolean autoRestart) {
+		this.autoRestart = autoRestart;
 	}
 }

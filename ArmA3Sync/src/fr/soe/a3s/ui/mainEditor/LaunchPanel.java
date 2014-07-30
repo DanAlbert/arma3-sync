@@ -316,7 +316,16 @@ public class LaunchPanel extends JPanel implements UIConstants {
 			facade.getMainPanel().setVisible(false);
 			facade.getMainPanel().setToTray();
 		} else if (MinimizationType.CLOSE.equals(minimize)) {
-			facade.getMainPanel().menuExitPerformed();
+			if (!configurationService.getLauncherOptions().isAutoRestart()) {
+				facade.getMainPanel().menuExitPerformed();
+			}
+		}
+		
+		/* Auto Restart warning */
+		if (configurationService.getLauncherOptions().isAutoRestart()) {
+			JOptionPane.showMessageDialog(facade.getMainPanel(),
+					"Auto-restart option is enabled. Do not close ArmA3Sync.", "ArmA 3 Start Game",
+					JOptionPane.INFORMATION_MESSAGE);
 		}
 	}
 }

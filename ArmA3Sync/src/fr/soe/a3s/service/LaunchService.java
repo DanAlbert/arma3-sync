@@ -91,7 +91,7 @@ public class LaunchService {
 						params.add(runParameters.trim());
 						try {
 							Callable<Integer> c = launcherDAO.call(
-									executableName, launchPath, params);
+									executableName, launchPath, params, null);
 							runnables.add(c);
 						} catch (Exception e) {
 							e.printStackTrace();
@@ -170,6 +170,10 @@ public class LaunchService {
 		String arma3Path = configurationDAO.getConfiguration()
 				.getLauncherOptions().getArma3ExePath();
 
+		/* Get auto restart option */
+		LauncherOptions launcherOptions = configurationDAO.getConfiguration()
+				.getLauncherOptions();
+
 		/* Run Parameters */
 		List<String> params = determineRunParameters();
 
@@ -181,7 +185,7 @@ public class LaunchService {
 		try {
 			String executableName = new File(arma3Path).getName();
 			Callable<Integer> c = launcherDAO.call(executableName, arma3Path,
-					params);
+					params, launcherOptions);
 			runnables.add(c);
 			ExecutorService executor = Executors.newSingleThreadExecutor();
 			executor.submit(c);

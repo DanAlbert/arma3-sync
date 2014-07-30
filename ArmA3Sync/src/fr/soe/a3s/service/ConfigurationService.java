@@ -197,9 +197,9 @@ public class ConfigurationService extends ObjectDTOtransformer {
 				.setCheckSignatures(value);
 	}
 
-	public void setCheckBoxRun(boolean value) {
+	public void setCheckBoxAutoRestart(boolean value) {
 		configurationDAO.getConfiguration().getLauncherOptions()
-				.setRunBeta(value);
+				.setAutoRestart(value);
 	}
 
 	public void setCheckBoxXPCompatibilityMode(boolean value) {
@@ -394,6 +394,7 @@ public class ConfigurationService extends ObjectDTOtransformer {
 		setCheckBoxNoFilePatching(launcherOptionsDTO.isNoFilePatching());
 		setCheckBoxWindowMode(launcherOptionsDTO.isWindowMode());
 		setCheckBoxCheckSignatures(launcherOptionsDTO.isCheckSignatures());
+		setCheckBoxAutoRestart(launcherOptionsDTO.isAutoRestart());
 		setMaxMemory(launcherOptionsDTO.getMaxMemorySelection());
 		setCpuCount(Integer.toString(launcherOptionsDTO.getCpuCountSelection()));
 		setExThreads(launcherOptionsDTO.getExThreadsSelection());

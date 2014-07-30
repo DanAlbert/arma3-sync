@@ -93,6 +93,7 @@ public class ObjectDTOtransformer {
 		launcherOptionsDTO.setWindowMode(launcherOptions.isWindowMode());
 		launcherOptionsDTO.setCheckSignatures(launcherOptions
 				.isCheckSignatures());
+		launcherOptionsDTO.setAutoRestart(launcherOptions.isAutoRestart());
 
 		return launcherOptionsDTO;
 	}

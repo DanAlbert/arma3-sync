@@ -72,6 +72,7 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener {
 	private final ProfileService profileService = new ProfileService();
 	private final AddonService addonService = new AddonService();
 	private final LaunchService launchService = new LaunchService();
+	private JCheckBox checkBoxAutoRestart;
 
 	public LauncherOptionsPanel(Facade facade) {
 		this.facade = facade;
@@ -181,6 +182,15 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener {
 			checkBoxCheckSignatures.setFocusable(false);
 			Box hBox = Box.createHorizontalBox();
 			hBox.add(checkBoxCheckSignatures);
+			hBox.add(Box.createHorizontalGlue());
+			vBox.add(hBox);
+		}
+		{
+			checkBoxAutoRestart = new JCheckBox();
+			checkBoxAutoRestart.setText("Auto-restart");
+			checkBoxAutoRestart.setFocusable(false);
+			Box hBox = Box.createHorizontalBox();
+			hBox.add(checkBoxAutoRestart);
 			hBox.add(Box.createHorizontalGlue());
 			vBox.add(hBox);
 		}
@@ -380,6 +390,12 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener {
 				checkBoxCheckSignaturesPerformed();
 			}
 		});
+		checkBoxAutoRestart.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				checkBoxAutoRestartPerformed();
+			}
+		});
 		checkBoxMaxMemory.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -468,6 +484,7 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener {
 		checkBoxNoSplashScreen.setToolTipText("Disables splash screens");
 		checkBoxDefaultWorld.setToolTipText("No world loaded at game startup");
 		checkBoxNoLogs.setToolTipText("Do no write errors into RPT file");
+		checkBoxAutoRestart.setToolTipText("Auto-restart game/server");
 	}
 
 	public void init() {
@@ -542,6 +559,11 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener {
 		configurationService.setCheckBoxCheckSignatures(checkBoxCheckSignatures
 				.isSelected());
 		updateRunParameters();
+	}
+
+	private void checkBoxAutoRestartPerformed() {
+		configurationService.setCheckBoxAutoRestart(checkBoxAutoRestart
+				.isSelected());
 	}
 
 	private void checkBoxMaxMemoryPerformed() {
@@ -755,6 +777,7 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener {
 		checkBoxWindowMode.setSelected(launcherOptionsDTO.isWindowMode());
 		checkBoxCheckSignatures.setSelected(launcherOptionsDTO
 				.isCheckSignatures());
+		checkBoxAutoRestart.setSelected(launcherOptionsDTO.isAutoRestart());
 
 		/* Performance */
 		if (launcherOptionsDTO.getMaxMemorySelection() != null) {
