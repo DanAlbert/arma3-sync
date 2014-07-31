@@ -25,404 +25,366 @@ import fr.soe.a3s.exception.WritingException;
 
 public class ProfileService extends ObjectDTOtransformer {
 
-	private static final ConfigurationDAO configurationDAO = new ConfigurationDAO();
-	private static final ProfileDAO profileDAO = new ProfileDAO();
+    private static final ConfigurationDAO configurationDAO = new ConfigurationDAO();
 
-	public void readAll() throws LoadingException {
-		profileDAO.readProfiles();
-	}
+    private static final ProfileDAO profileDAO = new ProfileDAO();
 
-	public void writeAll() throws WritingException {
-		profileDAO.writeProfiles();
-	}
+    public void readAll() throws LoadingException {
+        profileDAO.readProfiles();
+    }
 
-	public void setAdditionalParameters(String additionalParameters)
-			throws ProfileException {
-		String profileName = configurationDAO.getConfiguration()
-				.getProfileName();
-		Profile profile = (Profile) profileDAO.getMap().get(profileName);
-		if (profile != null) {
-			profile.setAdditionalParameters(additionalParameters);
-		} else {
-			throw new ProfileException("Profile " + profileName + " not found!");
-		}
-	}
+    public void writeAll() throws WritingException {
+        profileDAO.writeProfiles();
+    }
 
-	public String getAdditionalParameters() throws ProfileException {
-		String profileName = configurationDAO.getConfiguration()
-				.getProfileName();
-		Profile profile = (Profile) profileDAO.getMap().get(profileName);
-		if (profile != null) {
-			return profile.getAdditionalParameters();
-		} else {
-			throw new ProfileException("Profile " + profileName + " not found!");
-		}
-	}
+    public void setAdditionalParameters(String additionalParameters) throws ProfileException {
+        String profileName = configurationDAO.getConfiguration().getProfileName();
+        Profile profile = profileDAO.getMap().get(profileName);
+        if (profile != null) {
+            profile.setAdditionalParameters(additionalParameters);
+        }
+        else {
+            throw new ProfileException("Profile " + profileName + " not found!");
+        }
+    }
 
-	public List<String> getProfileNames() {
+    public String getAdditionalParameters() throws ProfileException {
+        String profileName = configurationDAO.getConfiguration().getProfileName();
+        Profile profile = profileDAO.getMap().get(profileName);
+        if (profile != null) {
+            return profile.getAdditionalParameters();
+        }
+        else {
+            throw new ProfileException("Profile " + profileName + " not found!");
+        }
+    }
 
-		List<String> list = new ArrayList<String>();
-		for (Iterator<String> i = profileDAO.getMap().keySet().iterator(); i
-				.hasNext();) {
-			list.add(i.next());
-		}
-		Collections.sort(list);
-		return list;
-	}
+    public List<String> getProfileNames() {
 
-	public void createProfile(String profileName) throws ProfileException {
-		Profile profile = new Profile(profileName);
-		if (profileDAO.getMap().containsKey(profileName)) {
-			throw new ProfileException("Profile with name " + profileName
-					+ " already exists.");
-		}
-		profileDAO.getMap().put(profile.getName(), profile);
-	}
+        List<String> list = new ArrayList<String>();
+        for (Iterator<String> i = profileDAO.getMap().keySet().iterator(); i.hasNext();) {
+            list.add(i.next());
+        }
+        Collections.sort(list);
+        return list;
+    }
 
-	public void duplicateProfile(String profileName, String duplicateProfileName) {
-		Profile profile = (Profile) profileDAO.getMap().get(profileName);
-		Profile duplicateProfile = new Profile(duplicateProfileName);
-		TreeDirectory treeDirectory = profile.getTree();
-		TreeDirectory duplicateTreeDirectory = duplicateProfile.getTree();
-		duplicateTree(treeDirectory, duplicateTreeDirectory);
-		duplicateProfile.setAddonSearchDirectoryPaths(profile
-				.getAddonSearchDirectoryPaths());
-		duplicateProfile.setAdditionalParameters(profile
-				.getAdditionalParameters());
-		duplicateLauncherOptions(profile.getLauncherOptions(),
-				duplicateProfile.getLauncherOptions());
-		profileDAO.getMap().put(duplicateProfile.getName(), duplicateProfile);
-	}
+    public void createProfile(String profileName) throws ProfileException {
+        Profile profile = new Profile(profileName);
+        if (profileDAO.getMap().containsKey(profileName)) {
+            throw new ProfileException("Profile with name " + profileName + " already exists.");
+        }
+        profileDAO.getMap().put(profile.getName(), profile);
+    }
 
-	private void duplicateTree(TreeDirectory treeDirectory,
-			TreeDirectory duplicateTreeDirectory) {
+    public void duplicateProfile(String profileName, String duplicateProfileName) {
+        Profile profile = profileDAO.getMap().get(profileName);
+        Profile duplicateProfile = new Profile(duplicateProfileName);
+        TreeDirectory treeDirectory = profile.getTree();
+        TreeDirectory duplicateTreeDirectory = duplicateProfile.getTree();
+        duplicateTree(treeDirectory, duplicateTreeDirectory);
+        duplicateProfile.setAddonSearchDirectoryPaths(profile.getAddonSearchDirectoryPaths());
+        duplicateProfile.setAdditionalParameters(profile.getAdditionalParameters());
+        duplicateLauncherOptions(profile.getLauncherOptions(),
+                duplicateProfile.getLauncherOptions());
+        profileDAO.getMap().put(duplicateProfile.getName(), duplicateProfile);
+    }
 
-		List<TreeNode> list = treeDirectory.getList();
+    private void duplicateTree(TreeDirectory treeDirectory, TreeDirectory duplicateTreeDirectory) {
 
-		for (TreeNode treeNode : list) {
-			if (treeNode.isLeaf()) {
-				TreeLeaf treeLeaf = (TreeLeaf) treeNode;
-				TreeLeaf duplicateTreeLeaf = duplicateTreeLeaf(treeLeaf);
-				duplicateTreeLeaf.setParent(duplicateTreeDirectory);
-				duplicateTreeDirectory.addTreeNode(duplicateTreeLeaf);
-			} else {
-				TreeDirectory treeDirectory2 = (TreeDirectory) treeNode;
-				TreeDirectory duplicateTreedDirectory2 = new TreeDirectory(
-						treeDirectory2.getName(), duplicateTreeDirectory);
-				duplicateTreedDirectory2.setSelected(treeDirectory2
-						.isSelected());
-				duplicateTreeDirectory.addTreeNode(duplicateTreedDirectory2);
-				duplicateTree(treeDirectory2, duplicateTreedDirectory2);
-			}
-		}
-	}
+        List<TreeNode> list = treeDirectory.getList();
 
-	private TreeLeaf duplicateTreeLeaf(TreeLeaf treeLeaf) {
-		TreeLeaf duplicateTreeLeaf = new TreeLeaf();
-		duplicateTreeLeaf.setName(treeLeaf.getName());
-		duplicateTreeLeaf.setSelected(treeLeaf.isSelected());
-		return duplicateTreeLeaf;
-	}
+        for (TreeNode treeNode : list) {
+            if (treeNode.isLeaf()) {
+                TreeLeaf treeLeaf = (TreeLeaf) treeNode;
+                TreeLeaf duplicateTreeLeaf = duplicateTreeLeaf(treeLeaf);
+                duplicateTreeLeaf.setParent(duplicateTreeDirectory);
+                duplicateTreeDirectory.addTreeNode(duplicateTreeLeaf);
+            }
+            else {
+                TreeDirectory treeDirectory2 = (TreeDirectory) treeNode;
+                TreeDirectory duplicateTreedDirectory2 = new TreeDirectory(
+                        treeDirectory2.getName(), duplicateTreeDirectory);
+                duplicateTreedDirectory2.setSelected(treeDirectory2.isSelected());
+                duplicateTreeDirectory.addTreeNode(duplicateTreedDirectory2);
+                duplicateTree(treeDirectory2, duplicateTreedDirectory2);
+            }
+        }
+    }
 
-	private void duplicateLauncherOptions(LauncherOptions launcherOptions,
-			LauncherOptions duplicateLauncherOptions) {
+    private TreeLeaf duplicateTreeLeaf(TreeLeaf treeLeaf) {
+        TreeLeaf duplicateTreeLeaf = new TreeLeaf();
+        duplicateTreeLeaf.setName(treeLeaf.getName());
+        duplicateTreeLeaf.setSelected(treeLeaf.isSelected());
+        return duplicateTreeLeaf;
+    }
 
-		duplicateLauncherOptions.setCpuCountSelection(launcherOptions
-				.getCpuCountSelection());
-		duplicateLauncherOptions.setExThreadsSelection(launcherOptions
-				.getExThreadsSelection());
-		duplicateLauncherOptions.setDefaultWorld(launcherOptions
-				.isDefaultWorld());
-		duplicateLauncherOptions.setGameProfile(launcherOptions
-				.getGameProfile());
-		duplicateLauncherOptions.setMaxMemorySelection(launcherOptions
-				.getMaxMemorySelection());
-		duplicateLauncherOptions.setNoFilePatching(launcherOptions
-				.isNoFilePatching());
-		duplicateLauncherOptions.setNoLogs(launcherOptions.isNologs());
-		duplicateLauncherOptions.setNoPause(launcherOptions.isNoPause());
-		duplicateLauncherOptions.setEnableHT(launcherOptions.isEnableHT());
-		duplicateLauncherOptions.setNoSplashScreen(launcherOptions.isNoPause());
-		duplicateLauncherOptions.setShowScriptErrors(launcherOptions
-				.isShowScriptErrors());
-		duplicateLauncherOptions.setWindowMode(launcherOptions.isWindowMode());
-		duplicateLauncherOptions.setCheckSignatures(launcherOptions
-				.isCheckSignatures());
-		duplicateLauncherOptions.setArma3ExePath(launcherOptions
-				.getArma3ExePath());
-	}
+    private void duplicateLauncherOptions(LauncherOptions launcherOptions,
+            LauncherOptions duplicateLauncherOptions) {
 
-	public void renameProfile(String initProfileName, String newProfileName)
-			throws ProfileException {
-		Profile profile = (Profile) profileDAO.getMap().get(initProfileName);
-		if (profile == null) {
-			throw new ProfileException("Profile with name " + initProfileName
-					+ " does not exists.");
-		}
-		profile.setName(newProfileName);
-		profileDAO.getMap().remove(initProfileName);
-		profileDAO.getMap().put(profile.getName(), profile);
-	}
+        duplicateLauncherOptions.setCpuCountSelection(launcherOptions.getCpuCountSelection());
+        duplicateLauncherOptions.setExThreadsSelection(launcherOptions.getExThreadsSelection());
+        duplicateLauncherOptions.setDefaultWorld(launcherOptions.isDefaultWorld());
+        duplicateLauncherOptions.setGameProfile(launcherOptions.getGameProfile());
+        duplicateLauncherOptions.setMaxMemorySelection(launcherOptions.getMaxMemorySelection());
+        duplicateLauncherOptions.setNoFilePatching(launcherOptions.isNoFilePatching());
+        duplicateLauncherOptions.setNoLogs(launcherOptions.isNologs());
+        duplicateLauncherOptions.setNoPause(launcherOptions.isNoPause());
+        duplicateLauncherOptions.setEnableHT(launcherOptions.isEnableHT());
+        duplicateLauncherOptions.setNoSplashScreen(launcherOptions.isNoPause());
+        duplicateLauncherOptions.setShowScriptErrors(launcherOptions.isShowScriptErrors());
+        duplicateLauncherOptions.setWindowMode(launcherOptions.isWindowMode());
+        duplicateLauncherOptions.setCheckSignatures(launcherOptions.isCheckSignatures());
+        duplicateLauncherOptions.setAutoRestart(launcherOptions.isAutoRestart());
+        duplicateLauncherOptions.setArma3ExePath(launcherOptions.getArma3ExePath());
+    }
 
-	public void removeProfile(String profileName) throws ProfileException {
-		Profile profile = (Profile) profileDAO.getMap().get(profileName);
-		if (profile == null) {
-			throw new ProfileException("Profile with name " + profileName
-					+ " does not exists.");
-		}
-		profileDAO.getMap().remove(profileName);
-	}
+    public void renameProfile(String initProfileName, String newProfileName)
+            throws ProfileException {
+        Profile profile = profileDAO.getMap().get(initProfileName);
+        if (profile == null) {
+            throw new ProfileException("Profile with name " + initProfileName + " does not exists.");
+        }
+        profile.setName(newProfileName);
+        profileDAO.getMap().remove(initProfileName);
+        profileDAO.getMap().put(profile.getName(), profile);
+    }
 
-	public LauncherOptionsDTO getLauncherOptions(String profileName)
-			throws ProfileException {
+    public void removeProfile(String profileName) throws ProfileException {
+        Profile profile = profileDAO.getMap().get(profileName);
+        if (profile == null) {
+            throw new ProfileException("Profile with name " + profileName + " does not exists.");
+        }
+        profileDAO.getMap().remove(profileName);
+    }
 
-		Profile profile = (Profile) profileDAO.getMap().get(profileName);
-		if (profile == null) {
-			throw new ProfileException("Profile with name " + profileName
-					+ " does not exists.");
-		}
-		LauncherOptions launcherOptions = profile.getLauncherOptions();
-		LauncherOptionsDTO launcherOptionsDTO = transformLauncherOptions2DTO(launcherOptions);
-		return launcherOptionsDTO;
-	}
+    public LauncherOptionsDTO getLauncherOptions(String profileName) throws ProfileException {
 
-	public void saveLauncherOptions(String profileName) throws ProfileException {
+        Profile profile = profileDAO.getMap().get(profileName);
+        if (profile == null) {
+            throw new ProfileException("Profile with name " + profileName + " does not exists.");
+        }
+        LauncherOptions launcherOptions = profile.getLauncherOptions();
+        LauncherOptionsDTO launcherOptionsDTO = transformLauncherOptions2DTO(launcherOptions);
+        return launcherOptionsDTO;
+    }
 
-		Profile profile = (Profile) profileDAO.getMap().get(profileName);
-		if (profile == null) {
-			throw new ProfileException("Profile with name " + profileName
-					+ " does not exists.");
-		}
-		LauncherOptions launcherOptions = configurationDAO.getConfiguration()
-				.getLauncherOptions();
+    public void saveLauncherOptions(String profileName) throws ProfileException {
 
-		profile.getLauncherOptions().setArma3ExePath(
-				launcherOptions.getArma3ExePath());
+        Profile profile = profileDAO.getMap().get(profileName);
+        if (profile == null) {
+            throw new ProfileException("Profile with name " + profileName + " does not exists.");
+        }
+        LauncherOptions launcherOptions = configurationDAO.getConfiguration().getLauncherOptions();
 
-		profile.getLauncherOptions().setGameProfile(
-				launcherOptions.getGameProfile());
-		profile.getLauncherOptions().setShowScriptErrors(
-				launcherOptions.isShowScriptErrors());
-		profile.getLauncherOptions().setNoPause(launcherOptions.isNoPause());
-		profile.getLauncherOptions().setNoFilePatching(
-				launcherOptions.isNoFilePatching());
-		profile.getLauncherOptions().setWindowMode(
-				launcherOptions.isWindowMode());
-		profile.getLauncherOptions().setCheckSignatures(
-				launcherOptions.isCheckSignatures());
-		profile.getLauncherOptions().setMaxMemorySelection(
-				launcherOptions.getMaxMemorySelection());
-		profile.getLauncherOptions().setCpuCountSelection(
-				launcherOptions.getCpuCountSelection());
-		profile.getLauncherOptions().setExThreadsSelection(
-				launcherOptions.getExThreadsSelection());
-		profile.getLauncherOptions().setEnableHT(launcherOptions.isEnableHT());
-		profile.getLauncherOptions().setNoSplashScreen(
-				launcherOptions.isNoSplashScreen());
-		profile.getLauncherOptions().setDefaultWorld(
-				launcherOptions.isDefaultWorld());
-		profile.getLauncherOptions().setNoLogs(launcherOptions.isNologs());
-	}
+        profile.getLauncherOptions().setArma3ExePath(launcherOptions.getArma3ExePath());
 
-	public void saveAddonSearchDirectoryPaths(String profileName)
-			throws ProfileException {
+        profile.getLauncherOptions().setGameProfile(launcherOptions.getGameProfile());
+        profile.getLauncherOptions().setShowScriptErrors(launcherOptions.isShowScriptErrors());
+        profile.getLauncherOptions().setNoPause(launcherOptions.isNoPause());
+        profile.getLauncherOptions().setNoFilePatching(launcherOptions.isNoFilePatching());
+        profile.getLauncherOptions().setWindowMode(launcherOptions.isWindowMode());
+        profile.getLauncherOptions().setCheckSignatures(launcherOptions.isCheckSignatures());
+        profile.getLauncherOptions().setAutoRestart(launcherOptions.isAutoRestart());
+        profile.getLauncherOptions().setMaxMemorySelection(launcherOptions.getMaxMemorySelection());
+        profile.getLauncherOptions().setCpuCountSelection(launcherOptions.getCpuCountSelection());
+        profile.getLauncherOptions().setExThreadsSelection(launcherOptions.getExThreadsSelection());
+        profile.getLauncherOptions().setEnableHT(launcherOptions.isEnableHT());
+        profile.getLauncherOptions().setNoSplashScreen(launcherOptions.isNoSplashScreen());
+        profile.getLauncherOptions().setDefaultWorld(launcherOptions.isDefaultWorld());
+        profile.getLauncherOptions().setNoLogs(launcherOptions.isNologs());
+    }
 
-		Profile profile = (Profile) profileDAO.getMap().get(profileName);
-		if (profile == null) {
-			throw new ProfileException("Profile with name " + profileName
-					+ " does not exists.");
-		}
+    public void saveAddonSearchDirectoryPaths(String profileName) throws ProfileException {
 
-		Set<String> addonSearchDirectoryPaths = configurationDAO
-				.getConfiguration().getAddonSearchDirectoryPaths();
-		profile.getAddonSearchDirectoryPaths().clear();
-		profile.getAddonSearchDirectoryPaths()
-				.addAll(addonSearchDirectoryPaths);
-	}
+        Profile profile = profileDAO.getMap().get(profileName);
+        if (profile == null) {
+            throw new ProfileException("Profile with name " + profileName + " does not exists.");
+        }
 
-	public Set<String> getAddonSearchDirectoryPaths(String profileName)
-			throws ProfileException {
+        Set<String> addonSearchDirectoryPaths = configurationDAO.getConfiguration()
+                .getAddonSearchDirectoryPaths();
+        profile.getAddonSearchDirectoryPaths().clear();
+        profile.getAddonSearchDirectoryPaths().addAll(addonSearchDirectoryPaths);
+    }
 
-		Profile profile = (Profile) profileDAO.getMap().get(profileName);
-		if (profile == null) {
-			throw new ProfileException("Profile with name " + profileName
-					+ " does not exists.");
-		}
+    public Set<String> getAddonSearchDirectoryPaths(String profileName) throws ProfileException {
 
-		return profile.getAddonSearchDirectoryPaths();
-	}
+        Profile profile = profileDAO.getMap().get(profileName);
+        if (profile == null) {
+            throw new ProfileException("Profile with name " + profileName + " does not exists.");
+        }
 
-	public TreeDirectoryDTO getAddonGroupsTree() {
+        return profile.getAddonSearchDirectoryPaths();
+    }
 
-		String profileName = configurationDAO.getConfiguration()
-				.getProfileName();
-		if (profileName == null) {
-			configurationDAO.getConfiguration().setProfileName(
-					DefaultProfileName.DEFAULT.getDescription());
-		}
-		Profile profile = (Profile) profileDAO.getMap().get(profileName);
-		TreeDirectoryDTO treeDirectoryDTO = new TreeDirectoryDTO();
-		treeDirectoryDTO.setName("racine2");
-		treeDirectoryDTO.setParent(null);
-		if (profile != null) {
-			TreeDirectory treeDirectory = profile.getTree();
-			transformTreeDirectory2DTO(treeDirectory, treeDirectoryDTO);
-		}
-		return treeDirectoryDTO;
-	}
+    public TreeDirectoryDTO getAddonGroupsTree() {
 
-	public void setAddonGroupsTree(TreeDirectoryDTO treeDirectoryDTO) {
+        String profileName = configurationDAO.getConfiguration().getProfileName();
+        if (profileName == null) {
+            configurationDAO.getConfiguration().setProfileName(
+                    DefaultProfileName.DEFAULT.getDescription());
+        }
+        Profile profile = profileDAO.getMap().get(profileName);
+        TreeDirectoryDTO treeDirectoryDTO = new TreeDirectoryDTO();
+        treeDirectoryDTO.setName("racine2");
+        treeDirectoryDTO.setParent(null);
+        if (profile != null) {
+            TreeDirectory treeDirectory = profile.getTree();
+            transformTreeDirectory2DTO(treeDirectory, treeDirectoryDTO);
+        }
+        return treeDirectoryDTO;
+    }
 
-		String profileName = configurationDAO.getConfiguration()
-				.getProfileName();
-		if (profileName == null) {
-			configurationDAO.getConfiguration().setProfileName(
-					DefaultProfileName.DEFAULT.getDescription());
-		}
-		Profile profile = (Profile) profileDAO.getMap().get(profileName);
-		if (profile != null) {
-			TreeDirectory treeDirectory = profile.getTree();
-			treeDirectory.getList().clear();
-			transform2TreeDirectory(treeDirectoryDTO, treeDirectory);
-		}
-	}
+    public void setAddonGroupsTree(TreeDirectoryDTO treeDirectoryDTO) {
 
-	public void merge(TreeDirectoryDTO sourceTreeDirectoryDTO,
-			TreeDirectoryDTO targetTreeDirectoryDTO) {
+        String profileName = configurationDAO.getConfiguration().getProfileName();
+        if (profileName == null) {
+            configurationDAO.getConfiguration().setProfileName(
+                    DefaultProfileName.DEFAULT.getDescription());
+        }
+        Profile profile = profileDAO.getMap().get(profileName);
+        if (profile != null) {
+            TreeDirectory treeDirectory = profile.getTree();
+            treeDirectory.getList().clear();
+            transform2TreeDirectory(treeDirectoryDTO, treeDirectory);
+        }
+    }
 
-		List<TreeDirectoryDTO> listSourceDirectory = new ArrayList<TreeDirectoryDTO>();
+    public void merge(TreeDirectoryDTO sourceTreeDirectoryDTO,
+            TreeDirectoryDTO targetTreeDirectoryDTO) {
 
-		for (TreeNodeDTO node : sourceTreeDirectoryDTO.getList()) {
-			if (!node.isLeaf()) {
-				TreeDirectoryDTO directory = (TreeDirectoryDTO) node;
-				listSourceDirectory.add(directory);
-			}
-		}
+        List<TreeDirectoryDTO> listSourceDirectory = new ArrayList<TreeDirectoryDTO>();
 
-		List<TreeDirectoryDTO> listTargetDirectory = new ArrayList<TreeDirectoryDTO>();
+        for (TreeNodeDTO node : sourceTreeDirectoryDTO.getList()) {
+            if (!node.isLeaf()) {
+                TreeDirectoryDTO directory = (TreeDirectoryDTO) node;
+                listSourceDirectory.add(directory);
+            }
+        }
 
-		for (TreeNodeDTO node : targetTreeDirectoryDTO.getList()) {
-			if (!node.isLeaf()) {
-				TreeDirectoryDTO directory = (TreeDirectoryDTO) node;
-				listTargetDirectory.add(directory);
-			}
-		}
+        List<TreeDirectoryDTO> listTargetDirectory = new ArrayList<TreeDirectoryDTO>();
 
-		for (TreeDirectoryDTO targetDirectory : listTargetDirectory) {
-			for (TreeDirectoryDTO sourceDirectory : listSourceDirectory) {
-				List<String> listLeafNames = new ArrayList<String>();
-				List<String> listDirectoryNames = new ArrayList<String>();
-				for (TreeNodeDTO targetNode : targetDirectory.getList()) {
-					if (targetNode.isLeaf()) {
-						listLeafNames.add(targetNode.getName());
-					} else {
-						listDirectoryNames.add(targetNode.getName());
-					}
-				}
-				if (targetDirectory.getName().equals(sourceDirectory.getName())) {
-					for (TreeNodeDTO sourceNode : sourceDirectory.getList()) {
-						if (sourceNode.isLeaf()
-								&& !listLeafNames
-										.contains(sourceNode.getName())) {
-							TreeLeafDTO treeLeafDTO = new TreeLeafDTO();
-							treeLeafDTO.setName(sourceNode.getName());
-							treeLeafDTO.setParent(targetDirectory);
-							targetDirectory.addTreeNode(treeLeafDTO);
-						} else if (!sourceNode.isLeaf()
-								&& !listDirectoryNames.contains(sourceNode
-										.getName())) {
-							TreeDirectoryDTO treeDirectoryDTO = new TreeDirectoryDTO();
-							treeDirectoryDTO.setName(sourceNode.getName());
-							treeDirectoryDTO.setParent(targetDirectory);
-							targetDirectory.addTreeNode(treeDirectoryDTO);
-						}
-					}
-				}
-				merge(sourceDirectory, targetDirectory);
-			}
-		}
-		setAddonGroupsTree(targetTreeDirectoryDTO);
-	}
+        for (TreeNodeDTO node : targetTreeDirectoryDTO.getList()) {
+            if (!node.isLeaf()) {
+                TreeDirectoryDTO directory = (TreeDirectoryDTO) node;
+                listTargetDirectory.add(directory);
+            }
+        }
 
-	public List<String> getAddonNamesByPriority() {
+        for (TreeDirectoryDTO targetDirectory : listTargetDirectory) {
+            for (TreeDirectoryDTO sourceDirectory : listSourceDirectory) {
+                List<String> listLeafNames = new ArrayList<String>();
+                List<String> listDirectoryNames = new ArrayList<String>();
+                for (TreeNodeDTO targetNode : targetDirectory.getList()) {
+                    if (targetNode.isLeaf()) {
+                        listLeafNames.add(targetNode.getName());
+                    }
+                    else {
+                        listDirectoryNames.add(targetNode.getName());
+                    }
+                }
+                if (targetDirectory.getName().equals(sourceDirectory.getName())) {
+                    for (TreeNodeDTO sourceNode : sourceDirectory.getList()) {
+                        if (sourceNode.isLeaf() && !listLeafNames.contains(sourceNode.getName())) {
+                            TreeLeafDTO treeLeafDTO = new TreeLeafDTO();
+                            treeLeafDTO.setName(sourceNode.getName());
+                            treeLeafDTO.setParent(targetDirectory);
+                            targetDirectory.addTreeNode(treeLeafDTO);
+                        }
+                        else if (!sourceNode.isLeaf()
+                                && !listDirectoryNames.contains(sourceNode.getName())) {
+                            TreeDirectoryDTO treeDirectoryDTO = new TreeDirectoryDTO();
+                            treeDirectoryDTO.setName(sourceNode.getName());
+                            treeDirectoryDTO.setParent(targetDirectory);
+                            targetDirectory.addTreeNode(treeDirectoryDTO);
+                        }
+                    }
+                }
+                merge(sourceDirectory, targetDirectory);
+            }
+        }
+        setAddonGroupsTree(targetTreeDirectoryDTO);
+    }
 
-		String profileName = configurationDAO.getConfiguration()
-				.getProfileName();
+    public List<String> getAddonNamesByPriority() {
 
-		Profile profile = (Profile) profileDAO.getMap().get(profileName);
-		if (profile != null) {
-			List<String> list = profile.getAddonNamesByPriority();
-			TreeDirectory treeDirectory = profile.getTree();
-			Set<String> extractedAddonNames = new TreeSet<String>();
-			getAddonsByName(treeDirectory, extractedAddonNames);
-			if (list.isEmpty()) {
-				list.addAll(extractedAddonNames);
-				return list;
-			} else {
-				Iterator iter = extractedAddonNames.iterator();
-				while (iter.hasNext()) {
-					String name = (String) iter.next();
-					if (!list.contains(name)) {
-						list.add(name);
-					}
-				}
-				List<String> addonNamesToRemove = new ArrayList<String>();
-				for (String stg : list) {
-					if (!extractedAddonNames.contains(stg)) {
-						addonNamesToRemove.add(stg);
-					}
-				}
-				list.removeAll(addonNamesToRemove);
-				return list;
-			}
-		}
-		return null;
-	}
+        String profileName = configurationDAO.getConfiguration().getProfileName();
 
-	private void getAddonsByName(TreeNode treendNode, Set<String> set) {
+        Profile profile = profileDAO.getMap().get(profileName);
+        if (profile != null) {
+            List<String> list = profile.getAddonNamesByPriority();
+            TreeDirectory treeDirectory = profile.getTree();
+            Set<String> extractedAddonNames = new TreeSet<String>();
+            getAddonsByName(treeDirectory, extractedAddonNames);
+            if (list.isEmpty()) {
+                list.addAll(extractedAddonNames);
+                return list;
+            }
+            else {
+                Iterator iter = extractedAddonNames.iterator();
+                while (iter.hasNext()) {
+                    String name = (String) iter.next();
+                    if (!list.contains(name)) {
+                        list.add(name);
+                    }
+                }
+                List<String> addonNamesToRemove = new ArrayList<String>();
+                for (String stg : list) {
+                    if (!extractedAddonNames.contains(stg)) {
+                        addonNamesToRemove.add(stg);
+                    }
+                }
+                list.removeAll(addonNamesToRemove);
+                return list;
+            }
+        }
+        return null;
+    }
 
-		if (treendNode.isLeaf()) {
-			TreeLeaf treeLeaf = (TreeLeaf) treendNode;
-			set.add(treeLeaf.getName());
-		} else {
-			TreeDirectory treeDirectory = (TreeDirectory) treendNode;
-			for (TreeNode node : treeDirectory.getList()) {
-				getAddonsByName(node, set);
-			}
-		}
-	}
+    private void getAddonsByName(TreeNode treendNode, Set<String> set) {
 
-	public void upPriority(int index) {
+        if (treendNode.isLeaf()) {
+            TreeLeaf treeLeaf = (TreeLeaf) treendNode;
+            set.add(treeLeaf.getName());
+        }
+        else {
+            TreeDirectory treeDirectory = (TreeDirectory) treendNode;
+            for (TreeNode node : treeDirectory.getList()) {
+                getAddonsByName(node, set);
+            }
+        }
+    }
 
-		String profileName = configurationDAO.getConfiguration()
-				.getProfileName();
+    public void upPriority(int index) {
 
-		Profile profile = (Profile) profileDAO.getMap().get(profileName);
-		if (profile != null) {
-			List<String> list = profile.getAddonNamesByPriority();
-			if (index != 0 && !(index > list.size() - 1)) {
-				String name = list.get(index);
-				String nextName = list.get(index - 1);
-				list.set(index, nextName);
-				list.set(index - 1, name);
-			}
-		}
-	}
+        String profileName = configurationDAO.getConfiguration().getProfileName();
 
-	public void downPriority(int index) {
+        Profile profile = profileDAO.getMap().get(profileName);
+        if (profile != null) {
+            List<String> list = profile.getAddonNamesByPriority();
+            if (index != 0 && !(index > list.size() - 1)) {
+                String name = list.get(index);
+                String nextName = list.get(index - 1);
+                list.set(index, nextName);
+                list.set(index - 1, name);
+            }
+        }
+    }
 
-		String profileName = configurationDAO.getConfiguration()
-				.getProfileName();
+    public void downPriority(int index) {
 
-		Profile profile = (Profile) profileDAO.getMap().get(profileName);
-		if (profile != null) {
-			List<String> list = profile.getAddonNamesByPriority();
-			if (!(index >= list.size() - 1)) {
-				String name = list.get(index);
-				String previousName = list.get(index + 1);
-				list.set(index, previousName);
-				list.set(index + 1, name);
-			}
-		}
-	}
+        String profileName = configurationDAO.getConfiguration().getProfileName();
+
+        Profile profile = profileDAO.getMap().get(profileName);
+        if (profile != null) {
+            List<String> list = profile.getAddonNamesByPriority();
+            if (!(index >= list.size() - 1)) {
+                String name = list.get(index);
+                String previousName = list.get(index + 1);
+                list.set(index, previousName);
+                list.set(index + 1, name);
+            }
+        }
+    }
 }
