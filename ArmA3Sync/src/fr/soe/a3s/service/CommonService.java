@@ -34,6 +34,8 @@ public class CommonService {
 		profileDAO.writeProfiles();
 		preferencesDAO.write();
 	}
+	
+	
 
 	public void exportAutoConfig(List<String> listSelectedProfileNames,
 			List<String> listSelectedFavoriteServerNames,

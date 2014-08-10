@@ -18,8 +18,10 @@ import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
+import fr.soe.a3s.constant.LookAndFeel;
 import fr.soe.a3s.constant.MinimizationType;
 import fr.soe.a3s.dto.configuration.PreferencesDTO;
 import fr.soe.a3s.service.ConfigurationService;
@@ -43,6 +45,8 @@ public class PreferencesPanel extends JDialog implements UIConstants {
 	private JButton buttonOK, buttonCancel;
 	private JCheckBox checkBoxLauncherMinimized;
 	private JComboBox comboBoxLauncherMinimized;
+	private JComboBox comboBoxLookAndFeel;
+	private JCheckBox checkBoxLookAndFeel;
 	private JComboBox comboBoxGameLaunch;
 	private JCheckBox checkBoxGameLaunch;
 	private JPanel launcherPanel;
@@ -53,7 +57,7 @@ public class PreferencesPanel extends JDialog implements UIConstants {
 		this.facade = facade;
 		this.facade.setPreferencesPanel(this);
 		this.setResizable(false);
-		this.setSize(320, 180);
+		this.setSize(330, 215);
 		setIconImage(ICON);
 		this.setLocation(
 				(int) facade.getMainPanel().getLocation().getX()
@@ -64,28 +68,12 @@ public class PreferencesPanel extends JDialog implements UIConstants {
 						- this.getHeight() / 2);
 		this.setLayout(new BorderLayout());
 		{
-			JPanel controlPanel = new JPanel();
-			buttonOK = new JButton("OK");
-			buttonCancel = new JButton("Cancel");
-			buttonOK.setPreferredSize(buttonCancel.getPreferredSize());
-			FlowLayout flowLayout = new FlowLayout(FlowLayout.RIGHT);
-			controlPanel.setLayout(flowLayout);
-			controlPanel.add(buttonOK);
-			controlPanel.add(buttonCancel);
-			this.add(controlPanel, BorderLayout.SOUTH);
-			JPanel sidePanel1 = new JPanel();
-			this.add(sidePanel1, BorderLayout.EAST);
-			JPanel sidePanel2 = new JPanel();
-			this.add(sidePanel2, BorderLayout.WEST);
-		}
-		{
 			JPanel centerPanel = new JPanel();
 			GridLayout grid1 = new GridLayout(1, 1);
 			centerPanel.setLayout(grid1);
 			this.add(centerPanel, BorderLayout.CENTER);
 			{
 				launcherPanel = new JPanel();
-				// centerPanel.add(repositoryPanel);
 				launcherPanel.setLayout(null);
 				launcherPanel.setBorder(BorderFactory.createTitledBorder(
 						BorderFactory.createEtchedBorder(), ""));
@@ -94,6 +82,7 @@ public class PreferencesPanel extends JDialog implements UIConstants {
 			Box vertBox = Box.createVerticalBox();
 			vertBox.add(Box.createVerticalStrut(5));
 			vertBox.add(launcherPanel);
+			launcherPanel.setPreferredSize(new java.awt.Dimension(304, 134));
 			{
 				checkBoxGameLaunch = new JCheckBox();
 				launcherPanel.add(checkBoxGameLaunch);
@@ -121,14 +110,14 @@ public class PreferencesPanel extends JDialog implements UIConstants {
 				comboBoxGameLaunch = new JComboBox();
 				launcherPanel.add(comboBoxGameLaunch);
 				comboBoxGameLaunch.setModel(comboBoxGameLaunchModel);
-				comboBoxGameLaunch.setBounds(136, 24, 139, 23);
+				comboBoxGameLaunch.setBounds(141, 24, 139, 25);
 				comboBoxGameLaunch.setFocusable(false);
 			}
 			{
 				checkBoxLauncherMinimized = new JCheckBox();
 				launcherPanel.add(checkBoxLauncherMinimized);
 				checkBoxLauncherMinimized.setText("When minimized");
-				checkBoxLauncherMinimized.setBounds(18, 61, 119, 20);
+				checkBoxLauncherMinimized.setBounds(18, 61, 119, 25);
 				checkBoxLauncherMinimized.setSelected(true);
 				checkBoxLauncherMinimized.setFocusable(false);
 			}
@@ -148,11 +137,49 @@ public class PreferencesPanel extends JDialog implements UIConstants {
 				launcherPanel.add(comboBoxLauncherMinimized);
 				comboBoxLauncherMinimized
 						.setModel(comboBoxLauncherMinimizedModel);
-				comboBoxLauncherMinimized.setBounds(137, 60, 138, 23);
+				comboBoxLauncherMinimized.setBounds(141, 60, 139, 25);
 				comboBoxLauncherMinimized.setFocusable(false);
+			}
+			{
+				checkBoxLookAndFeel = new JCheckBox();
+				checkBoxLookAndFeel.setSelected(true);
+				checkBoxLookAndFeel.setFocusable(false);
+				launcherPanel.add(checkBoxLookAndFeel);
+				checkBoxLookAndFeel.setText("Look & Feel");
+				checkBoxLookAndFeel.setBounds(18, 99, 118, 25);
+			}
+			{
+				String[] tab = new String[] { "Default",
+						LookAndFeel.LAF_ALUMINIUM.getName(),
+						LookAndFeel.LAF_GRAPHITE.getName(),
+						LookAndFeel.LAF_HIFI.getName(),
+						LookAndFeel.LAF_NOIRE.getName() };
+
+				ComboBoxModel comboBoxLookAndFeelModel = new DefaultComboBoxModel(
+						tab);
+				comboBoxLookAndFeel = new JComboBox();
+				launcherPanel.add(comboBoxLookAndFeel);
+				comboBoxLookAndFeel.setModel(comboBoxLookAndFeelModel);
+				comboBoxLookAndFeel.setBounds(141, 97, 139, 25);
+				comboBoxLookAndFeel.setFocusable(false);
 			}
 			vertBox.add(Box.createVerticalStrut(5));
 			centerPanel.add(vertBox);
+		}
+		{
+			JPanel controlPanel = new JPanel();
+			getContentPane().add(controlPanel, BorderLayout.SOUTH);
+			buttonOK = new JButton("OK");
+			buttonCancel = new JButton("Cancel");
+			buttonOK.setPreferredSize(buttonCancel.getPreferredSize());
+			FlowLayout flowLayout = new FlowLayout(FlowLayout.RIGHT);
+			controlPanel.setLayout(flowLayout);
+			controlPanel.add(buttonOK);
+			controlPanel.add(buttonCancel);
+			JPanel sidePanel1 = new JPanel();
+			this.add(sidePanel1, BorderLayout.EAST);
+			JPanel sidePanel2 = new JPanel();
+			this.add(sidePanel2, BorderLayout.WEST);
 		}
 		buttonOK.addActionListener(new ActionListener() {
 			@Override
@@ -166,6 +193,7 @@ public class PreferencesPanel extends JDialog implements UIConstants {
 				menuExitPerformed();
 			}
 		});
+
 		// Add Listeners
 		addWindowListener(new WindowAdapter() {
 			public void windowClosing(WindowEvent e) {
@@ -176,6 +204,7 @@ public class PreferencesPanel extends JDialog implements UIConstants {
 	}
 
 	public void init() {
+
 		PreferencesDTO preferencesDTO = preferencesServices.getPreferences();
 		String gameLaunch = preferencesDTO.getLaunchPanelGameLaunch()
 				.getDescription();
@@ -187,9 +216,14 @@ public class PreferencesPanel extends JDialog implements UIConstants {
 		if (launcherMinimized != null) {
 			comboBoxLauncherMinimized.setSelectedItem(launcherMinimized);
 		}
+		String lookAndFeel = preferencesDTO.getLookAndFeel().getName();
+		if (lookAndFeel != null) {
+			comboBoxLookAndFeel.setSelectedItem(lookAndFeel);
+		}
 	}
 
 	private void buttonOKPerformed() {
+
 		PreferencesDTO preferencesDTO = new PreferencesDTO();
 		String gameLaunch = (String) comboBoxGameLaunch.getSelectedItem();
 		preferencesDTO.setLaunchPanelGameLaunch(MinimizationType
@@ -198,12 +232,26 @@ public class PreferencesPanel extends JDialog implements UIConstants {
 				.getSelectedItem();
 		preferencesDTO.setLaunchPanelMinimized(MinimizationType
 				.getEnum(launcherMinimized));
-		preferencesServices.setPreferences(preferencesDTO);
+		String lookAndFeel = (String) comboBoxLookAndFeel.getSelectedItem();
+		LookAndFeel newLookAndFeel = LookAndFeel.getEnum(lookAndFeel);
+		preferencesDTO.setLookAndFeel(newLookAndFeel);
+
 		this.dispose();
+
+		/* Warning user to restart app if L&F has changed */
+		LookAndFeel currentLookAndFeel = preferencesServices.getPreferences()
+				.getLookAndFeel();
+
+		if (!newLookAndFeel.equals(currentLookAndFeel)) {
+			JOptionPane.showMessageDialog(facade.getMainPanel(),
+					"ArmA3Sync must be restart to apply the new look & feel.",
+					"Information", JOptionPane.INFORMATION_MESSAGE);
+		}
+
+		preferencesServices.setPreferences(preferencesDTO);
 	}
 
 	private void menuExitPerformed() {
 		this.dispose();
 	}
-
 }

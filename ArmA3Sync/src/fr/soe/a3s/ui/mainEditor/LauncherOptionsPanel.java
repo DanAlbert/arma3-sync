@@ -186,6 +186,7 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener,
 		{
 			checkBoxWindowMode = new JCheckBox();
 			checkBoxWindowMode.setText("Window Mode");
+			// checkBoxWindowMode.setSize(new java.awt.Dimension(90, 23));
 			checkBoxWindowMode.setFocusable(false);
 			Box hBox = Box.createHorizontalBox();
 			hBox.add(checkBoxWindowMode);
@@ -213,8 +214,8 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener,
 		{
 			checkBoxAutoRestart = new JCheckBox();
 			checkBoxAutoRestart.setText("Auto-restart");
-			checkBoxAutoRestart
-					.setPreferredSize(new java.awt.Dimension(90, 23));
+			// checkBoxAutoRestart
+			// .setPreferredSize(new java.awt.Dimension(90, 23));
 			checkBoxAutoRestart.setFocusable(false);
 			buttonAutoRestartPreferences = new JButton();
 			ImageIcon autoRestartOptionsIcon = new ImageIcon(PREFERENCES);
@@ -235,8 +236,9 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener,
 			checkBoxMaxMemory = new JCheckBox();
 			checkBoxMaxMemory.setText("Max Memory:");
 			checkBoxMaxMemory.setFocusable(false);
-			checkBoxMaxMemory.setPreferredSize(new java.awt.Dimension(90, 23));
+			checkBoxMaxMemory.setPreferredSize(new java.awt.Dimension(100, 23));
 			comboBoxMaxMemory = new JComboBox();
+			comboBoxMaxMemory.setPreferredSize(new java.awt.Dimension(60, 23));
 			comboBoxMaxMemory.setFocusable(false);
 			ComboBoxModel maxMemoryModel = new DefaultComboBoxModel(
 					new String[] {
@@ -254,8 +256,9 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener,
 			checkBoxCpuCount = new JCheckBox();
 			checkBoxCpuCount.setText("CPU Count:");
 			checkBoxCpuCount.setFocusable(false);
-			checkBoxCpuCount.setPreferredSize(new java.awt.Dimension(90, 23));
+			checkBoxCpuCount.setPreferredSize(new java.awt.Dimension(100, 23));
 			comboBoxCpuCount = new JComboBox();
+			comboBoxCpuCount.setPreferredSize(new java.awt.Dimension(60, 23));
 			comboBoxCpuCount.setFocusable(false);
 			Runtime runtime = Runtime.getRuntime();
 			int nbProcessors = runtime.availableProcessors();
@@ -275,8 +278,9 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener,
 			checkBoxExThreads = new JCheckBox();
 			checkBoxExThreads.setText("exThreads:");
 			checkBoxExThreads.setFocusable(false);
-			checkBoxExThreads.setPreferredSize(new java.awt.Dimension(90, 23));
+			checkBoxExThreads.setPreferredSize(new java.awt.Dimension(100, 23));
 			comboBoxExThreads = new JComboBox();
+			comboBoxExThreads.setPreferredSize(new java.awt.Dimension(60, 23));
 			comboBoxExThreads.setFocusable(false);
 			ComboBoxModel exThreadsModel = new DefaultComboBoxModel(
 					new String[] { "", "0", "1", "3", "5", "7" });
@@ -413,7 +417,7 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener,
 		checkBoxWindowMode.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				checkBoxWindowModePerformed();
+				// checkBoxWindowModePerformed();
 			}
 		});
 		checkBoxCheckSignatures.addActionListener(new ActionListener() {

@@ -2,17 +2,28 @@ package fr.soe.a3s.main;
 
 import java.awt.Font;
 import java.awt.GraphicsEnvironment;
+import java.awt.Window;
 import java.io.File;
 import java.io.RandomAccessFile;
 import java.nio.channels.FileLock;
+import java.util.Properties;
 
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
+import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.plaf.FontUIResource;
 
+import com.jtattoo.plaf.acryl.AcrylLookAndFeel;
+import com.jtattoo.plaf.aluminium.AluminiumLookAndFeel;
+import com.jtattoo.plaf.graphite.GraphiteLookAndFeel;
+import com.jtattoo.plaf.hifi.HiFiLookAndFeel;
+import com.jtattoo.plaf.noire.NoireLookAndFeel;
+
 import fr.soe.a3s.console.Console;
-import fr.soe.a3s.dao.DataAccessConstants;
+import fr.soe.a3s.constant.LookAndFeel;
+import fr.soe.a3s.service.PreferencesService;
 import fr.soe.a3s.ui.Facade;
 import fr.soe.a3s.ui.mainEditor.MainPanel;
 
@@ -98,7 +109,82 @@ public class ArmA3Sync {
 		String version = System.getProperty("java.version");
 		System.out.println("JRE installed version = " + version);
 
-		/* Set ui properties */
+		/* Look an Feel */
+		applyLookAndFeel();
+
+		/* Single instance */
+		String message = lockInstance();
+		if (!message.isEmpty()) {
+			JFrame frame = new JFrame();
+			System.out.println(message);
+			JOptionPane.showMessageDialog(frame, message, "ArmA3Sync",
+					JOptionPane.INFORMATION_MESSAGE);
+			System.exit(0);
+		}
+
+		/* Start */
+		final MainPanel mainPanel = new MainPanel(facade);
+		mainPanel.drawGUI();
+		mainPanel.init();
+		mainPanel.setVisible(true);
+
+		// Check ArmA 3 executable location
+		mainPanel.checkWellcomeDialog();
+
+		// Installed Version
+		System.out.println("ArmA3Sync Installed version = "
+				+ Version.getVersion());
+
+		// Check for updates
+		mainPanel.checkForUpdate(false);
+	}
+
+	private static String lockInstance() {
+
+		final String path = "lock";
+		final File file = new File(path);
+		String message = "";
+
+		boolean response = false;
+		try {
+			final RandomAccessFile randomAccessFile = new RandomAccessFile(
+					file, "rw");
+			final FileLock fileLock = randomAccessFile.getChannel().tryLock();
+			if (fileLock != null) {
+				Runtime.getRuntime().addShutdownHook(new Thread() {
+					@Override
+					public void run() {
+						try {
+							fileLock.release();
+							randomAccessFile.close();
+							file.delete();
+						} catch (Exception e) {
+							System.out.println("Unable to remove lock file: "
+									+ path);
+						}
+					}
+				});
+				response = true;
+			}
+		} catch (Exception e) {
+			System.out.println("Unable to create and/or lock file: " + path);
+			if (!file.canWrite()) {
+				message = file.getAbsolutePath()
+						+ " Cannot Write."
+						+ "\n"
+						+ "ArmA3Sync requires full write permissions on its installation directory.\nTry to run with administator priviledges.";
+			}
+			response = false;
+		}
+
+		if (!response && message.isEmpty()) {
+			message = "ArmA3Sync is already running.";
+		}
+		return message;
+	}
+
+	private static void applyLookAndFeel() {
+
 		try {
 			String osName = System.getProperty("os.name");
 			if (osName.contains("Windows")) {
@@ -172,77 +258,64 @@ public class ArmA3Sync {
 				Font listAreaA3S = new Font(listArea.getName(), Font.PLAIN, 11);
 				UIManager.put("List.font", new FontUIResource(listAreaA3S));
 			}
+
+			PreferencesService preferencesService = new PreferencesService();
+			preferencesService.read();
+			LookAndFeel lookAndFeel = preferencesService.getPreferences()
+					.getLookAndFeel();
+
+			if (!lookAndFeel.equals(LookAndFeel.LAF_DEFAULT)) {
+				Properties props = new Properties();
+				props.put("logoString", "");
+				props.put("menuOpaque", "on");
+				props.put("textAntiAliasing", "on");
+				props.put("windowDecoration", "on");
+
+				{
+					Font font = UIManager.getFont("Label.font");
+					String fontName = font.getFontName();
+					int sytle = font.getStyle();
+					int size = font.getSize();
+					props.put("userTextFont",
+							fontName + " " + Integer.toString(sytle) + " "
+									+ Integer.toString(size));
+					props.put("subTextFont",
+							fontName + " " + Integer.toString(sytle) + " "
+									+ Integer.toString(size));
+
+					font = UIManager.getFont("Button.font");
+					fontName = font.getFontName();
+					sytle = font.getStyle();
+					size = font.getSize();
+					props.put("controlTextFont",
+							fontName + " " + Integer.toString(sytle) + " "
+									+ Integer.toString(size));
+
+					font = UIManager.getFont("Menu.font");
+					fontName = font.getFontName();
+					sytle = font.getStyle();
+					size = font.getSize();
+					props.put("menuTextFont",
+							fontName + " " + Integer.toString(sytle) + " "
+									+ Integer.toString(size));
+				}
+
+				if (lookAndFeel.equals(LookAndFeel.LAF_ALUMINIUM)) {
+					AluminiumLookAndFeel.setCurrentTheme(props);
+					UIManager.setLookAndFeel(new AluminiumLookAndFeel());
+				} else if (lookAndFeel.equals(LookAndFeel.LAF_GRAPHITE)) {
+					GraphiteLookAndFeel.setCurrentTheme(props);
+					UIManager.setLookAndFeel(new GraphiteLookAndFeel());
+				} else if (lookAndFeel.equals(LookAndFeel.LAF_HIFI)) {
+					HiFiLookAndFeel.setCurrentTheme(props);
+					UIManager.setLookAndFeel(new HiFiLookAndFeel());
+				} else if (lookAndFeel.equals(LookAndFeel.LAF_NOIRE)) {
+					NoireLookAndFeel.setCurrentTheme(props);
+					UIManager.setLookAndFeel(new NoireLookAndFeel());
+				}
+			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-
-		/* Single instance */
-		String message = lockInstance();
-		if (!message.isEmpty()) {
-			JFrame frame = new JFrame();
-			System.out.println(message);
-			JOptionPane.showMessageDialog(frame, message, "ArmA3Sync",
-					JOptionPane.INFORMATION_MESSAGE);
-			System.exit(0);
-		}
-
-		/* Start */
-		MainPanel mainPanel = new MainPanel(facade);
-		mainPanel.drawGUI();
-		mainPanel.init();
-		mainPanel.setVisible(true);
-
-		// Check ArmA 3 executable location
-		mainPanel.checkWellcomeDialog();
-
-		// Installed Version
-		System.out.println("ArmA3Sync Installed version = " + Version.getVersion());
-
-		// Check for updates
-		mainPanel.checkForUpdate(false);
-	}
-
-	private static String lockInstance() {
-
-		final String path = "lock";
-		final File file = new File(path);
-		String message = "";
-
-		boolean response = false;
-		try {
-			final RandomAccessFile randomAccessFile = new RandomAccessFile(
-					file, "rw");
-			final FileLock fileLock = randomAccessFile.getChannel().tryLock();
-			if (fileLock != null) {
-				Runtime.getRuntime().addShutdownHook(new Thread() {
-					@Override
-					public void run() {
-						try {
-							fileLock.release();
-							randomAccessFile.close();
-							file.delete();
-						} catch (Exception e) {
-							System.out.println("Unable to remove lock file: "
-									+ path);
-						}
-					}
-				});
-				response = true;
-			}
-		} catch (Exception e) {
-			System.out.println("Unable to create and/or lock file: " + path);
-			if (!file.canWrite()) {
-				message = file.getAbsolutePath()
-						+ " Cannot Write."
-						+ "\n"
-						+ "ArmA3Sync requires full write permissions on its installation directory.\nTry to run with administator priviledges.";
-			}
-			response = false;
-		}
-
-		if (!response && message.isEmpty()) {
-			message = "ArmA3Sync is already running.";
-		}
-		return message;
 	}
 }

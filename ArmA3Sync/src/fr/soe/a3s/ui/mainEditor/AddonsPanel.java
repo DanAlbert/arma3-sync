@@ -140,6 +140,7 @@ public class AddonsPanel extends JPanel implements UIConstants {
 
 		JPanel mainPanel = new JPanel();
 		mainPanel.setLayout(new GridLayout(1, 2));
+		mainPanel.setFocusable(false);
 
 		addonTreeModel1 = new AddonTreeModel(racine1);
 		arbre1 = new JTree(addonTreeModel1);

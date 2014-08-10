@@ -50,7 +50,7 @@ public class WellcomePanel extends JDialog implements UIConstants {
 		super(facade.getMainPanel(),"Configuration",true);
 		this.facade = facade;
 		setResizable(false);
-		this.setMinimumSize(new Dimension(345,120));
+		this.setMinimumSize(new Dimension(345,125));
 		setIconImage(ICON);
 		this.setLocation(
 				(int) facade.getMainPanel().getLocation().getX()

@@ -3,6 +3,7 @@ package fr.soe.a3s.ui.repositoryEditor.tree;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Dimension;
 
 import javax.swing.JCheckBox;
 import javax.swing.JPanel;
@@ -27,6 +28,7 @@ public class CheckTreeCellRendererRepository extends JPanel implements
 		setLayout(new BorderLayout());
 		setOpaque(false);
 		checkBox.setOpaque(false);
+		checkBox.setPreferredSize(new Dimension(20, 20));
 	}
 
 	@Override

@@ -3,6 +3,7 @@ package fr.soe.a3s.ui.mainEditor.tree;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Dimension;
 
 import javax.swing.JCheckBox;
 import javax.swing.JPanel;
@@ -24,6 +25,7 @@ public class CheckTreeCellRenderer  extends JPanel implements TreeCellRenderer{
         setLayout(new BorderLayout()); 
         setOpaque(false); 
         checkBox.setOpaque(false); 
+		checkBox.setPreferredSize(new Dimension(20, 20));
     } 
  
     public Component getTreeCellRendererComponent(JTree tree, Object value, boolean selected, boolean expanded, boolean leaf, int row, boolean hasFocus){ 

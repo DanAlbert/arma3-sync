@@ -129,13 +129,13 @@ public interface UIConstants {
 			.getDefaultToolkit()
 			.getImage(
 					java.lang.ClassLoader
-							.getSystemResource("resources/pictures/system/closegray11x11.png"));
+							.getSystemResource("resources/pictures/system/closegray10x10.png"));
 
 	Image CLOSE_RED = Toolkit
 			.getDefaultToolkit()
 			.getImage(
 					java.lang.ClassLoader
-							.getSystemResource("resources/pictures/system/closered11x11.png"));
+							.getSystemResource("resources/pictures/system/closered10x10.png"));
 
 	Image OK_GREEN = Toolkit
 			.getDefaultToolkit()

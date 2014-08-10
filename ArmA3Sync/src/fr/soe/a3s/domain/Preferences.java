@@ -2,10 +2,11 @@ package fr.soe.a3s.domain;
 
 import java.io.Serializable;
 
+import fr.soe.a3s.constant.LookAndFeel;
 import fr.soe.a3s.constant.MinimizationType;
 
-public class Preferences implements Serializable{
-	
+public class Preferences implements Serializable {
+
 	/**
 	 * 
 	 */
@@ -13,7 +14,8 @@ public class Preferences implements Serializable{
 	private MinimizationType launchPanelGameLaunch = MinimizationType.TASK_BAR;
 	private MinimizationType launchPanelMinimized = MinimizationType.TASK_BAR;
 	private MinimizationType syncPanelMinimized = MinimizationType.TRAY;
-	
+	private LookAndFeel lookAndFeel = LookAndFeel.LAF_DEFAULT;
+
 	public MinimizationType getLaunchPanelGameLaunch() {
 		return launchPanelGameLaunch;
 	}
@@ -30,12 +32,14 @@ public class Preferences implements Serializable{
 		this.launchPanelMinimized = launchPanelMinimized;
 	}
 
-	public MinimizationType getSyncPanelMinimized() {
-		return syncPanelMinimized;
+	public LookAndFeel getLookAndFeel() {
+		if (lookAndFeel == null) {
+			lookAndFeel = LookAndFeel.LAF_DEFAULT;
+		}
+		return lookAndFeel;
 	}
 
-	public void setSyncPanelMinimized(MinimizationType syncPanelMinimized) {
-		this.syncPanelMinimized = syncPanelMinimized;
+	public void setLookAndFeel(LookAndFeel lookAndFeel) {
+		this.lookAndFeel = lookAndFeel;
 	}
-	
 }
