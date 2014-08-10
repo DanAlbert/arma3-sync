@@ -5,6 +5,6 @@ Main-Class: fr.soe.a3s.main.ArmA3Sync
 Class-Path: . resources/lib/org-netbeans-swing-outline-RELEASE73.
  jar resources/lib/commons-net-3.4.jar resources/lib/commons
  -io-2.0.1.jar resources/lib/dom4j-1.6.1.jar resources/lib/j
- axen-1.1-beta-6.jar
+ axen-1.1-beta-6.jar resources/lib/JTattoo-1.6.10.jar
 
 
