@@ -68,26 +68,17 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener,
 	private JTextField textFieldArmAExecutableLocation,
 			textFieldSteamExecutableLocation;
 
-	private JButton buttonSelectArmAExe, buttonSelectSteamExe;
+	private JButton buttonSelectArmAExe, buttonSelectSteamExe,
+			buttonAutoRestartPreferences;
 
-	private JComboBox comboBoxProfiles, comboBoxMaxMemory, comboBoxCpuCount;
+	private JComboBox comboBoxProfiles, comboBoxMaxMemory, comboBoxCpuCount,
+			comboBoxExThreads;
 
 	private JCheckBox checkBoxProfiles, checkBoxNoPause, checkBoxWindowMode,
 			checkBoxShowScriptErrors, checkBoxRunBeta, checkBoxMaxMemory,
 			checkBoxCpuCount, checkBoxNoSplashScreen, checkBoxDefaultWorld,
-			checkBoxNoLogs, checkBoxCheckSignatures;
-
-	private JCheckBox checkBoxExThreads;
-
-	private JComboBox comboBoxExThreads;
-
-	private JCheckBox checkBoxEnableHT;
-
-	private JCheckBox checkBoxNoFilePatching;
-
-	private JCheckBox checkBoxAutoRestart;
-
-	private JButton buttonAutoRestartPreferences;
+			checkBoxNoLogs, checkBoxCheckSignatures, checkBoxExThreads,
+			checkBoxEnableHT, checkBoxNoFilePatching, checkBoxAutoRestart;
 
 	/* Services */
 
