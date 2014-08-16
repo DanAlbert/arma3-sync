@@ -186,7 +186,6 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener,
 		{
 			checkBoxWindowMode = new JCheckBox();
 			checkBoxWindowMode.setText("Window Mode");
-			// checkBoxWindowMode.setSize(new java.awt.Dimension(90, 23));
 			checkBoxWindowMode.setFocusable(false);
 			Box hBox = Box.createHorizontalBox();
 			hBox.add(checkBoxWindowMode);
@@ -417,7 +416,7 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener,
 		checkBoxWindowMode.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				// checkBoxWindowModePerformed();
+				checkBoxWindowModePerformed();
 			}
 		});
 		checkBoxCheckSignatures.addActionListener(new ActionListener() {
