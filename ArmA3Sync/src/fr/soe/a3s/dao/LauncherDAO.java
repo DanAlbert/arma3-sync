@@ -29,7 +29,7 @@ public class LauncherDAO implements DataAccessConstants {
 			BufferedReader input = new BufferedReader(new InputStreamReader(
 					p.getInputStream()));
 			while ((line = input.readLine()) != null && !response) {
-				if (line.contains(executableName)) {
+				if (line.toLowerCase().contains(executableName.toLowerCase())) {
 					response = true;
 				}
 			}
@@ -42,31 +42,31 @@ public class LauncherDAO implements DataAccessConstants {
 	}
 
 	@Deprecated
-	public void runArmA3WithSteam(String steamLaunchPath, List<String> params)
+	public void runArmA3WithSteam(String steamLaunchPath, String runParameters)
 			throws IOException, InterruptedException {
 
-		// StringTokenizer stk = new StringTokenizer(runParameters.trim(), "-");
-		// int nbParameters = stk.countTokens();
-		// String[] cmd = new String[2 + nbParameters];
-		// cmd[0] = steamLaunchPath;
-		// cmd[1] = "-applaunch 107410";
-		// for (int i = 0; i < nbParameters; i++) {
-		// cmd[2 + i] = "-" + stk.nextToken().trim();
-		// }
+		StringTokenizer stk = new StringTokenizer(runParameters.trim(), "-");
+		int nbParameters = stk.countTokens();
+		String[] cmd = new String[2 + nbParameters];
+		cmd[0] = steamLaunchPath;
+		cmd[1] = "-applaunch 107410";
+		for (int i = 0; i < nbParameters; i++) {
+			cmd[2 + i] = "-" + stk.nextToken().trim();
+		}
 
-		// String command = cmd[0] + " " + cmd[1];
-		//
-		// for (int i = 2; i < cmd.length; i++) {
-		// command = command + " " + cmd[i];
-		// }
-		// Process proc = Runtime.getRuntime().exec(command);
+		 String command = cmd[0] + " " + cmd[1];
+		
+		 for (int i = 2; i < cmd.length; i++) {
+		 command = command + " " + cmd[i];
+		 }
+		 Process proc = Runtime.getRuntime().exec(command);
 
-		// Process p = Runtime.getRuntime().exec(cmd);
-		// AfficheurFlux fluxSortie = new AfficheurFlux(p.getInputStream());
-		// AfficheurFlux fluxErreur = new AfficheurFlux(p.getErrorStream());
-		//
-		// new Thread(fluxSortie).start();
-		// new Thread(fluxErreur).start();
+		 Process p = Runtime.getRuntime().exec(cmd);
+		 AfficheurFlux fluxSortie = new AfficheurFlux(p.getInputStream());
+		 AfficheurFlux fluxErreur = new AfficheurFlux(p.getErrorStream());
+		
+		 new Thread(fluxSortie).start();
+		 new Thread(fluxErreur).start();
 	}
 
 	@Deprecated
@@ -188,6 +188,10 @@ public class LauncherDAO implements DataAccessConstants {
 		return c;
 	}
 
+	public void runSteam() {
+
+	}
+
 	@Deprecated
 	public void killSteam(String executableName) {
 
@@ -199,5 +203,19 @@ public class LauncherDAO implements DataAccessConstants {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+	}
+
+	public void runSteamAndWait(String steamExePath) throws Exception {
+
+		String[] cmd = new String[1];
+		cmd[0] = steamExePath;
+		Process proc = Runtime.getRuntime().exec(cmd);
+
+		Process p = Runtime.getRuntime().exec(cmd);
+		AfficheurFlux fluxSortie = new AfficheurFlux(p.getInputStream());
+		AfficheurFlux fluxErreur = new AfficheurFlux(p.getErrorStream());
+		new Thread(fluxSortie).start();
+		new Thread(fluxErreur).start();
+		p.waitFor();
 	}
 }

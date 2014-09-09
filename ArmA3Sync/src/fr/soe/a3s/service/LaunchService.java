@@ -17,6 +17,7 @@ import java.util.concurrent.Executors;
 
 import javax.imageio.stream.FileImageInputStream;
 
+import fr.soe.a3s.constant.GameExecutables;
 import fr.soe.a3s.constant.GameVersions;
 import fr.soe.a3s.dao.AddonDAO;
 import fr.soe.a3s.dao.ConfigurationDAO;
@@ -113,15 +114,17 @@ public class LaunchService {
 	}
 
 	public boolean isArmA3Running() {
-		if (!launcherDAO.isApplicationRunning("arma3.exe")) {
+		if (!launcherDAO.isApplicationRunning(GameExecutables.GAME
+				.getDescription())) {
 			return false;
 		} else {
 			return true;
 		}
 	}
 
-	public boolean isSteamRunning() {
-		if (!launcherDAO.isApplicationRunning("steam.exe")) {
+	private boolean isSteamRunning() {
+		if (!launcherDAO.isApplicationRunning(GameExecutables.STEAM
+				.getDescription())) {
 			return false;
 		} else {
 			return true;
@@ -154,14 +157,14 @@ public class LaunchService {
 		}
 
 		/* Run Parameters */
-		List<String> params = determineRunParameters();
-
-		try {
-			launcherDAO.runArmA3WithSteam(steamLaunchPath, params);
-		} catch (Exception e) {
-			e.printStackTrace();
-			throw new LaunchException(e.getMessage());
-		}
+		// List<String> params = determineRunParameters();
+		//
+		// try {
+		// launcherDAO.runArmA3WithSteam(steamLaunchPath, params);
+		// } catch (Exception e) {
+		// e.printStackTrace();
+		// throw new LaunchException(e.getMessage());
+		// }
 	}
 
 	public void launchArmA3() throws LaunchException {
@@ -180,9 +183,33 @@ public class LaunchService {
 		/* Clear My Documents\ArmA 3\Arma3.cfg */
 		// eraseArma3CfgModLauncherList();
 
-		launcherDAO = new LauncherDAO();
-		List<Callable<Integer>> runnables = new ArrayList<Callable<Integer>>();
+		/* Launch Steam for arma3.exe */
+		// if (arma3Path.toLowerCase().contains(
+		// GameExecutables.GAME.getDescription())
+		// && !isSteamRunning()) {
+		// try {
+		// String steamPath = configurationDAO.determineSteamPath();
+		// String steamExePath = steamPath + "/"
+		// + GameExecutables.STEAM.getDescription();
+		// launcherDAO = new LauncherDAO();
+		// List<Callable<Integer>> runnables = new
+		// ArrayList<Callable<Integer>>();
+		// String executableName = new File(steamExePath).getName();
+		// Callable<Integer> c = launcherDAO.call(executableName,
+		// steamExePath, params, launcherOptions);
+		// runnables.add(c);
+		// ExecutorService executor = Executors.newSingleThreadExecutor();
+		// executor.invokeAll(runnables);
+		// executor.shutdown();
+		// } catch (Exception e) {
+		// e.printStackTrace();
+		// }
+		// }
+
+		/* Launch arma3.exe/arma3server.exe/other */
 		try {
+			launcherDAO = new LauncherDAO();
+			List<Callable<Integer>> runnables = new ArrayList<Callable<Integer>>();
 			String executableName = new File(arma3Path).getName();
 			Callable<Integer> c = launcherDAO.call(executableName, arma3Path,
 					params, launcherOptions);

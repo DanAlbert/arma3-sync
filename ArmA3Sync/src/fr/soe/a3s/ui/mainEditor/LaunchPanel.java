@@ -288,7 +288,7 @@ public class LaunchPanel extends JPanel implements UIConstants {
 		// Run External Applications
 		try {
 			launchService.launchExternalApplications();
-		} catch (Exception e) {
+		} catch (LaunchException e) {
 			// Failed to launch!
 			JOptionPane.showMessageDialog(facade.getMainPanel(),
 					e.getMessage(), "ArmA 3 Start Game",
