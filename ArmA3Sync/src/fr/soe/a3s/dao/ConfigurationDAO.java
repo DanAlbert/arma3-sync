@@ -174,7 +174,7 @@ public class ConfigurationDAO implements DataAccessConstants {
 		}
 		return ts3Path;
 	}
-
+	
 	public String determineTS3version(String ts3InstallationDirectoryPath) {
 
 		assert (ts3InstallationDirectoryPath != null);

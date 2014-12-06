@@ -6,7 +6,7 @@ import java.util.Map;
 
 import javax.swing.JOptionPane;
 
-import fr.soe.a3s.controller.ObserverFilesNumber;
+import fr.soe.a3s.controller.ObserverFilesNumber3;
 import fr.soe.a3s.dto.EventDTO;
 import fr.soe.a3s.dto.sync.SyncTreeDirectoryDTO;
 import fr.soe.a3s.dto.sync.SyncTreeLeafDTO;
@@ -15,7 +15,6 @@ import fr.soe.a3s.exception.RepositoryException;
 import fr.soe.a3s.service.AbstractConnexionService;
 import fr.soe.a3s.service.AddonService;
 import fr.soe.a3s.service.ConnexionServiceFactory;
-import fr.soe.a3s.service.ProfileService;
 import fr.soe.a3s.service.RepositoryService;
 import fr.soe.a3s.ui.Facade;
 import fr.soe.a3s.ui.repositoryEditor.DownloadPanel;
@@ -29,10 +28,10 @@ public class AddonsChecker extends Thread {
 	private boolean found;
 	private final boolean update;
 	private final DownloadPanel downloadPanel;
+
 	/* Services */
 	private final RepositoryService repositoryService = new RepositoryService();
 	private final AddonService addonService = new AddonService();
-	private final ProfileService profileService = new ProfileService();
 
 	public AddonsChecker(Facade facade, String repositoryName,
 			String eventName, boolean update, DownloadPanel downloadPanel) {
@@ -45,7 +44,7 @@ public class AddonsChecker extends Thread {
 
 	@Override
 	public void run() {
-		
+
 		addonService.resetAvailableAddonTree();
 		facade.getAddonsPanel().updateAvailableAddons();
 		facade.getAddonsPanel().updateAddonGroups();
@@ -58,8 +57,8 @@ public class AddonsChecker extends Thread {
 		downloadPanel.getButtonDownloadStart().setEnabled(false);
 		downloadPanel.getProgressBarCheckForAddons().setMinimum(0);
 		downloadPanel.getProgressBarCheckForAddons().setMaximum(100);
-		repositoryService.getRepositoryBuilderDAO().addObserverFilesNumber(
-				new ObserverFilesNumber() {
+		repositoryService.getRepositoryBuilderDAO().addObserverFilesNumber3(
+				new ObserverFilesNumber3() {
 					@Override
 					public synchronized void update(int value) {
 						downloadPanel.getProgressBarCheckForAddons().setValue(
@@ -94,12 +93,12 @@ public class AddonsChecker extends Thread {
 		} catch (Exception e) {
 			String message = "";
 			if (e.getMessage().isEmpty()) {
-				message = "An unexpected error has occured. \n Try to close and run ArmA3Sync.bat file.";
+				message = "An unexpected error has occured.\nTry to close and run ArmA3Sync.bat file.";
 			} else {
 				message = e.getMessage();
 			}
 			JOptionPane.showMessageDialog(facade.getMainPanel(), message,
-					"Error", JOptionPane.ERROR_MESSAGE);
+					"Check for Addons", JOptionPane.ERROR_MESSAGE);
 			downloadPanel.getLabelCheckForAddonsStatus().setText("");
 		} finally {
 			downloadPanel.getButtonCheckForAddonsStart().setEnabled(true);

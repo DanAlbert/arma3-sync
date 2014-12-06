@@ -32,6 +32,7 @@ public class Repository implements Serializable {
 	// Path of file excluded from build tolowercase!
 	private Set<String> excludedFilesFromBuild = new HashSet<String>();
 	private Set<String> excludedFoldersFromSync = new HashSet<String>();
+	private int numberOfConnections;
 	/* Local data: Hide extra local folder content */
 	private Set<String> hidedFolderPaths = new HashSet<String>();
 	/* Local data: SHA1 computation <Path,FileAttrbutes> */
@@ -49,7 +50,7 @@ public class Repository implements Serializable {
 	private transient AutoConfig localAutoConfig;
 	/* Resuming download */
 	private transient boolean downloading;
-	private transient int lastIndexFileTransfered;
+	private transient int lastIndexFileDownloaded;
 	private transient long incrementedFilesSize;
 	private transient boolean resume;
 	/* Repository upload */
@@ -157,12 +158,12 @@ public class Repository implements Serializable {
 		this.downloading = downloading;
 	}
 
-	public int getLastIndexFileTransfered() {
-		return lastIndexFileTransfered;
+	public int getLastIndexFileDownloaded() {
+		return lastIndexFileDownloaded;
 	}
 
-	public void setLastIndexFileTransfered(int lastIndexFileTransfered) {
-		this.lastIndexFileTransfered = lastIndexFileTransfered;
+	public void setLastIndexFileDonwloaded(int lastIndexFileDownloaded) {
+		this.lastIndexFileDownloaded = lastIndexFileDownloaded;
 	}
 
 	public long getIncrementedFilesSize() {
@@ -301,5 +302,13 @@ public class Repository implements Serializable {
 
 	public void setExactMatch(boolean exactMatch) {
 		this.exactMatch = exactMatch;
+	}
+
+	public int getNumberOfConnections() {
+		return this.numberOfConnections;
+	}
+
+	public void setNumberOfConnections(int numberOfConnections) {
+		this.numberOfConnections = numberOfConnections;
 	}
 }

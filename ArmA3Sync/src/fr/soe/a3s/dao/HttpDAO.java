@@ -7,17 +7,20 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.net.ConnectException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
+import fr.soe.a3s.constant.DownloadStatus;
 import fr.soe.a3s.constant.Protocole;
 import fr.soe.a3s.domain.repository.AutoConfig;
 import fr.soe.a3s.domain.repository.Changelogs;
@@ -28,7 +31,6 @@ import fr.soe.a3s.domain.repository.SyncTreeDirectory;
 import fr.soe.a3s.dto.sync.SyncTreeLeafDTO;
 import fr.soe.a3s.dto.sync.SyncTreeNodeDTO;
 import fr.soe.a3s.exception.HttpException;
-import fr.soe.a3s.exception.JazsyncException;
 import fr.soe.a3s.exception.WritingException;
 import fr.soe.a3s.jazsync.Base64Coder;
 import fr.soe.a3s.jazsync.Jazsync;
@@ -43,16 +45,20 @@ public class HttpDAO extends AbstractConnexionDAO {
 	private HttpURLConnection httpURLConnection;
 	private static final int BUFFER_SIZE = 4096;
 	private File downloadingFile;
+	private boolean acquiredSmaphore;
+	private static final int CONNECTION_TIMEOUT = 5000;
+	private static final int READ_TIMEOUT = 15000;
 
 	private void connect(String url) throws IOException {
 
 		URL urlObject = new URL(url);
 		httpURLConnection = (HttpURLConnection) urlObject.openConnection();
-		httpURLConnection.setConnectTimeout(5000);
+		httpURLConnection.setConnectTimeout(CONNECTION_TIMEOUT);
+		httpURLConnection.setReadTimeout(READ_TIMEOUT);
 	}
 
 	private void connect(Repository repository,
-			String relativePathFromRepository, int timeout) throws IOException {
+			String relativePathFromRepository) throws IOException {
 
 		String url = repository.getProtocole().getUrl();
 		String hostname = url;
@@ -71,7 +77,8 @@ public class HttpDAO extends AbstractConnexionDAO {
 		URL urlObject = new URL("http", hostname, Integer.parseInt(port),
 				remotePath);
 		httpURLConnection = (HttpURLConnection) urlObject.openConnection();
-		httpURLConnection.setConnectTimeout(timeout);
+		httpURLConnection.setConnectTimeout(CONNECTION_TIMEOUT);
+		httpURLConnection.setReadTimeout(READ_TIMEOUT);
 
 		if (!(login.equalsIgnoreCase("anonymous"))) {
 			String encoding = Base64Coder.encodeLines((login + ":" + password)
@@ -188,11 +195,11 @@ public class HttpDAO extends AbstractConnexionDAO {
 	}
 
 	public ServerInfo downloadSeverInfo(Repository repository)
-			throws HttpException, WritingException {
+			throws HttpException, WritingException, ConnectException {
 
 		ServerInfo serverInfo = null;
 		try {
-			connect(repository, SERVERINFO_FILE_PATH, 5000);
+			connect(repository, SERVERINFO_FILE_PATH);
 			int responseCode = httpURLConnection.getResponseCode();
 			if (responseCode != HttpURLConnection.HTTP_OK) {
 				String message = "Server return error " + responseCode
@@ -206,7 +213,7 @@ public class HttpDAO extends AbstractConnexionDAO {
 					+ repository.getName() + " on url " + "http://"
 					+ repository.getProtocole().getUrl();
 			System.out.println(message);
-			throw new HttpException(message);
+			throw new ConnectException(message);
 		}
 
 		try {
@@ -221,8 +228,8 @@ public class HttpDAO extends AbstractConnexionDAO {
 						new GZIPInputStream(new FileInputStream(file)));
 				serverInfo = (ServerInfo) fRo.readObject();
 				fRo.close();
-				FileAccessMethods.deleteFile(file);
 			}
+			FileAccessMethods.deleteDirectory(directory);
 		} catch (Exception e) {
 			e.printStackTrace();
 			serverInfo = null;
@@ -235,11 +242,11 @@ public class HttpDAO extends AbstractConnexionDAO {
 	}
 
 	public Changelogs downloadChangelogs(Repository repository)
-			throws HttpException, WritingException {
+			throws HttpException, WritingException, ConnectException {
 
 		Changelogs changelogs = null;
 		try {
-			connect(repository, CHANGELOGS_FILE_PATH, 5000);
+			connect(repository, CHANGELOGS_FILE_PATH);
 			int responseCode = httpURLConnection.getResponseCode();
 			if (responseCode != HttpURLConnection.HTTP_OK) {
 				String message = "Server return error " + responseCode
@@ -253,7 +260,7 @@ public class HttpDAO extends AbstractConnexionDAO {
 					+ repository.getName() + " on url " + "http://"
 					+ repository.getProtocole().getUrl();
 			System.out.println(message);
-			throw new HttpException(message);
+			throw new ConnectException(message);
 		}
 
 		try {
@@ -282,11 +289,11 @@ public class HttpDAO extends AbstractConnexionDAO {
 	}
 
 	public Events downloadEvent(Repository repository) throws HttpException,
-			WritingException {
+			WritingException, ConnectException {
 
 		Events events = null;
 		try {
-			connect(repository, EVENTS_FILE_PATH, 5000);
+			connect(repository, EVENTS_FILE_PATH);
 			int responseCode = httpURLConnection.getResponseCode();
 			if (responseCode != HttpURLConnection.HTTP_OK) {
 				String message = "Server return error " + responseCode
@@ -300,7 +307,7 @@ public class HttpDAO extends AbstractConnexionDAO {
 					+ repository.getName() + " on url " + "http://"
 					+ repository.getProtocole().getUrl();
 			System.out.println(message);
-			throw new HttpException(message);
+			throw new ConnectException(message);
 		}
 
 		try {
@@ -328,11 +335,11 @@ public class HttpDAO extends AbstractConnexionDAO {
 	}
 
 	public SyncTreeDirectory downloadSync(Repository repository)
-			throws HttpException, WritingException {
+			throws HttpException, WritingException, ConnectException {
 
 		SyncTreeDirectory syncTreeDirectory = null;
 		try {
-			connect(repository, SYNC_FILE_PATH, 5000);
+			connect(repository, SYNC_FILE_PATH);
 			int responseCode = httpURLConnection.getResponseCode();
 			if (responseCode != HttpURLConnection.HTTP_OK) {
 				String message = "Server return HTTP error " + responseCode
@@ -346,7 +353,7 @@ public class HttpDAO extends AbstractConnexionDAO {
 					+ repository.getName() + " on url " + "http://"
 					+ repository.getProtocole().getUrl();
 			System.out.println(message);
-			throw new HttpException(message);
+			throw new ConnectException(message);
 		}
 
 		try {
@@ -375,14 +382,15 @@ public class HttpDAO extends AbstractConnexionDAO {
 
 	public void downloadFile(String hostname, String login, String password,
 			String port, String remotePath, String destinationPath,
-			SyncTreeNodeDTO node, boolean resume) throws WritingException,
-			JazsyncException {
+			SyncTreeNodeDTO node) throws Exception, FileNotFoundException {
 
+		this.downloadingNode = node;
 		File parentDirectory = new File(destinationPath);
 		parentDirectory.mkdirs();
 		this.downloadingFile = new File(parentDirectory + "/" + node.getName());
 
 		if (node.isLeaf()) {
+			// ZSync file
 			String relativeZsyncFileUrl = remotePath + node.getName()
 					+ ZSYNC_EXTENSION;
 			String relativeFileUrl = remotePath + node.getName();
@@ -395,19 +403,20 @@ public class HttpDAO extends AbstractConnexionDAO {
 			String sha1 = leaf.getLocalSHA1();
 
 			Jazsync.sync(this.downloadingFile, sha1, relativeFileUrl,
-					relativeZsyncFileUrl, hostname, login, password, port,
-					resume, this);
+					relativeZsyncFileUrl, hostname, login, password, port, this);
 		} else {
 			this.downloadingFile.mkdir();
 		}
-		countFilesNumber++;
+
 		updateFilesNumberObserver();
+		this.downloadingFile = null;
+		this.downloadingNode = null;
+		node.setDownloadStatus(DownloadStatus.DONE);
 	}
 
 	public void getFileCompletion(String hostname, String login,
 			String password, String port, String remotePath,
-			String destinationPath, SyncTreeNodeDTO node)
-			throws WritingException, JazsyncException {
+			String destinationPath, SyncTreeNodeDTO node) throws Exception {
 
 		if (node.isLeaf()) {
 			File targetFile = new File(destinationPath + "/" + node.getName());
@@ -475,7 +484,7 @@ public class HttpDAO extends AbstractConnexionDAO {
 				// writer.append(CRLF).flush();
 				// writer.append("--" + boundary + "--").append(CRLF).flush();
 
-				connect(repository, EVENTS_FILE_PATH, 5000);
+				connect(repository, EVENTS_FILE_PATH);
 
 				String attachmentName = "events";
 				String attachmentFileName = "events";
@@ -550,19 +559,32 @@ public class HttpDAO extends AbstractConnexionDAO {
 	@Override
 	public void cancel(boolean resumable) {
 		canceled = true;
-		disconnect();
-		if (!resumable) {
+		// disconnect();
+		if (!resumable && downloadingFile != null) {
 			FileAccessMethods.deleteFile(downloadingFile);
 		}
+		downloadingNode = null;
 	}
 
 	public void disconnect() {
 		if (httpURLConnection != null) {
-			httpURLConnection.disconnect();
+			try {
+				httpURLConnection.disconnect();
+			} catch (Exception e) {
+				// TODO: handle exception
+			}
 		}
 	}
 
 	public void seConnexion(HttpURLConnection httpURLConnection) {
 		this.httpURLConnection = httpURLConnection;
+	}
+
+	public boolean isAcquiredSmaphore() {
+		return acquiredSmaphore;
+	}
+
+	public void setAcquiredSmaphore(boolean acquiredSmaphore) {
+		this.acquiredSmaphore = acquiredSmaphore;
 	}
 }

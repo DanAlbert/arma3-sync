@@ -35,7 +35,9 @@ import org.netbeans.swing.outline.OutlineModel;
 
 import fr.soe.a3s.dto.sync.SyncTreeDirectoryDTO;
 import fr.soe.a3s.dto.sync.SyncTreeNodeDTO;
+import fr.soe.a3s.exception.RepositoryException;
 import fr.soe.a3s.service.ConfigurationService;
+import fr.soe.a3s.service.RepositoryService;
 import fr.soe.a3s.ui.Facade;
 import fr.soe.a3s.ui.UIConstants;
 import fr.soe.a3s.ui.repositoryEditor.outline.AddonSyncRowModel;
@@ -44,26 +46,29 @@ import fr.soe.a3s.ui.repositoryEditor.tree.AddonSyncTreeModel;
 
 public class AdvancedConfigurationPanel extends JFrame implements UIConstants {
 
-	private Facade facade;
-	private DownloadPanel downloadPanel;
+	private final Facade facade;
+	private final DownloadPanel downloadPanel;
 	private JButton buttonClose;
 	private JScrollPane scrollPane;
 	private AddonSyncTreeModel treeModel;
-	private SyncTreeDirectoryDTO racine;
+	private final SyncTreeDirectoryDTO racine;
 	private AddonSyncRowModel rowModel;
 	private OutlineModel outlineModel;
 	private Outline outline;
-	private ConfigurationService configurationService = new ConfigurationService();
-	private String defaultDestinationPath;// may be null
+	private final ConfigurationService configurationService = new ConfigurationService();
+	private final RepositoryService repositoryService = new RepositoryService();
+	private final String defaultDestinationPath;// may be null
+	private final String repositoryName;
 
 	public AdvancedConfigurationPanel(Facade facade,
 			SyncTreeDirectoryDTO racine, String defaultDestinationPath,
-			DownloadPanel downloadPanel) {
+			String repositoryName, DownloadPanel downloadPanel) {
 
 		this.facade = facade;
 		this.downloadPanel = downloadPanel;
 		this.racine = racine;
 		this.defaultDestinationPath = defaultDestinationPath;
+		this.repositoryName = repositoryName;
 		this.setTitle("Advanced configuration");
 		this.setResizable(true);
 		this.setMinimumSize(new Dimension(DEFAULT_WIDTH, 400));
@@ -150,6 +155,7 @@ public class AdvancedConfigurationPanel extends JFrame implements UIConstants {
 		});
 		// Add Listeners
 		addWindowListener(new WindowAdapter() {
+			@Override
 			public void windowClosing(WindowEvent e) {
 				menuExitPerformed();
 			}
@@ -157,6 +163,11 @@ public class AdvancedConfigurationPanel extends JFrame implements UIConstants {
 	}
 
 	private void buttonClosePerformed() {
+		// try {
+		// this.repositoryService.setDestinationPaths(repositoryName, racine);
+		// } catch (RepositoryException e) {
+		// e.printStackTrace();
+		// }
 		this.dispose();
 		this.downloadPanel.getButtonAdvancedConfiguration().setEnabled(true);
 	}
@@ -194,6 +205,7 @@ public class AdvancedConfigurationPanel extends JFrame implements UIConstants {
 
 	class MyTableCellRenderer extends DefaultTableCellRenderer {
 
+		@Override
 		public Component getTableCellRendererComponent(JTable table,
 				Object value, boolean isSelected, boolean hasFocus, int row,
 				int col) {

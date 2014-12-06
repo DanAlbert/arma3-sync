@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import fr.soe.a3s.constant.DownloadStatus;
+
 public class SyncTreeDirectoryDTO implements SyncTreeNodeDTO {
 
 	private String name;
@@ -17,6 +19,7 @@ public class SyncTreeDirectoryDTO implements SyncTreeNodeDTO {
 	private boolean optional;
 	private boolean hidden;
 	private boolean changed;
+	private DownloadStatus downloadStatus = DownloadStatus.PENDING;
 
 	@Override
 	public String getName() {
@@ -174,5 +177,13 @@ public class SyncTreeDirectoryDTO implements SyncTreeNodeDTO {
 			}
 		}
 		return path;
+	}
+
+	public DownloadStatus getDownloadStatus() {
+		return downloadStatus;
+	}
+
+	public void setDownloadStatus(DownloadStatus downloadStatus) {
+		this.downloadStatus = downloadStatus;
 	}
 }

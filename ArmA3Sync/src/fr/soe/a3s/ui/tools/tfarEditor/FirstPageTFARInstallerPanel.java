@@ -1,4 +1,4 @@
-package fr.soe.a3s.ui.tfarEditor;
+package fr.soe.a3s.ui.tools.tfarEditor;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -19,12 +19,9 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.border.BevelBorder;
 
-import fr.soe.a3s.service.AddonService;
-import fr.soe.a3s.service.ConfigurationService;
 import fr.soe.a3s.service.LaunchService;
 import fr.soe.a3s.ui.Facade;
-import fr.soe.a3s.ui.UIConstants;
-import fr.soe.a3s.ui.acreEditor.AcreInstallerPanel;
+import fr.soe.a3s.ui.tools.WizardPanel;
 
 /**
  * This code was edited or generated using CloudGarden's Jigloo SWT/Swing GUI
@@ -36,29 +33,14 @@ import fr.soe.a3s.ui.acreEditor.AcreInstallerPanel;
  * PURCHASED FOR THIS MACHINE, SO JIGLOO OR THIS CODE CANNOT BE USED LEGALLY FOR
  * ANY CORPORATE OR COMMERCIAL PURPOSE.
  */
-public class FirstPageTFARInstallerPanel extends TfarInstallerPanel implements
-		UIConstants {
+public class FirstPageTFARInstallerPanel extends WizardPanel {
 
-	private JTextField textFieldArmA3InstallationDirectory;
-	private JButton buttonSelectArmA3InstallationDirectory;
-	private JTextField textFieldTS3InstallationDirectory;
-	private JButton buttonSelectTS3InstallationDirectory;
-	private JTextField textFieldTFARPluginInstallationDirectory;
-	private JButton buttonSelectTFARPluginInstallationDirectory;
 	private java.awt.Component box$Filler_IL8;
-	private JLabel labelOS;
-	private JLabel labelOSValue;
-	private JLabel labelTS3;
-	private JLabel labelTS3Value;
-	private JLabel labelTFARplugin;
-	private JLabel labelTFARpluginValue;
-	private ConfigurationService configurationService = new ConfigurationService();
-	private AddonService addonService = new AddonService();
-	private JTextField textFieldTFARUserconfigInstallationDirectory;
-	private JButton buttonSelectTFARUserconfigInstallationDirectory;
 
 	public FirstPageTFARInstallerPanel(Facade facade) {
-		super(facade);
+		super(facade, "TFAR installer wizard",
+				"Install or update TFAR for ArmA 3 and TS3", null);
+
 		buttonFist.setText("Proceed");
 		buttonSecond.setText("Cancel");
 		getRootPane().setDefaultButton(buttonFist);
@@ -151,19 +133,19 @@ public class FirstPageTFARInstallerPanel extends TfarInstallerPanel implements
 					JPanel acreInstallationDirectoryPanel = new JPanel();
 					acreInstallationDirectoryPanel
 							.setLayout(new BorderLayout());
-					textFieldTFARPluginInstallationDirectory = new JTextField();
-					buttonSelectTFARPluginInstallationDirectory = new JButton(
+					textFieldPluginInstallationDirectory = new JTextField();
+					buttonSelectPluginInstallationDirectory = new JButton(
 							"Select");
-					buttonSelectTFARPluginInstallationDirectory
+					buttonSelectPluginInstallationDirectory
 							.setPreferredSize(new Dimension(70, 25));
-					textFieldTFARPluginInstallationDirectory.setEditable(false);
-					textFieldTFARPluginInstallationDirectory
+					textFieldPluginInstallationDirectory.setEditable(false);
+					textFieldPluginInstallationDirectory
 							.setBackground(Color.WHITE);
 					acreInstallationDirectoryPanel.add(
-							textFieldTFARPluginInstallationDirectory,
+							textFieldPluginInstallationDirectory,
 							BorderLayout.CENTER);
 					acreInstallationDirectoryPanel.add(
-							buttonSelectTFARPluginInstallationDirectory,
+							buttonSelectPluginInstallationDirectory,
 							BorderLayout.EAST);
 					vBox.add(acreInstallationDirectoryPanel);
 				}
@@ -182,20 +164,19 @@ public class FirstPageTFARInstallerPanel extends TfarInstallerPanel implements
 					JPanel acreInstallationDirectoryPanel = new JPanel();
 					acreInstallationDirectoryPanel
 							.setLayout(new BorderLayout());
-					textFieldTFARUserconfigInstallationDirectory = new JTextField();
-					buttonSelectTFARUserconfigInstallationDirectory = new JButton(
+					textFieldUserconfigInstallationDirectory = new JTextField();
+					buttonSelectUserconfigInstallationDirectory = new JButton(
 							"Select");
-					buttonSelectTFARUserconfigInstallationDirectory
+					buttonSelectUserconfigInstallationDirectory
 							.setPreferredSize(new Dimension(70, 25));
-					textFieldTFARUserconfigInstallationDirectory
-							.setEditable(false);
-					textFieldTFARUserconfigInstallationDirectory
+					textFieldUserconfigInstallationDirectory.setEditable(false);
+					textFieldUserconfigInstallationDirectory
 							.setBackground(Color.WHITE);
 					acreInstallationDirectoryPanel.add(
-							textFieldTFARUserconfigInstallationDirectory,
+							textFieldUserconfigInstallationDirectory,
 							BorderLayout.CENTER);
 					acreInstallationDirectoryPanel.add(
-							buttonSelectTFARUserconfigInstallationDirectory,
+							buttonSelectUserconfigInstallationDirectory,
 							BorderLayout.EAST);
 					vBox.add(acreInstallationDirectoryPanel);
 				}
@@ -208,7 +189,8 @@ public class FirstPageTFARInstallerPanel extends TfarInstallerPanel implements
 						.createTitledBorder(BorderFactory.createEtchedBorder(),
 								"System specifications"));
 				centerPanel.add(systemDescriptionPanel);
-				systemDescriptionPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
+				systemDescriptionPanel
+						.setLayout(new FlowLayout(FlowLayout.LEFT));
 				Box vBox = Box.createVerticalBox();
 				systemDescriptionPanel.add(vBox);
 				{
@@ -232,18 +214,19 @@ public class FirstPageTFARInstallerPanel extends TfarInstallerPanel implements
 					vBox.add(Box.createVerticalStrut(10));
 				}
 				{
-					labelTFARplugin = new JLabel("TFAR plugins: ");
-					labelTFARpluginValue = new JLabel();
+					labelPlugin = new JLabel("TFAR plugins: ");
+					labelPluginValue = new JLabel();
 					Box hBox = Box.createHorizontalBox();
-					hBox.add(labelTFARplugin);
-					hBox.add(labelTFARpluginValue);
+					hBox.add(labelPlugin);
+					hBox.add(labelPluginValue);
 					hBox.add(Box.createHorizontalGlue());
 					vBox.add(hBox);
 				}
 				{
 					box$Filler_IL8 = Box.createVerticalStrut(10);
 					vBox.add(box$Filler_IL8);
-					box$Filler_IL8.setPreferredSize(new java.awt.Dimension(506, 10));
+					box$Filler_IL8.setPreferredSize(new java.awt.Dimension(506,
+							10));
 				}
 				vBox.add(Box.createVerticalStrut(10));
 			}
@@ -262,14 +245,14 @@ public class FirstPageTFARInstallerPanel extends TfarInstallerPanel implements
 						buttonSelectTS3InstallationDirectoryPerformed();
 					}
 				});
-		buttonSelectTFARPluginInstallationDirectory
+		buttonSelectPluginInstallationDirectory
 				.addActionListener(new ActionListener() {
 					@Override
 					public void actionPerformed(ActionEvent e) {
 						buttonSelectTFARPluginInstallationDirectoryPerformed();
 					}
 				});
-		buttonSelectTFARUserconfigInstallationDirectory
+		buttonSelectUserconfigInstallationDirectory
 				.addActionListener(new ActionListener() {
 					@Override
 					public void actionPerformed(ActionEvent e) {
@@ -299,31 +282,54 @@ public class FirstPageTFARInstallerPanel extends TfarInstallerPanel implements
 
 		/* TS3 directory */
 		String ts3InstallationDirectoryPath = configurationService
-				.getTS3installationFodler();
+				.getAcreTS3installationFodler();
 
 		if (ts3InstallationDirectoryPath != null) {
-			textFieldTS3InstallationDirectory
-					.setText(ts3InstallationDirectoryPath);
+			if (new File(ts3InstallationDirectoryPath).exists()) {
+				textFieldTS3InstallationDirectory
+						.setText(ts3InstallationDirectoryPath);
+			}
 		}
 
 		/* @TFAR plugin directory */
-		String acreInstallationDirectoryPath = addonService
-				.getTFARinstallationFolder();
+		String tfarPluginPath = configurationService.getTfarPluginPath();
 
-		if (acreInstallationDirectoryPath != null) {
-			String path = acreInstallationDirectoryPath + "/@task_force_radio/plugins";
-			if (new File(path).exists()) {
-				path = new File(path).getAbsolutePath();
-				textFieldTFARPluginInstallationDirectory.setText(path);
+		if (tfarPluginPath != null) {
+			if (new File(tfarPluginPath).exists()) {
+				textFieldPluginInstallationDirectory.setText(tfarPluginPath);
+			}
+		} else {
+			String tfarInstallationDirectoryPath = addonService
+					.getTFARinstallationFolder();
+			if (tfarInstallationDirectoryPath != null) {
+				String path = tfarInstallationDirectoryPath
+						+ "/@task_force_radio/plugins";
+				if (new File(path).exists()) {
+					path = new File(path).getAbsolutePath();
+					textFieldPluginInstallationDirectory.setText(path);
+				}
 			}
 		}
 
 		/* @TFAR userconfig directory */
-		if (acreInstallationDirectoryPath != null) {
-			String path = acreInstallationDirectoryPath + "/@task_force_radio/userconfig";
-			if (new File(path).exists()) {
-				path = new File(path).getAbsolutePath();
-				textFieldTFARUserconfigInstallationDirectory.setText(path);
+		String tfarUserconfigPath = configurationService
+				.getTfarUserconfigPath();
+
+		if (tfarUserconfigPath != null) {
+			if (new File(tfarUserconfigPath).exists()) {
+				textFieldUserconfigInstallationDirectory
+						.setText(tfarUserconfigPath);
+			}
+		} else {
+			String tfarInstallationDirectoryPath = addonService
+					.getTFARinstallationFolder();
+			if (tfarInstallationDirectoryPath != null) {
+				String path = tfarInstallationDirectoryPath
+						+ "/@task_force_radio/userconfig";
+				if (new File(path).exists()) {
+					path = new File(path).getAbsolutePath();
+					textFieldUserconfigInstallationDirectory.setText(path);
+				}
 			}
 		}
 	}
@@ -331,49 +337,25 @@ public class FirstPageTFARInstallerPanel extends TfarInstallerPanel implements
 	private void determineSystemSpecs() {
 
 		/* OS */
-		String osName = System.getProperty("os.name");
-		boolean is64bit = false;
-		if (System.getProperty("os.name").contains("Windows")) {
-			is64bit = (System.getenv("ProgramFiles(x86)") != null);
-		} else {
-			is64bit = (System.getProperty("os.arch").indexOf("64") != -1);
-		}
-		if (is64bit) {
-			labelOSValue.setText(osName + " - 64 bit");
-		} else {
-			labelOSValue.setText(osName + " - 32 bit");
-		}
+		determineOS();
 
 		/* TS3 version */
-		if (textFieldTS3InstallationDirectory.getText().isEmpty()) {
-			labelTS3Value.setText("Unknown");
-		} else {
-			String ts3Version = configurationService
-					.getTS3version(textFieldTS3InstallationDirectory.getText());
-			if (ts3Version == null) {
-				ts3Version = "Unknown";
-			}
-			is64bit = configurationService
-					.isTS364bit(textFieldTS3InstallationDirectory.getText());
-			if (is64bit) {
-				labelTS3Value.setText(ts3Version + " - 64 bit");
-			} else {
-				labelTS3Value.setText(ts3Version + " - 32 bit");
-			}
-		}
+		determineTS3();
 
 		/* TFAR plugin */
-		if (textFieldTFARPluginInstallationDirectory.getText().isEmpty()) {
-			labelTFARpluginValue.setText("Unknown");
+		boolean is64bit = false;
+		boolean is32bit = false;
+		if (textFieldPluginInstallationDirectory.getText().isEmpty()) {
+			labelPluginValue.setText("Unknown");
 		} else if (textFieldTS3InstallationDirectory.getText().isEmpty()) {
-			labelTFARpluginValue.setText("Unknown");
+			labelPluginValue.setText("Unknown");
 		} else {
 			is64bit = configurationService
 					.isTS364bit(textFieldTS3InstallationDirectory.getText());
 			if (is64bit) {
-				labelTFARpluginValue.setText("task_force_radio_win64.dll");
+				labelPluginValue.setText("task_force_radio_win64.dll");
 			} else {
-				labelTFARpluginValue.setText("task_force_radio_win32.dll");
+				labelPluginValue.setText("task_force_radio_win32.dll");
 			}
 		}
 	}
@@ -418,7 +400,7 @@ public class FirstPageTFARInstallerPanel extends TfarInstallerPanel implements
 			textFieldTS3InstallationDirectory.setText("");
 		}
 		configurationService
-				.setTS3installationFodler(textFieldTS3InstallationDirectory
+				.setTfarTS3installationFodler(textFieldTS3InstallationDirectory
 						.getText());
 		determineSystemSpecs();
 	}
@@ -431,10 +413,14 @@ public class FirstPageTFARInstallerPanel extends TfarInstallerPanel implements
 		if (returnVal == JFileChooser.APPROVE_OPTION) {
 			File file = fc.getSelectedFile();
 			String path = file.getAbsolutePath();
-			textFieldTFARPluginInstallationDirectory.setText(path);
+			textFieldPluginInstallationDirectory.setText(path);
 		} else {
-			textFieldTFARPluginInstallationDirectory.setText("");
+			textFieldPluginInstallationDirectory.setText("");
 		}
+		configurationService
+				.setTfarPluginPath(textFieldPluginInstallationDirectory
+						.getText());
+
 		determineSystemSpecs();
 	}
 
@@ -446,10 +432,14 @@ public class FirstPageTFARInstallerPanel extends TfarInstallerPanel implements
 		if (returnVal == JFileChooser.APPROVE_OPTION) {
 			File file = fc.getSelectedFile();
 			String path = file.getAbsolutePath();
-			textFieldTFARUserconfigInstallationDirectory.setText(path);
+			textFieldUserconfigInstallationDirectory.setText(path);
 		} else {
-			textFieldTFARUserconfigInstallationDirectory.setText("");
+			textFieldUserconfigInstallationDirectory.setText("");
 		}
+		configurationService
+				.setTfarUserconfigPath(textFieldUserconfigInstallationDirectory
+						.getText());
+
 		determineSystemSpecs();
 	}
 
@@ -470,10 +460,9 @@ public class FirstPageTFARInstallerPanel extends TfarInstallerPanel implements
 			message = "ArmA 3 installation directory is missing.";
 		} else if (textFieldTS3InstallationDirectory.getText().isEmpty()) {
 			message = "TS3 installation directory is missing.";
-		} else if (textFieldTFARPluginInstallationDirectory.getText().isEmpty()) {
+		} else if (textFieldPluginInstallationDirectory.getText().isEmpty()) {
 			message = "TFAR plugin directory is missing.";
-		} else if (textFieldTFARUserconfigInstallationDirectory.getText()
-				.isEmpty()) {
+		} else if (textFieldUserconfigInstallationDirectory.getText().isEmpty()) {
 			message = "TFAR userconfig directory is missing.";
 		} else if (labelTS3Value.equals("Unknown")) {
 			message = "Can't determine between TS3 32/64 bit.";
@@ -485,13 +474,13 @@ public class FirstPageTFARInstallerPanel extends TfarInstallerPanel implements
 			message = "TS3 installation directory is missing \\plugins folder";
 		}
 
-		String acrePlugin = textFieldTFARPluginInstallationDirectory.getText()
-				+ "/" + labelTFARpluginValue.getText();
+		String acrePlugin = textFieldPluginInstallationDirectory.getText()
+				+ "/" + labelPluginValue.getText();
 		if (!new File(acrePlugin).exists()) {
-			if (labelTFARpluginValue.getText().equals("Unknown")) {
+			if (labelPluginValue.getText().equals("Unknown")) {
 				message = "TFAR plugin is missing.";
 			} else {
-				message = "TFAR plugin " + labelTFARpluginValue.getText()
+				message = "TFAR plugin " + labelPluginValue.getText()
 						+ " is missing.";
 			}
 		}
@@ -510,12 +499,12 @@ public class FirstPageTFARInstallerPanel extends TfarInstallerPanel implements
 
 		this.setVisible(false);
 		SecondPageTFARInstallerPanel secondPageInstallerPanel = new SecondPageTFARInstallerPanel(
-				facade);
+				facade, title, description, imageIcon);
 		secondPageInstallerPanel.init(
 				textFieldArmA3InstallationDirectory.getText(),
 				textFieldTS3InstallationDirectory.getText(),
-				textFieldTFARUserconfigInstallationDirectory.getText(),
-				textFieldTFARPluginInstallationDirectory.getText());
+				textFieldUserconfigInstallationDirectory.getText(),
+				textFieldPluginInstallationDirectory.getText());
 		secondPageInstallerPanel.setVisible(true);
 		secondPageInstallerPanel.setFocusable(true);
 	}

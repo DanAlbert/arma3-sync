@@ -8,7 +8,6 @@ import java.util.TreeSet;
 
 import fr.soe.a3s.constant.DefaultProfileName;
 import fr.soe.a3s.constant.GameVersions;
-import fr.soe.a3s.domain.Preferences;
 
 public class Configuration implements Serializable {
 
@@ -21,10 +20,12 @@ public class Configuration implements Serializable {
 	private String defaultModset;
 	private boolean viewModeTree = true;
 	private Set<String> addonSearchDirectoryPaths = new TreeSet<String>();
-	private LauncherOptions launcherOptions = new LauncherOptions();
+	private final LauncherOptions launcherOptions = new LauncherOptions();
 	private List<FavoriteServer> favoriteServers = new ArrayList<FavoriteServer>();
 	private List<ExternalApplication> externalApplications = new ArrayList<ExternalApplication>();
 	private AcreOptions acreOptions = new AcreOptions();
+	private Acre2Options acre2Options = new Acre2Options();
+	private TfarOptions tfarOptions = new TfarOptions();
 	private AiAOptions aiaOptions = new AiAOptions();
 	private RptOptions rptOptions = new RptOptions();
 
@@ -102,6 +103,20 @@ public class Configuration implements Serializable {
 			acreOptions = new AcreOptions();
 		}
 		return acreOptions;
+	}
+
+	public Acre2Options getAcre2Options() {
+		if (acre2Options == null) {
+			acre2Options = new Acre2Options();
+		}
+		return acre2Options;
+	}
+
+	public TfarOptions getTfarOptions() {
+		if (tfarOptions == null) {
+			tfarOptions = new TfarOptions();
+		}
+		return tfarOptions;
 	}
 
 	public RptOptions getRptOptions() {

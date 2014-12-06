@@ -12,6 +12,8 @@ public interface DataAccessConstants {
 	String PREFERENCES_FILE_PATH = INSTALLATION_PATH
 			+ "/resources/configuration/a3s.prefs";
 	String PROFILES_FOLDER_PATH = INSTALLATION_PATH + "/profiles";
+	String CONFIGURATION_FOLDER_PATH = INSTALLATION_PATH
+			+ "/resources/configuration";
 	String REPOSITORY_FOLDER_PATH = INSTALLATION_PATH + "/resources/ftp";
 	String TEMP_FOLDER_PATH = INSTALLATION_PATH + "/resources/temp";
 	String BIN_FOLDER_PATH = INSTALLATION_PATH + "/resources/bin";
@@ -22,7 +24,7 @@ public interface DataAccessConstants {
 	String AUTOCONFIG_EXTENSION = ".a3s.autoconfig";
 	String ZSYNC_EXTENSION = ".zsync";
 	String PART_EXTENSION = ".part";
-	
+
 	/** FTP */
 	String UPDATE_REPOSITORY = "/ArmA3/ArmA3Sync/download";
 	String UPDATE_REPOSITORY_DEV = "/ArmA3/ArmA3Sync/development";

@@ -1,4 +1,4 @@
-package fr.soe.a3s.ui.tfarEditor;
+package fr.soe.a3s.ui.tools.tfarEditor;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -12,6 +12,7 @@ import java.io.IOException;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -19,7 +20,7 @@ import javax.swing.border.BevelBorder;
 
 import fr.soe.a3s.dao.FileAccessMethods;
 import fr.soe.a3s.ui.Facade;
-import fr.soe.a3s.ui.acreEditor.AcreInstallerPanel;
+import fr.soe.a3s.ui.tools.WizardPanel;
 
 /**
  * This code was edited or generated using CloudGarden's Jigloo SWT/Swing GUI
@@ -31,7 +32,7 @@ import fr.soe.a3s.ui.acreEditor.AcreInstallerPanel;
  * PURCHASED FOR THIS MACHINE, SO JIGLOO OR THIS CODE CANNOT BE USED LEGALLY FOR
  * ANY CORPORATE OR COMMERCIAL PURPOSE.
  */
-public class SecondPageTFARInstallerPanel extends TfarInstallerPanel {
+public class SecondPageTFARInstallerPanel extends WizardPanel {
 
 	private JLabel labelOperationsPerformed;
 	private JLabel labelCopyPlugin;
@@ -47,8 +48,10 @@ public class SecondPageTFARInstallerPanel extends TfarInstallerPanel {
 	private static String statusOK = "OK";
 	private static String statusFail = "Fail";
 
-	public SecondPageTFARInstallerPanel(Facade facade) {
-		super(facade);
+	public SecondPageTFARInstallerPanel(Facade facade, String title,
+			String description, ImageIcon imageIcon) {
+		super(facade, title, description, imageIcon);
+
 		buttonFist.setText("Back");
 		buttonSecond.setText("Close");
 		getRootPane().setDefaultButton(buttonSecond);
@@ -201,7 +204,7 @@ public class SecondPageTFARInstallerPanel extends TfarInstallerPanel {
 	public void buttonSecondPerformed() {
 		this.dispose();
 	}
-	
+
 	private void buttonViewPluginPerformed() {
 		if (Desktop.isDesktopSupported()) {
 			Desktop desktop = Desktop.getDesktop();
@@ -214,7 +217,7 @@ public class SecondPageTFARInstallerPanel extends TfarInstallerPanel {
 			}
 		}
 	}
-	
+
 	private void buttonViewUserconfigPerformed() {
 		if (Desktop.isDesktopSupported()) {
 			Desktop desktop = Desktop.getDesktop();

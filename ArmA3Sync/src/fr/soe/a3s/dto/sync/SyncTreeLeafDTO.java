@@ -1,5 +1,7 @@
 package fr.soe.a3s.dto.sync;
 
+import fr.soe.a3s.constant.DownloadStatus;
+
 public class SyncTreeLeafDTO implements SyncTreeNodeDTO {
 
 	private String name;
@@ -13,6 +15,7 @@ public class SyncTreeLeafDTO implements SyncTreeNodeDTO {
 	private boolean deleted;
 	private boolean optional;
 	private String sha1;
+	private DownloadStatus downloadStatus = DownloadStatus.PENDING;
 
 	@Override
 	public String getName() {
@@ -151,5 +154,15 @@ public class SyncTreeLeafDTO implements SyncTreeNodeDTO {
 			}
 		}
 		return path;
+	}
+
+	@Override
+	public DownloadStatus getDownloadStatus() {
+		return this.downloadStatus;
+	}
+
+	@Override
+	public void setDownloadStatus(DownloadStatus downloadStatus) {
+		this.downloadStatus = downloadStatus;
 	}
 }

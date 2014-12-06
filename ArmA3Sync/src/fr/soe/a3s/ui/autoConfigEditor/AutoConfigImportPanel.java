@@ -34,7 +34,7 @@ import fr.soe.a3s.ui.UIConstants;
  */
 public class AutoConfigImportPanel extends JDialog implements UIConstants {
 
-	private Facade facade;
+	private final Facade facade;
 	private JTextField textFieldImportAutoConfig;
 	private JButton buttonOK;
 	private JButton buttonSelect;
@@ -89,12 +89,13 @@ public class AutoConfigImportPanel extends JDialog implements UIConstants {
 			buttonSelect = new JButton();
 			getContentPane().add(buttonSelect);
 			buttonSelect.setText("Select");
-			buttonSelect.setBounds(316, 34,75, 25);
+			buttonSelect.setBounds(316, 34, 75, 25);
 		}
 		buttonOK.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
 				SwingUtilities.invokeLater(new Runnable() {
+					@Override
 					public void run() {
 						buttonOKPerformed();
 					}
@@ -135,6 +136,7 @@ public class AutoConfigImportPanel extends JDialog implements UIConstants {
 			this.facade.getMainPanel().updateProfilesMenu();
 			this.facade.getSyncPanel().init();
 			this.facade.getOnlinePanel().init();
+			this.facade.getLaunchPanel().init();
 		} catch (LoadingException e) {
 			JOptionPane.showMessageDialog(facade.getMainPanel(),
 					"An error occured. \n Failed to import auto-config.",

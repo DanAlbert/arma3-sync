@@ -1,10 +1,6 @@
 package fr.soe.a3s.service;
 
-import java.io.BufferedReader;
-import java.io.DataInputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -14,8 +10,6 @@ import java.util.TreeSet;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-
-import javax.imageio.stream.FileImageInputStream;
 
 import fr.soe.a3s.constant.GameExecutables;
 import fr.soe.a3s.constant.GameVersions;
@@ -53,7 +47,7 @@ public class LaunchService {
 		if (arma3ExePath == null || "".equals(arma3ExePath)
 				|| !(new File(arma3ExePath)).exists()) {
 			throw new LaunchException(
-					"ArmA 3 Executable location is wrong or missing.\n Please checkout Launcher Options panel.");
+					"ArmA 3 Executable location is wrong or missing.\nPlease checkout Launcher Options panel.");
 		}
 	}
 
@@ -226,8 +220,14 @@ public class LaunchService {
 	private List<String> determineRunParameters() {
 
 		List<String> params = new ArrayList<String>();
-		params.addAll(getAdditionalParameters());
-		params.addAll(getRunParameters());
+		List<String> additionalParameters = getAdditionalParameters();
+		List<String> runParameters = getRunParameters();
+		if (additionalParameters != null) {
+			params.addAll(additionalParameters);
+		}
+		if (runParameters != null) {
+			params.addAll(runParameters);
+		}
 		return params;
 	}
 
@@ -311,6 +311,74 @@ public class LaunchService {
 			return null;
 		}
 
+		/* Launcher options */
+		LauncherOptions launcherOptions = configuration.getLauncherOptions();
+		// Malloc must be set at first place
+		if (launcherOptions.getMallocSelection() != null) {
+			params.add("-malloc=" + launcherOptions.getMallocSelection());
+		}
+		if (launcherOptions.getGameProfile() != null) {
+			params.add("-name=" + launcherOptions.getGameProfile());
+		}
+		if (launcherOptions.isShowScriptErrors()) {
+			params.add("-showScriptErrors");
+		}
+		if (launcherOptions.isNoPause()) {
+			params.add("-noPause");
+		}
+		if (launcherOptions.isNoFilePatching()) {
+			params.add("-noFilePatching");
+		}
+		if (launcherOptions.isWindowMode()) {
+			params.add("-window");
+		}
+		if (launcherOptions.isCheckSignatures()) {
+			params.add("-checkSignatures");
+		}
+		if (launcherOptions.isXpCompatibilityMode()) {
+			params.add("-winxp");
+		}
+		if (launcherOptions.getMaxMemorySelection() != null) {
+			params.add("-maxMem=" + launcherOptions.getMaxMemorySelection());
+		}
+		if (launcherOptions.getCpuCountSelection() != 0) {
+			params.add("-cpuCount=" + launcherOptions.getCpuCountSelection());
+		}
+		if (launcherOptions.getExThreadsSelection() != null) {
+			params.add("-exThreads=" + launcherOptions.getExThreadsSelection());
+		}
+		if (launcherOptions.isEnableHT()) {
+			params.add("-enableHT");
+		}
+		if (launcherOptions.isNoSplashScreen()) {
+			params.add("-nosplash");
+		}
+		if (launcherOptions.isDefaultWorld()) {
+			params.add("-world=empty");
+		}
+		if (launcherOptions.isNologs()) {
+			params.add("-nologs");
+		}
+
+		// Join Server
+		String serverName = configuration.getServerName();
+		if (serverName != null) {
+			for (FavoriteServer s : configuration.getFavoriteServers()) {
+				if (s.getName().equals(serverName)) {
+					String ipAddress = s.getIpAddress();
+					int port = s.getPort();
+					String password = s.getPassword();
+					params.add("-connect=" + ipAddress);
+					params.add("-port=" + port);
+					if (!password.isEmpty()) {
+						params.add("-password=" + password);
+					}
+					break;// needed if duplicate server with the same Name
+				}
+			}
+		}
+
+		/* Mods selection */
 		List<String> listAddonNamesByPriority = profile
 				.getAddonNamesByPriority();
 		TreeDirectory racine = profile.getTree();
@@ -484,68 +552,6 @@ public class LaunchService {
 			}
 		}
 
-		/* Launcher options */
-		LauncherOptions launcherOptions = configuration.getLauncherOptions();
-		if (launcherOptions.getGameProfile() != null) {
-			params.add("-name=" + launcherOptions.getGameProfile());
-		}
-		if (launcherOptions.isShowScriptErrors()) {
-			params.add("-showScriptErrors");
-		}
-		if (launcherOptions.isNoPause()) {
-			params.add("-noPause");
-		}
-		if (launcherOptions.isNoFilePatching()) {
-			params.add("-noFilePatching");
-		}
-		if (launcherOptions.isWindowMode()) {
-			params.add("-window");
-		}
-		if (launcherOptions.isCheckSignatures()) {
-			params.add("-checkSignatures");
-		}
-		if (launcherOptions.isXpCompatibilityMode()) {
-			params.add("-winxp");
-		}
-		if (launcherOptions.getMaxMemorySelection() != null) {
-			params.add("-maxMem=" + launcherOptions.getMaxMemorySelection());
-		}
-		if (launcherOptions.getCpuCountSelection() != 0) {
-			params.add("-cpuCount=" + launcherOptions.getCpuCountSelection());
-		}
-		if (launcherOptions.getExThreadsSelection() != null) {
-			params.add("-exThreads=" + launcherOptions.getExThreadsSelection());
-		}
-		if (launcherOptions.isEnableHT()) {
-			params.add("-enableHT");
-		}
-		if (launcherOptions.isNoSplashScreen()) {
-			params.add("-nosplash");
-		}
-		if (launcherOptions.isDefaultWorld()) {
-			params.add("-world=empty");
-		}
-		if (launcherOptions.isNologs()) {
-			params.add("-nologs");
-		}
-
-		// Join Server
-		String serverName = configuration.getServerName();
-		if (serverName != null) {
-			for (FavoriteServer s : configuration.getFavoriteServers()) {
-				if (s.getName().equals(serverName)) {
-					String ipAddress = s.getIpAddress();
-					int port = s.getPort();
-					String password = s.getPassword();
-					params.add("-connect=" + ipAddress);
-					params.add("-port=" + port);
-					if (!password.isEmpty()) {
-						params.add("-password=" + password);
-					}
-					break;// needed if duplicate server with the same Name
-				}
-			}
-		}
 		return params;
 	}
 
@@ -560,15 +566,17 @@ public class LaunchService {
 			if (additionalParameters != null) {
 				if (!additionalParameters.isEmpty()) {
 					StringTokenizer stk = new StringTokenizer(
-							additionalParameters, " -");
+							additionalParameters, " ");
 					int nbParameters = stk.countTokens();
 					for (int i = 0; i < nbParameters; i++) {
 						String param = stk.nextToken().trim();
 						// -malloc must be at first place
 						if (param.toLowerCase().contains("malloc")) {
-							params.add(0, "-" + param);
+							// params.add(0, "-" + param);
+							params.add(0, param.trim());
 						} else {
-							params.add("-" + param);
+							// params.add("-" + param);
+							params.add(param.trim());
 						}
 					}
 				}

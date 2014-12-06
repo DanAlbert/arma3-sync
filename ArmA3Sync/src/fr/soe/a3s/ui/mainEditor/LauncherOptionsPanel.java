@@ -20,6 +20,7 @@ import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
@@ -52,42 +53,30 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener,
 		UIConstants {
 
 	private final Facade facade;
-
 	private final JPanel launcherOptionsPanel, performancePanel;
-
 	private JPanel armaPanel;
-
 	private JPanel steamPanel;
-
 	private final JTextArea runParametersTextArea,
 			additionalParametersTextArea;
-
 	private final JScrollPane scrollPaneRunParameters,
 			scrollPaneAditionalParameters;
-
 	private JTextField textFieldArmAExecutableLocation,
 			textFieldSteamExecutableLocation;
-
 	private JButton buttonSelectArmAExe, buttonSelectSteamExe,
 			buttonAutoRestartPreferences;
-
 	private JComboBox comboBoxProfiles, comboBoxMaxMemory, comboBoxCpuCount,
-			comboBoxExThreads;
-
+			comboBoxExThreads, comboBoxMalloc;
 	private JCheckBox checkBoxProfiles, checkBoxNoPause, checkBoxWindowMode,
-			checkBoxShowScriptErrors, checkBoxRunBeta, checkBoxMaxMemory,
-			checkBoxCpuCount, checkBoxNoSplashScreen, checkBoxDefaultWorld,
-			checkBoxNoLogs, checkBoxCheckSignatures, checkBoxExThreads,
-			checkBoxEnableHT, checkBoxNoFilePatching, checkBoxAutoRestart;
+			checkBoxShowScriptErrors, checkBoxMaxMemory, checkBoxCpuCount,
+			checkBoxNoSplashScreen, checkBoxDefaultWorld, checkBoxNoLogs,
+			checkBoxCheckSignatures, checkBoxExThreads, checkBoxEnableHT,
+			checkBoxNoFilePatching, checkBoxAutoRestart, checkBoxMalloc;
+	private JLabel labelMallocPath;
 
 	/* Services */
-
 	private final ConfigurationService configurationService = new ConfigurationService();
-
 	private final ProfileService profileService = new ProfileService();
-
 	private final AddonService addonService = new AddonService();
-
 	private final LaunchService launchService = new LaunchService();
 
 	public LauncherOptionsPanel(Facade facade) {
@@ -135,7 +124,8 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener,
 						if (subf != null) {
 							for (int i = 0; i < subf.length; i++) {
 								listProfileNames.add(subf[i].getName()
-										.replaceAll("(%*)20", " "));
+										.replaceAll("(%*)20", " ")
+										.replaceAll("%2e", "."));
 							}
 						}
 					}
@@ -228,7 +218,7 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener,
 			checkBoxMaxMemory.setFocusable(false);
 			checkBoxMaxMemory.setPreferredSize(new java.awt.Dimension(100, 23));
 			comboBoxMaxMemory = new JComboBox();
-			comboBoxMaxMemory.setPreferredSize(new java.awt.Dimension(60, 23));
+			comboBoxMaxMemory.setPreferredSize(new java.awt.Dimension(70, 23));
 			comboBoxMaxMemory.setFocusable(false);
 			ComboBoxModel maxMemoryModel = new DefaultComboBoxModel(
 					new String[] {
@@ -248,7 +238,7 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener,
 			checkBoxCpuCount.setFocusable(false);
 			checkBoxCpuCount.setPreferredSize(new java.awt.Dimension(100, 23));
 			comboBoxCpuCount = new JComboBox();
-			comboBoxCpuCount.setPreferredSize(new java.awt.Dimension(60, 23));
+			comboBoxCpuCount.setPreferredSize(new java.awt.Dimension(70, 23));
 			comboBoxCpuCount.setFocusable(false);
 			Runtime runtime = Runtime.getRuntime();
 			int nbProcessors = runtime.availableProcessors();
@@ -270,7 +260,7 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener,
 			checkBoxExThreads.setFocusable(false);
 			checkBoxExThreads.setPreferredSize(new java.awt.Dimension(100, 23));
 			comboBoxExThreads = new JComboBox();
-			comboBoxExThreads.setPreferredSize(new java.awt.Dimension(60, 23));
+			comboBoxExThreads.setPreferredSize(new java.awt.Dimension(70, 23));
 			comboBoxExThreads.setFocusable(false);
 			ComboBoxModel exThreadsModel = new DefaultComboBoxModel(
 					new String[] { "", "0", "1", "3", "5", "7" });
@@ -278,6 +268,20 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener,
 			Box hBox = Box.createHorizontalBox();
 			hBox.add(checkBoxExThreads);
 			hBox.add(comboBoxExThreads);
+			vBox.add(hBox);
+		}
+		{
+			checkBoxMalloc = new JCheckBox();
+			checkBoxMalloc.setText("Malloc");
+			checkBoxMalloc.setFocusable(false);
+			checkBoxMalloc.setPreferredSize(new java.awt.Dimension(100, 23));
+			comboBoxMalloc = new JComboBox();
+			comboBoxMalloc.setFocusable(false);
+			comboBoxMalloc.setPreferredSize(new java.awt.Dimension(70, 25));
+			Box hBox = Box.createHorizontalBox();
+			hBox.add(checkBoxMalloc);
+			hBox.add(comboBoxMalloc);
+			hBox.add(Box.createHorizontalGlue());
 			vBox.add(hBox);
 		}
 		{
@@ -464,6 +468,12 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener,
 				comboBoxExThreadsPerformed();
 			}
 		});
+		comboBoxMalloc.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				buttonSelectMallocDllPathPerformed();
+			}
+		});
 		checkBoxEnableHT.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -510,13 +520,18 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener,
 				.setToolTipText("Display the game windowed instead of full screen");
 		checkBoxCheckSignatures.setToolTipText("Check signatures of PBO files");
 		comboBoxMaxMemory.setToolTipText("Restricts memory allocation");
+		checkBoxMaxMemory.setToolTipText("Restricts memory allocation");
 		comboBoxCpuCount.setToolTipText("Restricts number of cores used");
+		checkBoxCpuCount.setToolTipText("Restricts number of cores used");
 		comboBoxExThreads.setToolTipText("Sets number of extra threads to use");
+		checkBoxExThreads.setToolTipText("Sets number of extra threads to use");
 		checkBoxEnableHT.setToolTipText("Use all hyper-threaded cpu cores");
 		checkBoxNoSplashScreen.setToolTipText("Disables splash screens");
 		checkBoxDefaultWorld.setToolTipText("No world loaded at game startup");
 		checkBoxNoLogs.setToolTipText("Do no write errors into RPT file");
 		checkBoxAutoRestart.setToolTipText("Auto-restart game/server");
+		checkBoxMalloc.setToolTipText("Sets memory allocator");
+		comboBoxMalloc.setToolTipText("Sets memory allocator");
 	}
 
 	public void init() {
@@ -669,6 +684,22 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener,
 		} else {
 			checkBoxExThreads.setSelected(false);
 			configurationService.setExThreads(null);
+		}
+		updateRunParameters();
+	}
+
+	private void buttonSelectMallocDllPathPerformed() {
+
+		String mallocDll = (String) comboBoxMalloc.getSelectedItem();
+		if (mallocDll == null) {
+			return;
+		}
+		if (!mallocDll.isEmpty()) {
+			checkBoxMalloc.setSelected(true);
+			configurationService.setMalloc(mallocDll);
+		} else {
+			checkBoxMalloc.setSelected(false);
+			configurationService.setMalloc(null);
 		}
 		updateRunParameters();
 	}
@@ -848,12 +879,45 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener,
 		checkBoxDefaultWorld.setSelected(launcherOptionsDTO.isDefaultWorld());
 		checkBoxNoLogs.setSelected(launcherOptionsDTO.isNoLogs());
 
-		/* ArmA 3 Executable Location */
-		textFieldArmAExecutableLocation.setText(launcherOptionsDTO
-				.getArma3ExePath());
+		/* ArmA 3 Executable Location and Malloc */
+		String arma3ExePath = launcherOptionsDTO.getArma3ExePath();
+		if (arma3ExePath != null) {
+			File arma3ExeFile = new File(arma3ExePath);
+			if (arma3ExeFile.exists()) {
+				textFieldArmAExecutableLocation.setText(launcherOptionsDTO
+						.getArma3ExePath());
+			}
+			File parent = new File(arma3ExeFile.getParent());
+			List<String> list = new ArrayList<String>();
+			if (parent != null) {
+				File dllFolder = new File(parent.getAbsolutePath() + "/Dll");
+				File[] subfiles = dllFolder.listFiles();
+				if (subfiles != null) {
+					for (File file : subfiles) {
+						if (file.getName().toLowerCase().contains(".dll")) {
+							list.add(file.getName().replaceAll(".dll", ""));
+						}
+					}
+				}
+			}
+			String[] tab = new String[list.size() + 1];
+			tab[0] = "";
+			for (int i = 0; i < list.size(); i++) {
+				tab[i + 1] = list.get(i);
+			}
+			ComboBoxModel mallocModel = new DefaultComboBoxModel(tab);
+			comboBoxMalloc.setModel(mallocModel);
+			if (launcherOptionsDTO.getMallocSelection() != null) {
+				comboBoxMalloc.setSelectedItem(launcherOptionsDTO
+						.getMallocSelection());
+				checkBoxMalloc.setSelected(true);
+			} else {
+				comboBoxMalloc.setSelectedIndex(0);
+			}
+		}
 	}
 
-	/* additionalParametersTextArea modificiation listener */
+	/* additionalParametersTextArea modification listener */
 	@Override
 	public void changedUpdate(DocumentEvent arg0) {
 		String additionalParameters = additionalParametersTextArea.getText();

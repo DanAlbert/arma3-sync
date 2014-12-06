@@ -38,7 +38,6 @@ import javax.swing.tree.TreeSelectionModel;
 
 import fr.soe.a3s.constant.ModsetType;
 import fr.soe.a3s.dto.EventDTO;
-import fr.soe.a3s.dto.RepositoryDTO;
 import fr.soe.a3s.dto.TreeDirectoryDTO;
 import fr.soe.a3s.dto.TreeLeafDTO;
 import fr.soe.a3s.dto.TreeNodeDTO;
@@ -82,9 +81,9 @@ public class AddonsPanel extends JPanel implements UIConstants {
 	private TreeDnD treeDnD;
 	private TreeDnD2 treeDnD2;
 	private JMenuItem menuItemAddGroup, menuItemRename, menuItemRemove;
-	private ConfigurationService configurationService = new ConfigurationService();
-	private ProfileService profileService = new ProfileService();
-	private LaunchService launchService = new LaunchService();
+	private final ConfigurationService configurationService = new ConfigurationService();
+	private final ProfileService profileService = new ProfileService();
+	private final LaunchService launchService = new LaunchService();
 	private TreePath arbre2TreePath;
 	private JButton buttonRefresh;
 	private TreePath arbre2NewTreePath;
@@ -92,8 +91,8 @@ public class AddonsPanel extends JPanel implements UIConstants {
 	private JCheckBox checkBoxExpandAll;
 	private JButton buttonEvents;
 	// Service
-	private AddonService addonService = new AddonService();
-	private RepositoryService repositoryService = new RepositoryService();
+	private final AddonService addonService = new AddonService();
+	private final RepositoryService repositoryService = new RepositoryService();
 
 	public AddonsPanel(final Facade facade) {
 		this.facade = facade;
@@ -186,6 +185,7 @@ public class AddonsPanel extends JPanel implements UIConstants {
 
 		menuItemAddGroup = new JMenuItem("Add Group");
 		menuItemAddGroup.addActionListener(new ActionListener() {
+			@Override
 			public void actionPerformed(ActionEvent evt) {
 				popupActionPerformed(evt);
 			}
@@ -195,6 +195,7 @@ public class AddonsPanel extends JPanel implements UIConstants {
 
 		menuItemRename = new JMenuItem("Rename");
 		menuItemRename.addActionListener(new ActionListener() {
+			@Override
 			public void actionPerformed(ActionEvent evt) {
 				popupActionPerformed(evt);
 			}
@@ -204,6 +205,7 @@ public class AddonsPanel extends JPanel implements UIConstants {
 
 		menuItemRemove = new JMenuItem("Remove");
 		menuItemRemove.addActionListener(new ActionListener() {
+			@Override
 			public void actionPerformed(ActionEvent evt) {
 				popupActionPerformed(evt);
 			}
@@ -258,15 +260,18 @@ public class AddonsPanel extends JPanel implements UIConstants {
 			}
 		});
 		arbre1.addTreeExpansionListener(new TreeExpansionListener() {
+			@Override
 			public void treeExpanded(TreeExpansionEvent event) {
 				onArbre1Expanded(event.getPath());
 			}
 
+			@Override
 			public void treeCollapsed(TreeExpansionEvent event) {
 				onArbre1Collapsed(event.getPath());
 			}
 		});
 		arbre2.addMouseListener(new MouseAdapter() {
+			@Override
 			public void mouseClicked(MouseEvent e) {
 
 				arbre2TreePath = arbre2.getPathForLocation(e.getX(), e.getY());
@@ -317,6 +322,7 @@ public class AddonsPanel extends JPanel implements UIConstants {
 				facade.getLaunchOptionsPanel().updateRunParameters();
 			}
 
+			@Override
 			public void mouseReleased(MouseEvent e) {
 				if (e.isPopupTrigger()) {
 					popup.show((JComponent) e.getSource(), e.getX(), e.getY());
@@ -334,10 +340,12 @@ public class AddonsPanel extends JPanel implements UIConstants {
 			}
 		});
 		arbre2.addTreeExpansionListener(new TreeExpansionListener() {
+			@Override
 			public void treeExpanded(TreeExpansionEvent event) {
 				onArbre2Expanded(event.getPath());
 			}
 
+			@Override
 			public void treeCollapsed(TreeExpansionEvent event) {
 				onArbre2Collapsed(event.getPath());
 			}
@@ -603,6 +611,7 @@ public class AddonsPanel extends JPanel implements UIConstants {
 		if (nodes.length == 0) {
 			return;
 		}
+
 		for (int i = 0; i < nodes.length; i++) {
 			TreeNodeDTO parent = nodes[i].getParent();
 			if (parent != null) {
@@ -896,7 +905,6 @@ public class AddonsPanel extends JPanel implements UIConstants {
 				newTreeDirectoryDTO.setParent(racine2);
 				racine2.addTreeNode(newTreeDirectoryDTO);
 				setSelectedPaths(newTreeDirectoryDTO, selectdAddonPaths);
-
 			}
 
 			/* Event modsets */

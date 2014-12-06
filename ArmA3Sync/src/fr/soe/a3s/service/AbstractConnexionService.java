@@ -1,6 +1,5 @@
 package fr.soe.a3s.service;
 
-import java.io.FileNotFoundException;
 import java.net.ConnectException;
 import java.util.List;
 
@@ -29,10 +28,10 @@ public abstract class AbstractConnexionService extends ObjectDTOtransformer {
 
 	public abstract AbstractConnexionDAO getConnexionDAO();
 
+	public abstract List<AbstractConnexionDAO> getConnexionDAOs();
+
 	public abstract void downloadAddons(String repositoryName,
-			List<SyncTreeNodeDTO> newListFiles, boolean resume)
-			throws RepositoryException, FtpException, WritingException,
-			FileNotFoundException, HttpException, ConnectException;
+			List<SyncTreeNodeDTO> newListFiles) throws Exception;
 
 	public abstract void cancel(boolean resumable);
 
@@ -67,4 +66,5 @@ public abstract class AbstractConnexionService extends ObjectDTOtransformer {
 			SyncTreeNodeDTO remoteNode) throws RepositoryException,
 			ConnectException, FtpException;
 
+	public abstract int getNumberConnections();
 }

@@ -1,5 +1,7 @@
 package fr.soe.a3s.dto.sync;
 
+import fr.soe.a3s.constant.DownloadStatus;
+
 public interface SyncTreeNodeDTO extends java.lang.Comparable {
 
 	public String RACINE = "racine";
@@ -20,4 +22,6 @@ public interface SyncTreeNodeDTO extends java.lang.Comparable {
 	public void setOptional(boolean value);
 	public boolean isOptional();
 	public String getRelativePath();
+	public DownloadStatus getDownloadStatus();
+	public void setDownloadStatus(DownloadStatus downloadStatus);
 }

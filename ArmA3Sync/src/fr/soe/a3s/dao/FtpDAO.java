@@ -27,6 +27,7 @@ import org.dom4j.DocumentException;
 import org.dom4j.Element;
 import org.dom4j.io.SAXReader;
 
+import fr.soe.a3s.constant.DownloadStatus;
 import fr.soe.a3s.constant.Protocole;
 import fr.soe.a3s.domain.AbstractProtocole;
 import fr.soe.a3s.domain.repository.AutoConfig;
@@ -42,6 +43,10 @@ public class FtpDAO extends AbstractConnexionDAO {
 
 	private FTPClient ftpClient;
 	private File downloadingFile;
+	private String rootRemotePath;
+	private boolean acquiredSmaphore;
+	private static final int CONNECTION_TIMEOUT = 5000;
+	private static final int READ_TIMEOUT = 30000;
 
 	private String connect(String url) throws NumberFormatException,
 			SocketException, IOException {
@@ -57,7 +62,8 @@ public class FtpDAO extends AbstractConnexionDAO {
 		String login = "anonymous";
 		String password = "";
 
-		ftpClient.setConnectTimeout(5000);// 5 sec
+		ftpClient.setConnectTimeout(CONNECTION_TIMEOUT);
+		ftpClient.setDataTimeout(READ_TIMEOUT);
 		ftpClient.connect(hostname, Integer.parseInt(port));
 		ftpClient.login(login, password);
 		ftpClient.setFileType(FTP.BINARY_FILE_TYPE);
@@ -66,7 +72,7 @@ public class FtpDAO extends AbstractConnexionDAO {
 		return remotePath;
 	}
 
-	public String connectToRepository(String repositoryName,
+	public void connectToRepository(String repositoryName,
 			AbstractProtocole protocole) throws FtpException, ConnectException {
 
 		String url = protocole.getUrl();
@@ -81,7 +87,8 @@ public class FtpDAO extends AbstractConnexionDAO {
 		String login = protocole.getLogin();
 		String password = protocole.getPassword();
 		ftpClient = new FTPClient();
-		ftpClient.setConnectTimeout(5000);// 5 sec
+		ftpClient.setConnectTimeout(CONNECTION_TIMEOUT);
+		ftpClient.setDataTimeout(READ_TIMEOUT);
 		ftpClient.setBufferSize(1048576);// 1024*1024
 		boolean isLoged = false;
 		int reply = 0;
@@ -116,9 +123,9 @@ public class FtpDAO extends AbstractConnexionDAO {
 			throw new FtpException(message);
 		}
 
-		System.out.println("Connection to " + repositoryName + " success.");
+		// System.out.println("Connection to " + repositoryName + " success.");
 
-		return remotePath;
+		rootRemotePath = remotePath;
 	}
 
 	private boolean download(File file, String remotePath) throws IOException {
@@ -192,8 +199,8 @@ public class FtpDAO extends AbstractConnexionDAO {
 						new GZIPInputStream(new FileInputStream(file)));
 				autoConfig = (AutoConfig) fRo.readObject();
 				fRo.close();
-				FileAccessMethods.deleteFile(file);
 			}
+			FileAccessMethods.deleteDirectory(directory);
 		} catch (Exception e) {
 			e.printStackTrace();
 			autoConfig = null;
@@ -323,28 +330,39 @@ public class FtpDAO extends AbstractConnexionDAO {
 	}
 
 	public boolean downloadFile(String remotePath, String destinationPath,
-			SyncTreeNodeDTO node, boolean resume) throws IOException {
+			SyncTreeNodeDTO node) throws IOException {
 
+		this.downloadingNode = node;
 		boolean test = ftpClient.changeWorkingDirectory(remotePath);
 		File parentDirectory = new File(destinationPath);
 		parentDirectory.mkdirs();
 		downloadingFile = new File(parentDirectory + "/" + node.getName());
 
 		boolean found = false;
+		long size = 0;
 		if (node.isLeaf()) {
 			FTPFile[] ftpFiles = ftpClient.listFiles(downloadingFile.getName());
 			if (ftpFiles.length != 0) {
 				size = ftpFiles[0].getSize();
 			}
-			if (resume && downloadingFile.exists()
+			// Resuming
+			boolean resume = false;
+			if (node.getDownloadStatus().equals(DownloadStatus.RUNNING)
+					&& downloadingFile.exists()
 					&& downloadingFile.length() != size) {
 				this.offset = downloadingFile.length();
+				resume = true;
 			} else {
 				this.offset = 0;
+				node.setDownloadStatus(DownloadStatus.RUNNING);
 				FileAccessMethods.deleteFile(downloadingFile);
+				resume = false;
 			}
 
-			startTime = System.nanoTime();
+			// System.out.println("offset = " + offset);
+			ftpClient.setRestartOffset(this.offset);
+
+			final long startTime = System.nanoTime();
 			FileOutputStream fos = new FileOutputStream(downloadingFile, resume);
 			CountingOutputStream dos = new CountingOutputStream(fos) {
 				@Override
@@ -353,22 +371,33 @@ public class FtpDAO extends AbstractConnexionDAO {
 					// System.out.println(getCount());
 					int nbBytes = getCount();
 					countFileSize = getCount();
-					endTime = System.nanoTime();
-					updateFileSizeObserver();
-					updateObserverSpeed(nbBytes);
+					long endTime = System.nanoTime();
+					long totalTime = endTime - startTime;
+					speed = (long) (nbBytes / (totalTime * Math.pow(10, -9)));
+					if (acquiredSmaphore) {
+						updateFileSizeObserver();
+						if (totalTime > Math.pow(10, 9) / 2) {// 0.5s
+							updateObserverSpeed();
+						}
+					}
 				}
 			};
-			// System.out.println("offset = " + offset);
-			ftpClient.setRestartOffset(this.offset);
 			found = ftpClient.retrieveFile(downloadingFile.getName(), dos);
 			fos.close();
 			dos.close();
+			countFileSize = 0;
+			speed = 0;
 		} else {// directory
 			downloadingFile.mkdir();
 			found = true;
 		}
-		countFilesNumber++;
-		updateFilesNumberObserver();
+
+		if (found) {
+			updateFilesNumberObserver();
+			node.setDownloadStatus(DownloadStatus.DONE);
+		}
+		this.downloadingFile = null;
+		this.downloadingNode = null;
 		return found;
 	}
 
@@ -463,19 +492,9 @@ public class FtpDAO extends AbstractConnexionDAO {
 			remotePath = remotePath + "/" + node.getParent().getRelativePath();
 			ftpClient.changeWorkingDirectory(remotePath);
 
-			size = file.length();
 			this.offset = 0;
 
-			// FTPFile[] ftpFiles = ftpClient.listFiles(file.getName());
-			// if (ftpFiles.length != 0) {
-			// if (resume && file.exists() && ftpFiles[0].getSize() != size) {
-			// this.offset = ftpFiles[0].getSize();
-			// System.out.println("RESUME offset = " + offset);
-			// ftpClient.setRestartOffset(this.offset);
-			// }
-			// }
-
-			startTime = System.nanoTime();
+			final long startTime = System.nanoTime();
 			FileInputStream fis = new FileInputStream(file);
 			CountingInputStream uis = new CountingInputStream(fis) {
 				@Override
@@ -484,9 +503,13 @@ public class FtpDAO extends AbstractConnexionDAO {
 					System.out.println(getCount());
 					int nbBytes = getCount();
 					countFileSize = getCount();
-					endTime = System.nanoTime();
-					updateFileSizeObserver();
-					updateObserverSpeed(nbBytes);
+					updateFileSizeObserver2();
+					long endTime = System.nanoTime();
+					long totalTime = endTime - startTime;
+					speed = (long) (nbBytes / (totalTime * Math.pow(10, -9)));
+					if (totalTime > Math.pow(10, 9) / 2) {// 0.5s
+						updateObserverSpeed();
+					}
 				}
 			};
 
@@ -498,8 +521,7 @@ public class FtpDAO extends AbstractConnexionDAO {
 			makeDir(remotePath, node.getRelativePath());
 			found = true;
 		}
-		countFilesNumber++;
-		updateFilesNumberObserver();
+		updateFilesNumberObserver2();
 		return found;
 	}
 
@@ -723,9 +745,10 @@ public class FtpDAO extends AbstractConnexionDAO {
 	public void cancel(boolean resumable) {
 		canceled = true;
 		disconnect();
-		if (!resumable) {
+		if (!resumable && downloadingFile != null) {
 			FileAccessMethods.deleteFile(downloadingFile);
 		}
+		downloadingNode = null;
 	}
 
 	public void disconnect() {
@@ -735,5 +758,17 @@ public class FtpDAO extends AbstractConnexionDAO {
 			} catch (IOException e) {
 			}
 		}
+	}
+
+	public String getRootRemotePath() {
+		return rootRemotePath;
+	}
+
+	public boolean isAcquiredSmaphore() {
+		return acquiredSmaphore;
+	}
+
+	public void setAcquiredSemaphore(boolean acquiredSmaphore) {
+		this.acquiredSmaphore = acquiredSmaphore;
 	}
 }

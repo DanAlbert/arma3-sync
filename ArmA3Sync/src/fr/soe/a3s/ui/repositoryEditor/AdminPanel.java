@@ -442,7 +442,8 @@ public class AdminPanel extends JPanel implements UIConstants {
 		}
 
 		// Reset upload parameters
-		repositoryService.saveTransfertParameters(repositoryName, 0, 0, false);
+		// repositoryService.saveTransfertParameters(repositoryName, 0, 0,
+		// false);
 	}
 
 	@Deprecated
@@ -499,7 +500,8 @@ public class AdminPanel extends JPanel implements UIConstants {
 		}
 
 		// Reset upload parameters
-		repositoryService.saveTransfertParameters(repositoryName, 0, 0, false);
+		// repositoryService.saveTransfertParameters(repositoryName, 0, 0,
+		// false);
 
 		RepositoryBuilder repositoryBuilder = new RepositoryBuilder(facade,
 				repositoryName, path, this);

@@ -3,7 +3,6 @@ package fr.soe.a3s.ui.repositoryEditor;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
-import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
@@ -16,11 +15,16 @@ import java.util.List;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
+import javax.swing.BoxLayout;
+import javax.swing.ComboBoxModel;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
+import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -54,6 +58,7 @@ public class BuildOptionsPanel extends JDialog implements UIConstants {
 	private JButton buttonAdd3;
 	private JButton buttonRemove3;
 	private final String repositoryName;
+	private JComboBox<Integer> comboBoxConnections;
 	/* Services */
 	private final ConfigurationService configurationService = new ConfigurationService();
 	private final RepositoryService repositoryService = new RepositoryService();
@@ -75,11 +80,44 @@ public class BuildOptionsPanel extends JDialog implements UIConstants {
 						- this.getHeight() / 2);
 
 		this.setLayout(new BorderLayout());
+
+		Box vertBox1 = Box.createVerticalBox();
+		this.add(vertBox1, BorderLayout.CENTER);
+
+		JPanel centerPanel = new JPanel();
+		vertBox1.add(centerPanel, BorderLayout.CENTER);
+		centerPanel.setLayout(new BoxLayout(centerPanel, BoxLayout.Y_AXIS));
 		{
-			JPanel centerPanel = new JPanel();
-			GridLayout grid1 = new GridLayout(3, 1);
-			centerPanel.setLayout(grid1);
-			this.add(centerPanel, BorderLayout.CENTER);
+			JPanel connectionsPanel = new JPanel();
+			connectionsPanel.setLayout(new BorderLayout());
+			{
+				JPanel panel = new JPanel();
+				panel.setLayout(new FlowLayout(FlowLayout.LEFT));
+				panel.setBorder(BorderFactory.createTitledBorder(
+						BorderFactory.createEtchedBorder(),
+						"Clients connections"));
+				JLabel label = new JLabel();
+				label.setText("Set maximum number of connections per client: ");
+				comboBoxConnections = new JComboBox<Integer>();
+				ComboBoxModel comboBoxModel = new DefaultComboBoxModel(
+						new Integer[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 });
+				comboBoxConnections.setModel(comboBoxModel);
+				comboBoxConnections.setFocusable(false);
+				comboBoxConnections.setPreferredSize(new Dimension(50, 25));
+				comboBoxConnections.setMaximumRowCount(10);
+				panel.add(label);
+				panel.add(comboBoxConnections);
+				connectionsPanel.add(panel, BorderLayout.CENTER);
+			}
+			{
+				JPanel panel = new JPanel();
+				buttonAdd1 = new JButton("");
+				ImageIcon addIcon = new ImageIcon(ADD);
+				buttonAdd1.setIcon(addIcon);
+				panel.setPreferredSize(new Dimension(buttonAdd1
+						.getPreferredSize()));
+				connectionsPanel.add(panel, BorderLayout.EAST);
+			}
 
 			JPanel favoriteServersPanel = new JPanel();
 			favoriteServersPanel.setLayout(new BorderLayout());
@@ -132,6 +170,7 @@ public class BuildOptionsPanel extends JDialog implements UIConstants {
 				ImageIcon deleteIcon = new ImageIcon(DELETE);
 				buttonRemove2.setIcon(deleteIcon);
 				vertBox.add(buttonRemove2);
+				vertBox.add(Box.createVerticalStrut(80));
 				excludedFilesPanel.add(vertBox, BorderLayout.EAST);
 			}
 
@@ -163,9 +202,11 @@ public class BuildOptionsPanel extends JDialog implements UIConstants {
 				ImageIcon deleteIcon = new ImageIcon(DELETE);
 				buttonRemove3.setIcon(deleteIcon);
 				vertBox.add(buttonRemove3);
+				vertBox.add(Box.createVerticalStrut(80));
 				excludedFoldersWithExtraLocalContentPanel.add(vertBox,
 						BorderLayout.EAST);
 			}
+			centerPanel.add(connectionsPanel);
 			centerPanel.add(favoriteServersPanel);
 			centerPanel.add(excludedFilesPanel);
 			centerPanel.add(excludedFoldersWithExtraLocalContentPanel);
@@ -242,12 +283,21 @@ public class BuildOptionsPanel extends JDialog implements UIConstants {
 
 	public void init() {
 
+		// Client connections
+		int numberOfConnections = repositoryService
+				.getNumberOfConnections(repositoryName);
+		if (numberOfConnections == 0) {
+			comboBoxConnections.setSelectedIndex(0);
+		} else {
+			comboBoxConnections.setSelectedItem(numberOfConnections);
+		}
+
 		// Favorite servers
 		List<FavoriteServerDTO> favoriteServerDTOs = configurationService
 				.getFavoriteServers();
 
 		List<FavoriteServerDTO> list = repositoryService
-				.getFavoriteServerToAutoconfig(repositoryName);
+				.getFavoriteServerSetToAutoconfig(repositoryName);
 
 		JCheckBox[] tab2 = new JCheckBox[favoriteServerDTOs.size()];
 		for (int i = 0; i < favoriteServerDTOs.size(); i++) {
@@ -265,17 +315,17 @@ public class BuildOptionsPanel extends JDialog implements UIConstants {
 		checkBoxListFavoriteServers.setListData(tab2);
 
 		// Excluded files from build
-		updateExcludedFilesFromBuild();
+		Collection<String> excludedFilesFromBuildList = repositoryService
+				.getExcludedFilesPathFromBuild(repositoryName);
+		updateExcludedFilesFromBuild(excludedFilesFromBuildList);
 
 		// Excluded extra local folder content from sync
-		updateExcludedFoldersFromSync();
-
+		Collection<String> excludedFoldersFromSyncList = repositoryService
+				.getExcludedFoldersFromSync(repositoryName);
+		updateExcludedFoldersFromSync(excludedFoldersFromSyncList);
 	}
 
-	public void updateExcludedFilesFromBuild() {
-
-		Collection<String> list = repositoryService
-				.getExcludedFilesPathFromBuild(repositoryName);
+	public void updateExcludedFilesFromBuild(Collection<String> list) {
 
 		String[] paths = new String[list.size()];
 		Iterator iter = list.iterator();
@@ -294,10 +344,7 @@ public class BuildOptionsPanel extends JDialog implements UIConstants {
 		scrollPane2.updateUI();
 	}
 
-	private void updateExcludedFoldersFromSync() {
-
-		Collection<String> list = repositoryService
-				.getExcludedFoldersFromSync(repositoryName);
+	private void updateExcludedFoldersFromSync(Collection<String> list) {
 
 		String[] paths = new String[list.size()];
 		Iterator iter = list.iterator();
@@ -327,9 +374,14 @@ public class BuildOptionsPanel extends JDialog implements UIConstants {
 			File file = fc.getSelectedFile();
 			if (file != null) {
 				String path = file.getAbsolutePath();
-				repositoryService.addExcludedFilesPathFromBuild(repositoryName,
-						path.toLowerCase());
-				updateExcludedFilesFromBuild();
+				int size = excludedFilesFromBuildList.getModel().getSize();
+				Collection<String> list = new ArrayList<String>();
+				for (int i = 0; i < size; i++) {
+					list.add((String) excludedFilesFromBuildList.getModel()
+							.getElementAt(i));
+				}
+				list.add(path.toLowerCase());
+				updateExcludedFilesFromBuild(list);
 			}
 		}
 	}
@@ -339,11 +391,15 @@ public class BuildOptionsPanel extends JDialog implements UIConstants {
 		List<String> paths = excludedFilesFromBuildList.getSelectedValuesList();
 
 		if (paths != null) {
-			for (String path : paths) {
-				repositoryService.removeExcludedFilesPathFromBuild(
-						repositoryName, path.toLowerCase());
+			int size = excludedFilesFromBuildList.getModel().getSize();
+			Collection<String> list = new ArrayList<String>();
+			for (int i = 0; i < size; i++) {
+				list.add((String) excludedFilesFromBuildList.getModel()
+						.getElementAt(i));
 			}
-			updateExcludedFilesFromBuild();
+			for (String path : paths) {
+				list.remove(path);
+			}
 		}
 	}
 
@@ -357,9 +413,14 @@ public class BuildOptionsPanel extends JDialog implements UIConstants {
 			File file = fc.getSelectedFile();
 			if (file != null) {
 				String path = file.getAbsolutePath();
-				repositoryService.addExcludedFoldersFromSync(repositoryName,
-						path.toLowerCase());
-				updateExcludedFoldersFromSync();
+				int size = excludedFoldersFromSyncList.getModel().getSize();
+				Collection<String> list = new ArrayList<String>();
+				for (int i = 0; i < size; i++) {
+					list.add((String) excludedFoldersFromSyncList.getModel()
+							.getElementAt(i));
+				}
+				list.add(path.toLowerCase());
+				updateExcludedFoldersFromSync(list);
 			}
 		}
 	}
@@ -370,16 +431,25 @@ public class BuildOptionsPanel extends JDialog implements UIConstants {
 				.getSelectedValuesList();
 
 		if (paths != null) {
-			for (String path : paths) {
-				repositoryService.removeExcludedFoldersFromSync(repositoryName,
-						path.toLowerCase());
+			int size = excludedFoldersFromSyncList.getModel().getSize();
+			Collection<String> list = new ArrayList<String>();
+			for (int i = 0; i < size; i++) {
+				list.add((String) excludedFoldersFromSyncList.getModel()
+						.getElementAt(i));
 			}
-			updateExcludedFoldersFromSync();
+			for (String path : paths) {
+				list.remove(path);
+			}
 		}
 	}
 
 	private void buttonOKPerformed() {
 
+		// Set number of connections
+		repositoryService.setNumberOfConnections(repositoryName,
+				(int) comboBoxConnections.getSelectedItem());
+
+		// Set favorite servers
 		List<FavoriteServerDTO> favoriteServerDTOs = configurationService
 				.getFavoriteServers();
 
@@ -398,6 +468,24 @@ public class BuildOptionsPanel extends JDialog implements UIConstants {
 
 		repositoryService.setFavoriteServerToAutoconfig(repositoryName,
 				selectedServerDTOs);
+
+		// Set excluded files from build
+		int size = excludedFilesFromBuildList.getModel().getSize();
+		list = new ArrayList<String>();
+		for (int i = 0; i < size; i++) {
+			list.add((String) excludedFilesFromBuildList.getModel()
+					.getElementAt(i));
+		}
+		repositoryService.setExcludedFilesPathFromBuild(repositoryName, list);
+
+		// Set excluded folders from sync
+		size = excludedFoldersFromSyncList.getModel().getSize();
+		list = new ArrayList<String>();
+		for (int i = 0; i < size; i++) {
+			list.add((String) excludedFoldersFromSyncList.getModel()
+					.getElementAt(i));
+		}
+		repositoryService.setExcludedFoldersFromSync(repositoryName, list);
 
 		try {
 			repositoryService.write(repositoryName);

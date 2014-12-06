@@ -1,12 +1,9 @@
 package fr.soe.a3s.ui.repositoryEditor;
 
 import java.awt.BorderLayout;
-import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
-import java.awt.ScrollPane;
-import java.awt.TextArea;
 import java.awt.Toolkit;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
@@ -24,19 +21,16 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.border.BevelBorder;
 
-import fr.soe.a3s.domain.repository.Changelogs;
 import fr.soe.a3s.dto.ChangelogDTO;
-import fr.soe.a3s.exception.FtpException;
 import fr.soe.a3s.exception.RepositoryException;
-import fr.soe.a3s.service.FtpService;
 import fr.soe.a3s.service.RepositoryService;
 import fr.soe.a3s.ui.Facade;
 import fr.soe.a3s.ui.UIConstants;
 
 public class ChangelogPanel extends JFrame implements UIConstants {
 
-	private Facade facade;
-	private AdminPanel adminPanel;
+	private final Facade facade;
+	private final AdminPanel adminPanel;
 	private JButton buttonSwitch;
 	private JButton buttonCopy;
 	private JButton buttonClose;
@@ -44,8 +38,8 @@ public class ChangelogPanel extends JFrame implements UIConstants {
 	private static final String TEN_LAST_BUILD = "10 last builds";
 	private JTextArea textArea;
 	private JScrollPane scrollpane;
-	private String repositoryName;
-	private RepositoryService repositoryService = new RepositoryService();
+	private final String repositoryName;
+	private final RepositoryService repositoryService = new RepositoryService();
 	private List<ChangelogDTO> changelogDTOs;
 
 	public ChangelogPanel(Facade facade, String repositoryName,
@@ -116,6 +110,7 @@ public class ChangelogPanel extends JFrame implements UIConstants {
 		});
 		// Add Listeners
 		addWindowListener(new WindowAdapter() {
+			@Override
 			public void windowClosing(WindowEvent e) {
 				menuExitPerformed();
 			}
@@ -129,7 +124,10 @@ public class ChangelogPanel extends JFrame implements UIConstants {
 		try {
 			this.adminPanel.getButtonView().setEnabled(false);
 			changelogDTOs = repositoryService.getChangelogs(repositoryName);
-			if (changelogDTOs == null || changelogDTOs.size() == 0) {
+			if (changelogDTOs == null) {
+				String message = "Changelog is not available.";
+				textArea.setText(message);
+			} else if (changelogDTOs.size() == 0) {
 				String message = "Changelog is not available.";
 				textArea.setText(message);
 			} else {

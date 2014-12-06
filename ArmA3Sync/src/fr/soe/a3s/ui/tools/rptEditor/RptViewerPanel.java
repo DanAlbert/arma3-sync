@@ -1,4 +1,4 @@
-package fr.soe.a3s.ui.rptEditor;
+package fr.soe.a3s.ui.tools.rptEditor;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;

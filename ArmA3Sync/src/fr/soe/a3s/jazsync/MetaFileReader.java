@@ -34,10 +34,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
 import java.net.MalformedURLException;
-import java.net.URLEncoder;
-
-import fr.soe.a3s.exception.JazsyncException;
-import fr.soe.a3s.exception.WritingException;
 
 /**
  * Class used to read metafile
@@ -54,7 +50,7 @@ public class MetaFileReader {
 	/** Authentication variables */
 	private String username;
 	private String passwd;
-	private boolean authing = false;
+	private final boolean authing = false;
 
 	/** Variables for header information from .zsync metafile */
 	// ------------------------------
@@ -72,9 +68,9 @@ public class MetaFileReader {
 	// ------------------------------
 	private String url;
 	private String localMetafile;
-	private boolean downMetaFile = false;
+	private final boolean downMetaFile = false;
 	private String extraInputFile;
-	private int ranges = 100;
+	private final int ranges = 100;
 	private long downloadedMetafile = 0;
 
 	/**
@@ -84,11 +80,10 @@ public class MetaFileReader {
 	 * 
 	 * @param args
 	 *            Arguments
-	 * @throws WritingException
-	 * @throws JazsyncException
+	 * @throws Exception
 	 */
 	public MetaFileReader(String relativeZsyncFileUrl, HttpConnection http)
-			throws WritingException, JazsyncException {
+			throws Exception {
 
 		try {
 			http.openConnection(relativeZsyncFileUrl);
@@ -102,14 +97,12 @@ public class MetaFileReader {
 					/ (double) mf_blocksize);
 			fillHashTable(mfBytes);
 		} catch (MalformedURLException e) {
-			e.printStackTrace();
-			throw new JazsyncException("Wrong .zsync file url "
-					+ relativeZsyncFileUrl);
+			String message = "Wrong .zsync file url " + relativeZsyncFileUrl;
+			throw new Exception(message, e);
 		} catch (Exception e) {
-			e.printStackTrace();
-			throw new WritingException(
-					"Failed to retrieve .zsync file for url "
-							+ relativeZsyncFileUrl + "\n" + e.getMessage());
+			String message = "Failed to retrieve .zsync file for url "
+					+ relativeZsyncFileUrl + "\n" + e.getMessage();
+			throw new Exception(message, e);
 		}
 	}
 

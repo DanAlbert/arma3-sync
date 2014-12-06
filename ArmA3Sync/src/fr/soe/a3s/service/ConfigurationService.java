@@ -227,6 +227,11 @@ public class ConfigurationService extends ObjectDTOtransformer {
 				.setExThreadsSelection(exThreads);
 	}
 
+	public void setMalloc(String malloc) {
+		configurationDAO.getConfiguration().getLauncherOptions()
+				.setMallocSelection(malloc);
+	}
+
 	public void setEnableHT(boolean value) {
 		configurationDAO.getConfiguration().getLauncherOptions()
 				.setEnableHT(value);
@@ -263,7 +268,8 @@ public class ConfigurationService extends ObjectDTOtransformer {
 		}
 	}
 
-	public String getTS3installationFodler() {
+	/* ACRE */
+	public String getAcreTS3installationFodler() {
 
 		String ts3Path = configurationDAO.getConfiguration().getAcreOptions()
 				.getTs3Path();
@@ -276,6 +282,105 @@ public class ConfigurationService extends ObjectDTOtransformer {
 		}
 	}
 
+	public void setAcreTS3installationFodler(String ts3Path) {
+		configurationDAO.getConfiguration().getAcreOptions()
+				.setTs3Path(ts3Path);
+	}
+
+	public String getAcrePluginPath() {
+		String acrePluginPath = configurationDAO.getConfiguration()
+				.getAcreOptions().getAcrePluginPath();
+		return acrePluginPath;
+	}
+
+	public void setAcrePluginPath(String acrePluginPath) {
+		configurationDAO.getConfiguration().getAcreOptions()
+				.setAcrePluginPath(acrePluginPath);
+	}
+
+	public String getAcreUserconfigPath() {
+		String acreUserconfigPath = configurationDAO.getConfiguration()
+				.getAcreOptions().getAcreUserconfigPath();
+		return acreUserconfigPath;
+	}
+
+	public void setAcreUserconfigPath(String acreUserconfigPath) {
+		configurationDAO.getConfiguration().getAcreOptions()
+				.setAcreUserconfigPath(acreUserconfigPath);
+	}
+
+	/* ACRE 2 */
+	public String getAcre2TS3installationFodler() {
+
+		String ts3Path = configurationDAO.getConfiguration().getAcre2Options()
+				.getTs3Path();
+
+		if (ts3Path != null) {
+			return ts3Path;
+		} else {
+			String path = configurationDAO.determineTS3path();
+			return path;
+		}
+	}
+
+	public void setAcre2TS3installationFodler(String ts3Path) {
+		configurationDAO.getConfiguration().getAcre2Options()
+				.setTs3Path(ts3Path);
+	}
+
+	public String getAcre2PluginPath() {
+		String acre2PluginPath = configurationDAO.getConfiguration()
+				.getAcre2Options().getAcre2PluginPath();
+		return acre2PluginPath;
+	}
+
+	public void setAcre2PluginPath(String acre2PluginPath) {
+		configurationDAO.getConfiguration().getAcre2Options()
+				.setAcre2PluginPath(acre2PluginPath);
+	}
+
+	/* TFAR */
+	public String getTfarTS3installationFodler() {
+
+		String ts3Path = configurationDAO.getConfiguration().getTfarOptions()
+				.getTs3Path();
+
+		if (ts3Path != null) {
+			return ts3Path;
+		} else {
+			String path = configurationDAO.determineTS3path();
+			return path;
+		}
+	}
+
+	public void setTfarTS3installationFodler(String ts3Path) {
+		configurationDAO.getConfiguration().getTfarOptions()
+				.setTs3Path(ts3Path);
+	}
+
+	public String getTfarPluginPath() {
+		String tfarPluginPath = configurationDAO.getConfiguration()
+				.getTfarOptions().getTfarPluginPath();
+		return tfarPluginPath;
+	}
+
+	public void setTfarPluginPath(String tfarPluginPath) {
+		configurationDAO.getConfiguration().getTfarOptions()
+				.setTfarPluginPath(tfarPluginPath);
+	}
+
+	public String getTfarUserconfigPath() {
+		String tfarUserconfigPath = configurationDAO.getConfiguration()
+				.getTfarOptions().getTfarUserconfigPath();
+		return tfarUserconfigPath;
+	}
+
+	public void setTfarUserconfigPath(String tfarUserconfigPath) {
+		configurationDAO.getConfiguration().getTfarOptions()
+				.setTfarUserconfigPath(tfarUserconfigPath);
+	}
+
+	/* RPT */
 	public String getRptPath() {
 
 		String rptPath = configurationDAO.getConfiguration().getRptOptions()
@@ -293,11 +398,6 @@ public class ConfigurationService extends ObjectDTOtransformer {
 		configurationDAO.getConfiguration().getRptOptions().setRptPath(rptPath);
 	}
 
-	public void setTS3installationFodler(String ts3Path) {
-		configurationDAO.getConfiguration().getAcreOptions()
-				.setTs3Path(ts3Path);
-	}
-
 	public String getTS3version(String ts3InstallationDirectoryPath) {
 
 		String version = configurationDAO
@@ -310,6 +410,19 @@ public class ConfigurationService extends ObjectDTOtransformer {
 		assert (ts3InstallationDirectoryPath != null);
 		String ts3ExePath = ts3InstallationDirectoryPath + "\\"
 				+ "ts3client_win64.exe";
+		File file = new File(ts3ExePath);
+		if (!file.exists()) {
+			return false;
+		} else {
+			return true;
+		}
+	}
+
+	public boolean isTS332bit(String ts3InstallationDirectoryPath) {
+
+		assert (ts3InstallationDirectoryPath != null);
+		String ts3ExePath = ts3InstallationDirectoryPath + "\\"
+				+ "ts3client_win32.exe";
 		File file = new File(ts3ExePath);
 		if (!file.exists()) {
 			return false;

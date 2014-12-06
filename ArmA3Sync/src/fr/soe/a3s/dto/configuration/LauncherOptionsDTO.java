@@ -13,6 +13,7 @@ public class LauncherOptionsDTO {
 	private String maxMemorySelection;
 	private int cpuCountSelection;
 	private String exThreadsSelection;
+	private String mallocSelection;
 	private boolean enableHT;
 	private boolean noSplashScreen;
 	private boolean defaultWorld;
@@ -148,5 +149,13 @@ public class LauncherOptionsDTO {
 
 	public void setAutoRestart(boolean autoRestart) {
 		this.autoRestart = autoRestart;
+	}
+
+	public String getMallocSelection() {
+		return mallocSelection;
+	}
+
+	public void setMallocSelection(String mallocSelection) {
+		this.mallocSelection = mallocSelection;
 	}
 }

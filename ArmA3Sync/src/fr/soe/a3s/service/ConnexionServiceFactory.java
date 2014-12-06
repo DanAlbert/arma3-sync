@@ -5,6 +5,7 @@ import fr.soe.a3s.dao.RepositoryDAO;
 import fr.soe.a3s.domain.Ftp;
 import fr.soe.a3s.domain.Http;
 import fr.soe.a3s.domain.repository.Repository;
+import fr.soe.a3s.domain.repository.ServerInfo;
 import fr.soe.a3s.exception.CheckException;
 import fr.soe.a3s.exception.RepositoryException;
 
@@ -22,8 +23,9 @@ public class ConnexionServiceFactory {
 				.contains(Protocole.HTTP.getPrompt())) {
 			return new HttpService();
 		} else {
-			throw new CheckException(
-					"Invalid url or unsupported protocole.\n Url must start with ftp:// and http:// ");
+			throw new CheckException("Invalid url or unsupported protocole."
+					+ "\n" + "Url must start with " + Protocole.FTP.getPrompt()
+					+ " or " + Protocole.HTTP.getPrompt());
 		}
 	}
 
@@ -38,6 +40,35 @@ public class ConnexionServiceFactory {
 			return new FtpService();
 		} else if (repository.getProtocole() instanceof Http) {
 			return new HttpService();
+		} else {
+			throw new CheckException(
+					"Unknown or unsupported protocole for repository "
+							+ repositoryName + ".");
+		}
+	}
+
+	public static AbstractConnexionService getServiceFromRepositoryMultiConnections(
+			String repositoryName) throws RepositoryException, CheckException {
+
+		Repository repository = repositoryDAO.getMap().get(repositoryName);
+		if (repository == null) {
+			throw new RepositoryException("Repository " + repositoryName
+					+ " not found!");
+		}
+
+		ServerInfo serverInfo = repository.getServerInfo();
+		int numberOfConnections = 0;
+		if (serverInfo != null) {
+			numberOfConnections = serverInfo.getNumberOfConnections();
+		}
+		if (numberOfConnections == 0) {
+			numberOfConnections = 1;
+		}
+
+		if (repository.getProtocole() instanceof Ftp) {
+			return new FtpService(numberOfConnections);
+		} else if (repository.getProtocole() instanceof Http) {
+			return new HttpService(numberOfConnections);
 		} else {
 			throw new CheckException(
 					"Unknown or unsupported protocole for repository "

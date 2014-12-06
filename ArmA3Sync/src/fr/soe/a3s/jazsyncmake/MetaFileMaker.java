@@ -37,8 +37,6 @@ import java.security.Security;
 import java.util.ArrayList;
 import java.util.List;
 
-import fr.soe.a3s.exception.JazsyncException;
-import fr.soe.a3s.exception.WritingException;
 import fr.soe.a3s.jazsync.ChecksumPair;
 import fr.soe.a3s.jazsync.Configuration;
 import fr.soe.a3s.jazsync.Generator;
@@ -55,15 +53,15 @@ public class MetaFileMaker {
 	/** Default length of strong checksum (MD4) */
 	private final int STRONG_SUM_LENGTH = 16;
 	private int blocksize = 8192;
-	private int[] hashLengths = new int[3];
-	private long fileLength;
+	private final int[] hashLengths = new int[3];
+	private final long fileLength;
 
 	/* Hash-lengths and number of sequence matches */
 	/*
 	 * index 0 - seq_matches index 1 - weakSum length index 2 - strongSum length
 	 */
 	public MetaFileMaker(File sourceFile, File targetFile, String url,
-			String sha1) throws WritingException, JazsyncException {
+			String sha1) throws Exception {
 
 		Security.addProvider(new JarsyncProvider());
 		hashLengths[2] = STRONG_SUM_LENGTH;
@@ -85,8 +83,10 @@ public class MetaFileMaker {
 			out.close();
 		} catch (IOException e) {
 			e.printStackTrace();
-			throw new WritingException(
-					"Can't create .zsync metafile, check your permissions.");
+			String message = "Can't create .zsync metafile "
+					+ targetFile.getName() + "\n"
+					+ "Check your file access permissions.";
+			throw new Exception(message, e);
 		}
 
 		// appending block checksums into the metafile
@@ -108,11 +108,14 @@ public class MetaFileMaker {
 			}
 		} catch (IOException ioe) {
 			ioe.printStackTrace();
-			throw new WritingException(
-					"Can't write into the metafile, check your permissions.");
+			String message = "Can't write into the metafile "
+					+ targetFile.getName() + "\n"
+					+ "Check your file acceess permissions.";
+			throw new Exception(message, ioe);
 		} catch (NoSuchAlgorithmException nae) {
 			nae.printStackTrace();
-			throw new JazsyncException("Problem with MD4 checksum");
+			String message = "Problem with MD4 checksum.";
+			throw new Exception(message, nae);
 		}
 	}
 

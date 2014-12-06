@@ -6,8 +6,11 @@ import java.io.IOException;
 import java.net.ConnectException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Stack;
 import java.util.StringTokenizer;
 
+import fr.soe.a3s.controller.ObserverFileDownload;
+import fr.soe.a3s.dao.AbstractConnexionDAO;
 import fr.soe.a3s.dao.ConfigurationDAO;
 import fr.soe.a3s.dao.DataAccessConstants;
 import fr.soe.a3s.dao.FtpDAO;
@@ -33,15 +36,32 @@ import fr.soe.a3s.main.Version;
 public class FtpService extends AbstractConnexionService implements
 		DataAccessConstants {
 
-	private final FtpDAO ftpDAO = new FtpDAO();
+	private final List<FtpDAO> ftpDAOPool = new ArrayList<FtpDAO>();
+	private final Stack<SyncTreeNodeDTO> downloadFilesStack = new Stack();
+	private final List<Exception> errors = new ArrayList<Exception>();
+	private int semaphore = 1;
+	boolean end = false;
 	private static final RepositoryDAO repositoryDAO = new RepositoryDAO();
 	private static final ConfigurationDAO configurationDAO = new ConfigurationDAO();
+
+	public FtpService(int nbConnections) {
+		assert (nbConnections != 0);
+		for (int i = 0; i < nbConnections; i++) {
+			FtpDAO ftpDAO = new FtpDAO();
+			ftpDAOPool.add(ftpDAO);
+		}
+	}
+
+	public FtpService() {
+		FtpDAO ftpDAO = new FtpDAO();
+		ftpDAOPool.add(ftpDAO);
+	}
 
 	@Override
 	public AutoConfigDTO importAutoConfig(String url) throws FtpException,
 			WritingException, ConnectException {
 
-		AutoConfig autoConfig = ftpDAO.downloadAutoConfig(url);
+		AutoConfig autoConfig = ftpDAOPool.get(0).downloadAutoConfig(url);
 		disconnect();
 		if (autoConfig != null) {
 			List<FavoriteServer> list1 = autoConfig.getFavoriteServers();
@@ -82,26 +102,28 @@ public class FtpService extends AbstractConnexionService implements
 					+ " not found!");
 		}
 
-		String remotePath = ftpDAO.connectToRepository(repository.getName(),
+		ftpDAOPool.get(0).connectToRepository(repository.getName(),
 				repository.getProtocole());
+		String remotePath = ftpDAOPool.get(0).getRootRemotePath();
 
-		SyncTreeDirectory syncTreeDirectory = ftpDAO.downloadSync(
+		SyncTreeDirectory syncTreeDirectory = ftpDAOPool.get(0).downloadSync(
 				repositoryName, remotePath);
 		repository.setSync(syncTreeDirectory);// null if not found
-		ServerInfo serverInfo = ftpDAO.downloadSeverInfo(repositoryName,
-				remotePath);
+		ServerInfo serverInfo = ftpDAOPool.get(0).downloadSeverInfo(
+				repositoryName, remotePath);
 		repository.setServerInfo(serverInfo);// null if not found
 		if (serverInfo != null) {
 			repository.getHiddenFolderPath().addAll(
 					serverInfo.getHiddenFolderPaths());
 		}
-		Changelogs changelogs = ftpDAO.downloadChangelogs(repositoryName,
-				remotePath);
+		Changelogs changelogs = ftpDAOPool.get(0).downloadChangelogs(
+				repositoryName, remotePath);
 		repository.setChangelogs(changelogs);// null if not found
-		Events events = ftpDAO.downloadEvent(repositoryName, remotePath);
-		repository.setEvents(events);
-		AutoConfig autoConfig = ftpDAO.downloadAutoconfig(repositoryName,
+		Events events = ftpDAOPool.get(0).downloadEvent(repositoryName,
 				remotePath);
+		repository.setEvents(events);
+		AutoConfig autoConfig = ftpDAOPool.get(0).downloadAutoconfig(
+				repositoryName, remotePath);
 		repository.setAutoConfig(autoConfig);
 		if (autoConfig != null) {
 			List<FavoriteServer> favoriteServers = autoConfig
@@ -135,10 +157,11 @@ public class FtpService extends AbstractConnexionService implements
 					+ " not found!");
 		}
 
-		String remotePath = ftpDAO.connectToRepository(repository.getName(),
+		ftpDAOPool.get(0).connectToRepository(repository.getName(),
 				repository.getProtocole());
+		String remotePath = ftpDAOPool.get(0).getRootRemotePath();
 
-		SyncTreeDirectory syncTreeDirectory = ftpDAO.downloadSync(
+		SyncTreeDirectory syncTreeDirectory = ftpDAOPool.get(0).downloadSync(
 				repositoryName, remotePath);
 		repository.setSync(syncTreeDirectory);
 
@@ -156,11 +179,12 @@ public class FtpService extends AbstractConnexionService implements
 					+ " not found!");
 		}
 
-		String remotePath = ftpDAO.connectToRepository(repository.getName(),
+		ftpDAOPool.get(0).connectToRepository(repository.getName(),
 				repository.getProtocole());
+		String remotePath = ftpDAOPool.get(0).getRootRemotePath();
 
-		ServerInfo serverInfo = ftpDAO.downloadSeverInfo(repositoryName,
-				remotePath);
+		ServerInfo serverInfo = ftpDAOPool.get(0).downloadSeverInfo(
+				repositoryName, remotePath);
 		repository.setServerInfo(serverInfo);
 
 		disconnect();
@@ -176,11 +200,12 @@ public class FtpService extends AbstractConnexionService implements
 					+ " not found!");
 		}
 
-		String remotePath = ftpDAO.connectToRepository(repository.getName(),
+		ftpDAOPool.get(0).connectToRepository(repository.getName(),
 				repository.getProtocole());
+		String remotePath = ftpDAOPool.get(0).getRootRemotePath();
 
-		Changelogs changelogs = ftpDAO.downloadChangelogs(repositoryName,
-				remotePath);
+		Changelogs changelogs = ftpDAOPool.get(0).downloadChangelogs(
+				repositoryName, remotePath);
 		repository.setChangelogs(changelogs);
 
 		disconnect();
@@ -196,12 +221,14 @@ public class FtpService extends AbstractConnexionService implements
 					+ " not found!");
 		}
 
-		String remotePath = ftpDAO.connectToRepository(repository.getName(),
+		ftpDAOPool.get(0).connectToRepository(repository.getName(),
 				repository.getRepositoryUploadProtocole());
+		String remotePath = ftpDAOPool.get(0).getRootRemotePath();
 
 		boolean response = false;
 		try {
-			response = ftpDAO.uploadEvents(repository.getEvents(), remotePath);
+			response = ftpDAOPool.get(0).uploadEvents(repository.getEvents(),
+					remotePath);
 		} catch (Exception e) {
 			e.printStackTrace();
 			throw new FtpException(e.getMessage());
@@ -213,9 +240,7 @@ public class FtpService extends AbstractConnexionService implements
 
 	@Override
 	public void downloadAddons(String repositoryName,
-			List<SyncTreeNodeDTO> listFiles, boolean resume)
-			throws RepositoryException, FtpException, WritingException,
-			ConnectException {
+			List<SyncTreeNodeDTO> listFiles) throws Exception {
 
 		Repository repository = repositoryDAO.getMap().get(repositoryName);
 		if (repository == null) {
@@ -226,44 +251,157 @@ public class FtpService extends AbstractConnexionService implements
 		assert (repository.getSync() != null);
 		assert (repository.getServerInfo() != null);
 
-		String rootRemotePath = ftpDAO.connectToRepository(
-				repository.getName(), repository.getProtocole());
-		String rootDestinationPath = repository.getDefaultDownloadLocation();
-		try {
-			for (SyncTreeNodeDTO node : listFiles) {
-				String destinationPath = null;
-				String remotePath = rootRemotePath;
-				String path = determinePath(node);
-				if (node.getDestinationPath() != null) {
-					destinationPath = node.getDestinationPath();
-					remotePath = remotePath + "/" + path;
-				} else {
-					destinationPath = rootDestinationPath + "/" + path;
-					remotePath = remotePath + "/" + path;
+		final String rootDestinationPath = repository
+				.getDefaultDownloadLocation();
+
+		downloadFilesStack.addAll(listFiles);
+		this.semaphore = 1;
+		this.end = false;
+
+		for (final FtpDAO ftpDAO : ftpDAOPool) {
+			ftpDAO.addObserverFileDownload(new ObserverFileDownload() {
+				@Override
+				public void proceed() {
+					if (!ftpDAO.isCanceled()) {
+						final SyncTreeNodeDTO node = popDownloadFilesStack();
+						if (node != null) {
+							Thread t = new Thread(new Runnable() {
+								@Override
+								public void run() {
+									try {
+										if (aquireSemaphore()) {
+											ftpDAO.setAcquiredSemaphore(true);
+										}
+
+										ftpDAO.setActiveConnection(true);
+										ftpDAO.updateObserverActiveConnection();
+
+										boolean found = downloadAddon(ftpDAO,
+												node, rootDestinationPath);
+
+										if (!found) {
+											String message = "File not found on repository : "
+													+ node.getRelativePath();
+											addError(new FileNotFoundException(
+													message));
+										}
+									} catch (Exception e) {
+										if (!ftpDAO.isCanceled()) {
+											addError(e);
+										}
+									} finally {
+										if (ftpDAO.isAcquiredSmaphore()) {
+											releaseSemaphore();
+											ftpDAO.setAcquiredSemaphore(false);
+										}
+										ftpDAO.setActiveConnection(false);
+										ftpDAO.updateObserverActiveConnection();
+										ftpDAO.updateFileDownloadObserver();
+									}
+								}
+							});
+							t.start();
+						} else {// no more file to download
+							if (ftpDAO.isAcquiredSmaphore()) {
+								releaseSemaphore();
+								ftpDAO.setAcquiredSemaphore(false);
+							}
+							if (!end) {
+								end = true;
+								for (FtpDAO ftpDAO : ftpDAOPool) {
+									if (ftpDAO.isActiveConnection()) {
+										end = false;
+										break;
+									}
+								}
+								if (end) {
+									if (errors.isEmpty()) {
+										ftpDAO.updateObserverEnd();
+									} else {
+										ftpDAO.updateObserverError(errors);
+									}
+								} else {
+									for (FtpDAO ftpDAO : ftpDAOPool) {
+										if (ftpDAO.isActiveConnection()
+												&& aquireSemaphore()) {
+											ftpDAO.setAcquiredSemaphore(true);
+											break;
+										}
+									}
+								}
+							}
+						}
+					}
 				}
-
-				if (ftpDAO.isCanceled()) {
-					break;
-				}
-
-				boolean found = ftpDAO.downloadFile(remotePath,
-						destinationPath, node, resume);
-
-				resume = false;
-
-				if (!found) {
-					throw new FileNotFoundException(
-							"File not found on repository : " + node.getName());
-				}
-			}
-		} catch (Exception e) {
-			if (!ftpDAO.isCanceled()) {
-				e.printStackTrace();
-				throw new WritingException(e.getMessage());
-			}
-		} finally {
-			disconnect();
+			});
 		}
+
+		for (FtpDAO ftpDAO : ftpDAOPool) {
+			if (!downloadFilesStack.isEmpty()) {// nb files < nb connections
+				try {
+					ftpDAO.connectToRepository(repository.getName(),
+							repository.getProtocole());
+					ftpDAO.updateFileDownloadObserver();
+				} catch (FtpException | ConnectException e) {
+					boolean isDowloading = false;
+					ftpDAO.setActiveConnection(false);
+					for (FtpDAO fDAO : ftpDAOPool) {
+						if (fDAO.isActiveConnection()) {
+							isDowloading = true;
+							break;
+						}
+					}
+					if (!isDowloading) {
+						throw e;
+					}
+				}
+			}
+		}
+	}
+
+	private boolean downloadAddon(final FtpDAO ftpDAO,
+			final SyncTreeNodeDTO node, final String rootDestinationPath)
+			throws Exception {
+
+		String destinationPath = null;
+		String remotePath = ftpDAO.getRootRemotePath();
+		String path = determinePath(node);
+		if (node.getDestinationPath() != null) {
+			destinationPath = node.getDestinationPath();
+			remotePath = remotePath + "/" + path;
+		} else {
+			destinationPath = rootDestinationPath + "/" + path;
+			remotePath = remotePath + "/" + path;
+		}
+		boolean found = ftpDAO.downloadFile(remotePath, destinationPath, node);
+		return found;
+	}
+
+	private synchronized void addError(Exception e) {
+		errors.add(e);
+	}
+
+	private synchronized SyncTreeNodeDTO popDownloadFilesStack() {
+
+		if (downloadFilesStack.isEmpty()) {
+			return null;
+		} else {
+			return downloadFilesStack.pop();
+		}
+	}
+
+	private synchronized boolean aquireSemaphore() {
+
+		if (this.semaphore == 1) {
+			this.semaphore = 0;
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+	private synchronized void releaseSemaphore() {
+		semaphore = 1;
 	}
 
 	@Override
@@ -297,7 +435,8 @@ public class FtpService extends AbstractConnexionService implements
 
 		String response = null;
 		try {
-			String updateVersionName = ftpDAO.downloadXMLupdateFile(devMode);
+			String updateVersionName = ftpDAOPool.get(0).downloadXMLupdateFile(
+					devMode);
 			disconnect();
 			if (updateVersionName != null) {
 				System.out.println("ArmA3Sync Available update version = "
@@ -340,13 +479,14 @@ public class FtpService extends AbstractConnexionService implements
 					+ " not found!");
 		}
 
-		String remotePath = ftpDAO.connectToRepository(repository.getName(),
+		ftpDAOPool.get(0).connectToRepository(repository.getName(),
 				repository.getRepositoryUploadProtocole());
+		String remotePath = ftpDAOPool.get(0).getRootRemotePath();
 
 		try {
-			return ftpDAO.fileExists(remotePath, node);
+			return ftpDAOPool.get(0).fileExists(remotePath, node);
 		} catch (IOException e) {
-			if (!ftpDAO.isCanceled()) {
+			if (!ftpDAOPool.get(0).isCanceled()) {
 				e.printStackTrace();
 				throw new FtpException(e.getMessage());
 			}
@@ -420,10 +560,11 @@ public class FtpService extends AbstractConnexionService implements
 					+ " not found!");
 		}
 
-		String remotePath = ftpDAO.connectToRepository(repository.getName(),
+		ftpDAOPool.get(0).connectToRepository(repository.getName(),
 				repository.getRepositoryUploadProtocole());
+		String remotePath = ftpDAOPool.get(0).getRootRemotePath();
 
-		SyncTreeDirectory syncTreeDirectory = ftpDAO.downloadSync(
+		SyncTreeDirectory syncTreeDirectory = ftpDAOPool.get(0).downloadSync(
 				repositoryName, remotePath);
 		repository.setSync(syncTreeDirectory);
 
@@ -442,21 +583,23 @@ public class FtpService extends AbstractConnexionService implements
 					+ " not found!");
 		}
 
-		String remotePath = ftpDAO.connectToRepository(repository.getName(),
+		ftpDAOPool.get(0).connectToRepository(repository.getName(),
 				repository.getRepositoryUploadProtocole());
+		String remotePath = ftpDAOPool.get(0).getRootRemotePath();
 
 		try {
 			for (SyncTreeNodeDTO node : filesToDelete) {
-				if (ftpDAO.isCanceled()) {
+				if (ftpDAOPool.get(0).isCanceled()) {
 					return;
 				}
 				String parentPath = remotePath + "/"
 						+ node.getParent().getRelativePath();
-				ftpDAO.deleteFile(node.getName(), node.isLeaf(), parentPath);
+				ftpDAOPool.get(0).deleteFile(node.getName(), node.isLeaf(),
+						parentPath);
 			}
 
 			for (SyncTreeNodeDTO node : filesToUpload) {
-				if (ftpDAO.isCanceled()) {
+				if (ftpDAOPool.get(0).isCanceled()) {
 					return;
 				}
 
@@ -469,7 +612,8 @@ public class FtpService extends AbstractConnexionService implements
 									+ sourceFile.getAbsolutePath());
 				}
 
-				ftpDAO.uploadFile(sourceFile, remotePath, node, resume);
+				ftpDAOPool.get(0).uploadFile(sourceFile, remotePath, node,
+						resume);
 
 				resume = false;
 
@@ -483,37 +627,59 @@ public class FtpService extends AbstractConnexionService implements
 								"Can't find file on local repository "
 										+ zsyncFile.getAbsolutePath());
 					}
-					ftpDAO.uploadSingleFile(zsyncFile, remotePath, node, resume);
+					ftpDAOPool.get(0).uploadSingleFile(zsyncFile, remotePath,
+							node, resume);
 				}
 			}
 
-			ftpDAO.uploadSync(repository.getLocalSync(), remotePath);
-			ftpDAO.uploadServerInfo(repository.getLocalServerInfo(), remotePath);
-			ftpDAO.uploadChangelogs(repository.getLocalChangelogs(), remotePath);
-			ftpDAO.uploadAutoconfig(repository.getLocalAutoConfig(), remotePath);
+			ftpDAOPool.get(0).uploadSync(repository.getLocalSync(), remotePath);
+			ftpDAOPool.get(0).uploadServerInfo(repository.getLocalServerInfo(),
+					remotePath);
+			ftpDAOPool.get(0).uploadChangelogs(repository.getLocalChangelogs(),
+					remotePath);
+			ftpDAOPool.get(0).uploadAutoconfig(repository.getLocalAutoConfig(),
+					remotePath);
 
 		} catch (IOException e) {
-			if (!ftpDAO.isCanceled()) {
+			if (!ftpDAOPool.get(0).isCanceled()) {
 				e.printStackTrace();
 				throw new FtpException(e.getMessage());
 			}
 		} finally {
-			ftpDAO.disconnect();
+			ftpDAOPool.get(0).disconnect();
 		}
 	}
 
 	@Override
 	public void cancel(boolean resumable) {
-		ftpDAO.cancel(resumable);
+		for (FtpDAO ftpDAO : ftpDAOPool) {
+			ftpDAO.cancel(resumable);
+		}
 	}
 
 	@Override
 	public void disconnect() {
-		ftpDAO.disconnect();
+		for (FtpDAO ftpDAO : ftpDAOPool) {
+			ftpDAO.disconnect();
+		}
 	}
 
 	@Override
-	public FtpDAO getConnexionDAO() {
-		return ftpDAO;
+	public AbstractConnexionDAO getConnexionDAO() {
+		return ftpDAOPool.get(0);
+	}
+
+	@Override
+	public List<AbstractConnexionDAO> getConnexionDAOs() {
+		List<AbstractConnexionDAO> list = new ArrayList<>();
+		for (FtpDAO ftpDAO : ftpDAOPool) {
+			list.add(ftpDAO);
+		}
+		return list;
+	}
+
+	@Override
+	public int getNumberConnections() {
+		return ftpDAOPool.size();
 	}
 }

@@ -27,10 +27,9 @@
 package fr.soe.a3s.jazsync;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 
 import fr.soe.a3s.dao.HttpDAO;
-import fr.soe.a3s.exception.JazsyncException;
-import fr.soe.a3s.exception.WritingException;
 import fr.soe.a3s.jazsyncmake.MetaFileMaker;
 
 /**
@@ -44,11 +43,10 @@ public class Jazsync {
 	 * @param sourcefile
 	 * @param url
 	 * @param sha1
-	 * @throws WritingException
-	 * @throws JazsyncException
+	 * @throws Exception
 	 */
 	public static void make(File sourcefile, String url, String sha1)
-			throws WritingException, JazsyncException {
+			throws Exception {
 
 		assert (sourcefile != null);
 		assert (sourcefile.exists());
@@ -74,14 +72,13 @@ public class Jazsync {
 	 * @param port
 	 * @param resume
 	 * @param httpDAO
-	 * @throws WritingException
-	 * @throws JazsyncException
+	 * @throws Exception
+	 * @throws FileNotFoundException
 	 */
 	public static void sync(File targetFile, String targetFileSha1,
 			String relativeFileUrl, String relativeZsyncFileUrl,
 			String hostname, String login, String password, String port,
-			boolean resume, HttpDAO httpDAO) throws WritingException,
-			JazsyncException {
+			HttpDAO httpDAO) throws Exception, FileNotFoundException {
 
 		assert (targetFile != null);
 		assert (relativeZsyncFileUrl != null);
@@ -90,19 +87,17 @@ public class Jazsync {
 				port, httpDAO);
 		MetaFileReader mfr = new MetaFileReader(relativeZsyncFileUrl, http);
 		FileMaker fm = new FileMaker(mfr, http);
-		fm.sync(targetFile, targetFileSha1, relativeFileUrl, resume);
+		fm.sync(targetFile, targetFileSha1, relativeFileUrl);
 	}
 
 	/**
 	 * Determine file completion in %
 	 * 
-	 * @throws JazsyncException
-	 * @throws WritingException
+	 * @throws Exception
 	 */
 	public static double getCompletion(File targetFile, String targetFileSha1,
 			String relativeZsyncFileUrl, String hostname, String login,
-			String password, String port, HttpDAO httpDAO)
-			throws WritingException, JazsyncException {
+			String password, String port, HttpDAO httpDAO) throws Exception {
 
 		assert (targetFile != null);
 		assert (relativeZsyncFileUrl != null);

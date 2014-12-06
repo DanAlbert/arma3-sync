@@ -2,7 +2,7 @@ package fr.soe.a3s.ui.repositoryEditor.workers;
 
 import javax.swing.JOptionPane;
 
-import fr.soe.a3s.controller.ObserverFileSize;
+import fr.soe.a3s.controller.ObserverFileSize2;
 import fr.soe.a3s.service.RepositoryService;
 import fr.soe.a3s.ui.Facade;
 import fr.soe.a3s.ui.repositoryEditor.AdminPanel;
@@ -37,8 +37,8 @@ public class RepositoryBuilder extends Thread {
 		adminPanel.getBuildProgressBar().setMinimum(0);
 		adminPanel.getBuildProgressBar().setMaximum(100);
 		RepositoryService repositoryService = new RepositoryService();
-		repositoryService.getRepositoryBuilderDAO().addObserverFileSize(
-				new ObserverFileSize() {
+		repositoryService.getRepositoryBuilderDAO().addObserverFileSize2(
+				new ObserverFileSize2() {
 					@Override
 					public synchronized void update(long value) {
 						adminPanel.getBuildProgressBar().setValue((int) value);

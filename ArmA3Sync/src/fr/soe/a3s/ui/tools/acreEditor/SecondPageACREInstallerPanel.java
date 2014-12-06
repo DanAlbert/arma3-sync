@@ -1,4 +1,4 @@
-package fr.soe.a3s.ui.acreEditor;
+package fr.soe.a3s.ui.tools.acreEditor;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -12,6 +12,7 @@ import java.io.IOException;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -19,6 +20,7 @@ import javax.swing.border.BevelBorder;
 
 import fr.soe.a3s.dao.FileAccessMethods;
 import fr.soe.a3s.ui.Facade;
+import fr.soe.a3s.ui.tools.WizardPanel;
 
 /**
  * This code was edited or generated using CloudGarden's Jigloo SWT/Swing GUI
@@ -30,7 +32,7 @@ import fr.soe.a3s.ui.Facade;
  * PURCHASED FOR THIS MACHINE, SO JIGLOO OR THIS CODE CANNOT BE USED LEGALLY FOR
  * ANY CORPORATE OR COMMERCIAL PURPOSE.
  */
-public class SecondPageACREInstallerPanel extends AcreInstallerPanel {
+public class SecondPageACREInstallerPanel extends WizardPanel {
 
 	private JLabel labelOperationsPerformed;
 	private JLabel labelCopyPlugin;
@@ -46,8 +48,10 @@ public class SecondPageACREInstallerPanel extends AcreInstallerPanel {
 	private static String statusOK = "OK";
 	private static String statusFail = "Fail";
 
-	public SecondPageACREInstallerPanel(Facade facade) {
-		super(facade);
+	public SecondPageACREInstallerPanel(Facade facade, String title,
+			String description, ImageIcon imageIcon) {
+		super(facade, title, description, imageIcon);
+
 		buttonFist.setText("Back");
 		buttonSecond.setText("Close");
 		getRootPane().setDefaultButton(buttonSecond);
@@ -153,7 +157,8 @@ public class SecondPageACREInstallerPanel extends AcreInstallerPanel {
 
 		/* Copy plugin to TS3 */
 		sourceLocation = new File(acrePuginPath);
-		targetLocation = new File(ts3Directory + "/plugins/" + sourceLocation.getName());
+		targetLocation = new File(ts3Directory + "/plugins/"
+				+ sourceLocation.getName());
 		try {
 			FileAccessMethods.copyFile(sourceLocation, targetLocation);
 			copyPlugin = true;
@@ -181,7 +186,7 @@ public class SecondPageACREInstallerPanel extends AcreInstallerPanel {
 		}
 
 		if (copyUserconfig && copyPlugin) {
-			String message1 = "You can now run your game with @ACRE and @JArmALib.";
+			String message1 = "You can now run your game with @ACRE and @JayArmALib.";
 			String message2 = "Don't forget to run TS3 with administrator priviledges.";
 			labelMessage1.setText(message1);
 			labelMessage2.setText(message2);
@@ -200,7 +205,7 @@ public class SecondPageACREInstallerPanel extends AcreInstallerPanel {
 	public void buttonSecondPerformed() {
 		this.dispose();
 	}
-	
+
 	private void buttonViewPluginPerformed() {
 		if (Desktop.isDesktopSupported()) {
 			Desktop desktop = Desktop.getDesktop();
@@ -213,7 +218,7 @@ public class SecondPageACREInstallerPanel extends AcreInstallerPanel {
 			}
 		}
 	}
-	
+
 	private void buttonViewUserconfigPerformed() {
 		if (Desktop.isDesktopSupported()) {
 			Desktop desktop = Desktop.getDesktop();

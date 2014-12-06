@@ -149,6 +149,7 @@ public class LaunchPanel extends JPanel implements UIConstants {
 				.getFavoriteServers();
 		ComboBoxModel joinServerModel = new DefaultComboBoxModel(
 				new String[] { "" });
+		this.joinServerComboBox.setSelectedItem(null);
 		this.joinServerComboBox.setModel(joinServerModel);
 		for (int i = 0; i < favoriteServersDTO.size(); i++) {
 			String stg = favoriteServersDTO.get(i).getName();
@@ -193,23 +194,10 @@ public class LaunchPanel extends JPanel implements UIConstants {
 		}
 	}
 
-	private void updatejoinServerComboBox() {
-
-		List<FavoriteServerDTO> favoriteServersDTO = configurationService
-				.getFavoriteServers();
-		ComboBoxModel joinServerModel = new DefaultComboBoxModel(
-				new String[] { "" });
-		this.joinServerComboBox.setModel(joinServerModel);
-		for (int i = 0; i < favoriteServersDTO.size(); i++) {
-			this.joinServerComboBox
-					.addItem(favoriteServersDTO.get(i).getName());
-		}
-	}
-
 	private void serverSelectionPerformed() {
 
 		String selection = (String) this.joinServerComboBox.getSelectedItem();
-		if (selection.isEmpty()) {
+		if (selection == null || "".equals(selection)) {
 			configurationService.saveServerName(null);
 			configurationService.setDefautlModset(null);
 		} else {
@@ -320,12 +308,12 @@ public class LaunchPanel extends JPanel implements UIConstants {
 				facade.getMainPanel().menuExitPerformed();
 			}
 		}
-		
+
 		/* Auto Restart warning */
 		if (configurationService.getLauncherOptions().isAutoRestart()) {
 			JOptionPane.showMessageDialog(facade.getMainPanel(),
-					"Auto-restart option is enabled. Do not close ArmA3Sync.", "ArmA 3 Start Game",
-					JOptionPane.INFORMATION_MESSAGE);
+					"Auto-restart option is enabled. Do not close ArmA3Sync.",
+					"ArmA 3 Start Game", JOptionPane.INFORMATION_MESSAGE);
 		}
 	}
 }

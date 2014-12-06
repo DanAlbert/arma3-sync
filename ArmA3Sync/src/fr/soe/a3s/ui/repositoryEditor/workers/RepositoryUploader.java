@@ -1,6 +1,5 @@
 package fr.soe.a3s.ui.repositoryEditor.workers;
 
-import java.awt.Color;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -10,8 +9,8 @@ import java.util.Map;
 import javax.swing.JOptionPane;
 
 import fr.soe.a3s.constant.Protocole;
-import fr.soe.a3s.controller.ObserverFileSize;
-import fr.soe.a3s.controller.ObserverFilesNumber;
+import fr.soe.a3s.controller.ObserverFileSize2;
+import fr.soe.a3s.controller.ObserverFilesNumber2;
 import fr.soe.a3s.controller.ObserverSpeed;
 import fr.soe.a3s.dao.DataAccessConstants;
 import fr.soe.a3s.dto.ProtocoleDTO;
@@ -31,9 +30,11 @@ public class RepositoryUploader extends Thread implements DataAccessConstants {
 
 	private final Facade facade;
 	private final AdminPanel adminPanel;
+
 	/* Service */
 	private final RepositoryService repositoryService = new RepositoryService();
 	private AbstractConnexionService connexionService;
+
 	/* Data */
 	private final String repositoryName;
 	private final String path;
@@ -183,6 +184,7 @@ public class RepositoryUploader extends Thread implements DataAccessConstants {
 					.getLastIndexFileTransfered(repositoryName);
 			incrementedFilesSize = repositoryService
 					.getIncrementedFilesSize(repositoryName);
+			boolean resume = repositoryService.isResume(repositoryName);
 
 			for (int i = 0; i < lastIndexFileUploaded; i++) {
 				SyncTreeNodeDTO node = filesToUpload.get(i);
@@ -207,10 +209,10 @@ public class RepositoryUploader extends Thread implements DataAccessConstants {
 			adminPanel.getUploadRemainingTimeValue().setText("");
 			adminPanel.getUploadInformationBox().setVisible(true);
 
-			connexionService.getConnexionDAO().addObserverFilesNumber(
-					new ObserverFilesNumber() {
+			connexionService.getConnexionDAO().addObserverFilesNumber2(
+					new ObserverFilesNumber2() {
 						@Override
-						public void update(int value) {
+						public void update() {
 							lastIndexFileUploaded++;
 							SyncTreeNodeDTO node = filesToUpload
 									.get(lastIndexFileUploaded - 1);
@@ -221,11 +223,10 @@ public class RepositoryUploader extends Thread implements DataAccessConstants {
 							}
 						}
 					});
-			connexionService.getConnexionDAO().addObserverFileSize(
-					new ObserverFileSize() {
+			connexionService.getConnexionDAO().addObserverFileSize2(
+					new ObserverFileSize2() {
 						@Override
 						public synchronized void update(long value) {
-							// offset = value;
 							incrementedFilesSize = value + cumulative;
 							adminPanel
 									.getUploadrogressBar()
@@ -239,8 +240,10 @@ public class RepositoryUploader extends Thread implements DataAccessConstants {
 			connexionService.getConnexionDAO().addObserverSpeed(
 					new ObserverSpeed() {
 						@Override
-						public void update(long value) {
-							if (value != 0) {
+						public void update() {
+							long value = connexionService.getConnexionDAO()
+									.getSpeed();
+							if (value != 0) {// division by 0
 								adminPanel.getUploadSpeedLabelValue().setText(
 										UnitConverter.convertSpeed(value));
 								long remainingFileSize = totalFilesSize
@@ -254,8 +257,6 @@ public class RepositoryUploader extends Thread implements DataAccessConstants {
 						}
 					});
 
-			boolean resume = repositoryService.isResume(repositoryName);
-
 			connexionService.uploadRepository(repositoryName, newFilesToUpload,
 					filesToDelete, resume);
 
@@ -263,9 +264,6 @@ public class RepositoryUploader extends Thread implements DataAccessConstants {
 				JOptionPane.showMessageDialog(facade.getMainPanel(),
 						"Repository upload finished.", "Repository upload",
 						JOptionPane.INFORMATION_MESSAGE);
-
-				repositoryService.saveTransfertParameters(repositoryName, 0, 0,
-						false);
 			}
 		} catch (Exception e) {
 			e.printStackTrace();

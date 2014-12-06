@@ -76,6 +76,7 @@ public class SynchronizingPanel extends ProgressPanel {
 
 				facade.getSyncPanel().init();
 				facade.getOnlinePanel().init();
+				facade.getLaunchPanel().init();
 				progressBar.setIndeterminate(false);
 				dispose();
 				facade.getSyncPanel().getButtonSync1().setEnabled(true);

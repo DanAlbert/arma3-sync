@@ -2,7 +2,9 @@ package fr.soe.a3s.console;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -10,8 +12,20 @@ import java.util.Scanner;
 
 import fr.soe.a3s.constant.ConsoleCommands;
 import fr.soe.a3s.constant.Protocole;
+import fr.soe.a3s.controller.ObserverActiveConnnection;
+import fr.soe.a3s.controller.ObserverEnd;
+import fr.soe.a3s.controller.ObserverError;
 import fr.soe.a3s.controller.ObserverFileSize;
+import fr.soe.a3s.controller.ObserverFileSize2;
+import fr.soe.a3s.controller.ObserverFilesNumber;
+import fr.soe.a3s.controller.ObserverFilesNumber3;
+import fr.soe.a3s.controller.ObserverSpeed;
+import fr.soe.a3s.dao.AbstractConnexionDAO;
+import fr.soe.a3s.dao.FileAccessMethods;
 import fr.soe.a3s.dto.RepositoryDTO;
+import fr.soe.a3s.dto.sync.SyncTreeDirectoryDTO;
+import fr.soe.a3s.dto.sync.SyncTreeLeafDTO;
+import fr.soe.a3s.dto.sync.SyncTreeNodeDTO;
 import fr.soe.a3s.exception.CheckException;
 import fr.soe.a3s.exception.FtpException;
 import fr.soe.a3s.exception.LoadingException;
@@ -21,6 +35,8 @@ import fr.soe.a3s.exception.ServerInfoNotFoundException;
 import fr.soe.a3s.exception.SyncFileNotFoundException;
 import fr.soe.a3s.exception.WritingException;
 import fr.soe.a3s.main.Version;
+import fr.soe.a3s.service.AbstractConnexionService;
+import fr.soe.a3s.service.ConnexionServiceFactory;
 import fr.soe.a3s.service.FtpService;
 import fr.soe.a3s.service.RepositoryService;
 
@@ -29,6 +45,11 @@ public class Console {
 	private boolean devMode = false;
 
 	private double value;
+	/** Sync variables */
+	private long incrementedFilesSize;
+	private long totalFilesSize;
+	private final List<SyncTreeNodeDTO> listFilesToUpdate = new ArrayList<SyncTreeNodeDTO>();
+	private final List<SyncTreeNodeDTO> listFilesToDelete = new ArrayList<SyncTreeNodeDTO>();
 
 	public Console(boolean devMode) {
 		this.devMode = devMode;
@@ -49,6 +70,9 @@ public class Console {
 				+ ": list repositories");
 		System.out.println(ConsoleCommands.UPDATE.toString()
 				+ ": check for updates");
+		System.out
+				.println(ConsoleCommands.SYNC.toString()
+						+ ": synchronize content with a repository (exact content files matching)");
 		System.out.println(ConsoleCommands.COMMANDS.toString()
 				+ ": display commands");
 		System.out.println(ConsoleCommands.VERSION.toString()
@@ -77,6 +101,8 @@ public class Console {
 			deleteRepository();
 		} else if (command.equalsIgnoreCase(ConsoleCommands.UPDATE.toString())) {
 			checkForUpdates();
+		} else if (command.equalsIgnoreCase(ConsoleCommands.SYNC.toString())) {
+			syncRepository();
 		} else if (command
 				.equalsIgnoreCase(ConsoleCommands.COMMANDS.toString())) {
 			displayCommands();
@@ -156,6 +182,9 @@ public class Console {
 
 			System.out.println("Repository name: " + name);
 			System.out.println("Url: " + protocole.getPrompt() + url);
+			System.out.println("Port: " + port);
+			System.out.println("Login: " + login);
+			System.out.println("Password: " + password);
 			System.out.println("Auto-config url: " + protocole.getPrompt()
 					+ autoconfig);
 			System.out.println("Repository main folder path: " + path);
@@ -171,7 +200,7 @@ public class Console {
 	private void newRepository() {
 
 		System.out.println("");
-		System.out.println("Build a new repository");
+		System.out.println("Create a new repository");
 
 		Scanner c = new Scanner(System.in);
 
@@ -201,9 +230,10 @@ public class Console {
 		do {
 			try {
 				System.out
-						.print("Enter repository port (21 default FTP, 80 default HTTP: ");
+						.print("Enter repository port (21 default FTP, 80 default HTTP): ");
 				port = c.nextLine();
 				int p = Integer.parseInt(port);
+				portIsWrong = false;
 			} catch (NumberFormatException e) {
 				portIsWrong = true;
 			}
@@ -218,7 +248,7 @@ public class Console {
 			login = c.nextLine();
 		}
 
-		System.out.print("Enter user login (leave blank if no password): ");
+		System.out.print("Enter user password (leave blank if no password): ");
 		String password = c.nextLine();
 
 		System.out.print("Enter repository url: ");
@@ -231,66 +261,23 @@ public class Console {
 			url = c.nextLine();
 		}
 
-		System.out.print("Enter root shared folder path: ");
-		String path = c.nextLine();
-		while (path.isEmpty()) {
-			System.out.print("Enter root shared folder path: ");
-			path = c.nextLine();
-		}
-		while (!new File(path).exists()) {
-			System.out.print("Target folder does not exists!");
-			System.out.print("Enter root shared folder path: ");
-			path = c.nextLine();
-		}
-		while (!new File(path).isDirectory()) {
-			System.out.print("Target folder does not exists!");
-			System.out.print("Enter root shared folder path: ");
-			path = c.nextLine();
-		}
-
 		Protocole protocole = Protocole.getEnum(prot);
 		RepositoryService repositoryService = new RepositoryService();
 		try {
 
 			repositoryService.createRepository(name, url, port, login,
 					password, protocole);
+
 			repositoryService.write(name);
+			System.out
+					.println("Repository creation finished.\nYou can now run the BUILD command to construct the repository");
 		} catch (CheckException e) {
 			System.out.println(e.getMessage());
-			System.out.println("");
-			execute();
 			return;
 		} catch (WritingException e) {
-			System.out.println("Failded to write repository.");
+			System.out.println("Failed to write repository.");
 			System.out.println(e.getMessage());
-			System.out.println("");
-			execute();
 			return;
-		}
-
-		this.value = 0;
-
-		repositoryService.getRepositoryBuilderDAO().addObserverFileSize(
-				new ObserverFileSize() {
-					@Override
-					public void update(long v) {
-						if (v > value) {
-							value = v;
-							System.out.println("Progress: " + value + " %");
-						}
-					}
-				});
-
-		try {
-			repositoryService.buildRepository(name, path);
-			repositoryService.write(name);
-			System.out.println("Repository creation finished.");
-			System.out.println("Auto-config url: " + protocole.getPrompt()
-					+ url + "/.a3s/autoconfig");
-		} catch (Exception e) {
-			System.out
-					.println("An error occured. Failed to create repository.");
-			System.out.println(e.getMessage());
 		} finally {
 			System.out.println("");
 			execute();
@@ -320,7 +307,7 @@ public class Console {
 			repositoryService.checkRepository(name, repositoryDTO.getPath());
 			System.out.println("Repository is synchronized.");
 		} catch (LoadingException e) {
-			System.out.println("Failded to load on or more repositories");
+			System.out.println("Failded to load one or more repositories");
 		} catch (RepositoryException e) {
 			System.out.println(e.getMessage());
 		} catch (RepositoryCheckException e) {
@@ -360,6 +347,47 @@ public class Console {
 			System.exit(0);
 		}
 
+		// Folder location
+		System.out.print("Enter root shared folder path: ");
+		String path = c.nextLine();
+		while (path.isEmpty()) {
+			System.out.print("Enter root shared folder path: ");
+			path = c.nextLine();
+		}
+		while (!new File(path).exists()) {
+			System.out.println("Target folder does not exists!");
+			System.out.print("Enter root shared folder path: ");
+			path = c.nextLine();
+		}
+		while (!new File(path).isDirectory()) {
+			System.out.println("Target folder does not exists!");
+			System.out.print("Enter root shared folder path: ");
+			path = c.nextLine();
+		}
+
+		// Number of client connections
+		boolean numberOfConnectionsIsWrong = false;
+		String numberOfConnections = "";
+		int n = 0;
+		do {
+			try {
+				System.out
+						.print("Set maximum number of client connections (1-10):");
+				numberOfConnections = c.nextLine();
+				n = Integer.parseInt(numberOfConnections);
+				if (!(n >= 1 && n <= 10)) {
+					numberOfConnectionsIsWrong = true;
+				} else {
+					numberOfConnectionsIsWrong = false;
+				}
+			} catch (NumberFormatException e) {
+				numberOfConnectionsIsWrong = true;
+			}
+		} while (numberOfConnectionsIsWrong);
+
+		repositoryService.setNumberOfConnections(name, n);
+
+		// Set excluded files from build, excluded folder content from Sync
 		repositoryService.clearExcludedFilesPathFromBuild(name);
 		repositoryService.clearExcludedFoldersFromSync(name);
 
@@ -395,8 +423,8 @@ public class Console {
 
 		this.value = 0;
 
-		repositoryService.getRepositoryBuilderDAO().addObserverFileSize(
-				new ObserverFileSize() {
+		repositoryService.getRepositoryBuilderDAO().addObserverFileSize2(
+				new ObserverFileSize2() {
 					@Override
 					public void update(long v) {
 						if (v > value) {
@@ -408,7 +436,7 @@ public class Console {
 				});
 
 		try {
-			repositoryService.buildRepository(name);
+			repositoryService.buildRepository(name, path);
 			System.out.println("Repository build finished.");
 		} catch (Exception e) {
 			System.out.println("Failed to build repository.");
@@ -438,13 +466,65 @@ public class Console {
 
 		try {
 			repositoryService.readAll();
-			repositoryService.removeRepository(name.trim());
-			System.out.println("Repository " + name + " removed.");
+			boolean remove = repositoryService.removeRepository(name.trim());
+			if (remove) {
+				System.out.println("Repository " + name + " removed.");
+			} else {
+				System.out.println("Failded to remove repository.");
+			}
 		} catch (LoadingException e) {
-			System.out.println("Failded to read on or more repositories");
+			System.out.println("Failded to remove repository.");
 		} finally {
 			System.out.println("");
 			execute();
+		}
+	}
+
+	private void syncRepository() {
+
+		System.out.println("");
+		System.out.println("Synchronize with repository");
+
+		Scanner c = new Scanner(System.in);
+
+		System.out.print("Enter repository name: ");
+		String repositoryName = c.nextLine();
+		while (repositoryName.isEmpty()) {
+			System.out.print("Enter repository name: ");
+			repositoryName = c.nextLine();
+		}
+
+		System.out.print("Enter destination folder path: ");
+		String destinationFolderPath = c.nextLine();
+		while (destinationFolderPath.isEmpty()) {
+			System.out.print("Enter destination folder path: ");
+			destinationFolderPath = c.nextLine();
+		}
+
+		RepositoryService repositoryService = new RepositoryService();
+		try {
+
+			repositoryService.readAll();
+			repositoryService.setExactMatch(true, repositoryName);
+
+			if (!new File(destinationFolderPath).exists()) {
+				String message = "Error: destination folder path does not exist!";
+				throw new FileNotFoundException(message);
+			}
+
+			repositoryService.setDefaultDownloadLocation(repositoryName,
+					destinationFolderPath);
+
+			/* Check for addons */
+			checkForAddons(repositoryName);
+
+			/* Sync */
+			sync(repositoryName, false);
+
+		} catch (Exception e) {
+			List<Exception> errors = new ArrayList<Exception>();
+			errors.add(e);
+			finishWithErrors(errors, repositoryName, false);
 		}
 	}
 
@@ -520,8 +600,8 @@ public class Console {
 
 		this.value = 0;
 
-		repositoryService.getRepositoryBuilderDAO().addObserverFileSize(
-				new ObserverFileSize() {
+		repositoryService.getRepositoryBuilderDAO().addObserverFileSize2(
+				new ObserverFileSize2() {
 					@Override
 					public void update(long v) {
 						if (v > value) {
@@ -572,6 +652,287 @@ public class Console {
 			System.out.println(e.getMessage());
 		} finally {
 			System.exit(0);
+		}
+	}
+
+	public void syncRepository(final String repositoryName,
+			String destinationFolderPath) {
+
+		assert (repositoryName != null);
+		assert (destinationFolderPath != null);
+
+		System.out.println("");
+		System.out.println("Synchronize with repository");
+
+		RepositoryService repositoryService = new RepositoryService();
+
+		try {
+			repositoryService.readAll();
+			repositoryService.setExactMatch(true, repositoryName);
+
+			System.out.println("Repository Name = " + repositoryName);
+			System.out.println("Destination folder path = "
+					+ destinationFolderPath);
+
+			if (!new File(destinationFolderPath).exists()) {
+				String message = "Error: destination folder path does not exist!";
+				throw new FileNotFoundException(message);
+			}
+
+			repositoryService.setDefaultDownloadLocation(repositoryName,
+					destinationFolderPath);
+
+			/* Check for addons */
+			checkForAddons(repositoryName);
+
+			/* Sync */
+			sync(repositoryName, true);
+
+		} catch (Exception e) {
+			List<Exception> errors = new ArrayList<Exception>();
+			errors.add(e);
+			finishWithErrors(errors, repositoryName, true);
+		}
+	}
+
+	private void sync(final String repositoryName, final boolean exit)
+			throws Exception {
+
+		System.out.println("Downloading...");
+
+		if (listFilesToUpdate.isEmpty()) {
+			System.out.println("No file to download.");
+			finish(repositoryName, exit);
+		} else {
+			incrementedFilesSize = 0;
+			totalFilesSize = 0;
+			for (SyncTreeNodeDTO node : listFilesToUpdate) {
+				if (node.isLeaf()) {
+					SyncTreeLeafDTO leafDTO = (SyncTreeLeafDTO) node;
+					totalFilesSize = totalFilesSize + leafDTO.getSize();
+				}
+			}
+
+			AbstractConnexionService connexionService = ConnexionServiceFactory
+					.getServiceFromRepositoryMultiConnections(repositoryName);
+
+			value = 0;
+
+			for (AbstractConnexionDAO connect : connexionService
+					.getConnexionDAOs()) {
+
+				connect.addObserverFilesNumber(new ObserverFilesNumber() {
+					@Override
+					public synchronized void update(SyncTreeNodeDTO node) {
+						if (node.isLeaf()) {
+							SyncTreeLeafDTO leaf = (SyncTreeLeafDTO) node;
+							long size = leaf.getSize();
+							incrementedFilesSize = incrementedFilesSize + size;
+							int v = (int) ((incrementedFilesSize * 100) / totalFilesSize);
+							if (v > value) {
+								value = v;
+								System.out.println(v + " %");
+							}
+						}
+					}
+				});
+
+				connect.addObserverFileSize(new ObserverFileSize() {
+					@Override
+					public void update(long value, SyncTreeNodeDTO node) {
+					}
+				});
+
+				connect.addObserverSpeed(new ObserverSpeed() {
+					@Override
+					public synchronized void update() {
+					}
+				});
+
+				connect.addObserverActiveConnection(new ObserverActiveConnnection() {
+					@Override
+					public synchronized void update() {
+					}
+				});
+
+				connect.addObserverEnd(new ObserverEnd() {
+					@Override
+					public void end() {
+						finish(repositoryName, exit);
+					}
+				});
+
+				connect.addObserverError(new ObserverError() {
+					@Override
+					public void error(List<Exception> errors) {
+						finishWithErrors(errors, repositoryName, exit);
+					}
+				});
+			}
+			connexionService.downloadAddons(repositoryName, listFilesToUpdate);
+		}
+	}
+
+	private void finish(final String repositoryName, final boolean exit) {
+
+		System.out.println("Deleting extra files...");
+		deleteExtraFiles();
+		System.out.println("Synchronization is finished.");
+		try {
+			checkForAddons(repositoryName);
+		} catch (Exception e) {
+			System.out.println(e.getMessage());
+		}
+		System.out.println("Synchronization done.");
+		if (exit) {
+			System.exit(0);
+		} else {
+			System.gc();
+			System.out.println("");
+			execute();
+		}
+	}
+
+	private void finishWithErrors(List<Exception> errors,
+			final String repositoryName, final boolean exit) {
+
+		System.out.println("Deleting extra files...");
+		deleteExtraFiles();
+
+		List<String> messages = new ArrayList<String>();
+		List<String> causes = new ArrayList<String>();
+
+		String message = "Download finished with errors.";
+
+		for (Exception e : errors) {
+			if (!messages.contains(e.getMessage())) {
+				if (e instanceof FileNotFoundException) {
+					messages.add(e.getMessage());
+				} else if (e.getCause() != null) {
+					if (!causes.contains(e.getCause().toString())) {
+						causes.add(e.getCause().toString());
+						messages.add(e.getMessage());
+					}
+				} else if (e.getMessage() != null) {
+					messages.add(e.getMessage());
+				}
+			}
+		}
+		for (String m : messages) {
+			message = message + "\n" + " - " + m;
+		}
+
+		System.out.println(message);
+
+		System.out.println("Synchronization done.");
+		if (exit) {
+			System.exit(0);
+		} else {
+			System.gc();
+			System.out.println("");
+			execute();
+		}
+	}
+
+	private void checkForAddons(String repositoryName) throws Exception {
+
+		System.out.println("Checking for addons...");
+
+		value = 0;
+
+		RepositoryService repositoryService = new RepositoryService();
+		repositoryService.getRepositoryBuilderDAO().addObserverFilesNumber3(
+				new ObserverFilesNumber3() {
+					@Override
+					public synchronized void update(int v) {
+						if (v > value) {
+							value = v;
+							System.out.println(value + " %");
+						}
+					}
+				});
+
+		AbstractConnexionService connexionService = ConnexionServiceFactory
+				.getServiceFromRepository(repositoryName);
+		connexionService.getSync(repositoryName);
+		connexionService.getServerInfo(repositoryName);
+		connexionService.getChangelogs(repositoryName);
+
+		SyncTreeDirectoryDTO racine = repositoryService
+				.getSyncForCheckForAddons(repositoryName);
+
+		listFilesToUpdate.clear();
+		listFilesToDelete.clear();
+
+		// Get files list
+		for (SyncTreeNodeDTO node : racine.getList()) {
+			getFiles(node);
+		}
+
+		System.out.println("Number of files to update = "
+				+ listFilesToUpdate.size());
+		System.out.println("Number of files to delete = "
+				+ listFilesToDelete.size());
+		System.out.println("Checking for addons is finished.");
+	}
+
+	private void deleteExtraFiles() {
+
+		for (SyncTreeNodeDTO node : listFilesToDelete) {
+			String path = node.getDestinationPath() + "/" + node.getName();
+			if (path != null) {
+				File file = new File(path);
+				if (file.isFile()) {
+					FileAccessMethods.deleteFile(file);
+				} else if (file.isDirectory()) {
+					FileAccessMethods.deleteDirectory(file);
+				}
+			}
+		}
+	}
+
+	private void getFiles(SyncTreeNodeDTO node) {
+
+		if (!node.isLeaf()) {
+			SyncTreeDirectoryDTO syncTreeDirectoryDTO = (SyncTreeDirectoryDTO) node;
+			if (syncTreeDirectoryDTO.isUpdated()) {
+				listFilesToUpdate.add(syncTreeDirectoryDTO);
+			} else if (syncTreeDirectoryDTO.isDeleted()) {
+				int count = 0;
+				for (SyncTreeNodeDTO n : syncTreeDirectoryDTO.getList()) {
+					if (n.isDeleted()) {
+						count++;
+					}
+				}
+				if (count == syncTreeDirectoryDTO.getList().size()) {
+					listFilesToDelete.add(syncTreeDirectoryDTO);
+				}
+			}
+			for (SyncTreeNodeDTO n : syncTreeDirectoryDTO.getList()) {
+				getFiles(n);
+			}
+		} else {
+			SyncTreeLeafDTO syncTreeLeafDTO = (SyncTreeLeafDTO) node;
+			if (syncTreeLeafDTO.isUpdated()) {
+				listFilesToUpdate.add(syncTreeLeafDTO);
+			} else if (syncTreeLeafDTO.isDeleted()) {
+				SyncTreeDirectoryDTO parent = syncTreeLeafDTO.getParent();
+				if (parent.getName().equals("racine")) {
+					listFilesToDelete.add(syncTreeLeafDTO);
+				} else {
+					int count = 0;
+					for (SyncTreeNodeDTO n : parent.getList()) {
+						if (n.isDeleted()) {
+							count++;
+						}
+					}
+					if (count == parent.getList().size()) {
+						listFilesToDelete.add(parent);
+					} else {
+						listFilesToDelete.add(syncTreeLeafDTO);
+					}
+				}
+			}
 		}
 	}
 }

@@ -1,4 +1,4 @@
-package fr.soe.a3s.ui.rptEditor;
+package fr.soe.a3s.ui.tools.rptEditor;
 
 import java.io.BufferedReader;
 import java.io.DataInputStream;

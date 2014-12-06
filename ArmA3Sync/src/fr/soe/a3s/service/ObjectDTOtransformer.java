@@ -82,6 +82,8 @@ public class ObjectDTOtransformer {
 				.getCpuCountSelection());
 		launcherOptionsDTO.setExThreadsSelection(launcherOptions
 				.getExThreadsSelection());
+		launcherOptionsDTO.setMallocSelection(launcherOptions
+				.getMallocSelection());
 		launcherOptionsDTO.setEnableHT(launcherOptions.isEnableHT());
 		launcherOptionsDTO.setNoPause(launcherOptions.isNoPause());
 		launcherOptionsDTO

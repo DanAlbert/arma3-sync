@@ -27,11 +27,13 @@ package fr.soe.a3s.jazsync;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.RoundingMode;
 import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
@@ -48,8 +50,6 @@ import java.util.Date;
 import java.util.Locale;
 
 import fr.soe.a3s.dao.FileAccessMethods;
-import fr.soe.a3s.exception.JazsyncException;
-import fr.soe.a3s.exception.WritingException;
 
 /**
  * Target file making class
@@ -96,19 +96,13 @@ public class FileMaker {
 	}
 
 	public void sync(File targetFile, String targetFileSha1,
-			String relativeFileUrl, boolean resume) throws WritingException,
-			JazsyncException {
+			String relativeFileUrl) throws Exception, FileNotFoundException {
 
 		System.out.println("");
 		System.out.println("Processing file: " + targetFile.getAbsolutePath());
 
 		if (targetFile.exists() && targetFileSha1 == null) {
-			try {
-				targetFileSha1 = FileAccessMethods.computeSHA1(targetFile);
-			} catch (Exception e) {
-				e.printStackTrace();
-				throw new WritingException(e.getMessage());
-			}
+			targetFileSha1 = FileAccessMethods.computeSHA1(targetFile);
 		}
 
 		SHA1check(targetFile, targetFileSha1);
@@ -116,8 +110,6 @@ public class FileMaker {
 		if (FILE_FLAG == 1) {
 			if (targetFile.length() == 0) {
 				getWholeFile(targetFile, relativeFileUrl);
-			} else if (resume) {
-				getResumedFile(targetFile, relativeFileUrl);
 			} else {
 				mapMatcher(targetFile);
 				if (complete > 0) {
@@ -132,15 +124,10 @@ public class FileMaker {
 	}
 
 	public double getCompletion(File targetFile, String targetFileSha1)
-			throws WritingException, JazsyncException {
+			throws Exception {
 
 		if (targetFile.exists() && targetFileSha1 == null) {
-			try {
-				targetFileSha1 = FileAccessMethods.computeSHA1(targetFile);
-			} catch (Exception e) {
-				e.printStackTrace();
-				throw new WritingException(e.getMessage());
-			}
+			targetFileSha1 = FileAccessMethods.computeSHA1(targetFile);
 		}
 
 		SHA1check(targetFile, targetFileSha1);
@@ -169,7 +156,7 @@ public class FileMaker {
 		if (targetFile.exists()) {
 			if (targetFileSha1.equals(mfr.getSha1())) {
 				System.out.println("Read " + targetFile.getName()
-						+ ". Target 100.0% complete.\n"
+						+ ". Target is 100.0% complete.\n"
 						+ "verifying download...checksum matches OK\n"
 						+ "used " + mfr.getLength() + " local, fetched 0");
 			} else {
@@ -184,11 +171,11 @@ public class FileMaker {
 	 * Downloads a whole file in case that there were no relevant data found
 	 * 
 	 * @param httpURLConnection
-	 * @throws WritingException
-	 * @throws IOException
+	 * @throws FileNotFoundException
+	 * @throws Exception
 	 */
 	private void getWholeFile(File targetFile, String relativeFileUrl)
-			throws WritingException {
+			throws Exception, FileNotFoundException {
 
 		try {
 			http.openConnection(relativeFileUrl);
@@ -202,18 +189,23 @@ public class FileMaker {
 			if (!finished) {
 				System.out.println("Download is not finished.");
 				getResumedFile(targetFile, relativeFileUrl);
+			} else {
+				System.out.println("Target is 100.0% complete.");
 			}
-			System.out.println("Target 100.0% complete.");
-			http.closeConnection();
+		} catch (FileNotFoundException e) {
+			throw e;
 		} catch (Exception e) {
-			e.printStackTrace();
-			throw new WritingException("Failed to retrieve file "
-					+ targetFile.getName());
+			if (!http.getHttpDAO().isCanceled()) {
+				e.printStackTrace();
+				String message = "Failed to retrieve file "
+						+ targetFile.getName();
+				throw new Exception(message, e);
+			}
 		}
 	}
 
 	private void getResumedFile(File targetFile, String relativeFileUrl)
-			throws WritingException {
+			throws Exception, FileNotFoundException {
 
 		try {
 			http.openConnection(relativeFileUrl);
@@ -224,12 +216,14 @@ public class FileMaker {
 				System.out.println("Download is not finished.");
 				getResumedFile(targetFile, relativeFileUrl);
 			}
-			System.out.println("Target 100.0% complete.");
+			System.out.println("Target is 100.0% complete.");
 			http.closeConnection();
+		} catch (FileNotFoundException e) {
+			throw e;
 		} catch (Exception e) {
 			e.printStackTrace();
-			throw new WritingException("Failed to retrieve file "
-					+ targetFile.getName());
+			String message = "Failed to retrieve file " + targetFile.getName();
+			throw new Exception(message, e);
 		}
 	}
 
@@ -264,163 +258,164 @@ public class FileMaker {
 	 * 
 	 * @param httpURLConnection
 	 * @param targetFileSha1
-	 * @throws WritingException
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 * @throws Exception
+	 * @throws NoSuchAlgorithmException
 	 */
 	private void fileMaker(File targetFile, String relativeFileUrl,
-			String targetFileSha1) throws WritingException {
+			String targetFileSha1) throws Exception, FileNotFoundException {
 
-		try {
-			boolean error = false;
-			boolean resume = false;
-			long allData = 0;
-			double a = 10;
-			int range = 0;
-			int blockLength = 0;
-			File partFile = new File(targetFile.getParentFile() + "/"
-					+ targetFile.getName() + ".part");
-			if (partFile.exists()) {
-				partFile.delete();
+		// try {
+		boolean error = false;
+		boolean resume = false;
+		long allData = 0;
+		double a = 10;
+		int range = 0;
+		int blockLength = 0;
+		File partFile = new File(targetFile.getParentFile() + "/"
+				+ targetFile.getName() + ".part");
+		if (partFile.exists()) {
+			partFile.delete();
+		}
+
+		ArrayList<DataRange> rangeList = null;
+		byte[] data = null;
+		partFile.createNewFile();
+		ByteBuffer buffer = ByteBuffer.allocate(mfr.getBlocksize());
+		FileChannel rChannel = new FileInputStream(targetFile).getChannel();
+		FileOutputStream fos = new FileOutputStream(partFile, true);
+		FileChannel wChannel = fos.getChannel();
+
+		// http.getHttpDAO().setSize(mfr.getLength());
+
+		System.out.println();
+		System.out.print("File completion: ");
+		System.out.print("|----------|");
+
+		http.openConnection(relativeFileUrl);
+		http.getResponseHeader();
+		for (int i = 0; i < fileMap.length; i++) {
+			if (http.getHttpDAO().isCanceled()) {
+				break;
 			}
-
-			ArrayList<DataRange> rangeList = null;
-			byte[] data = null;
-			partFile.createNewFile();
-			ByteBuffer buffer = ByteBuffer.allocate(mfr.getBlocksize());
-			FileChannel rChannel = new FileInputStream(targetFile).getChannel();
-			FileOutputStream fos = new FileOutputStream(partFile, true);
-			FileChannel wChannel = fos.getChannel();
-
-			http.getHttpDAO().setSize(mfr.getLength());
-
-			System.out.println();
-			System.out.print("File completion: ");
-			System.out.print("|----------|");
-
-			http.openConnection(relativeFileUrl);
-			http.getResponseHeader();
-			for (int i = 0; i < fileMap.length; i++) {
-				if (http.getHttpDAO().isCanceled()) {
-					break;
-				}
-				fileOffset = fileMap[i];
-				if (fileOffset != -1) {
-					rChannel.read(buffer, fileOffset);
-					buffer.flip();
-					wChannel.write(buffer);
-					buffer.clear();
-				} else {
-					if (!rangeQueue) {
-						rangeList = rangeLookUp(i);
-						range = rangeList.size();
-						http.openConnection(relativeFileUrl);
-						http.setRangesRequest(rangeList);
-						http.sendRequest();
-						http.getResponseHeader();
-						data = http.getResponseBody(mfr.getBlocksize(),
-								mfr.getRangesNumber(), targetFile, partFile);
-						if (data == null) {
-							System.out.println("RESUME");
-							resume = true;
-							break;
-						} else {
-							allData += http.getAllTransferedDataLength();
-						}
-
-						if (http.getHttpDAO().isCanceled()) {
-							break;
-						}
-					}
-
-					if ((i * mfr.getBlocksize() + mfr.getBlocksize()) < mfr
-							.getLength()) {
-						blockLength = mfr.getBlocksize();
+			fileOffset = fileMap[i];
+			if (fileOffset != -1) {
+				rChannel.read(buffer, fileOffset);
+				buffer.flip();
+				wChannel.write(buffer);
+				buffer.clear();
+			} else {
+				if (!rangeQueue) {
+					rangeList = rangeLookUp(i);
+					range = rangeList.size();
+					http.openConnection(relativeFileUrl);
+					http.setRangesRequest(rangeList);
+					http.sendRequest();
+					http.getResponseHeader();
+					data = http.getResponseBody(mfr.getBlocksize(),
+							mfr.getRangesNumber(), targetFile, partFile);
+					if (data == null) {
+						System.out.println("RESUME");
+						resume = true;
+						break;
 					} else {
-						blockLength = (int) ((mfr.getBlocksize()) + (mfr
-								.getLength() - (i * mfr.getBlocksize() + mfr
-								.getBlocksize())));
+						allData += http.getAllTransferedDataLength();
 					}
 
-					try {
-						buffer.put(
-								data,
-								(range - rangeList.size()) * mfr.getBlocksize(),
-								blockLength);
-						buffer.flip();
-						wChannel.write(buffer);
-						buffer.clear();
-						rangeList.remove(0);
-						if (rangeList.isEmpty()) {
-							rangeQueue = false;
-						}
-					} catch (Exception e) {
-						System.out
-								.println("ERROR: .zsync file metadata don't match for target file "
-										+ targetFile.getAbsolutePath());
-						error = true;
+					if (http.getHttpDAO().isCanceled()) {
 						break;
 					}
 				}
 
-				double value = (i / ((double) fileMap.length - 1)) * 100;
-
-				if (value >= a) {
-					progressBar(value);
-					a += 10;
-				}
-
-				// int nbBytes = (int) (value * mfr.getLength() / 100);
-			}
-			rChannel.close();
-			wChannel.close();
-			fos.flush();
-			fos.close();
-			partFile.setLastModified(getMTime());
-
-			if (error) {
-				System.out.println("Deleting temporary file");
-				partFile.delete();
-				getWholeFile(targetFile, relativeFileUrl);
-			}
-
-			else {
-
-				System.out.println("used "
-						+ (mfr.getLength() - (mfr.getBlocksize() * missing))
-						+ " " + "local, fetched "
-						+ (mfr.getBlocksize() * missing));
-				String name = targetFile.getName();
-				File oldFile = new File(targetFile.getParentFile()
-						.getAbsolutePath() + "/" + name + ".zs-old");
-				File finalFile = new File(targetFile.getParentFile()
-						.getAbsolutePath() + "/" + name);
-				targetFile.renameTo(oldFile);
-				partFile.renameTo(finalFile);
-				oldFile.delete();
-
-				allData += mfr.getLengthOfMetafile();
-				System.out.println("really downloaded " + allData);
-				double overhead = ((double) (allData - (mfr.getBlocksize() * missing)) / ((double) (mfr
-						.getBlocksize() * missing))) * 100;
-				System.out.println("overhead: " + df.format(overhead) + "%");
-
-				if (resume) {
-					getResumedFile(targetFile, relativeFileUrl);
+				if ((i * mfr.getBlocksize() + mfr.getBlocksize()) < mfr
+						.getLength()) {
+					blockLength = mfr.getBlocksize();
 				} else {
-					targetFileSha1 = FileAccessMethods.computeSHA1(targetFile);
-					if (targetFileSha1.equals(mfr.getSha1())) {
-						System.out
-								.println("\nverifying download...checksum matches OK");
-					} else {
-						System.out
-								.println("\nverifying download...checksum don't match");
-						getWholeFile(targetFile, relativeFileUrl);
+					blockLength = (int) ((mfr.getBlocksize()) + (mfr
+							.getLength() - (i * mfr.getBlocksize() + mfr
+							.getBlocksize())));
+				}
+
+				try {
+					buffer.put(data,
+							(range - rangeList.size()) * mfr.getBlocksize(),
+							blockLength);
+					buffer.flip();
+					wChannel.write(buffer);
+					buffer.clear();
+					rangeList.remove(0);
+					if (rangeList.isEmpty()) {
+						rangeQueue = false;
 					}
+				} catch (Exception e) {
+					System.out
+							.println("ERROR: .zsync file metadata don't match for target file "
+									+ targetFile.getAbsolutePath());
+					error = true;
+					break;
 				}
 			}
-		} catch (Exception ex) {
-			ex.printStackTrace();
-			throw new WritingException(ex.getMessage());
+
+			double value = (i / ((double) fileMap.length - 1)) * 100;
+
+			if (value >= a) {
+				progressBar(value);
+				a += 10;
+			}
+
+			// int nbBytes = (int) (value * mfr.getLength() / 100);
 		}
+		rChannel.close();
+		wChannel.close();
+		fos.flush();
+		fos.close();
+		partFile.setLastModified(getMTime());
+
+		if (error) {
+			System.out.println("Deleting temporary file");
+			partFile.delete();
+			getWholeFile(targetFile, relativeFileUrl);
+		}
+
+		else {
+
+			System.out.println("used "
+					+ (mfr.getLength() - (mfr.getBlocksize() * missing)) + " "
+					+ "local, fetched " + (mfr.getBlocksize() * missing));
+			String name = targetFile.getName();
+			File oldFile = new File(targetFile.getParentFile()
+					.getAbsolutePath() + "/" + name + ".zs-old");
+			File finalFile = new File(targetFile.getParentFile()
+					.getAbsolutePath() + "/" + name);
+			targetFile.renameTo(oldFile);
+			partFile.renameTo(finalFile);
+			oldFile.delete();
+
+			allData += mfr.getLengthOfMetafile();
+			System.out.println("really downloaded " + allData);
+			double overhead = ((double) (allData - (mfr.getBlocksize() * missing)) / ((double) (mfr
+					.getBlocksize() * missing))) * 100;
+			System.out.println("overhead: " + df.format(overhead) + "%");
+
+			if (resume) {
+				getResumedFile(targetFile, relativeFileUrl);
+			} else {
+				targetFileSha1 = FileAccessMethods.computeSHA1(targetFile);
+				if (targetFileSha1.equals(mfr.getSha1())) {
+					System.out
+							.println("\nverifying download...checksum matches OK");
+				} else {
+					System.out
+							.println("\nverifying download...checksum don't match");
+					getWholeFile(targetFile, relativeFileUrl);
+				}
+			}
+		}
+		// } catch (Exception ex) {
+		// ex.printStackTrace();
+		// throw new Exception(ex.getMessage());
+		// }
 	}
 
 	/**
@@ -473,11 +468,9 @@ public class FileMaker {
 	/**
 	 * Reads file and map it's data into the fileMap.
 	 * 
-	 * @throws WritingException
-	 * @throws JazsyncException
+	 * @throws Exception
 	 */
-	private void mapMatcher(File targetFile) throws WritingException,
-			JazsyncException {
+	private void mapMatcher(File targetFile) throws Exception {
 		InputStream is = null;
 		try {
 			Security.addProvider(new JarsyncProvider());
@@ -612,11 +605,11 @@ public class FileMaker {
 			is.close();
 		} catch (IOException e1) {
 			e1.printStackTrace();
-			throw new WritingException(
-					"Can't read seed file, check your permissions.");
+			String message = "Can't read seed file, check your file access permissions.";
+			throw new Exception(message, e1);
 		} catch (Exception e2) {
 			e2.printStackTrace();
-			throw new JazsyncException("Internal error.");
+			throw new Exception("Internal error.", e2);
 		}
 	}
 

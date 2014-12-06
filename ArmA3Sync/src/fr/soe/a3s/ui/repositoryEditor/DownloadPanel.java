@@ -9,7 +9,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.io.File;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
@@ -76,8 +75,6 @@ public class DownloadPanel extends JPanel implements UIConstants {
 	private RepositoryPanel repositoryPanel;
 	private JProgressBar progressBarCheckForAddons, progressBarDownloadAddons,
 			progressBarDownloadSingleAddon;
-	private AddonSyncTreeModel addonSyncTreeModel;
-	private SyncTreeDirectoryDTO racine;
 	private JTree arbre;
 	private JScrollPane tableScrollPane;
 	private JLabel labelTotalFilesSize, labelTotalFilesSizeValue;
@@ -96,24 +93,32 @@ public class DownloadPanel extends JPanel implements UIConstants {
 	private String repositoryName;
 	private JLabel labelCheckForAddonsStatus;
 	private TreePath arbreTreePath;
-	private long totalFilesSize;
-	private int totalFilesSelected;
-	private int totalFilesUpdated;
-	private int totalFilesDeleted;
 	private JButton buttonAdvancedConfigurationPerformed;
 	private JCheckBox checkBoxSelectAll;
 	private JCheckBox checkBoxExpandAll;
 	private JCheckBox checkBoxUpdated;
 	private JCheckBox checkBoxExactMatch;
 	private String eventName;
-	private boolean update;
 	private JCheckBox checkBoxAutoDiscover;
 	private JPopupMenu popup;
 	private JMenuItem menuItemHideExtraLocalContent;
 	private JMenuItem menuItemShowExtraLocalContent;
+	private JLabel labelActiveConnections;
+	private JLabel labelActiveConnectionsValue;
+
+	/* Data */
+	private AddonSyncTreeModel addonSyncTreeModel;
+	private SyncTreeDirectoryDTO racine;
+	private long totalFilesSize;
+	private int totalFilesSelected;
+	private int totalFilesUpdated;
+	private int totalFilesDeleted;
+	private boolean update;
+
 	/* Services */
 	private final RepositoryService repositoryService = new RepositoryService();
 	private final ConfigurationService configurationService = new ConfigurationService();
+
 	/* Workers */
 	private AddonsChecker addonsChecker;
 	private AddonsDownloader addonsDownloader;
@@ -270,7 +275,7 @@ public class DownloadPanel extends JPanel implements UIConstants {
 			downloadControls.add(hBox, BorderLayout.EAST);
 			vBox.add(downloadControls);
 		}
-		vBox.add(Box.createVerticalStrut(20));
+		vBox.add(Box.createVerticalStrut(18));
 
 		JPanel progressPanel = new JPanel();
 		progressPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
@@ -315,6 +320,16 @@ public class DownloadPanel extends JPanel implements UIConstants {
 			Box hBox = Box.createHorizontalBox();
 			hBox.add(labelRemainingTime);
 			hBox.add(labelRemainingTimeValue);
+			hBox.add(Box.createHorizontalGlue());
+			vBox.add(hBox);
+			vBox.add(Box.createVerticalStrut(10));
+		}
+		{
+			labelActiveConnections = new JLabel("Active connections: ");
+			labelActiveConnectionsValue = new JLabel();
+			Box hBox = Box.createHorizontalBox();
+			hBox.add(labelActiveConnections);
+			hBox.add(labelActiveConnectionsValue);
 			hBox.add(Box.createHorizontalGlue());
 			vBox.add(hBox);
 			vBox.add(Box.createVerticalStrut(10));
@@ -860,7 +875,7 @@ public class DownloadPanel extends JPanel implements UIConstants {
 		}
 
 		addonsDownloader = new AddonsDownloader(facade, repositoryName, racine,
-				totalFilesSize, eventName, this);
+				totalFilesSize, this);
 		addonsDownloader.setDaemon(true);
 		addonsDownloader.start();
 	}
@@ -870,14 +885,13 @@ public class DownloadPanel extends JPanel implements UIConstants {
 		if (repositoryService.isDownloading(repositoryName)) {
 			addonsDownloader.pause();
 			addonsDownloader.interrupt();
-			addonsDownloader = null;
 		}
 		buttonDownloadStart.setEnabled(true);
 	}
 
 	private void buttonDownloadCancelPerformed() {
 
-		if (repositoryService.isDownloading(repositoryName)) {
+		if (addonsDownloader != null) {
 			addonsDownloader.cancel();
 			addonsDownloader.interrupt();
 			addonsDownloader = null;
@@ -898,7 +912,7 @@ public class DownloadPanel extends JPanel implements UIConstants {
 				.getDefaultDownloadLocation(repositoryName);
 
 		AdvancedConfigurationPanel advancedConfigurationPanel = new AdvancedConfigurationPanel(
-				facade, racine, defaultDestinationPath, this);
+				facade, racine, defaultDestinationPath, repositoryName, this);
 		advancedConfigurationPanel.setVisible(true);
 		buttonAdvancedConfigurationPerformed.setEnabled(false);
 	}
@@ -1179,6 +1193,10 @@ public class DownloadPanel extends JPanel implements UIConstants {
 
 	public JLabel getLabelTotalFilesSizeValue() {
 		return labelTotalFilesSizeValue;
+	}
+
+	public JLabel getLabelActiveConnectionsValue() {
+		return labelActiveConnectionsValue;
 	}
 
 	public JTree getArbre() {

@@ -60,6 +60,7 @@ public class ExternalApplicationsEditionPanel extends JDialog implements
 		this.facade.setExternalApplicationsEditionPanel(this);
 		this.setSize(450, 300);
 		setIconImage(ICON);
+		this.setResizable(false);
 
 		this.setLocation(
 				(int) facade.getMainPanel().getLocation().getX()

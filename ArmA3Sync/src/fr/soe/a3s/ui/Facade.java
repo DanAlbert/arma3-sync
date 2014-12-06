@@ -1,6 +1,5 @@
 package fr.soe.a3s.ui;
 
-import fr.soe.a3s.ui.acreEditor.FirstPageACREInstallerPanel;
 import fr.soe.a3s.ui.mainEditor.AddonOptionsPanel;
 import fr.soe.a3s.ui.mainEditor.AddonsPanel;
 import fr.soe.a3s.ui.mainEditor.ExternalApplicationsEditionPanel;
@@ -15,8 +14,9 @@ import fr.soe.a3s.ui.mainEditor.PreferencesPanel;
 import fr.soe.a3s.ui.mainEditor.SyncPanel;
 import fr.soe.a3s.ui.profileEditor.ProfilePanel;
 import fr.soe.a3s.ui.repositoryEditor.ConnectionPanel;
-import fr.soe.a3s.ui.repositoryEditor.RepositoryEditPanel;
-import fr.soe.a3s.ui.tfarEditor.FirstPageTFARInstallerPanel;
+import fr.soe.a3s.ui.tools.acre2Editor.FirstPageACRE2InstallerPanel;
+import fr.soe.a3s.ui.tools.acreEditor.FirstPageACREInstallerPanel;
+import fr.soe.a3s.ui.tools.tfarEditor.FirstPageTFARInstallerPanel;
 
 public class Facade {
 
@@ -35,6 +35,7 @@ public class Facade {
 	private PreferencesPanel preferencesPanel;
 	private ConnectionPanel connectiongPanel;
 	private FirstPageACREInstallerPanel firstPageACREInstallerPanel;
+	private FirstPageACRE2InstallerPanel firstPageACRE2InstallerPanel;
 	private FirstPageTFARInstallerPanel firstPageTFARInstallerPanel;
 	private InfoUpdatedRepositoryPanel infoUpdatedRepositoryPanel;
 
@@ -165,6 +166,15 @@ public class Facade {
 		return firstPageACREInstallerPanel;
 	}
 
+	public FirstPageACRE2InstallerPanel getFirstPageACRE2InstallerPanel() {
+		return firstPageACRE2InstallerPanel;
+	}
+
+	public void setFirstPageACRE2InstallerPanel(
+			FirstPageACRE2InstallerPanel firstPageACRE2InstallerPanel) {
+		this.firstPageACRE2InstallerPanel = firstPageACRE2InstallerPanel;
+	}
+
 	public void setInfoUpdatedRepositoryPanel(
 			InfoUpdatedRepositoryPanel infoUpdatedRepositoryPanel) {
 		this.infoUpdatedRepositoryPanel = infoUpdatedRepositoryPanel;
@@ -173,7 +183,7 @@ public class Facade {
 	public InfoUpdatedRepositoryPanel getInfoUpdatedRepositoryPanel() {
 		return infoUpdatedRepositoryPanel;
 	}
-	
+
 	public FirstPageTFARInstallerPanel getFirstPageTFARInstallerPanel() {
 		return firstPageTFARInstallerPanel;
 	}

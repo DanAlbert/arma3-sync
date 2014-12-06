@@ -1,4 +1,4 @@
-package fr.soe.a3s.ui.rptEditor;
+package fr.soe.a3s.ui.tools.rptEditor;
 
 /**
  * Provides listener notification methods when a tailed log file is updated

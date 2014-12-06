@@ -53,28 +53,19 @@ import fr.soe.a3s.dao.HttpDAO;
 public class HttpConnection {
 
 	private String rangeRequest;
-
 	private final String hostname;
-
 	private final String login;
-
 	private final String password;
-
 	private final String port;
-
 	private HttpURLConnection connection;
-
 	private String boundary;
-
 	private byte[] boundaryBytes;
-
 	private long contLen;
-
 	private static final int BUFFER_SIZE = 4096;// 4KB
-
 	private long allData = 0;
-
 	private final HttpDAO httpDAO;
+	private static final int CONNECTION_TIMEOUT = 5000;
+	private static final int READ_TIMEOUT = 30000;
 
 	public HttpConnection(String hostname, String login, String password,
 			String port, HttpDAO httpDAO) {
@@ -95,8 +86,11 @@ public class HttpConnection {
 	public void openConnection(String relativeUrl) throws IOException,
 			URISyntaxException {
 
-		// See
-		// http://stackoverflow.com/questions/724043/http-url-address-encoding-in-java
+		/*
+		 * See
+		 * http://stackoverflow.com/questions/724043/http-url-address-encoding
+		 * -in-java
+		 */
 
 		URI uri = new URI("http", hostname, relativeUrl, null);
 		URL url = uri.toURL();
@@ -104,6 +98,8 @@ public class HttpConnection {
 
 		URL url2 = new URL("http", hostname, Integer.parseInt(port), file);
 		connection = (HttpURLConnection) url2.openConnection();
+		connection.setConnectTimeout(CONNECTION_TIMEOUT);
+		connection.setReadTimeout(READ_TIMEOUT);
 		if (!(login.equalsIgnoreCase("anonymous"))) {
 			String encoding = Base64Coder.encodeLines((login + ":" + password)
 					.getBytes());
@@ -251,7 +247,7 @@ public class HttpConnection {
 
 		ByteArrayOutputStream buffer = new ByteArrayOutputStream();
 
-		httpDAO.setStartTime(System.nanoTime());
+		final long startTime = System.nanoTime();
 		long offset = parFile.length();
 		httpDAO.setOffset(offset);
 		CountingOutputStream dos = new CountingOutputStream(buffer) {
@@ -261,9 +257,16 @@ public class HttpConnection {
 				// System.out.println(getCount());
 				int nbBytes = getCount();
 				httpDAO.setCountFileSize(nbBytes);
-				httpDAO.setEndTime(System.nanoTime());
-				httpDAO.updateFileSizeObserver();
-				httpDAO.updateObserverSpeed(nbBytes);
+				long endTime = System.nanoTime();
+				long totalTime = endTime - startTime;
+				long speed = (long) (nbBytes / (totalTime * Math.pow(10, -9)));
+				httpDAO.setSpeed(speed);
+				if (httpDAO.isAcquiredSmaphore()) {
+					httpDAO.updateFileSizeObserver();
+					if (totalTime > Math.pow(10, 9) / 2) {// 0.5s
+						httpDAO.updateObserverSpeed();
+					}
+				}
 			}
 		};
 
@@ -283,6 +286,9 @@ public class HttpConnection {
 
 		inputStream.close();
 		dos.close();
+
+		httpDAO.setCountFileSize(0);
+		httpDAO.setSpeed(0);
 
 		if (resume) {
 			return null;
@@ -353,8 +359,7 @@ public class HttpConnection {
 		// opens an output stream to save into file
 		FileOutputStream outputStream = new FileOutputStream(targetFile, false);
 
-		httpDAO.setSize(length);
-		httpDAO.setStartTime(System.nanoTime());
+		final long startTime = System.nanoTime();
 		httpDAO.setOffset(0);
 		CountingOutputStream dos = new CountingOutputStream(outputStream) {
 			@Override
@@ -363,9 +368,16 @@ public class HttpConnection {
 				// System.out.println(getCount());
 				int nbBytes = getCount();
 				httpDAO.setCountFileSize(nbBytes);
-				httpDAO.setEndTime(System.nanoTime());
-				httpDAO.updateFileSizeObserver();
-				httpDAO.updateObserverSpeed(nbBytes);
+				long endTime = System.nanoTime();
+				long totalTime = endTime - startTime;
+				long speed = (long) (nbBytes / (totalTime * Math.pow(10, -9)));
+				httpDAO.setSpeed(speed);
+				if (httpDAO.isAcquiredSmaphore()) {
+					httpDAO.updateFileSizeObserver();
+					if (totalTime > Math.pow(10, 9) / 2) {// 0.5s
+						httpDAO.updateObserverSpeed();
+					}
+				}
 			}
 		};
 
@@ -380,6 +392,8 @@ public class HttpConnection {
 		inputStream.close();
 		outputStream.close();
 		dos.close();
+		httpDAO.setCountFileSize(0);
+		httpDAO.setSpeed(0);
 
 		if (targetFile.length() != length && !httpDAO.isCanceled()) {
 			return false;
@@ -401,8 +415,7 @@ public class HttpConnection {
 		// opens an output stream to save into file
 		FileOutputStream outputStream = new FileOutputStream(targetFile, true);
 
-		httpDAO.setSize(length);
-		httpDAO.setStartTime(System.nanoTime());
+		final long startTime = System.nanoTime();
 		long offset = targetFile.length();
 		httpDAO.setOffset(offset);
 		CountingOutputStream dos = new CountingOutputStream(outputStream) {
@@ -412,9 +425,16 @@ public class HttpConnection {
 				// System.out.println(getCount());
 				int nbBytes = getCount();
 				httpDAO.setCountFileSize(getCount());
-				httpDAO.setEndTime(System.nanoTime());
-				httpDAO.updateFileSizeObserver();
-				httpDAO.updateObserverSpeed(nbBytes);
+				long endTime = System.nanoTime();
+				long totalTime = endTime - startTime;
+				long speed = (long) (nbBytes / (totalTime * Math.pow(10, -9)));
+				httpDAO.setSpeed(speed);
+				if (httpDAO.isAcquiredSmaphore()) {
+					httpDAO.updateFileSizeObserver();
+					if (totalTime > Math.pow(10, 9) / 2) {// 0.5s
+						httpDAO.updateObserverSpeed();
+					}
+				}
 			}
 		};
 
@@ -429,6 +449,8 @@ public class HttpConnection {
 		inputStream.close();
 		outputStream.close();
 		dos.close();
+		httpDAO.setCountFileSize(0);
+		httpDAO.setSpeed(0);
 
 		if (targetFile.length() != length && !httpDAO.isCanceled()) {
 			return false;

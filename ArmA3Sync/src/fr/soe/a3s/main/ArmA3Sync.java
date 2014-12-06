@@ -2,7 +2,6 @@ package fr.soe.a3s.main;
 
 import java.awt.Font;
 import java.awt.GraphicsEnvironment;
-import java.awt.Window;
 import java.io.File;
 import java.io.RandomAccessFile;
 import java.nio.channels.FileLock;
@@ -10,12 +9,9 @@ import java.util.Properties;
 
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
-import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
-import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.plaf.FontUIResource;
 
-import com.jtattoo.plaf.acryl.AcrylLookAndFeel;
 import com.jtattoo.plaf.aluminium.AluminiumLookAndFeel;
 import com.jtattoo.plaf.graphite.GraphiteLookAndFeel;
 import com.jtattoo.plaf.hifi.HiFiLookAndFeel;
@@ -23,11 +19,12 @@ import com.jtattoo.plaf.noire.NoireLookAndFeel;
 
 import fr.soe.a3s.console.Console;
 import fr.soe.a3s.constant.LookAndFeel;
+import fr.soe.a3s.dao.DataAccessConstants;
 import fr.soe.a3s.service.PreferencesService;
 import fr.soe.a3s.ui.Facade;
 import fr.soe.a3s.ui.mainEditor.MainPanel;
 
-public class ArmA3Sync {
+public class ArmA3Sync implements DataAccessConstants {
 
 	/**
 	 * This is the entry point for ArmA3Sync. ArmA3Sync is a free software and
@@ -44,15 +41,17 @@ public class ArmA3Sync {
 
 		checkJRE();
 
+		setFoldersAndPermissions();
+
 		Facade facade = new Facade();
 
 		if (args.length == 0) {
 			facade.setDevMode(false);
-			System.out.println("DevMode=false");
+			System.out.println("DevMode = false");
 			start(facade);
 		} else if (args.length == 1 && args[0].equalsIgnoreCase("-dev")) {
 			facade.setDevMode(true);
-			System.out.println("DevMode=true");
+			System.out.println("DevMode = true");
 			start(facade);
 		} else if (args.length == 1 && args[0].equalsIgnoreCase("-console")) {
 			Console console = new Console(false);
@@ -71,12 +70,20 @@ public class ArmA3Sync {
 			Console console = new Console(false);
 			String repositoryName = args[1];
 			console.check(repositoryName);
+		} else if (args.length == 3 && args[0].equalsIgnoreCase("-sync")) {
+			Console console = new Console(false);
+			String repositoryName = args[1];
+			String destinationFolderPath = args[2];
+			console.syncRepository(repositoryName, destinationFolderPath);
 		} else {
 			System.out.println("ArmA3Sync - bad command.");
-			System.out.println("-BUILD " + "\"" + "NameOfRepository" + "\""
-					+ ": build repository.");
-			System.out.println("-CHECK " + "\"" + "NameOfRepository" + "\""
-					+ ": check repository.");
+			System.out.println("-BUILD " + "\"" + "Name of the Repository"
+					+ "\"" + ": build repository.");
+			System.out.println("-CHECK " + "\"" + "Name of the Repository"
+					+ "\"" + ": check repository.");
+			System.out.println("-SYNC " + "\"" + "Name of the Repository"
+					+ "\"" + " " + "\"" + "Destination folder path" + "\""
+					+ ": synchronize with repository.");
 			System.out.println("-CONSOLE: run ArmASync console management.");
 		}
 	}
@@ -89,6 +96,44 @@ public class ArmA3Sync {
 		if (!(Double.parseDouble(specification) >= 1.7)) {
 			String message = "JRE installed version = " + version + "\n"
 					+ "ArmA3Sync required JRE 1.7 (Java 7) or above to run.";
+			System.out.println(message);
+			if (!GraphicsEnvironment.isHeadless()) {
+				JFrame frame = new JFrame();
+				JOptionPane.showMessageDialog(frame, message, "ArmA3Sync",
+						JOptionPane.INFORMATION_MESSAGE);
+			}
+			System.exit(0);
+		}
+	}
+
+	private static void setFoldersAndPermissions() {
+
+		File profilesFolder = new File(PROFILES_FOLDER_PATH);
+		profilesFolder.mkdir();
+		profilesFolder.setWritable(true);
+		boolean profilesOK = profilesFolder.canWrite();
+		//
+		File configurationFolder = new File(CONFIGURATION_FOLDER_PATH);
+		configurationFolder.mkdirs();
+		configurationFolder.setWritable(true);
+		boolean configurationOK = configurationFolder.canWrite();
+		//
+		File ftpFolder = new File(REPOSITORY_FOLDER_PATH);
+		ftpFolder.mkdirs();
+		ftpFolder.setWritable(true);
+		boolean ftpOK = ftpFolder.canWrite();
+		//
+		File tempFolder = new File(TEMP_FOLDER_PATH);
+		tempFolder.mkdirs();
+		tempFolder.setWritable(true);
+		boolean tempOK = tempFolder.canWrite();
+
+		if (!(profilesOK && configurationOK && ftpOK && tempOK)) {
+			String message = "Cannot write into installation directory."
+					+ "\n"
+					+ "ArmA3Sync requires full write permissions on its whole installation directory."
+					+ "\n"
+					+ "Try to run with administator priviledges. Checkout file permissions.";
 			System.out.println(message);
 			if (!GraphicsEnvironment.isHeadless()) {
 				JFrame frame = new JFrame();
@@ -169,10 +214,11 @@ public class ArmA3Sync {
 		} catch (Exception e) {
 			System.out.println("Unable to create and/or lock file: " + path);
 			if (!file.canWrite()) {
-				message = file.getAbsolutePath()
-						+ " Cannot Write."
+				message = "Cannot write into installation directory."
 						+ "\n"
-						+ "ArmA3Sync requires full write permissions on its installation directory.\nTry to run with administator priviledges.";
+						+ "ArmA3Sync requires full write permissions on its whole installation directory."
+						+ "\n"
+						+ "Try to run with administator priviledges. Checkout file permissions.";
 			}
 			response = false;
 		}

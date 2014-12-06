@@ -55,10 +55,10 @@ public class AddonService {
 							}
 						}
 					}
-					
-					if (!contains){
+
+					if (!contains) {
 						list.add(path);
-					}else {
+					} else {
 						if (remove != null) {
 							list.remove(remove);
 							list.add(path);
@@ -219,6 +219,16 @@ public class AddonService {
 	public String getACREinstallationFolder() {
 
 		Addon addon = addonDAO.getMap().get("@acre");
+		if (addon == null) {
+			return null;
+		} else {
+			return addon.getPath();
+		}
+	}
+
+	public String getACRE2installationFolder() {
+
+		Addon addon = addonDAO.getMap().get("@acre2");
 		if (addon == null) {
 			return null;
 		} else {

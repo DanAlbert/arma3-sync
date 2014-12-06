@@ -14,7 +14,6 @@ import java.awt.PopupMenu;
 import java.awt.SystemTray;
 import java.awt.Toolkit;
 import java.awt.TrayIcon;
-import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowEvent;
@@ -26,7 +25,6 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Set;
 
 import javax.swing.BorderFactory;
@@ -46,15 +44,10 @@ import javax.swing.JTabbedPane;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.plaf.ColorUIResource;
-import javax.swing.plaf.FontUIResource;
 
-import com.jtattoo.plaf.acryl.AcrylLookAndFeel;
-import com.jtattoo.plaf.graphite.GraphiteLookAndFeel;
-
-import fr.soe.a3s.constant.LookAndFeel;
 import fr.soe.a3s.constant.MinimizationType;
+import fr.soe.a3s.constant.RepositoryStatus;
 import fr.soe.a3s.dto.RepositoryDTO;
-import fr.soe.a3s.dto.ServerInfoDTO;
 import fr.soe.a3s.dto.configuration.LauncherOptionsDTO;
 import fr.soe.a3s.dto.configuration.PreferencesDTO;
 import fr.soe.a3s.exception.FtpException;
@@ -73,77 +66,54 @@ import fr.soe.a3s.service.RepositoryService;
 import fr.soe.a3s.ui.Facade;
 import fr.soe.a3s.ui.UIConstants;
 import fr.soe.a3s.ui.about.AboutPanel;
-import fr.soe.a3s.ui.acreEditor.FirstPageACREInstallerPanel;
-import fr.soe.a3s.ui.aiaEditor.AiaInstallerPanel;
 import fr.soe.a3s.ui.autoConfigEditor.AutoConfigExportPanel;
 import fr.soe.a3s.ui.autoConfigEditor.AutoConfigImportPanel;
 import fr.soe.a3s.ui.profileEditor.ProfilePanel;
 import fr.soe.a3s.ui.repositoryEditor.RepositoryPanel;
-import fr.soe.a3s.ui.rptEditor.RptViewerPanel;
-import fr.soe.a3s.ui.tfarEditor.FirstPageTFARInstallerPanel;
+import fr.soe.a3s.ui.tools.acre2Editor.FirstPageACRE2InstallerPanel;
+import fr.soe.a3s.ui.tools.acreEditor.FirstPageACREInstallerPanel;
+import fr.soe.a3s.ui.tools.aiaEditor.AiaInstallerPanel;
+import fr.soe.a3s.ui.tools.rptEditor.RptViewerPanel;
+import fr.soe.a3s.ui.tools.tfarEditor.FirstPageTFARInstallerPanel;
 
 public class MainPanel extends JFrame implements UIConstants {
 
 	private final Facade facade;
-
 	private static final String TAB_TITLE_ADDONS = "Addons";
-
 	private static final String TAB_TITLE_ADDON_OPTIONS = "Addon Options";
-
 	private static final String TAB_TITLE_LAUNCH_OPTIONS = "Launcher Options";
-
 	private static final String TAB_TITLE_ONLINE = "Online";
-
 	private static final String TAB_TITLE_EXTENAL_APPS = "External Apps";
-
 	private static final String TAB_TITLE_SYNC = "Repositories";
-
 	private JMenuBar menuBar;
-
 	private JMenu menuProfiles, menuGroups, menuHelp, menuTools,
 			menuItemAutoConfig;
-
 	private JMenuItem menuItemEdit, menuItemHelp, menuItemuUpdates,
 			menuItemAbout, menuItemPreferences, menuItemACREwizard,
-			menuItemRPTviewer, menuItemAiAwizard, menuItemServerTuner,
+			menuItemACRE2wizard, menuItemRPTviewer, menuItemAiAwizard,
 			menuItemBISforum, menuItemAutoConfigImport,
 			menuItemAutoConfigExport;
-
 	private JTabbedPane tabbedPane;
-
 	private JPanel infoPanel, launchPanel;
-
-	private final ConfigurationService configurationService = new ConfigurationService();
-
-	private final ProfileService profileService = new ProfileService();
-
-	private final CommonService commonService = new CommonService();
-
-	private final PreferencesService preferencesService = new PreferencesService();
-
-	private final RepositoryService repositoryService = new RepositoryService();
-
-	private SystemTray tray;
-
-	private TrayIcon trayIcon;
-
 	private PopupMenu popup;
-
 	private MenuItem launchItem, exitItem;
-
-	private final Map<String, Integer> mapTabIndexes = new LinkedHashMap<String, Integer>();
-
 	private final Container contenu;
-
 	private JMenuItem menuItemAddGroup;
-
 	private JMenuItem menuItemRenameGroup;
-
 	private JMenuItem menuItemRemoveGroup;
-
 	private JMenuItem menuItemTFARwizard;
-
 	private JMenuItem menuDonate;
+	/* System tray */
+	private SystemTray tray;
+	private TrayIcon trayIcon;
+	/* Services */
+	private final ConfigurationService configurationService = new ConfigurationService();
+	private final ProfileService profileService = new ProfileService();
+	private final CommonService commonService = new CommonService();
+	private final PreferencesService preferencesService = new PreferencesService();
+	private final RepositoryService repositoryService = new RepositoryService();
+	/* Data */
+	private final Map<String, Integer> mapTabIndexes = new LinkedHashMap<String, Integer>();
 
 	public MainPanel(Facade facade) {
 
@@ -179,13 +149,15 @@ public class MainPanel extends JFrame implements UIConstants {
 
 		menuTools = new JMenu("Tools");
 		menuBar.add(menuTools);
-		menuItemACREwizard = new JMenuItem("ACRE installer",
-				new ImageIcon(ACRE));
+		menuItemACREwizard = new JMenuItem("ACRE installer", new ImageIcon(
+				ACRE_SMALL));
 		menuTools.add(menuItemACREwizard);
-		menuItemTFARwizard = new JMenuItem("TFAR installer",
-				new ImageIcon(TFAR));
+		menuItemACRE2wizard = new JMenuItem("ACRE 2 installer", new ImageIcon(
+				ACRE_SMALL));
+		menuTools.add(menuItemACRE2wizard);
+		menuItemTFARwizard = new JMenuItem("TFAR installer", new ImageIcon(
+				TFAR_SMALL));
 		menuTools.add(menuItemTFARwizard);
-
 		menuItemAiAwizard = new JMenuItem("AiA tweaker", new ImageIcon(
 				TRANSMISSION));
 		menuTools.add(menuItemAiAwizard);
@@ -280,6 +252,18 @@ public class MainPanel extends JFrame implements UIConstants {
 				});
 			}
 		});
+		menuItemACRE2wizard.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				SwingUtilities.invokeLater(new Runnable() {
+					@Override
+					public void run() {
+						menuItemACRE2wizardPerformed();
+					}
+				});
+			}
+		});
+
 		menuItemTFARwizard.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
@@ -448,11 +432,9 @@ public class MainPanel extends JFrame implements UIConstants {
 		try {
 			profileService.readAll();
 		} catch (LoadingException e2) {
-			JOptionPane
-					.showMessageDialog(
-							this,
-							"An error occured.\nFailded to load one or more profiles.",
-							"Error", JOptionPane.ERROR_MESSAGE);
+			JOptionPane.showMessageDialog(this,
+					"An error occured.\nFailded to load one or more profiles.",
+					"Error", JOptionPane.ERROR_MESSAGE);
 		}
 
 		// try {
@@ -495,16 +477,13 @@ public class MainPanel extends JFrame implements UIConstants {
 		this.facade.getAddonsPanel().init();
 		this.facade.getAddonOptionsPanel().init();
 		this.facade.getLaunchOptionsPanel().init();
-		this.facade.getOnlinePanel().init();
 		this.facade.getExternalApplicationsPanel().init();
-		this.facade.getSyncPanel().init();
-		this.facade.getLaunchPanel().init();
 
 		/* Init Profiles menu */
 		updateProfilesMenu();
 
-		/* Update repositories statuts */
-		updateRepositoriesStatus();
+		/* Check repositories */
+		checkRepositories();
 	}
 
 	/* Menu Actions */
@@ -544,6 +523,14 @@ public class MainPanel extends JFrame implements UIConstants {
 	private void menuItemACREwizardPerformed() {
 
 		FirstPageACREInstallerPanel firstPage = new FirstPageACREInstallerPanel(
+				facade);
+		firstPage.init();
+		firstPage.setVisible(true);
+	}
+
+	private void menuItemACRE2wizardPerformed() {
+
+		FirstPageACRE2InstallerPanel firstPage = new FirstPageACRE2InstallerPanel(
 				facade);
 		firstPage.init();
 		firstPage.setVisible(true);
@@ -742,7 +729,7 @@ public class MainPanel extends JFrame implements UIConstants {
 		Thread t = new Thread(new Runnable() {
 			@Override
 			public void run() {
-				FtpService ftpService = new FtpService();
+				FtpService ftpService = new FtpService(1);
 				String availableVersion = null;
 
 				try {
@@ -891,12 +878,11 @@ public class MainPanel extends JFrame implements UIConstants {
 		}
 	}
 
-	public void updateRepositoriesStatus() {
+	private void checkRepositories() {
 
 		Thread t = new Thread(new Runnable() {
 			@Override
 			public void run() {
-
 				List<RepositoryDTO> list = repositoryService.getRepositories();
 				for (final RepositoryDTO repositoryDTO : list) {
 					try {
@@ -907,23 +893,25 @@ public class MainPanel extends JFrame implements UIConstants {
 					} catch (Exception e) {
 					}
 				}
+
 				facade.getSyncPanel().init();
 				facade.getOnlinePanel().init();
+				facade.getLaunchPanel().init();
+
 				List<String> repositoryNames = new ArrayList<String>();
 				for (final RepositoryDTO repositoryDTO : list) {
 					try {
-						ServerInfoDTO serverInfoDTO = repositoryService
-								.getServerInfo(repositoryDTO.getName());
-						if (serverInfoDTO != null) {
-							if (repositoryDTO.getRevision() != serverInfoDTO
-									.getRevision() && repositoryDTO.isNotify()) {
-								repositoryNames.add(repositoryDTO.getName());
-							}
+						RepositoryStatus repositoryStatus = repositoryService
+								.getRepositoryStatus(repositoryDTO.getName());
+						if (repositoryStatus.equals(RepositoryStatus.UPDATED)
+								&& repositoryDTO.isNotify()) {
+							repositoryNames.add(repositoryDTO.getName());
 						}
 					} catch (RepositoryException e) {
 						e.printStackTrace();
 					}
 				}
+
 				if (!repositoryNames.isEmpty()) {
 					String message = "The following repositories have been updated:";
 					for (String rep : repositoryNames) {
@@ -1074,8 +1062,9 @@ public class MainPanel extends JFrame implements UIConstants {
 						}
 						mapTabIndexes.remove(title);
 						tabbedPane.remove(tabbedPane.getSelectedComponent());
-						repositoryService.saveTransfertParameters(title, 0, 0,
-								false);
+						// repositoryService.saveTransfertParameters(title, 0,
+						// 0,
+						// false);
 					}
 				}
 			};

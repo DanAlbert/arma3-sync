@@ -1,4 +1,4 @@
-package fr.soe.a3s.ui.aiaEditor;
+package fr.soe.a3s.ui.tools.aiaEditor;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
