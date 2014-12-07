@@ -54,6 +54,7 @@ public class AddonsChecker extends Thread {
 		downloadPanel.getButtonCheckForAddonsCancel().setEnabled(true);
 		downloadPanel.getLabelCheckForAddonsStatus().setText("");
 		downloadPanel.getButtonCheckForAddonsStart().setEnabled(false);
+		downloadPanel.getComBoxDestinationFolder().setEnabled(false);
 		downloadPanel.getButtonDownloadStart().setEnabled(false);
 		downloadPanel.getProgressBarCheckForAddons().setMinimum(0);
 		downloadPanel.getProgressBarCheckForAddons().setMaximum(100);
@@ -92,7 +93,7 @@ public class AddonsChecker extends Thread {
 			downloadPanel.getLabelCheckForAddonsStatus().setText("Finished!");
 		} catch (Exception e) {
 			String message = "";
-			if (e.getMessage().isEmpty()) {
+			if (e.getMessage() != null || "".equals(e.getMessage())) {
 				message = "An unexpected error has occured.\nTry to close and run ArmA3Sync.bat file.";
 			} else {
 				message = e.getMessage();
@@ -101,6 +102,7 @@ public class AddonsChecker extends Thread {
 					"Check for Addons", JOptionPane.ERROR_MESSAGE);
 			downloadPanel.getLabelCheckForAddonsStatus().setText("");
 		} finally {
+			downloadPanel.getComBoxDestinationFolder().setEnabled(true);
 			downloadPanel.getButtonCheckForAddonsStart().setEnabled(true);
 			downloadPanel.getButtonCheckForAddonsCancel().setEnabled(true);
 			downloadPanel.getButtonDownloadStart().setEnabled(true);

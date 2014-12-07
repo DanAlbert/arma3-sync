@@ -227,6 +227,7 @@ public class AddonsDownloader extends Thread {
 	private void initDownloadPanelForStartDownload() {
 
 		downloadPanel.getLabelDownloadStatus().setText("Downloading...");
+		downloadPanel.getComBoxDestinationFolder().setEnabled(false);
 		downloadPanel.getButtonAdvancedConfiguration().setEnabled(false);
 		downloadPanel.getLabelTotalFilesSizeValue().setText(
 				UnitConverter.convertSize(totalFilesSize));
@@ -244,6 +245,7 @@ public class AddonsDownloader extends Thread {
 
 	private void initDownloadPanelForFinishedDownload() {
 
+		downloadPanel.getComBoxDestinationFolder().setEnabled(true);
 		downloadPanel.getButtonAdvancedConfiguration().setEnabled(true);
 		downloadPanel.getLabelTotalFilesSizeValue().setText("");
 		downloadPanel.getLabelDownloadedValue().setText("");
@@ -276,7 +278,7 @@ public class AddonsDownloader extends Thread {
 		JOptionPane.showMessageDialog(facade.getMainPanel(),
 				"Download is finished.", "Download",
 				JOptionPane.INFORMATION_MESSAGE);
-		
+
 		/* Check for Addons */
 		downloadPanel.checkForAddons();
 

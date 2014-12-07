@@ -655,6 +655,9 @@ public class DownloadPanel extends JPanel implements UIConstants {
 
 		this.repositoryName = repositoryName;
 		this.eventName = eventName;
+		if (eventName != null) {
+			checkBoxExactMatch.setEnabled(false);
+		}
 		this.update = update;
 		defaultFolderDestinationSelection();
 		updateAutoDiscoverSelection();
@@ -1211,4 +1214,7 @@ public class DownloadPanel extends JPanel implements UIConstants {
 		return this.repositoryPanel;
 	}
 
+	public JComboBox getComBoxDestinationFolder() {
+		return comBoxDestinationFolder;
+	}
 }
