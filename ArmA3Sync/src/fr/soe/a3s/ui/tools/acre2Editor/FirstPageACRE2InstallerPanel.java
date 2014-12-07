@@ -29,7 +29,7 @@ public class FirstPageACRE2InstallerPanel extends WizardPanel {
 	public FirstPageACRE2InstallerPanel(Facade facade) {
 		super(facade, "ACRE 2 installer wizard",
 				"Install or update ACRE 2 for ArmA 3 and TS3", new ImageIcon(
-						ACRE_BIG));
+						ACRE2_BIG));
 
 		buttonFist.setText("Proceed");
 		buttonSecond.setText("Cancel");

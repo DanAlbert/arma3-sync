@@ -276,6 +276,9 @@ public class AddonsDownloader extends Thread {
 		JOptionPane.showMessageDialog(facade.getMainPanel(),
 				"Download is finished.", "Download",
 				JOptionPane.INFORMATION_MESSAGE);
+		
+		/* Check for Addons */
+		downloadPanel.checkForAddons();
 
 		/* Check for TFAR Update */
 		if (tfarIsUpdated) {
@@ -317,9 +320,6 @@ public class AddonsDownloader extends Thread {
 				firstPage.setVisible(true);
 			}
 		}
-
-		/* Check for Addons */
-		downloadPanel.checkForAddons();
 	}
 
 	private void finishWithErrors(List<Exception> errors) {
@@ -384,13 +384,13 @@ public class AddonsDownloader extends Thread {
 				if (directory.isUpdated() || directory.isChanged()) {
 					tfarIsUpdated = true;
 				}
-			} else if (node.getName().toLowerCase().contains("@acre")) {
-				if (directory.isUpdated() || directory.isChanged()) {
-					acreIsUpdated = true;
-				}
 			} else if (node.getName().toLowerCase().contains("@acre2")) {
 				if (directory.isUpdated() || directory.isChanged()) {
 					acre2IsUpdated = true;
+				}
+			} else if (node.getName().toLowerCase().contains("@acre")) {
+				if (directory.isUpdated() || directory.isChanged()) {
+					acreIsUpdated = true;
 				}
 			} else {
 				SyncTreeDirectoryDTO parent = node.getParent();

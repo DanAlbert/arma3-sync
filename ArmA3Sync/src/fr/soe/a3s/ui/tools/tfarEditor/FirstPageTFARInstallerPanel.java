@@ -11,6 +11,7 @@ import java.io.File;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
@@ -39,12 +40,16 @@ public class FirstPageTFARInstallerPanel extends WizardPanel {
 
 	public FirstPageTFARInstallerPanel(Facade facade) {
 		super(facade, "TFAR installer wizard",
-				"Install or update TFAR for ArmA 3 and TS3", null);
+				"Install or update TFAR for ArmA 3 and TS3", new ImageIcon(
+						TFAR_BIG));
 
 		buttonFist.setText("Proceed");
 		buttonSecond.setText("Cancel");
 		getRootPane().setDefaultButton(buttonFist);
 		this.facade.setFirstPageTFARInstallerPanel(this);
+		
+		imagePanel.setBounds(6, 4, 48, 48);
+		labelDescription.setBounds(60, 6, 300, 42);
 		{
 			JPanel centerPanel = new JPanel();
 			this.add(centerPanel, BorderLayout.CENTER);

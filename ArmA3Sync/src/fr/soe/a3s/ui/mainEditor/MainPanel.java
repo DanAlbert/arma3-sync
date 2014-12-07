@@ -153,7 +153,7 @@ public class MainPanel extends JFrame implements UIConstants {
 				ACRE_SMALL));
 		menuTools.add(menuItemACREwizard);
 		menuItemACRE2wizard = new JMenuItem("ACRE 2 installer", new ImageIcon(
-				ACRE_SMALL));
+				ACRE2_SMALL));
 		menuTools.add(menuItemACRE2wizard);
 		menuItemTFARwizard = new JMenuItem("TFAR installer", new ImageIcon(
 				TFAR_SMALL));

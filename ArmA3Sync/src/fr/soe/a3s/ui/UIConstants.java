@@ -185,11 +185,17 @@ public interface UIConstants {
 					java.lang.ClassLoader
 							.getSystemResource("resources/pictures/system/acre48x48.png"));
 
-	Image ACRE2 = Toolkit
+	Image ACRE2_SMALL = Toolkit
 			.getDefaultToolkit()
 			.getImage(
 					java.lang.ClassLoader
-							.getSystemResource("resources/pictures/system/acre2_16x22.jpg"));
+							.getSystemResource("resources/pictures/system/acre216x16.png"));
+
+	Image ACRE2_BIG = Toolkit
+			.getDefaultToolkit()
+			.getImage(
+					java.lang.ClassLoader
+							.getSystemResource("resources/pictures/system/acre248x48.png"));
 
 	Image RPT = Toolkit
 			.getDefaultToolkit()
@@ -263,7 +269,13 @@ public interface UIConstants {
 			.getDefaultToolkit()
 			.getImage(
 					java.lang.ClassLoader
-							.getSystemResource("resources/pictures/system/tfar20x20.png"));
+							.getSystemResource("resources/pictures/system/tfar18x18.png"));
+
+	Image TFAR_BIG = Toolkit
+			.getDefaultToolkit()
+			.getImage(
+					java.lang.ClassLoader
+							.getSystemResource("resources/pictures/system/tfar48x48.png"));
 
 	Image CUBE = Toolkit
 			.getDefaultToolkit()

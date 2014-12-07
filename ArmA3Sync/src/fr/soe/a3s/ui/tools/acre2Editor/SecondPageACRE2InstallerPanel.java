@@ -32,7 +32,6 @@ public class SecondPageACRE2InstallerPanel extends WizardPanel {
 	private JLabel labelMessage1;
 	private JLabel labelMessage2;
 	private JButton buttonCopyPlugin;
-	private JButton buttonCopyUserconfig;
 	private String ts3Directory;
 	private static String statusOK = "OK";
 	private static String statusFail = "Fail";
@@ -76,21 +75,6 @@ public class SecondPageACRE2InstallerPanel extends WizardPanel {
 			hBox.add(Box.createHorizontalGlue());
 			vBox.add(hBox);
 
-		}
-		vBox.add(Box.createVerticalStrut(10));
-		{
-			labelCopyUserconfig = new JLabel(
-					"  - ACRE userconfig copied into ArmA 3 directory.");
-			labelCopyUserconfigValue = new JLabel();
-			Box hBox = Box.createHorizontalBox();
-			hBox.add(labelCopyUserconfig);
-			hBox.add(Box.createHorizontalStrut(5));
-			hBox.add(labelCopyUserconfigValue);
-			hBox.add(Box.createHorizontalStrut(20));
-			buttonCopyUserconfig = new JButton("View");
-			hBox.add(buttonCopyUserconfig);
-			hBox.add(Box.createHorizontalGlue());
-			vBox.add(hBox);
 		}
 		vBox.add(Box.createVerticalStrut(20));
 		{

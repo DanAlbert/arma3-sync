@@ -47,6 +47,8 @@ public abstract class WizardPanel extends JDialog implements UIConstants {
 	protected JLabel labelTS3Value;
 	protected JLabel labelPlugin;
 	protected JLabel labelPluginValue;
+	protected ImagePanel imagePanel;
+	protected JLabel labelDescription;
 	/* Services */
 	protected final ConfigurationService configurationService = new ConfigurationService();
 	protected final AddonService addonService = new AddonService();
@@ -80,7 +82,7 @@ public abstract class WizardPanel extends JDialog implements UIConstants {
 			topPanel.setPreferredSize(new java.awt.Dimension(484, 55));
 			if (imageIcon != null) {
 				{
-					ImagePanel imagePanel = new ImagePanel();
+					imagePanel = new ImagePanel();
 					imagePanel.setBackground(new java.awt.Color(255, 255, 255));
 					Image myNewImage = imageIcon.getImage();
 					imagePanel.setImage(myNewImage);
@@ -90,7 +92,7 @@ public abstract class WizardPanel extends JDialog implements UIConstants {
 				}
 			}
 			{
-				JLabel labelDescription = new JLabel();
+				labelDescription = new JLabel();
 				labelDescription.setText(description);
 				topPanel.add(labelDescription);
 				labelDescription.setBounds(40, 6, 300, 42);
@@ -183,7 +185,7 @@ public abstract class WizardPanel extends JDialog implements UIConstants {
 		}
 	}
 
-	class ImagePanel extends JPanel {
+	protected class ImagePanel extends JPanel {
 
 		private Image image = null;
 
