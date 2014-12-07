@@ -197,17 +197,20 @@ public class LaunchPanel extends JPanel implements UIConstants {
 	private void serverSelectionPerformed() {
 
 		String selection = (String) this.joinServerComboBox.getSelectedItem();
+		int selectedIndex = this.joinServerComboBox.getSelectedIndex();
 		if (selection == null || "".equals(selection)) {
 			configurationService.saveServerName(null);
 			configurationService.setDefautlModset(null);
 		} else {
-			int index = selection.indexOf("-");
-			if (index == -1) {
-				String serverName = selection;
-				configurationService.saveServerName(serverName);
-			} else {
-				String serverName = selection.substring(0, index - 1).trim();
-				String modsetName = selection.substring(index + 1).trim();
+			List<FavoriteServerDTO> favoriteServersDTO = configurationService
+					.getFavoriteServers();
+			if (selectedIndex != -1
+					&& selectedIndex <= favoriteServersDTO.size()
+					&& !favoriteServersDTO.isEmpty()) {
+				FavoriteServerDTO favoriteServerDTO = favoriteServersDTO
+						.get(selectedIndex - 1);
+				String serverName = favoriteServerDTO.getName();
+				String modsetName = favoriteServerDTO.getModsetName();
 				configurationService.saveServerName(serverName);
 				configurationService.setDefautlModset(modsetName);
 				Object objectDTO = map.get(modsetName);// null if not found
@@ -221,6 +224,10 @@ public class LaunchPanel extends JPanel implements UIConstants {
 					facade.getAddonsPanel().createGroupFromEvents(eventDTOs);
 				}
 				facade.getAddonsPanel().selectModset(modsetName);
+
+			} else {
+				String serverName = selection;
+				configurationService.saveServerName(serverName);
 			}
 		}
 		facade.getLaunchOptionsPanel().updateRunParameters();
