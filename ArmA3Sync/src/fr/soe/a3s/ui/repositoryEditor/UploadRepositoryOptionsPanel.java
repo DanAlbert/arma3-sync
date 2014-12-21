@@ -36,35 +36,20 @@ import fr.soe.a3s.ui.UIConstants;
 public class UploadRepositoryOptionsPanel extends JDialog implements UIConstants {
 
     private final Facade facade;
-
     private JButton buttonOK, buttonCancel;
-
     private JLabel labelPort;
-
     private JLabel labelConnection;
-
     private JLabel labelProtocole;
-
     private JCheckBox checkBoxAnonymous;
-
     private JLabel labelPassword;
-
     private JTextField textFieldLogin;
-
     private JLabel labelLogin;
-
     private JTextField textFieldPort;
-
     private JTextField textFieldHost;
-
     private JLabel labelHost;
-
     private JPanel connectionPanel, protocolePanel;
-
     private JPasswordField passwordField;
-
     private char[] password;
-
     private JComboBox comboBoxProtocole;
 
     /* Service */
