@@ -6,12 +6,12 @@ public class RepositoryDTO implements java.lang.Comparable {
 
 	private String name;
 	private boolean notify;
-	private ProtocoleDTO protocoleDTO;
+	private ProtocolDTO protocoleDTO;
 	private int revision;
 	private String path;
 	private String autoConfigURL;
 	private boolean outOfSynk;
-	private ProtocoleDTO repositoryUploadProtocoleDTO;
+	private ProtocolDTO repositoryUploadProtocoleDTO;
 
 	public String getName() {
 		return name;
@@ -29,11 +29,11 @@ public class RepositoryDTO implements java.lang.Comparable {
 		this.notify = notify;
 	}
 
-	public ProtocoleDTO getProtocoleDTO() {
+	public ProtocolDTO getProtocoleDTO() {
 		return protocoleDTO;
 	}
 
-	public void setProtocoleDTO(ProtocoleDTO protocoleDTO) {
+	public void setProtocoleDTO(ProtocolDTO protocoleDTO) {
 		this.protocoleDTO = protocoleDTO;
 	}
 
@@ -69,12 +69,12 @@ public class RepositoryDTO implements java.lang.Comparable {
 		this.outOfSynk = outOfSynk;
 	}
 
-	public ProtocoleDTO getRepositoryUploadProtocoleDTO() {
+	public ProtocolDTO getRepositoryUploadProtocoleDTO() {
 		return repositoryUploadProtocoleDTO;
 	}
 
 	public void setRepositoryUploadProtocoleDTO(
-			ProtocoleDTO repositoryUploadProtocoleDTO) {
+			ProtocolDTO repositoryUploadProtocoleDTO) {
 		this.repositoryUploadProtocoleDTO = repositoryUploadProtocoleDTO;
 	}
 

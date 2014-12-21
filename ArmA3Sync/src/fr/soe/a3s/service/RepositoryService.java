@@ -15,7 +15,7 @@ import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 
-import fr.soe.a3s.constant.Protocole;
+import fr.soe.a3s.constant.Protocol;
 import fr.soe.a3s.constant.RepositoryStatus;
 import fr.soe.a3s.dao.AddonDAO;
 import fr.soe.a3s.dao.DataAccessConstants;
@@ -99,7 +99,7 @@ public class RepositoryService extends ObjectDTOtransformer implements
 	}
 
 	public void createRepository(String name, String url, String port,
-			String login, String password, Protocole protocole)
+			String login, String password, Protocol protocole)
 			throws CheckException {
 
 		if (name == null || "".equals(name)) {
@@ -112,9 +112,9 @@ public class RepositoryService extends ObjectDTOtransformer implements
 		}
 
 		AbstractProtocole abstractProtocole = null;
-		if (protocole.equals(Protocole.FTP)) {
+		if (protocole.equals(Protocol.FTP)) {
 			abstractProtocole = new Ftp(url, port, login, password);
-		} else if (protocole.equals(Protocole.HTTP)) {
+		} else if (protocole.equals(Protocol.HTTP)) {
 			abstractProtocole = new Http(url, port, login, password);
 		} else {
 			throw new CheckException("Protocole not supported yet.");
@@ -1183,15 +1183,15 @@ public class RepositoryService extends ObjectDTOtransformer implements
 	}
 
 	public void setRepositoryUploadProtocole(String repositoryName, String url,
-			String port, String login, String password, Protocole protocole)
+			String port, String login, String password, Protocol protocole)
 			throws CheckException, RepositoryException {
 
 		Repository repository = repositoryDAO.getMap().get(repositoryName);
 		if (repository != null) {
 			AbstractProtocole abstractProtocole = null;
-			if (protocole.equals(Protocole.FTP)) {
+			if (protocole.equals(Protocol.FTP)) {
 				abstractProtocole = new Ftp(url, port, login, password);
-			} else if (protocole.equals(Protocole.HTTP)) {
+			} else if (protocole.equals(Protocol.HTTP)) {
 				abstractProtocole = new Http(url, port, login, password);
 			} else {
 				throw new CheckException("Protocole not supported yet.");

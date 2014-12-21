@@ -28,7 +28,7 @@ import org.dom4j.Element;
 import org.dom4j.io.SAXReader;
 
 import fr.soe.a3s.constant.DownloadStatus;
-import fr.soe.a3s.constant.Protocole;
+import fr.soe.a3s.constant.Protocol;
 import fr.soe.a3s.domain.AbstractProtocole;
 import fr.soe.a3s.domain.repository.AutoConfig;
 import fr.soe.a3s.domain.repository.Changelogs;
@@ -52,7 +52,7 @@ public class FtpDAO extends AbstractConnexionDAO {
 			SocketException, IOException {
 
 		ftpClient = new FTPClient();
-		String address = url.replace(Protocole.FTP.getPrompt(), "");
+		String address = url.replace(Protocol.FTP.getPrompt(), "");
 		int index1 = address.indexOf("/");
 		String hostname = address.substring(0, index1);
 		int index2 = address.lastIndexOf("/");

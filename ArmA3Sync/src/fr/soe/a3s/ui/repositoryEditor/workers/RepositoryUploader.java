@@ -8,12 +8,12 @@ import java.util.Map;
 
 import javax.swing.JOptionPane;
 
-import fr.soe.a3s.constant.Protocole;
+import fr.soe.a3s.constant.Protocol;
 import fr.soe.a3s.controller.ObserverFileSize2;
 import fr.soe.a3s.controller.ObserverFilesNumber2;
 import fr.soe.a3s.controller.ObserverSpeed;
 import fr.soe.a3s.dao.DataAccessConstants;
-import fr.soe.a3s.dto.ProtocoleDTO;
+import fr.soe.a3s.dto.ProtocolDTO;
 import fr.soe.a3s.dto.RepositoryDTO;
 import fr.soe.a3s.dto.sync.SyncTreeDirectoryDTO;
 import fr.soe.a3s.dto.sync.SyncTreeLeafDTO;
@@ -68,11 +68,11 @@ public class RepositoryUploader extends Thread implements DataAccessConstants {
 			// 1. Check repository upload protocole
 			RepositoryDTO repositoryDTO = repositoryService
 					.getRepository(repositoryName);
-			ProtocoleDTO protocoleDTO = repositoryDTO.getProtocoleDTO();
-			Protocole protocole = protocoleDTO.getProtocole();
-			ProtocoleDTO uploadProtocoleDTO = repositoryDTO
+			ProtocolDTO protocoleDTO = repositoryDTO.getProtocoleDTO();
+			Protocol protocole = protocoleDTO.getProtocole();
+			ProtocolDTO uploadProtocoleDTO = repositoryDTO
 					.getRepositoryUploadProtocoleDTO();
-			if (uploadProtocoleDTO == null && protocole.equals(Protocole.FTP)) {
+			if (uploadProtocoleDTO == null && protocole.equals(Protocol.FTP)) {
 				repositoryService.setRepositoryUploadProtocole(repositoryName,
 						protocoleDTO.getUrl(), protocoleDTO.getPort(),
 						protocoleDTO.getLogin(), protocoleDTO.getPassword(),

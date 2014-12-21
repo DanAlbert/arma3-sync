@@ -1,6 +1,6 @@
 package fr.soe.a3s.constant;
 
-public enum Protocole {
+public enum Protocol {
 
 	FTP("FTP", "ftp://"), HTTP("HTTP", "http://");
 
@@ -8,7 +8,7 @@ public enum Protocole {
 
 	private String prompt;
 
-	private Protocole(String description, String prompt) {
+	private Protocol(String description, String prompt) {
 		this.description = description;
 		this.prompt = prompt;
 	}
@@ -17,7 +17,7 @@ public enum Protocole {
 		return this.description;
 	}
 
-	public static Protocole getEnum(String description) {
+	public static Protocol getEnum(String description) {
 		if (description.equals(FTP.getDescription())) {
 			return FTP;
 		} else if (description.equals(HTTP.getDescription())) {

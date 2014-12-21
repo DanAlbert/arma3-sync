@@ -38,9 +38,9 @@ import javax.swing.plaf.basic.BasicSplitPaneUI;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 
-import fr.soe.a3s.constant.Protocole;
+import fr.soe.a3s.constant.Protocol;
 import fr.soe.a3s.dto.EventDTO;
-import fr.soe.a3s.dto.ProtocoleDTO;
+import fr.soe.a3s.dto.ProtocolDTO;
 import fr.soe.a3s.dto.RepositoryDTO;
 import fr.soe.a3s.dto.TreeDirectoryDTO;
 import fr.soe.a3s.dto.TreeNodeDTO;

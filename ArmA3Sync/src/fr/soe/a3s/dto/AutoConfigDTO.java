@@ -4,7 +4,7 @@ package fr.soe.a3s.dto;
 public class AutoConfigDTO {
 
 	private String repositoryName;
-	private ProtocoleDTO protocoleDTO;
+	private ProtocolDTO protocoleDTO;
 	
 	public String getRepositoryName() {
 		return repositoryName;
@@ -12,10 +12,10 @@ public class AutoConfigDTO {
 	public void setRepositoryName(String repositoryName) {
 		this.repositoryName = repositoryName;
 	}
-	public ProtocoleDTO getProtocoleDTO() {
+	public ProtocolDTO getProtocoleDTO() {
 		return protocoleDTO;
 	}
-	public void setProtocoleDTO(ProtocoleDTO protocoleDTO) {
+	public void setProtocoleDTO(ProtocolDTO protocoleDTO) {
 		this.protocoleDTO = protocoleDTO;
 	}
 

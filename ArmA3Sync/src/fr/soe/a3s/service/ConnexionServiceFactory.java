@@ -1,6 +1,6 @@
 package fr.soe.a3s.service;
 
-import fr.soe.a3s.constant.Protocole;
+import fr.soe.a3s.constant.Protocol;
 import fr.soe.a3s.dao.RepositoryDAO;
 import fr.soe.a3s.domain.Ftp;
 import fr.soe.a3s.domain.Http;
@@ -17,15 +17,15 @@ public class ConnexionServiceFactory {
 			String urlWithProtocole) throws CheckException {
 
 		if (urlWithProtocole.toLowerCase().trim()
-				.contains(Protocole.FTP.getPrompt())) {
+				.contains(Protocol.FTP.getPrompt())) {
 			return new FtpService();
 		} else if (urlWithProtocole.toLowerCase().trim()
-				.contains(Protocole.HTTP.getPrompt())) {
+				.contains(Protocol.HTTP.getPrompt())) {
 			return new HttpService();
 		} else {
 			throw new CheckException("Invalid url or unsupported protocole."
-					+ "\n" + "Url must start with " + Protocole.FTP.getPrompt()
-					+ " or " + Protocole.HTTP.getPrompt());
+					+ "\n" + "Url must start with " + Protocol.FTP.getPrompt()
+					+ " or " + Protocol.HTTP.getPrompt());
 		}
 	}
 

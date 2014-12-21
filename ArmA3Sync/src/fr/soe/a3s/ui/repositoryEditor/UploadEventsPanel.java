@@ -7,8 +7,8 @@ import java.awt.event.WindowEvent;
 
 import javax.swing.JOptionPane;
 
-import fr.soe.a3s.constant.Protocole;
-import fr.soe.a3s.dto.ProtocoleDTO;
+import fr.soe.a3s.constant.Protocol;
+import fr.soe.a3s.dto.ProtocolDTO;
 import fr.soe.a3s.dto.RepositoryDTO;
 import fr.soe.a3s.exception.CheckException;
 import fr.soe.a3s.exception.RepositoryException;
@@ -50,11 +50,11 @@ public class UploadEventsPanel extends ProgressPanel {
 			// 1. Check repository upload protocole
 			RepositoryDTO repositoryDTO = repositoryService
 					.getRepository(repositoryName);
-			ProtocoleDTO protocoleDTO = repositoryDTO.getProtocoleDTO();
-			Protocole protocole = protocoleDTO.getProtocole();
-			ProtocoleDTO uploadProtocoleDTO = repositoryDTO
+			ProtocolDTO protocoleDTO = repositoryDTO.getProtocoleDTO();
+			Protocol protocole = protocoleDTO.getProtocole();
+			ProtocolDTO uploadProtocoleDTO = repositoryDTO
 					.getRepositoryUploadProtocoleDTO();
-			if (uploadProtocoleDTO == null && protocole.equals(Protocole.FTP)) {
+			if (uploadProtocoleDTO == null && protocole.equals(Protocol.FTP)) {
 				repositoryService.setRepositoryUploadProtocole(repositoryName,
 						protocoleDTO.getUrl(), protocoleDTO.getPort(),
 						protocoleDTO.getLogin(), protocoleDTO.getPassword(),

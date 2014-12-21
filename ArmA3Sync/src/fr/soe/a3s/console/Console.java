@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Scanner;
 
 import fr.soe.a3s.constant.ConsoleCommands;
-import fr.soe.a3s.constant.Protocole;
+import fr.soe.a3s.constant.Protocol;
 import fr.soe.a3s.controller.ObserverActiveConnnection;
 import fr.soe.a3s.controller.ObserverEnd;
 import fr.soe.a3s.controller.ObserverError;
@@ -146,7 +146,7 @@ public class Console {
 			String login = repositoryDTO.getProtocoleDTO().getLogin();
 			String password = repositoryDTO.getProtocoleDTO().getPassword();
 			String port = repositoryDTO.getProtocoleDTO().getPort();
-			Protocole protocole = repositoryDTO.getProtocoleDTO()
+			Protocol protocole = repositoryDTO.getProtocoleDTO()
 					.getProtocole();
 
 			if (name != null) {
@@ -215,9 +215,9 @@ public class Console {
 		String prot = c.nextLine().toUpperCase();
 		boolean check = true;
 		while (check) {
-			if (prot.equals(Protocole.FTP.getDescription())) {
+			if (prot.equals(Protocol.FTP.getDescription())) {
 				check = false;
-			} else if (prot.equals(Protocole.HTTP.getDescription())) {
+			} else if (prot.equals(Protocol.HTTP.getDescription())) {
 				check = false;
 			} else {
 				System.out.print("Enter repository protocole FTP or HTTP: ");
@@ -254,14 +254,14 @@ public class Console {
 		System.out.print("Enter repository url: ");
 		String url = c.nextLine();
 		url = url.toLowerCase();
-		url = url.replaceAll(Protocole.FTP.getPrompt(), "").replaceAll(
-				Protocole.HTTP.getPrompt(), "");
+		url = url.replaceAll(Protocol.FTP.getPrompt(), "").replaceAll(
+				Protocol.HTTP.getPrompt(), "");
 		while (url.isEmpty()) {
 			System.out.print("Enter repository url: ");
 			url = c.nextLine();
 		}
 
-		Protocole protocole = Protocole.getEnum(prot);
+		Protocol protocole = Protocol.getEnum(prot);
 		RepositoryService repositoryService = new RepositoryService();
 		try {
 

@@ -1,16 +1,16 @@
 package fr.soe.a3s.dto;
 
 import fr.soe.a3s.constant.EncryptionMode;
-import fr.soe.a3s.constant.Protocole;
+import fr.soe.a3s.constant.Protocol;
 
-public class ProtocoleDTO {
+public class ProtocolDTO {
 
 	private String login;
 	private String password;
 	private String url;
 	private String port;
 	private EncryptionMode encryptionMode;
-	private Protocole protocole;
+	private Protocol protocole;
 
 	public String getLogin() {
 		return login;
@@ -52,11 +52,11 @@ public class ProtocoleDTO {
 		this.encryptionMode = encryptionMode;
 	}
 
-	public Protocole getProtocole() {
+	public Protocol getProtocole() {
 		return protocole;
 	}
 
-	public void setProtocole(Protocole protocole) {
+	public void setProtocole(Protocol protocole) {
 		this.protocole = protocole;
 	}
 

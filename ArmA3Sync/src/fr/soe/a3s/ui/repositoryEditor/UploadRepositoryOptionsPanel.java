@@ -23,8 +23,8 @@ import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JTextField;
 
-import fr.soe.a3s.constant.Protocole;
-import fr.soe.a3s.dto.ProtocoleDTO;
+import fr.soe.a3s.constant.Protocol;
+import fr.soe.a3s.dto.ProtocolDTO;
 import fr.soe.a3s.dto.RepositoryDTO;
 import fr.soe.a3s.exception.CheckException;
 import fr.soe.a3s.exception.RepositoryException;
@@ -39,7 +39,7 @@ public class UploadRepositoryOptionsPanel extends JDialog implements UIConstants
     private JButton buttonOK, buttonCancel;
     private JLabel labelPort;
     private JLabel labelConnection;
-    private JLabel labelProtocole;
+    private JLabel labelProtocol;
     private JCheckBox checkBoxAnonymous;
     private JLabel labelPassword;
     private JTextField textFieldLogin;
@@ -47,10 +47,10 @@ public class UploadRepositoryOptionsPanel extends JDialog implements UIConstants
     private JTextField textFieldPort;
     private JTextField textFieldHost;
     private JLabel labelHost;
-    private JPanel connectionPanel, protocolePanel;
+    private JPanel connectionPanel, protocolPanel;
     private JPasswordField passwordField;
     private char[] password;
-    private JComboBox comboBoxProtocole;
+    private JComboBox comboBoxProtocol;
 
     /* Service */
     private final RepositoryService repositoryService = new RepositoryService();
@@ -90,25 +90,25 @@ public class UploadRepositoryOptionsPanel extends JDialog implements UIConstants
             centerPanel.setLayout(grid1);
             this.add(centerPanel, BorderLayout.CENTER);
             {
-                protocolePanel = new JPanel();
-                protocolePanel.setLayout(null);
-                protocolePanel.setBorder(BorderFactory.createTitledBorder(
-                        BorderFactory.createEtchedBorder(), "Protocole"));
+                protocolPanel = new JPanel();
+                protocolPanel.setLayout(null);
+                protocolPanel.setBorder(BorderFactory.createTitledBorder(
+                        BorderFactory.createEtchedBorder(), "Protocol"));
                 {
-                    labelProtocole = new JLabel();
-                    protocolePanel.add(labelProtocole);
-                    labelProtocole.setText("File transfer protocole");
-                    labelProtocole.setBounds(18, 23, 122, 24);
+                    labelProtocol = new JLabel();
+                    protocolPanel.add(labelProtocol);
+                    labelProtocol.setText("File transfer protocol");
+                    labelProtocol.setBounds(18, 23, 122, 24);
                 }
                 {
-                    comboBoxProtocole = new JComboBox();
-                    comboBoxProtocole.setFocusable(false);
-                    protocolePanel.add(comboBoxProtocole);
-                    protocolePanel.add(comboBoxProtocole);
-                    ComboBoxModel comboBoxProtocoleModel = new DefaultComboBoxModel(
-                            new String[] { Protocole.FTP.getDescription(), });
-                    comboBoxProtocole.setModel(comboBoxProtocoleModel);
-                    comboBoxProtocole.setBounds(141, 24, 77, 23);
+                    comboBoxProtocol = new JComboBox();
+                    comboBoxProtocol.setFocusable(false);
+                    protocolPanel.add(comboBoxProtocol);
+                    protocolPanel.add(comboBoxProtocol);
+                    ComboBoxModel comboBoxProtocolModel = new DefaultComboBoxModel(
+                            new String[] { Protocol.FTP.getDescription(), });
+                    comboBoxProtocol.setModel(comboBoxProtocolModel);
+                    comboBoxProtocol.setBounds(141, 24, 77, 23);
                 }
             }
             {
@@ -173,7 +173,7 @@ public class UploadRepositoryOptionsPanel extends JDialog implements UIConstants
 
             Box vertBox = Box.createVerticalBox();
             vertBox.add(Box.createVerticalStrut(5));
-            vertBox.add(protocolePanel);
+            vertBox.add(protocolPanel);
             vertBox.add(Box.createVerticalStrut(5));
             vertBox.add(connectionPanel);
             connectionPanel.setPreferredSize(new java.awt.Dimension(405, 70));
@@ -198,10 +198,10 @@ public class UploadRepositoryOptionsPanel extends JDialog implements UIConstants
                 checkBoxAnonymousPerformed();
             }
         });
-        comboBoxProtocole.addActionListener(new ActionListener() {
+        comboBoxProtocol.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent arg0) {
-                comboBoxProtocolePerformed();
+                comboBoxProtocolPerformed();
             }
         });
         // Add Listeners
@@ -218,31 +218,31 @@ public class UploadRepositoryOptionsPanel extends JDialog implements UIConstants
         try {
             this.repositoryName = repositoryName;
             RepositoryDTO repositoryDTO = repositoryService.getRepository(repositoryName);
-            ProtocoleDTO protocoleDTO = repositoryDTO.getProtocoleDTO();
-            Protocole protocole = protocoleDTO.getProtocole();
-            ProtocoleDTO uploadProtocoleDTO = repositoryDTO.getRepositoryUploadProtocoleDTO();
-            if (uploadProtocoleDTO == null && protocole.equals(Protocole.FTP)) {
-                comboBoxProtocole.setSelectedItem(protocole.getDescription());
-                textFieldHost.setText(protocole.getDescription().toLowerCase() + "://"
-                        + protocoleDTO.getUrl());
-                textFieldPort.setText(protocoleDTO.getPort());
-                textFieldLogin.setText(protocoleDTO.getLogin());
-                passwordField.setText(protocoleDTO.getPassword());
-                if (protocoleDTO.getLogin().equals("anonymous")) {
+            ProtocolDTO protocolDTO = repositoryDTO.getProtocoleDTO();
+            Protocol protocol = protocolDTO.getProtocole();
+            ProtocolDTO uploadProtocolDTO = repositoryDTO.getRepositoryUploadProtocoleDTO();
+            if (uploadProtocolDTO == null && protocol.equals(Protocol.FTP)) {
+                comboBoxProtocol.setSelectedItem(protocol.getDescription());
+                textFieldHost.setText(protocol.getDescription().toLowerCase() + "://"
+                        + protocolDTO.getUrl());
+                textFieldPort.setText(protocolDTO.getPort());
+                textFieldLogin.setText(protocolDTO.getLogin());
+                passwordField.setText(protocolDTO.getPassword());
+                if (protocolDTO.getLogin().equals("anonymous")) {
                     checkBoxAnonymous.setSelected(true);
                     textFieldLogin.setEnabled(false);
                     passwordField.setText("");
                     passwordField.setEnabled(false);
                 }
             }
-            else if (uploadProtocoleDTO != null) {
-                Protocole uploadProtocole = uploadProtocoleDTO.getProtocole();
-                comboBoxProtocole.setSelectedItem(uploadProtocole.getDescription());
-                textFieldHost.setText(uploadProtocole.getPrompt() + uploadProtocoleDTO.getUrl());
-                textFieldPort.setText(uploadProtocoleDTO.getPort());
-                textFieldLogin.setText(uploadProtocoleDTO.getLogin());
-                passwordField.setText(uploadProtocoleDTO.getPassword());
-                if (uploadProtocoleDTO.getLogin().equals("anonymous")) {
+            else if (uploadProtocolDTO != null) {
+                Protocol uploadProtocol = uploadProtocolDTO.getProtocole();
+                comboBoxProtocol.setSelectedItem(uploadProtocol.getDescription());
+                textFieldHost.setText(uploadProtocol.getPrompt() + uploadProtocolDTO.getUrl());
+                textFieldPort.setText(uploadProtocolDTO.getPort());
+                textFieldLogin.setText(uploadProtocolDTO.getLogin());
+                passwordField.setText(uploadProtocolDTO.getPassword());
+                if (uploadProtocolDTO.getLogin().equals("anonymous")) {
                     checkBoxAnonymous.setSelected(true);
                     textFieldLogin.setEnabled(false);
                     passwordField.setText("");
@@ -263,8 +263,8 @@ public class UploadRepositoryOptionsPanel extends JDialog implements UIConstants
 
     private void buttonOKPerformed() {
 
-        String url = textFieldHost.getText().replace(Protocole.FTP.getPrompt(), "")
-                .replace(Protocole.HTTP.getPrompt(), "").trim();
+        String url = textFieldHost.getText().replace(Protocol.FTP.getPrompt(), "")
+                .replace(Protocol.HTTP.getPrompt(), "").trim();
         String port = textFieldPort.getText().trim();
         String login = textFieldLogin.getText().trim();
         password = passwordField.getPassword();
@@ -272,13 +272,13 @@ public class UploadRepositoryOptionsPanel extends JDialog implements UIConstants
         for (int i = 0; i < password.length; i++) {
             pass = pass + password[i];
         }
-        Protocole protocole = Protocole.getEnum((String) comboBoxProtocole.getSelectedItem());
+        Protocol protocol = Protocol.getEnum((String) comboBoxProtocol.getSelectedItem());
 
-        assert (protocole != null);
+        assert (protocol != null);
 
         try {
             repositoryService.setRepositoryUploadProtocole(repositoryName, url, port, login, pass,
-                    protocole);
+                    protocol);
             repositoryService.write(repositoryName);
         }
         catch (CheckException | RepositoryException | WritingException e) {
@@ -304,8 +304,8 @@ public class UploadRepositoryOptionsPanel extends JDialog implements UIConstants
         }
     }
 
-    private void comboBoxProtocolePerformed() {
-        if (comboBoxProtocole.getSelectedItem().equals(Protocole.HTTP.getDescription())) {
+    private void comboBoxProtocolPerformed() {
+        if (comboBoxProtocol.getSelectedItem().equals(Protocol.HTTP.getDescription())) {
             textFieldHost.setText("http://");
             textFieldPort.setText("80");
         }

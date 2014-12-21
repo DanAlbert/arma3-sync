@@ -23,7 +23,7 @@ import java.util.zip.GZIPOutputStream;
 
 import org.apache.commons.io.FileUtils;
 
-import fr.soe.a3s.constant.Protocole;
+import fr.soe.a3s.constant.Protocol;
 import fr.soe.a3s.controller.ObservableFileSize2;
 import fr.soe.a3s.controller.ObservableFilesNumber3;
 import fr.soe.a3s.controller.ObserverFileSize2;
@@ -46,7 +46,7 @@ import fr.soe.a3s.jazsync.Jazsync;
 public class RepositoryBuilderDAO implements DataAccessConstants,
 		ObservableFilesNumber3, ObservableFileSize2 {
 
-	private Protocole protocole;
+	private Protocol protocole;
 	private String repositortUrl;
 	private ObserverFilesNumber3 observerFilesNumber3;
 	private ObserverFileSize2 observerFileSize2;
@@ -65,9 +65,9 @@ public class RepositoryBuilderDAO implements DataAccessConstants,
 		assert (repositoryPath != null);
 		repositortUrl = repository.getProtocole().getUrl();
 		if (repository.getProtocole() instanceof Http) {
-			protocole = Protocole.HTTP;
+			protocole = Protocol.HTTP;
 		} else {
-			protocole = Protocole.FTP;
+			protocole = Protocol.FTP;
 		}
 
 		final File file = new File(repositoryPath);
@@ -350,8 +350,8 @@ public class RepositoryBuilderDAO implements DataAccessConstants,
 					long size = FileUtils.sizeOf(file);
 					treeSyncTreeLeaf.setSize(size);
 					String sha1 = FileAccessMethods.computeSHA1(file);
-					if (protocole.equals(Protocole.HTTP)) {
-						String url = Protocole.HTTP.getPrompt() + repositortUrl
+					if (protocole.equals(Protocol.HTTP)) {
+						String url = Protocol.HTTP.getPrompt() + repositortUrl
 								+ "/" + determinePath(treeSyncTreeLeaf);
 						Jazsync.make(file, url, sha1);
 					}

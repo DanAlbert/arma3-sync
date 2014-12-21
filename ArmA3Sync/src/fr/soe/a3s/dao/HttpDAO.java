@@ -21,7 +21,7 @@ import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
 import fr.soe.a3s.constant.DownloadStatus;
-import fr.soe.a3s.constant.Protocole;
+import fr.soe.a3s.constant.Protocol;
 import fr.soe.a3s.domain.repository.AutoConfig;
 import fr.soe.a3s.domain.repository.Changelogs;
 import fr.soe.a3s.domain.repository.Events;
@@ -394,9 +394,9 @@ public class HttpDAO extends AbstractConnexionDAO {
 			String relativeZsyncFileUrl = remotePath + node.getName()
 					+ ZSYNC_EXTENSION;
 			String relativeFileUrl = remotePath + node.getName();
-			String zsyncFileUrl = Protocole.HTTP.getPrompt() + hostname
+			String zsyncFileUrl = Protocol.HTTP.getPrompt() + hostname
 					+ relativeZsyncFileUrl;
-			String fileUrl = Protocole.HTTP.getPrompt() + hostname
+			String fileUrl = Protocol.HTTP.getPrompt() + hostname
 					+ relativeFileUrl;
 
 			SyncTreeLeafDTO leaf = (SyncTreeLeafDTO) node;
@@ -423,7 +423,7 @@ public class HttpDAO extends AbstractConnexionDAO {
 
 			String relativeZsyncFileUrl = remotePath + node.getName()
 					+ ZSYNC_EXTENSION;
-			String zsyncFileUrl = Protocole.HTTP.getPrompt() + hostname
+			String zsyncFileUrl = Protocol.HTTP.getPrompt() + hostname
 					+ relativeZsyncFileUrl;
 
 			SyncTreeLeafDTO leaf = (SyncTreeLeafDTO) node;

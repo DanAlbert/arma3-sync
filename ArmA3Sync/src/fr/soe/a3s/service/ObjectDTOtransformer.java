@@ -3,7 +3,7 @@ package fr.soe.a3s.service;
 import java.util.Iterator;
 import java.util.List;
 
-import fr.soe.a3s.constant.Protocole;
+import fr.soe.a3s.constant.Protocol;
 import fr.soe.a3s.domain.Http;
 import fr.soe.a3s.domain.TreeDirectory;
 import fr.soe.a3s.domain.TreeLeaf;
@@ -23,7 +23,7 @@ import fr.soe.a3s.domain.repository.SyncTreeNode;
 import fr.soe.a3s.dto.AutoConfigDTO;
 import fr.soe.a3s.dto.ChangelogDTO;
 import fr.soe.a3s.dto.EventDTO;
-import fr.soe.a3s.dto.ProtocoleDTO;
+import fr.soe.a3s.dto.ProtocolDTO;
 import fr.soe.a3s.dto.RepositoryDTO;
 import fr.soe.a3s.dto.ServerInfoDTO;
 import fr.soe.a3s.dto.TreeDirectoryDTO;
@@ -211,7 +211,7 @@ public class ObjectDTOtransformer {
 		repositoryDTO.setName(repository.getName());
 		repositoryDTO.setNotify(repository.isNotify());
 		// Protocole
-		ProtocoleDTO protocoleDTO = new ProtocoleDTO();
+		ProtocolDTO protocoleDTO = new ProtocolDTO();
 		protocoleDTO.setUrl(repository.getProtocole().getUrl());
 		protocoleDTO.setLogin(repository.getProtocole().getLogin());
 		protocoleDTO.setPassword(repository.getProtocole().getPassword());
@@ -219,13 +219,13 @@ public class ObjectDTOtransformer {
 		protocoleDTO.setEncryptionMode(repository.getProtocole()
 				.getEncryptionMode());
 		if (repository.getProtocole() instanceof Http) {
-			protocoleDTO.setProtocole(Protocole.HTTP);
+			protocoleDTO.setProtocole(Protocol.HTTP);
 		} else {
-			protocoleDTO.setProtocole(Protocole.FTP);
+			protocoleDTO.setProtocole(Protocol.FTP);
 		}
 		repositoryDTO.setProtocoleDTO(protocoleDTO);
 		// Repository upload protocole
-		ProtocoleDTO repositoryUploadProtocoleDTO = new ProtocoleDTO();
+		ProtocolDTO repositoryUploadProtocoleDTO = new ProtocolDTO();
 		if (repository.getRepositoryUploadProtocole() != null) {
 			repositoryUploadProtocoleDTO.setUrl(repository
 					.getRepositoryUploadProtocole().getUrl());
@@ -238,9 +238,9 @@ public class ObjectDTOtransformer {
 			repositoryUploadProtocoleDTO.setEncryptionMode(repository
 					.getRepositoryUploadProtocole().getEncryptionMode());
 			if (repository.getRepositoryUploadProtocole() instanceof Http) {
-				repositoryUploadProtocoleDTO.setProtocole(Protocole.HTTP);
+				repositoryUploadProtocoleDTO.setProtocole(Protocol.HTTP);
 			} else {
-				repositoryUploadProtocoleDTO.setProtocole(Protocole.FTP);
+				repositoryUploadProtocoleDTO.setProtocole(Protocol.FTP);
 			}
 			repositoryDTO
 					.setRepositoryUploadProtocoleDTO(repositoryUploadProtocoleDTO);
@@ -257,7 +257,7 @@ public class ObjectDTOtransformer {
 
 		final AutoConfigDTO autoConfigDTO = new AutoConfigDTO();
 		autoConfigDTO.setRepositoryName(autoConfig.getRepositoryName());
-		ProtocoleDTO protocoleDTO = new ProtocoleDTO();
+		ProtocolDTO protocoleDTO = new ProtocolDTO();
 		autoConfigDTO.setProtocoleDTO(protocoleDTO);
 		protocoleDTO.setUrl(autoConfig.getProtocole().getUrl());
 		protocoleDTO.setPort(autoConfig.getProtocole().getPort());
@@ -266,9 +266,9 @@ public class ObjectDTOtransformer {
 		protocoleDTO.setEncryptionMode(autoConfig.getProtocole()
 				.getEncryptionMode());
 		if (autoConfig.getProtocole() instanceof Http) {
-			protocoleDTO.setProtocole(Protocole.HTTP);
+			protocoleDTO.setProtocole(Protocol.HTTP);
 		} else {
-			protocoleDTO.setProtocole(Protocole.FTP);
+			protocoleDTO.setProtocole(Protocol.FTP);
 		}
 		return autoConfigDTO;
 	}
