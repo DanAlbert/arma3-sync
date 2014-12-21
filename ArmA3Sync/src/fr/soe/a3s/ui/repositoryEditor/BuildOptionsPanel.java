@@ -400,6 +400,7 @@ public class BuildOptionsPanel extends JDialog implements UIConstants {
 			for (String path : paths) {
 				list.remove(path);
 			}
+			updateExcludedFilesFromBuild(list);
 		}
 	}
 
@@ -440,6 +441,7 @@ public class BuildOptionsPanel extends JDialog implements UIConstants {
 			for (String path : paths) {
 				list.remove(path);
 			}
+			updateExcludedFoldersFromSync(list);
 		}
 	}
 
