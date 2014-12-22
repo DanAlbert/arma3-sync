@@ -146,8 +146,7 @@ public class Console {
 			String login = repositoryDTO.getProtocoleDTO().getLogin();
 			String password = repositoryDTO.getProtocoleDTO().getPassword();
 			String port = repositoryDTO.getProtocoleDTO().getPort();
-			Protocol protocole = repositoryDTO.getProtocoleDTO()
-					.getProtocole();
+			Protocol protocole = repositoryDTO.getProtocoleDTO().getProtocole();
 
 			if (name != null) {
 				if (name.isEmpty()) {
@@ -731,7 +730,8 @@ public class Console {
 							int v = (int) ((incrementedFilesSize * 100) / totalFilesSize);
 							if (v > value) {
 								value = v;
-								System.out.println(v + " %");
+								System.out.println("Download complete: " + v
+										+ " %");
 							}
 						}
 					}
@@ -847,7 +847,8 @@ public class Console {
 					public synchronized void update(int v) {
 						if (v > value) {
 							value = v;
-							System.out.println(value + " %");
+							System.out.println("Check for Addons complete: "
+									+ value + " %");
 						}
 					}
 				});
