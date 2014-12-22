@@ -156,7 +156,6 @@ public class FileMaker {
 		if (targetFile.exists()) {
 			if (targetFileSha1.equals(mfr.getSha1())) {
 				System.out.println("Read " + targetFile.getName()
-						+ ". Target is 100.0% complete.\n"
 						+ "verifying download...checksum matches OK\n"
 						+ "used " + mfr.getLength() + " local, fetched 0");
 			} else {
