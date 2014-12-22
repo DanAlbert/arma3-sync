@@ -54,19 +54,19 @@ public class LauncherDAO implements DataAccessConstants {
 			cmd[2 + i] = "-" + stk.nextToken().trim();
 		}
 
-		 String command = cmd[0] + " " + cmd[1];
-		
-		 for (int i = 2; i < cmd.length; i++) {
-		 command = command + " " + cmd[i];
-		 }
-		 Process proc = Runtime.getRuntime().exec(command);
+		String command = cmd[0] + " " + cmd[1];
 
-		 Process p = Runtime.getRuntime().exec(cmd);
-		 AfficheurFlux fluxSortie = new AfficheurFlux(p.getInputStream());
-		 AfficheurFlux fluxErreur = new AfficheurFlux(p.getErrorStream());
-		
-		 new Thread(fluxSortie).start();
-		 new Thread(fluxErreur).start();
+		for (int i = 2; i < cmd.length; i++) {
+			command = command + " " + cmd[i];
+		}
+		Process proc = Runtime.getRuntime().exec(command);
+
+		Process p = Runtime.getRuntime().exec(cmd);
+		AfficheurFlux fluxSortie = new AfficheurFlux(p.getInputStream());
+		AfficheurFlux fluxErreur = new AfficheurFlux(p.getErrorStream());
+
+		new Thread(fluxSortie).start();
+		new Thread(fluxErreur).start();
 	}
 
 	@Deprecated
@@ -181,6 +181,8 @@ public class LauncherDAO implements DataAccessConstants {
 						}
 						response = p.exitValue();
 					}
+				} else {
+					response = -1;
 				}
 				return response;
 			}

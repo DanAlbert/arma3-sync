@@ -296,8 +296,8 @@ public class LaunchPanel extends JPanel implements UIConstants {
 			launchService.launchArmA3();
 		} catch (LaunchException e) {
 			JOptionPane.showMessageDialog(facade.getMainPanel(),
-					"Failed to launch ArmA 3.", "ArmA 3 Start Game",
-					JOptionPane.ERROR_MESSAGE);
+					"Failed to launch ArmA 3." + "\n" + e.getMessage(),
+					"ArmA 3 Start Game", JOptionPane.ERROR_MESSAGE);
 			return;
 		}
 

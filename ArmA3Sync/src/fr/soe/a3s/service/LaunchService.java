@@ -10,6 +10,7 @@ import java.util.TreeSet;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import fr.soe.a3s.constant.GameExecutables;
 import fr.soe.a3s.constant.GameVersions;
@@ -201,6 +202,7 @@ public class LaunchService {
 		// }
 
 		/* Launch arma3.exe/arma3server.exe/other */
+		ExecutorService executor = Executors.newSingleThreadExecutor();
 		try {
 			launcherDAO = new LauncherDAO();
 			List<Callable<Integer>> runnables = new ArrayList<Callable<Integer>>();
@@ -208,12 +210,17 @@ public class LaunchService {
 			Callable<Integer> c = launcherDAO.call(executableName, arma3Path,
 					params, launcherOptions);
 			runnables.add(c);
-			ExecutorService executor = Executors.newSingleThreadExecutor();
-			executor.submit(c);
-			executor.shutdown();
+
+			Future<Integer> future = executor.submit(c);
+			Integer response = future.get();
+			if (response == -1) {
+				throw new Exception("Invalid executable file.");
+			}
 		} catch (Exception e) {
 			e.printStackTrace();
-			throw new LaunchException("");
+			throw new LaunchException(e.getMessage());
+		} finally {
+			executor.shutdown();
 		}
 	}
 
