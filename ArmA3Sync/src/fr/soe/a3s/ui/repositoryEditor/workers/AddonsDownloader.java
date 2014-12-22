@@ -192,6 +192,7 @@ public class AddonsDownloader extends Thread {
 				connect.addObserverEnd(new ObserverEnd() {
 					@Override
 					public void end() {
+						connexionService.cancel(false);
 						finish();
 						initDownloadPanelForFinishedDownload();
 						terminate();
@@ -202,6 +203,7 @@ public class AddonsDownloader extends Thread {
 					@Override
 					public void error(List<Exception> errors) {
 						if (!canceled) {
+							connexionService.cancel(false);
 							finishWithErrors(errors);
 							initDownloadPanelForFinishedDownload();
 							terminate();
@@ -261,9 +263,7 @@ public class AddonsDownloader extends Thread {
 	}
 
 	private void finish() {
-		
-		connexionService.cancel(false);
-		
+
 		downloadPanel.getProgressBarDownloadSingleAddon().setIndeterminate(
 				false);
 		downloadPanel.getLabelSpeedValue().setText(
@@ -330,14 +330,14 @@ public class AddonsDownloader extends Thread {
 	private void finishWithErrors(List<Exception> errors) {
 
 		connexionService.cancel(false);
-		
+
 		downloadPanel.getProgressBarDownloadSingleAddon().setIndeterminate(
 				false);
 		downloadPanel.getLabelSpeedValue().setText(
 				UnitConverter.convertSpeed(0));
 		downloadPanel.getLabelRemainingTimeValue().setText(
 				UnitConverter.convertTime(0));
-		
+
 		/* Delete extra files */
 		downloadPanel.getLabelDownloadStatus().setText(
 				"Deleting extra files...");
