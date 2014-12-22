@@ -89,7 +89,7 @@ public class AddonsPanel extends JPanel implements UIConstants {
 	private TreePath arbre2NewTreePath;
 	private JCheckBox checkBoxSelectAll;
 	private JCheckBox checkBoxExpandAll;
-	private JButton buttonEvents;
+	private JButton buttonModsets;
 	// Service
 	private final AddonService addonService = new AddonService();
 	private final RepositoryService repositoryService = new RepositoryService();
@@ -127,13 +127,13 @@ public class AddonsPanel extends JPanel implements UIConstants {
 		checkBoxSelectAll.setFocusable(false);
 		checkBoxExpandAll = new JCheckBox("Expand All");
 		checkBoxExpandAll.setFocusable(false);
-		buttonEvents = new JButton("Modsets");
-		buttonEvents.setFocusable(false);
+		buttonModsets = new JButton("Modsets");
+		buttonModsets.setFocusable(false);
 		ImageIcon checkIcon = new ImageIcon(CHECK);
-		buttonEvents.setIcon(checkIcon);
+		buttonModsets.setIcon(checkIcon);
 		controlPanel2.add(checkBoxSelectAll);
 		controlPanel2.add(checkBoxExpandAll);
-		controlPanel2.add(buttonEvents);
+		controlPanel2.add(buttonModsets);
 
 		this.add(controlPanel, BorderLayout.NORTH);
 
@@ -295,6 +295,7 @@ public class AddonsPanel extends JPanel implements UIConstants {
 				if (treeNodeDTO.isLeaf() && !treeNodeDTO.isSelected()) {
 					TreeDirectoryDTO treeDirectoryDTO = treeNodeDTO.getParent();
 					treeDirectoryDTO.setSelected(false);
+					deselectAllAscending(treeDirectoryDTO);
 				} else if (treeNodeDTO.isLeaf() && treeNodeDTO.isSelected()) {
 					TreeDirectoryDTO treeDirectoryDTO = treeNodeDTO.getParent();
 					int nbNodes = treeDirectoryDTO.getList().size();
@@ -307,6 +308,7 @@ public class AddonsPanel extends JPanel implements UIConstants {
 					if (nbNodes == nbSelectedNodes) {
 						treeDirectoryDTO.setSelected(true);
 					}
+					selectAllAscending(treeNodeDTO);
 				} else if (!treeNodeDTO.isLeaf()) {
 					TreeDirectoryDTO treeDirectoryDTO = (TreeDirectoryDTO) treeNodeDTO;
 					if (treeNodeDTO.isSelected()) {
@@ -384,7 +386,7 @@ public class AddonsPanel extends JPanel implements UIConstants {
 				checkBoxExpandAllPerformed();
 			}
 		});
-		buttonEvents.addActionListener(new ActionListener() {
+		buttonModsets.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				buttonEventsPerformed();
@@ -397,6 +399,7 @@ public class AddonsPanel extends JPanel implements UIConstants {
 	/* Set contextual help on jComponents */
 	private void setContextualHelp() {
 		buttonRefresh.setToolTipText("Reload Availabe Addons list");
+		buttonModsets.setToolTipText("Generate addons group from modset");
 	}
 
 	public void init() {
@@ -438,12 +441,14 @@ public class AddonsPanel extends JPanel implements UIConstants {
 
 	public void updateAddonGroups() {
 
+		arbre2.setEnabled(false);
 		arbre2.removeAll();
 		racine2 = profileService.getAddonGroupsTree();
 		addonTreeModel2 = new AddonTreeModel(racine2);
 		arbre2.setModel(addonTreeModel2);
 		highlightMissingAddons();
 		refreshViewArbre2();
+		arbre2.setEnabled(true);
 	}
 
 	/* Highlight missing selected addons into Addon Groups */
@@ -534,7 +539,7 @@ public class AddonsPanel extends JPanel implements UIConstants {
 		if (numberRowShown == 0) {
 			arbre2.setToolTipText("Right click to add a group");
 		} else {
-			arbre2.setToolTipText("");
+			arbre2.setToolTipText(null);
 		}
 	}
 
@@ -698,7 +703,6 @@ public class AddonsPanel extends JPanel implements UIConstants {
 	private void selectAllDescending(TreeDirectoryDTO treeDirectoryDTO) {
 		treeDirectoryDTO.setSelected(true);
 		for (TreeNodeDTO t : treeDirectoryDTO.getList()) {
-			// t.setSelected(treeDirectoryDTO.isSelected());
 			t.setSelected(true);
 			if (!t.isLeaf()) {
 				TreeDirectoryDTO d = (TreeDirectoryDTO) t;
@@ -707,13 +711,23 @@ public class AddonsPanel extends JPanel implements UIConstants {
 		}
 	}
 
-	public void deselectAllDescending(TreeDirectoryDTO treeDirectoryDTO) {
+	private void deselectAllDescending(TreeDirectoryDTO treeDirectoryDTO) {
 		treeDirectoryDTO.setSelected(false);
 		for (TreeNodeDTO t : treeDirectoryDTO.getList()) {
 			t.setSelected(false);
 			if (!t.isLeaf()) {
 				TreeDirectoryDTO d = (TreeDirectoryDTO) t;
 				deselectAllDescending(d);
+			}
+		}
+	}
+
+	private void deselectAllAscending(TreeNodeDTO treeNodeDTO) {
+		if (treeNodeDTO != null) {
+			TreeNodeDTO parent = treeNodeDTO.getParent();
+			if (parent != null) {
+				parent.setSelected(false);
+				selectAllAscending(parent);
 			}
 		}
 	}
