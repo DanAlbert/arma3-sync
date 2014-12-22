@@ -660,10 +660,8 @@ public class DownloadPanel extends JPanel implements UIConstants {
 
 		this.repositoryName = repositoryName;
 		this.eventName = eventName;
-		if (eventName != null) {
-			checkBoxExactMatch.setEnabled(false);
-		}
 		this.update = update;
+
 		defaultFolderDestinationSelection();
 		updateAutoDiscoverSelection();
 		updateExactMatchSelection();
@@ -762,13 +760,18 @@ public class DownloadPanel extends JPanel implements UIConstants {
 
 	private void updateExactMatchSelection() {
 
-		boolean value = repositoryService.isExactMatch(repositoryName);
-		checkBoxExactMatch.setSelected(value);
-		if (value == true) {
-			checkBoxAutoDiscover.setSelected(false);
-			checkBoxAutoDiscover.setEnabled(false);
-		} else {
+		if (eventName != null) {
 			checkBoxAutoDiscover.setEnabled(true);
+			checkBoxExactMatch.setEnabled(false);
+		} else {
+			boolean value = repositoryService.isExactMatch(repositoryName);
+			checkBoxExactMatch.setSelected(value);
+			if (value == true) {
+				checkBoxAutoDiscover.setSelected(false);
+				checkBoxAutoDiscover.setEnabled(false);
+			} else {
+				checkBoxAutoDiscover.setEnabled(true);
+			}
 		}
 	}
 
