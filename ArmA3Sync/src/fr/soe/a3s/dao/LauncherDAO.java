@@ -3,13 +3,23 @@ package fr.soe.a3s.dao;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
 import java.util.concurrent.Callable;
 
+import fr.soe.a3s.controller.ObservableEnd;
+import fr.soe.a3s.controller.ObservableError;
+import fr.soe.a3s.controller.ObserverEnd;
+import fr.soe.a3s.controller.ObserverError;
 import fr.soe.a3s.domain.configration.LauncherOptions;
 
-public class LauncherDAO implements DataAccessConstants {
+public class LauncherDAO implements DataAccessConstants, ObservableError,
+		ObservableEnd {
+
+	private ObserverEnd observerEnd;
+
+	private ObserverError observerError;
 
 	public boolean isApplicationRunning(String executableName) {
 
@@ -106,44 +116,21 @@ public class LauncherDAO implements DataAccessConstants {
 	}
 
 	public Callable<Integer> call(final String executableName,
-			final String exePath, final List<String> params,
-			final LauncherOptions launcherOptions) throws Exception {
+			final String exePath, final List<String> params) {
 
 		Callable<Integer> c = new Callable<Integer>() {
 			@Override
-			public Integer call() throws Exception {
+			public Integer call() {
 
 				int response = 0;
-
-				if (executableName.contains(".exe")) {
-					int nbParameters = params.size();
-					String[] cmd = new String[1 + nbParameters];
-					cmd[0] = exePath;
-					for (int i = 0; i < nbParameters; i++) {
-						cmd[1 + i] = params.get(i).trim();
-					}
-					Process p = Runtime.getRuntime().exec(cmd);
-					AfficheurFlux fluxSortie = new AfficheurFlux(
-							p.getInputStream());
-					AfficheurFlux fluxErreur = new AfficheurFlux(
-							p.getErrorStream());
-					new Thread(fluxSortie).start();
-					new Thread(fluxErreur).start();
-					p.waitFor();
-					if (launcherOptions != null) {
-						if (launcherOptions.isAutoRestart()) {
-							call();
+				try {
+					if (executableName.contains(".exe")) {
+						int nbParameters = params.size();
+						String[] cmd = new String[1 + nbParameters];
+						cmd[0] = exePath;
+						for (int i = 0; i < nbParameters; i++) {
+							cmd[1 + i] = params.get(i).trim();
 						}
-					}
-					response = p.exitValue();
-				} else if (executableName.contains(".bat")) {
-					String osName = System.getProperty("os.name");
-					if (osName.contains("Windows")) {
-						String[] cmd = new String[4];
-						cmd[0] = "cmd.exe";
-						cmd[1] = "/C";
-						cmd[2] = "start";
-						cmd[3] = exePath;
 						Process p = Runtime.getRuntime().exec(cmd);
 						AfficheurFlux fluxSortie = new AfficheurFlux(
 								p.getInputStream());
@@ -152,37 +139,50 @@ public class LauncherDAO implements DataAccessConstants {
 						new Thread(fluxSortie).start();
 						new Thread(fluxErreur).start();
 						p.waitFor();
-						if (launcherOptions != null) {
-							if (launcherOptions.isAutoRestart()) {
-								call();
-							}
-						}
 						response = p.exitValue();
-					}
-				} else if (executableName.contains(".sh")) {
-					String osName = System.getProperty("os.name");
-					if (osName.contains("Linux")) {
-						String[] cmd = new String[3];
-						cmd[0] = "/bin/bash";
-						cmd[1] = "-c";
-						cmd[2] = exePath;
-						Process p = Runtime.getRuntime().exec(cmd);
-						AfficheurFlux fluxSortie = new AfficheurFlux(
-								p.getInputStream());
-						AfficheurFlux fluxErreur = new AfficheurFlux(
-								p.getErrorStream());
-						new Thread(fluxSortie).start();
-						new Thread(fluxErreur).start();
-						p.waitFor();
-						if (launcherOptions != null) {
-							if (launcherOptions.isAutoRestart()) {
-								call();
-							}
+					} else if (executableName.contains(".bat")) {
+						String osName = System.getProperty("os.name");
+						if (osName.contains("Windows")) {
+							String[] cmd = new String[4];
+							cmd[0] = "cmd.exe";
+							cmd[1] = "/C";
+							cmd[2] = "start";
+							cmd[3] = exePath;
+							Process p = Runtime.getRuntime().exec(cmd);
+							AfficheurFlux fluxSortie = new AfficheurFlux(
+									p.getInputStream());
+							AfficheurFlux fluxErreur = new AfficheurFlux(
+									p.getErrorStream());
+							new Thread(fluxSortie).start();
+							new Thread(fluxErreur).start();
+							p.waitFor();
+							response = p.exitValue();
 						}
-						response = p.exitValue();
+					} else if (executableName.contains(".sh")) {
+						String osName = System.getProperty("os.name");
+						if (osName.contains("Linux")) {
+							String[] cmd = new String[3];
+							cmd[0] = "/bin/bash";
+							cmd[1] = "-c";
+							cmd[2] = exePath;
+							Process p = Runtime.getRuntime().exec(cmd);
+							AfficheurFlux fluxSortie = new AfficheurFlux(
+									p.getInputStream());
+							AfficheurFlux fluxErreur = new AfficheurFlux(
+									p.getErrorStream());
+							new Thread(fluxSortie).start();
+							new Thread(fluxErreur).start();
+							p.waitFor();
+							response = p.exitValue();
+						}
+					} else {
+						throw new Exception(executableName
+								+ " - invalid executable file.");
 					}
-				} else {
-					response = -1;
+				} catch (Exception e) {
+					List errors = new ArrayList<>();
+					errors.add(e);
+					updateObserverError(errors);
 				}
 				return response;
 			}
@@ -190,8 +190,98 @@ public class LauncherDAO implements DataAccessConstants {
 		return c;
 	}
 
-	public void runSteam() {
+	public Callable<Integer> call2(final String executableName,
+			final String exePath, final List<String> params,
+			final LauncherOptions launcherOptions) {
 
+		Callable<Integer> c = new Callable<Integer>() {
+			@Override
+			public Integer call() {
+
+				int response = 0;
+				try {
+					if (executableName.contains(".exe")) {
+						int nbParameters = params.size();
+						String[] cmd = new String[1 + nbParameters];
+						cmd[0] = exePath;
+						for (int i = 0; i < nbParameters; i++) {
+							cmd[1 + i] = params.get(i).trim();
+						}
+						Process p = Runtime.getRuntime().exec(cmd);
+						AfficheurFlux fluxSortie = new AfficheurFlux(
+								p.getInputStream());
+						AfficheurFlux fluxErreur = new AfficheurFlux(
+								p.getErrorStream());
+						new Thread(fluxSortie).start();
+						new Thread(fluxErreur).start();
+						updateObserverEnd();
+						p.waitFor();
+						if (launcherOptions != null) {
+							if (launcherOptions.isAutoRestart()) {
+								call();
+							}
+						}
+						response = p.exitValue();
+					} else if (executableName.contains(".bat")) {
+						String osName = System.getProperty("os.name");
+						if (osName.contains("Windows")) {
+							String[] cmd = new String[4];
+							cmd[0] = "cmd.exe";
+							cmd[1] = "/C";
+							cmd[2] = "start";
+							cmd[3] = exePath;
+							Process p = Runtime.getRuntime().exec(cmd);
+							AfficheurFlux fluxSortie = new AfficheurFlux(
+									p.getInputStream());
+							AfficheurFlux fluxErreur = new AfficheurFlux(
+									p.getErrorStream());
+							new Thread(fluxSortie).start();
+							new Thread(fluxErreur).start();
+							updateObserverEnd();
+							p.waitFor();
+							if (launcherOptions != null) {
+								if (launcherOptions.isAutoRestart()) {
+									call();
+								}
+							}
+							response = p.exitValue();
+						}
+					} else if (executableName.contains(".sh")) {
+						String osName = System.getProperty("os.name");
+						if (osName.contains("Linux")) {
+							String[] cmd = new String[3];
+							cmd[0] = "/bin/bash";
+							cmd[1] = "-c";
+							cmd[2] = exePath;
+							Process p = Runtime.getRuntime().exec(cmd);
+							AfficheurFlux fluxSortie = new AfficheurFlux(
+									p.getInputStream());
+							AfficheurFlux fluxErreur = new AfficheurFlux(
+									p.getErrorStream());
+							new Thread(fluxSortie).start();
+							new Thread(fluxErreur).start();
+							updateObserverEnd();
+							p.waitFor();
+							if (launcherOptions != null) {
+								if (launcherOptions.isAutoRestart()) {
+									call();
+								}
+							}
+							response = p.exitValue();
+						}
+					} else {
+						throw new Exception(executableName
+								+ " - invalid executable file.");
+					}
+				} catch (Exception e) {
+					List errors = new ArrayList<>();
+					errors.add(e);
+					updateObserverError(errors);
+				}
+				return response;
+			}
+		};
+		return c;
 	}
 
 	@Deprecated
@@ -219,5 +309,25 @@ public class LauncherDAO implements DataAccessConstants {
 		new Thread(fluxSortie).start();
 		new Thread(fluxErreur).start();
 		p.waitFor();
+	}
+
+	@Override
+	public void addObserverEnd(ObserverEnd obs) {
+		this.observerEnd = obs;
+	}
+
+	@Override
+	public void updateObserverEnd() {
+		this.observerEnd.end();
+	}
+
+	@Override
+	public void addObserverError(ObserverError obs) {
+		this.observerError = obs;
+	}
+
+	@Override
+	public void updateObserverError(List<Exception> errors) {
+		this.observerError.error(errors);
 	}
 }

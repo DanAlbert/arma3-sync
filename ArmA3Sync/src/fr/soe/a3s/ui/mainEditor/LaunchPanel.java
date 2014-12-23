@@ -22,6 +22,8 @@ import javax.swing.SwingUtilities;
 
 import fr.soe.a3s.constant.GameVersions;
 import fr.soe.a3s.constant.MinimizationType;
+import fr.soe.a3s.controller.ObserverEnd;
+import fr.soe.a3s.controller.ObserverError;
 import fr.soe.a3s.dto.EventDTO;
 import fr.soe.a3s.dto.RepositoryDTO;
 import fr.soe.a3s.dto.configuration.FavoriteServerDTO;
@@ -54,9 +56,9 @@ public class LaunchPanel extends JPanel implements UIConstants {
 	/* Data */
 	private Map<String, Object> map = new TreeMap<String, Object>();
 	/* Services */
+	private final LaunchService launchService = new LaunchService();
 	private final ConfigurationService configurationService = new ConfigurationService();
 	private final CommonService commonService = new CommonService();
-	private final LaunchService launchService = new LaunchService();
 	private final RepositoryService repositoryService = new RepositoryService();;
 
 	public LaunchPanel(Facade facade) {
@@ -280,47 +282,39 @@ public class LaunchPanel extends JPanel implements UIConstants {
 			return;
 		}
 
+		launchService.getLauncherDAO().addObserverError(new ObserverError() {
+			@Override
+			public void error(List<Exception> errors) {
+				JOptionPane.showMessageDialog(facade.getMainPanel(), errors
+						.get(0).getMessage(), "ArmA 3 Start Game",
+						JOptionPane.ERROR_MESSAGE);
+			}
+		});
+
+		launchService.getLauncherDAO().addObserverEnd(new ObserverEnd() {
+			@Override
+			public void end() {
+				PreferencesService preferencesService = new PreferencesService();
+				MinimizationType minimize = preferencesService.getPreferences()
+						.getLaunchPanelGameLaunch();
+				if (MinimizationType.TASK_BAR.equals(minimize)) {
+					facade.getMainPanel().setToTaskBar();
+				} else if (MinimizationType.TRAY.equals(minimize)) {
+					facade.getMainPanel().setVisible(false);
+					facade.getMainPanel().setToTray();
+				} else if (MinimizationType.CLOSE.equals(minimize)) {
+					if (!configurationService.getLauncherOptions()
+							.isAutoRestart()) {
+						facade.getMainPanel().menuExitPerformed();
+					}
+				}
+			}
+		});
+
 		// Run External Applications
-		try {
-			launchService.launchExternalApplications();
-		} catch (LaunchException e) {
-			// Failed to launch!
-			JOptionPane.showMessageDialog(facade.getMainPanel(),
-					e.getMessage(), "ArmA 3 Start Game",
-					JOptionPane.ERROR_MESSAGE);
-			return;
-		}
+		launchService.launchExternalApplications();
 
 		// Run ArmA 3
-		try {
-			launchService.launchArmA3();
-		} catch (LaunchException e) {
-			JOptionPane.showMessageDialog(facade.getMainPanel(),
-					"Failed to launch ArmA 3." + "\n" + e.getMessage(),
-					"ArmA 3 Start Game", JOptionPane.ERROR_MESSAGE);
-			return;
-		}
-
-		PreferencesService preferencesService = new PreferencesService();
-		MinimizationType minimize = preferencesService.getPreferences()
-				.getLaunchPanelGameLaunch();
-
-		if (MinimizationType.TASK_BAR.equals(minimize)) {
-			facade.getMainPanel().setToTaskBar();
-		} else if (MinimizationType.TRAY.equals(minimize)) {
-			facade.getMainPanel().setVisible(false);
-			facade.getMainPanel().setToTray();
-		} else if (MinimizationType.CLOSE.equals(minimize)) {
-			if (!configurationService.getLauncherOptions().isAutoRestart()) {
-				facade.getMainPanel().menuExitPerformed();
-			}
-		}
-
-		/* Auto Restart warning */
-		if (configurationService.getLauncherOptions().isAutoRestart()) {
-			JOptionPane.showMessageDialog(facade.getMainPanel(),
-					"Auto-restart option is enabled. Do not close ArmA3Sync.",
-					"ArmA 3 Start Game", JOptionPane.INFORMATION_MESSAGE);
-		}
+		launchService.launchArmA3();
 	}
 }

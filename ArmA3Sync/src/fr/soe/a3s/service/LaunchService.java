@@ -65,7 +65,7 @@ public class LaunchService {
 		}
 	}
 
-	public void launchExternalApplications() throws LaunchException {
+	public void launchExternalApplications() {
 
 		Configuration configuration = configurationDAO.getConfiguration();
 		List<ExternalApplication> apps = configuration
@@ -79,21 +79,14 @@ public class LaunchService {
 				File executableFile = new File(launchPath);
 				if (executableFile.exists()) {
 					String executableName = executableFile.getName();
-					launcherDAO = new LauncherDAO();
 					if (!launcherDAO.isApplicationRunning(executableName)) {
 						String runParameters = externalApplication
 								.getParameters();
 						List<String> params = new ArrayList<String>();
 						params.add(runParameters.trim());
-						try {
-							Callable<Integer> c = launcherDAO.call(
-									executableName, launchPath, params, null);
-							runnables.add(c);
-						} catch (Exception e) {
-							e.printStackTrace();
-							throw new LaunchException("Failed to launch "
-									+ launchPath);
-						}
+						Callable<Integer> c = launcherDAO.call(executableName,
+								launchPath, params);
+						runnables.add(c);
 					}
 				}
 			}
@@ -162,7 +155,7 @@ public class LaunchService {
 		// }
 	}
 
-	public void launchArmA3() throws LaunchException {
+	public void launchArmA3() {
 
 		/* Get arma3.exe path */
 		String arma3Path = configurationDAO.getConfiguration()
@@ -203,25 +196,13 @@ public class LaunchService {
 
 		/* Launch arma3.exe/arma3server.exe/other */
 		ExecutorService executor = Executors.newSingleThreadExecutor();
-		try {
-			launcherDAO = new LauncherDAO();
-			List<Callable<Integer>> runnables = new ArrayList<Callable<Integer>>();
-			String executableName = new File(arma3Path).getName();
-			Callable<Integer> c = launcherDAO.call(executableName, arma3Path,
-					params, launcherOptions);
-			runnables.add(c);
-
-			Future<Integer> future = executor.submit(c);
-			Integer response = future.get();
-			if (response == -1) {
-				throw new Exception("Invalid executable file.");
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-			throw new LaunchException(e.getMessage());
-		} finally {
-			executor.shutdown();
-		}
+		List<Callable<Integer>> runnables = new ArrayList<Callable<Integer>>();
+		String executableName = new File(arma3Path).getName();
+		Callable<Integer> c = launcherDAO.call2(executableName, arma3Path,
+				params, launcherOptions);
+		runnables.add(c);
+		executor.submit(c);
+		executor.shutdown();
 	}
 
 	private List<String> determineRunParameters() {
@@ -613,5 +594,9 @@ public class LaunchService {
 		if (launcherDAO.isApplicationRunning("steam.exe")) {
 			launcherDAO.killSteam("steam.exe");
 		}
+	}
+
+	public LauncherDAO getLauncherDAO() {
+		return this.launcherDAO;
 	}
 }
