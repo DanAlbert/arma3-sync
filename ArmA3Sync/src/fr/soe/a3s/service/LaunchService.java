@@ -258,16 +258,19 @@ public class LaunchService {
 
 		String profileName = configuration.getProfileName();
 		Profile profile = profileDAO.getMap().get(profileName);
-		TreeDirectory racine = profile.getTree();
-		Set<String> addonNames = new TreeSet<String>();
-		getSelectedAddonNames(racine, addonNames);
-		if (addonNames.size() != 0) {
-			Iterator<String> iterator = addonNames.iterator();
-			while (iterator.hasNext()) {
-				String addonName = iterator.next();
-				Addon addon = addonDAO.getMap().get(addonName.toLowerCase());
-				if (addon == null) {
-					missingAddonNames.add(addonName);
+		if (profile != null) {
+			TreeDirectory racine = profile.getTree();
+			Set<String> addonNames = new TreeSet<String>();
+			getSelectedAddonNames(racine, addonNames);
+			if (addonNames.size() != 0) {
+				Iterator<String> iterator = addonNames.iterator();
+				while (iterator.hasNext()) {
+					String addonName = iterator.next();
+					Addon addon = addonDAO.getMap()
+							.get(addonName.toLowerCase());
+					if (addon == null) {
+						missingAddonNames.add(addonName);
+					}
 				}
 			}
 		}

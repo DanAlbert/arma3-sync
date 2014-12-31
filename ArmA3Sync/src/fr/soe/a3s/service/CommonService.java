@@ -46,8 +46,8 @@ public class CommonService {
 
 		for (String profileName : listSelectedProfileNames) {
 			Profile profile = profileDAO.getMap().get(profileName);
-			profile.setLauncherOptions(null);// clear launcher options
 			if (profile != null) {
+				profile.setLauncherOptions(null);// clear launcher options
 				autoConfig.getProfiles().add(profile);
 			}
 		}

@@ -78,16 +78,19 @@ public class ProfileService extends ObjectDTOtransformer {
     }
 
     public void duplicateProfile(String profileName, String duplicateProfileName) {
-        Profile profile = profileDAO.getMap().get(profileName);
-        Profile duplicateProfile = new Profile(duplicateProfileName);
-        TreeDirectory treeDirectory = profile.getTree();
-        TreeDirectory duplicateTreeDirectory = duplicateProfile.getTree();
-        duplicateTree(treeDirectory, duplicateTreeDirectory);
-        duplicateProfile.setAddonSearchDirectoryPaths(profile.getAddonSearchDirectoryPaths());
-        duplicateProfile.setAdditionalParameters(profile.getAdditionalParameters());
-        duplicateLauncherOptions(profile.getLauncherOptions(),
-                duplicateProfile.getLauncherOptions());
-        profileDAO.getMap().put(duplicateProfile.getName(), duplicateProfile);
+        
+    	Profile profile = profileDAO.getMap().get(profileName);
+        if (profile!=null){
+            Profile duplicateProfile = new Profile(duplicateProfileName);
+            TreeDirectory treeDirectory = profile.getTree();
+            TreeDirectory duplicateTreeDirectory = duplicateProfile.getTree();
+            duplicateTree(treeDirectory, duplicateTreeDirectory);
+            duplicateProfile.setAddonSearchDirectoryPaths(profile.getAddonSearchDirectoryPaths());
+            duplicateProfile.setAdditionalParameters(profile.getAdditionalParameters());
+            duplicateLauncherOptions(profile.getLauncherOptions(),
+                    duplicateProfile.getLauncherOptions());
+            profileDAO.getMap().put(duplicateProfile.getName(), duplicateProfile);
+        }
     }
 
     private void duplicateTree(TreeDirectory treeDirectory, TreeDirectory duplicateTreeDirectory) {
