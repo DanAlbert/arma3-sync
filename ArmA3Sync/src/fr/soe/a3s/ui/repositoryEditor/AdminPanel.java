@@ -366,6 +366,7 @@ public class AdminPanel extends JPanel implements UIConstants {
 			textFieldMainSharedFolderLocation.setText(repositoryDTO.getPath());
 
 			if (repositoryDTO.getAutoConfigURL() != null) {
+
 				textFieldAutoConfigURL.setText(repositoryDTO.getProtocoleDTO()
 						.getProtocole().getPrompt()
 						+ repositoryDTO.getAutoConfigURL());

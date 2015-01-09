@@ -74,7 +74,8 @@ public class RepositoryService extends ObjectDTOtransformer implements
 			repositoryDAO.readAll(cipher);
 		} catch (Exception e) {
 			e.printStackTrace();
-			throw new LoadingException("Failded to load on or more repositories.");
+			throw new LoadingException(
+					"Failded to load on or more repositories.");
 		}
 	}
 
@@ -172,18 +173,6 @@ public class RepositoryService extends ObjectDTOtransformer implements
 			return repository.getPath();
 		} else {
 			return null;
-		}
-	}
-
-	public void setAutoConfigURL(String repositoryName, String autoConfigURL)
-			throws RepositoryException {
-
-		Repository repository = repositoryDAO.getMap().get(repositoryName);
-		if (repository != null) {
-			repository.setAutoConfigURL(autoConfigURL);
-		} else {
-			throw new RepositoryException("Repository " + repositoryName
-					+ " not found!");
 		}
 	}
 
