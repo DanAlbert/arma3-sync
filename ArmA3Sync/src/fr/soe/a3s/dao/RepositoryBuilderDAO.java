@@ -28,6 +28,7 @@ import fr.soe.a3s.controller.ObservableFileSize2;
 import fr.soe.a3s.controller.ObservableFilesNumber3;
 import fr.soe.a3s.controller.ObserverFileSize2;
 import fr.soe.a3s.controller.ObserverFilesNumber3;
+import fr.soe.a3s.domain.Ftp;
 import fr.soe.a3s.domain.Http;
 import fr.soe.a3s.domain.repository.AutoConfig;
 import fr.soe.a3s.domain.repository.Changelog;
@@ -215,6 +216,18 @@ public class RepositoryBuilderDAO implements DataAccessConstants,
 		repository.setServerInfo(serverInfo);
 		String autoConfigURL = repository.getProtocole().getUrl()
 				+ AUTOCONFIG_FILE_PATH;
+		if (repository.getProtocole() instanceof Http) {
+			if (!repository.getProtocole().getPort().equals("80")) {
+				autoConfigURL = getUrlWithPort(repository.getProtocole()
+						.getUrl(), repository.getProtocole().getPort());
+			}
+		} else if (repository.getProtocole() instanceof Ftp) {
+			if (!repository.getProtocole().getPort().equals("21")) {
+				autoConfigURL = getUrlWithPort(repository.getProtocole()
+						.getUrl(), repository.getProtocole().getPort());
+			}
+		}
+
 		repository.setAutoConfigURL(autoConfigURL);
 		repository.setSync(sync);
 		repository.setChangelogs(changelogs);
@@ -274,6 +287,19 @@ public class RepositoryBuilderDAO implements DataAccessConstants,
 							eventsFile.getAbsolutePath())));
 			fWo.writeObject(events);
 			fWo.close();
+		}
+	}
+
+	private String getUrlWithPort(String url, String port) {
+
+		int index = url.indexOf("/");
+		if (index != -1) {
+			String hostname = url.substring(0, index);
+			String urlWithPort = hostname + ":" + port + url.substring(index);
+			return urlWithPort;
+		} else {
+			String urlWithPort = url + ":" + port;
+			return urlWithPort;
 		}
 	}
 

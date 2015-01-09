@@ -52,19 +52,31 @@ public class FtpDAO extends AbstractConnexionDAO {
 			SocketException, IOException {
 
 		ftpClient = new FTPClient();
-		String address = url.replace(Protocol.FTP.getPrompt(), "");
-		int index1 = address.indexOf("/");
-		String hostname = address.substring(0, index1);
-		int index2 = address.lastIndexOf("/");
-		String remotePath = address.substring(index1, index2);
 
-		String port = "21";
+		String address = url.replace(Protocol.FTP.getPrompt(), "");
+		int port = 21;
 		String login = "anonymous";
 		String password = "";
 
+		int index1 = address.indexOf(":");
+		int index2 = address.indexOf("/");
+		String hostname = address.substring(0, index2);
+		if (index1 != -1 && index1 < index2) {
+			hostname = address.substring(0, index1);
+			String p = address.substring(index1 + 1, index2);
+			try {
+				int value = Integer.parseInt(p);
+				port = value;
+			} catch (NumberFormatException e) {
+			}
+		}
+
+		int index3 = address.lastIndexOf("/");
+		String remotePath = address.substring(index2, index3);
+
 		ftpClient.setConnectTimeout(CONNECTION_TIMEOUT);
 		ftpClient.setDataTimeout(READ_TIMEOUT);
-		ftpClient.connect(hostname, Integer.parseInt(port));
+		ftpClient.connect(hostname, port);
 		ftpClient.login(login, password);
 		ftpClient.setFileType(FTP.BINARY_FILE_TYPE);
 		ftpClient.enterLocalPassiveMode();// passive mode
