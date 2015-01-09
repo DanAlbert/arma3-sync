@@ -239,7 +239,7 @@ public class AutoConfigExportPanel extends JDialog implements UIConstants {
 
 		JFileChooser fc = new JFileChooser();
 		fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-		int returnVal = fc.showOpenDialog(AutoConfigExportPanel.this);
+		int returnVal = fc.showSaveDialog(AutoConfigExportPanel.this);
 		if (returnVal == JFileChooser.APPROVE_OPTION) {
 			File file = fc.getSelectedFile();
 			String path = file.getAbsolutePath();
