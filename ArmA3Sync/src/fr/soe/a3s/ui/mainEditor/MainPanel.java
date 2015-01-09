@@ -70,6 +70,7 @@ import fr.soe.a3s.ui.autoConfigEditor.AutoConfigExportPanel;
 import fr.soe.a3s.ui.autoConfigEditor.AutoConfigImportPanel;
 import fr.soe.a3s.ui.profileEditor.ProfilePanel;
 import fr.soe.a3s.ui.repositoryEditor.RepositoryPanel;
+import fr.soe.a3s.ui.shortcutEditor.ShortcutEditorPanel;
 import fr.soe.a3s.ui.tools.acre2Editor.FirstPageACRE2InstallerPanel;
 import fr.soe.a3s.ui.tools.acreEditor.FirstPageACREInstallerPanel;
 import fr.soe.a3s.ui.tools.aiaEditor.AiaInstallerPanel;
@@ -90,8 +91,8 @@ public class MainPanel extends JFrame implements UIConstants {
 			menuItemAutoConfig;
 	private JMenuItem menuItemEdit, menuItemHelp, menuItemuUpdates,
 			menuItemAbout, menuItemPreferences, menuItemACREwizard,
-			menuItemACRE2wizard, menuItemRPTviewer, menuItemAiAwizard,
-			menuItemBISforum, menuItemAutoConfigImport,
+			menuItemACRE2wizard, menuItemRPTviewer, menuItemeExportAsShortcut,
+			menuItemAiAwizard, menuItemBISforum, menuItemAutoConfigImport,
 			menuItemAutoConfigExport;
 	private JTabbedPane tabbedPane;
 	private JPanel infoPanel, launchPanel;
@@ -134,8 +135,11 @@ public class MainPanel extends JFrame implements UIConstants {
 		menuProfiles = new JMenu("Profiles");
 		menuBar.add(menuProfiles);
 		menuItemEdit = new JMenuItem("Edit", new ImageIcon(EDIT));
+		menuItemeExportAsShortcut = new JMenuItem("Export as shortcut",
+				new ImageIcon(RPT));
 		JSeparator s = new JSeparator();
 		menuProfiles.add(menuItemEdit);
+		menuProfiles.add(menuItemeExportAsShortcut);
 		menuProfiles.add(s);
 
 		menuGroups = new JMenu("Groups");
@@ -239,6 +243,12 @@ public class MainPanel extends JFrame implements UIConstants {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
 				menuItemEditPerformed();
+			}
+		});
+		menuItemeExportAsShortcut.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				menuItemExportAsShortcutPerformed();
 			}
 		});
 		menuItemACREwizard.addActionListener(new ActionListener() {
@@ -520,6 +530,25 @@ public class MainPanel extends JFrame implements UIConstants {
 		profilePanel.setVisible(true);
 	}
 
+	private void menuItemExportAsShortcutPerformed() {
+
+		facade.getAddonsPanel().saveAddonGroups();
+		try {
+			profileService.saveLauncherOptions(configurationService
+					.getProfileName());
+			profileService.saveAddonSearchDirectoryPaths(configurationService
+					.getProfileName());
+		} catch (ProfileException e) {
+			e.printStackTrace();
+		}
+
+		ShortcutEditorPanel shortcutEditorPanel = new ShortcutEditorPanel(
+				facade);
+		shortcutEditorPanel.toFront();
+		shortcutEditorPanel.setVisible(true);
+
+	}
+
 	private void menuItemACREwizardPerformed() {
 
 		FirstPageACREInstallerPanel firstPage = new FirstPageACREInstallerPanel(
@@ -786,7 +815,7 @@ public class MainPanel extends JFrame implements UIConstants {
 
 		int numberMenuItems = menuProfiles.getItemCount();
 
-		for (int i = numberMenuItems - 1; i > 1; i--) {
+		for (int i = numberMenuItems - 1; i > 2; i--) {
 			JMenuItem menuItem = menuProfiles.getItem(i);
 			menuProfiles.remove(menuItem);
 		}

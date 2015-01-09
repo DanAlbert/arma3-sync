@@ -79,6 +79,25 @@ public class AutoConfigExportPanel extends JDialog implements UIConstants {
 			centerPanel.setLayout(grid1);
 			this.add(centerPanel, BorderLayout.CENTER);
 
+			JPanel destinationLabelPanel = new JPanel();
+			destinationLabelPanel.setLayout((new FlowLayout(FlowLayout.LEFT)));
+			{
+				JLabel labelDestinationDirectory = new JLabel(
+						"Destination directory");
+				destinationLabelPanel.add(labelDestinationDirectory);
+			}
+			JPanel destinationPanel = new JPanel();
+			destinationPanel.setLayout(new BorderLayout());
+			{
+				textFieldDestinationDirectory = new JTextField();
+				buttonSelect = new JButton("Select");
+				buttonSelect.setPreferredSize(new Dimension(75, 25));
+				textFieldDestinationDirectory.setEditable(false);
+				textFieldDestinationDirectory.setBackground(Color.WHITE);
+				destinationPanel.add(textFieldDestinationDirectory,
+						BorderLayout.CENTER);
+				destinationPanel.add(buttonSelect, BorderLayout.EAST);
+			}
 			JPanel profilesPanel = new JPanel();
 			profilesPanel.setLayout(new BorderLayout());
 			{
@@ -89,7 +108,6 @@ public class AutoConfigExportPanel extends JDialog implements UIConstants {
 				scrollPane1.setBorder(BorderFactory
 						.createEtchedBorder(BevelBorder.LOWERED));
 				profilesPanel.add(scrollPane1, BorderLayout.CENTER);
-				// centerPanel.add(profilesPanel);
 			}
 			JPanel favoriteServersPanel = new JPanel();
 			favoriteServersPanel.setLayout(new BorderLayout());
@@ -113,25 +131,6 @@ public class AutoConfigExportPanel extends JDialog implements UIConstants {
 				scrollPane3.setBorder(BorderFactory
 						.createEtchedBorder(BevelBorder.LOWERED));
 				repositoriesPanel.add(scrollPane3, BorderLayout.CENTER);
-			}
-			JPanel destinationLabelPanel = new JPanel();
-			destinationLabelPanel.setLayout((new FlowLayout(FlowLayout.LEFT)));
-			{
-				JLabel labelDestinationDirectory = new JLabel(
-						"Destination directory");
-				destinationLabelPanel.add(labelDestinationDirectory);
-			}
-			JPanel destinationPanel = new JPanel();
-			destinationPanel.setLayout(new BorderLayout());
-			{
-				textFieldDestinationDirectory = new JTextField();
-				buttonSelect = new JButton("Select");
-				buttonSelect.setPreferredSize(new Dimension(75, 25));
-				textFieldDestinationDirectory.setEditable(false);
-				textFieldDestinationDirectory.setBackground(Color.WHITE);
-				destinationPanel.add(textFieldDestinationDirectory,
-						BorderLayout.CENTER);
-				destinationPanel.add(buttonSelect, BorderLayout.EAST);
 			}
 
 			Box vertBox = Box.createVerticalBox();
