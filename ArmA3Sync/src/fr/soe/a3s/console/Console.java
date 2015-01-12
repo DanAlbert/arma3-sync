@@ -279,8 +279,8 @@ public class Console {
 			path = c.nextLine();
 		}
 
-		path = (new File(path)).getAbsolutePath();// normalize path
-
+		path = (new File(path)).getAbsolutePath().toLowerCase();// normalize
+																// path
 		Protocol protocole = Protocol.getEnum(prot);
 		RepositoryService repositoryService = new RepositoryService();
 		try {
@@ -400,8 +400,8 @@ public class Console {
 			if (!(new File(excludedFilePath)).exists()) {
 				System.out.println("Wrong path, file does not exists.");
 			} else {
-				repositoryService.addExcludedFilesPathFromBuild(name,
-						excludedFilePath.toLowerCase());
+				repositoryService.addExcludedFilesPathFromBuild(name, new File(
+						excludedFilePath).getAbsolutePath().toLowerCase());
 			}
 			System.out
 					.print("Add file path to exclude from build (leave blank to pass): ");
@@ -415,8 +415,9 @@ public class Console {
 			if (!(new File(excludedFoldersFromSync)).exists()) {
 				System.out.println("Wrong path, file does not exists.");
 			} else {
-				repositoryService.addExcludedFoldersFromSync(name,
-						excludedFoldersFromSync.toLowerCase());
+				repositoryService.addExcludedFoldersFromSync(name, new File(
+						excludedFoldersFromSync).getAbsolutePath()
+						.toLowerCase());
 			}
 			System.out
 					.print("Add folder path to exclude extra local content when sync (leave blank to pass): ");
