@@ -101,9 +101,6 @@ public class AddonsDownloader extends Thread {
 			return;
 		}
 
-		downloadPanel.getProgressBarDownloadAddons().setValue(
-				(int) ((incrementedFilesSize * 100) / totalFilesSize));
-
 		// Download Files
 
 		try {
@@ -112,6 +109,8 @@ public class AddonsDownloader extends Thread {
 		} catch (Exception e) {
 			JOptionPane.showMessageDialog(facade.getMainPanel(),
 					e.getMessage(), "Download", JOptionPane.ERROR_MESSAGE);
+			initDownloadPanelForFinishedDownload();
+			terminate();
 			return;
 		}
 
@@ -122,7 +121,8 @@ public class AddonsDownloader extends Thread {
 				connect.addObserverFilesNumber(new ObserverFilesNumber() {
 					@Override
 					public synchronized void update(SyncTreeNodeDTO node) {
-						if (node.isLeaf()) {
+						if (node.isLeaf() && totalFilesSize != 0) {// division
+																	// by 0
 							SyncTreeLeafDTO leaf = (SyncTreeLeafDTO) node;
 							long size = leaf.getSize();
 							incrementedFilesSize = incrementedFilesSize + size;
@@ -142,8 +142,15 @@ public class AddonsDownloader extends Thread {
 						if (node.isLeaf()) {
 							SyncTreeLeafDTO leaf = (SyncTreeLeafDTO) node;
 							long size = leaf.getSize();
-							downloadPanel.getProgressBarDownloadSingleAddon()
-									.setValue((int) (value * 100 / size));
+							if (size != 0) {// division by 0
+								downloadPanel
+										.getProgressBarDownloadSingleAddon()
+										.setValue((int) (value * 100 / size));
+							} else {
+								downloadPanel
+										.getProgressBarDownloadSingleAddon()
+										.setValue(100);
+							}
 							downloadPanel.getLabelDownloadedValue().setText(
 									UnitConverter
 											.convertSize(incrementedFilesSize
