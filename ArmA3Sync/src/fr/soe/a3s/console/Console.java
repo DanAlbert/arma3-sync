@@ -260,6 +260,26 @@ public class Console {
 			url = c.nextLine();
 		}
 
+		// Folder location
+		System.out.print("Enter root shared folder path: ");
+		String path = c.nextLine();
+		while (path.isEmpty()) {
+			System.out.print("Enter root shared folder path: ");
+			path = c.nextLine();
+		}
+		while (!new File(path).exists()) {
+			System.out.println("Target folder does not exists!");
+			System.out.print("Enter root shared folder path: ");
+			path = c.nextLine();
+		}
+		while (!new File(path).isDirectory()) {
+			System.out.println("Target folder does not exists!");
+			System.out.print("Enter root shared folder path: ");
+			path = c.nextLine();
+		}
+
+		path = (new File(path)).getAbsolutePath();// normalize path
+
 		Protocol protocole = Protocol.getEnum(prot);
 		RepositoryService repositoryService = new RepositoryService();
 		try {
@@ -346,24 +366,6 @@ public class Console {
 			System.exit(0);
 		}
 
-		// Folder location
-		System.out.print("Enter root shared folder path: ");
-		String path = c.nextLine();
-		while (path.isEmpty()) {
-			System.out.print("Enter root shared folder path: ");
-			path = c.nextLine();
-		}
-		while (!new File(path).exists()) {
-			System.out.println("Target folder does not exists!");
-			System.out.print("Enter root shared folder path: ");
-			path = c.nextLine();
-		}
-		while (!new File(path).isDirectory()) {
-			System.out.println("Target folder does not exists!");
-			System.out.print("Enter root shared folder path: ");
-			path = c.nextLine();
-		}
-
 		// Number of client connections
 		boolean numberOfConnectionsIsWrong = false;
 		String numberOfConnections = "";
@@ -435,7 +437,7 @@ public class Console {
 				});
 
 		try {
-			repositoryService.buildRepository(name, path);
+			repositoryService.buildRepository(name);
 			repositoryService.write(name);
 			System.out.println("Repository build finished.");
 		} catch (Exception e) {
