@@ -92,9 +92,10 @@ public class AddonsChecker extends Thread {
 			facade.getAddonsPanel().updateModsetSelection(repositoryName);
 			downloadPanel.getLabelCheckForAddonsStatus().setText("Finished!");
 		} catch (Exception e) {
+			e.printStackTrace();
 			String message = "";
 			if (e.getMessage() != null || "".equals(e.getMessage())) {
-				message = "An unexpected error has occured.\nTry to close and run ArmA3Sync.bat file.";
+				message = "An unexpected error has occured.";
 			} else {
 				message = e.getMessage();
 			}
