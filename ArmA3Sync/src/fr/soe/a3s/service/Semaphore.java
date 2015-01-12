@@ -12,5 +12,4 @@ public class Semaphore {
 			return false;
 		}
 	}
-
 }
