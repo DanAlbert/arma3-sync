@@ -180,7 +180,8 @@ public class Console {
 			}
 
 			System.out.println("Repository name: " + name);
-			System.out.println("Url: " + protocole.getPrompt() + url);
+			System.out.println("Protocole: " + protocole.getDescription());
+			System.out.println("Url: " + url);
 			System.out.println("Port: " + port);
 			System.out.println("Login: " + login);
 			System.out.println("Password: " + password);
