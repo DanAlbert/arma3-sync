@@ -5,6 +5,8 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.text.CharacterIterator;
+import java.text.StringCharacterIterator;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -123,16 +125,17 @@ public class RepositoryBuilderDAO implements DataAccessConstants,
 		serverInfo.setTotalFilesSize(totalFilesSize);
 		serverInfo.setNumberOfConnections(repository.getNumberOfConnections());
 
-		int index = repository.getPath().lastIndexOf("\\");
+		int index = repository.getPath().lastIndexOf(File.separator);
 		String repositoryName = repository.getPath().substring(index + 1);
 
 		Iterator iterator = repository.getExcludedFoldersFromSync().iterator();
 		while (iterator.hasNext()) {
 			String path = (String) iterator.next();
 			index = path.toLowerCase().indexOf(
-					"\\" + repositoryName.toLowerCase());
+					File.separator + repositoryName.toLowerCase());
 			String folderPath = path.substring(index + repositoryName.length()
 					+ 2);
+			folderPath = backlashReplace(folderPath);
 			serverInfo.getHiddenFolderPaths().add(folderPath);
 		}
 
@@ -288,6 +291,23 @@ public class RepositoryBuilderDAO implements DataAccessConstants,
 			fWo.writeObject(events);
 			fWo.close();
 		}
+	}
+
+	private String backlashReplace(String myStr) {
+
+		final StringBuilder result = new StringBuilder();
+		final StringCharacterIterator iterator = new StringCharacterIterator(
+				myStr);
+		char character = iterator.current();
+		while (character != CharacterIterator.DONE) {
+			if (character == '\\') {
+				result.append("/");
+			} else {
+				result.append(character);
+			}
+			character = iterator.next();
+		}
+		return result.toString();
 	}
 
 	private String getUrlWithPort(String url, String port) {

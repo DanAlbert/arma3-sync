@@ -3,6 +3,8 @@ package fr.soe.a3s.service;
 import java.io.File;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.text.CharacterIterator;
+import java.text.StringCharacterIterator;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -382,25 +384,72 @@ public class RepositoryService extends ObjectDTOtransformer implements
 				}
 			}
 
-			File file = new File(directory.getDestinationPath() + "/"
-					+ directory.getName());
-			boolean contains = false;
-			for (String stg : hiddenFolderPaths) {
-				if (file.getAbsolutePath().toLowerCase()
-						.contains(new File(stg.toLowerCase()).getPath())) {
-					contains = true;
-					break;
+			String relativePath = directory.getName();
+
+			try {
+				while (parent != null) {
+					if (!parent.getName().equals("racine")) {
+						relativePath = parent.getName() + "/" + relativePath;
+					}
+					parent = parent.getParent();
 				}
-			}
-			if (contains) {
-				directory.setHidden(true);
-			} else {
-				directory.setHidden(false);
+				boolean contains = false;
+				for (String stg : hiddenFolderPaths) {
+					stg = backlashReplace(stg);
+					if (relativePath.length() >= stg.length()) {
+						String p = relativePath.substring(0, stg.length());
+						if (stg.equals(p)) {
+							contains = true;
+							break;
+						}
+					}
+				}
+				if (contains) {
+					directory.setHidden(true);
+				} else {
+					directory.setHidden(false);
+				}
+			} catch (Exception e) {
+				e.printStackTrace();
 			}
 			for (SyncTreeNode n : directory.getList()) {
 				determineHiddenFiles(n, hiddenFolderPaths);
 			}
 		}
+	}
+
+	private String backlashReplace(String myStr) {
+
+		final StringBuilder result = new StringBuilder();
+		final StringCharacterIterator iterator = new StringCharacterIterator(
+				myStr);
+		char character = iterator.current();
+		while (character != CharacterIterator.DONE) {
+			if (character == '\\') {
+				result.append("/");
+			} else {
+				result.append(character);
+			}
+			character = iterator.next();
+		}
+		return result.toString();
+	}
+
+	private String slashReplace(String myStr) {
+
+		final StringBuilder result = new StringBuilder();
+		final StringCharacterIterator iterator = new StringCharacterIterator(
+				myStr);
+		char character = iterator.current();
+		while (character != CharacterIterator.DONE) {
+			if (character == '/') {
+				result.append("\\");
+			} else {
+				result.append(character);
+			}
+			character = iterator.next();
+		}
+		return result.toString();
 	}
 
 	private void determineExtraLocalFilesToDelete(SyncTreeNode node,
@@ -548,7 +597,12 @@ public class RepositoryService extends ObjectDTOtransformer implements
 
 		Repository repository = repositoryDAO.getMap().get(repositoryName);
 		if (repository != null) {
-			repository.getHiddenFolderPath().remove(folderPath);
+			boolean removed = repository.getHiddenFolderPath().remove(
+					folderPath);
+			if (!removed) {
+				folderPath = slashReplace(folderPath);
+				repository.getHiddenFolderPath().remove(folderPath);
+			}
 		}
 	}
 
