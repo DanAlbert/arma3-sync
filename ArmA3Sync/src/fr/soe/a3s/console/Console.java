@@ -504,17 +504,17 @@ public class Console {
 			System.out.print("Enter destination folder path: ");
 			destinationFolderPath = c.nextLine();
 		}
+		while (!new File(destinationFolderPath).exists()) {
+			System.out.println("Destination folder does not exists!");
+			System.out.print("Enter destination folder path: ");
+			destinationFolderPath = c.nextLine();
+		}
 
 		RepositoryService repositoryService = new RepositoryService();
 		try {
 
 			repositoryService.readAll();
 			repositoryService.setExactMatch(true, repositoryName);
-
-			if (!new File(destinationFolderPath).exists()) {
-				String message = "Error: destination folder path does not exist!";
-				throw new FileNotFoundException(message);
-			}
 
 			repositoryService.setDefaultDownloadLocation(repositoryName,
 					destinationFolderPath);
