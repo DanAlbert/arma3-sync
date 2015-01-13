@@ -728,7 +728,7 @@ public class Console {
 				connect.addObserverFilesNumber(new ObserverFilesNumber() {
 					@Override
 					public synchronized void update(SyncTreeNodeDTO node) {
-						if (node.isLeaf()) {
+						if (node.isLeaf() && totalFilesSize > 0) {
 							SyncTreeLeafDTO leaf = (SyncTreeLeafDTO) node;
 							long size = leaf.getSize();
 							incrementedFilesSize = incrementedFilesSize + size;
