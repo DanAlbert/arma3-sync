@@ -284,10 +284,8 @@ public class Console {
 		Protocol protocole = Protocol.getEnum(prot);
 		RepositoryService repositoryService = new RepositoryService();
 		try {
-
 			repositoryService.createRepository(name, url, port, login,
 					password, protocole);
-
 			repositoryService.write(name);
 			System.out
 					.println("Repository creation finished.\nYou can now run the BUILD command to construct the repository");
