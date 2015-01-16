@@ -24,6 +24,8 @@ public interface DataAccessConstants {
 	String AUTOCONFIG_EXTENSION = ".a3s.autoconfig";
 	String ZSYNC_EXTENSION = ".zsync";
 	String PART_EXTENSION = ".part";
+	String PBO_EXTENSION = ".pbo";
+	String PBO_ZIP_EXTENSION = ".pbo.zip";
 
 	/** FTP */
 	String UPDATE_REPOSITORY = "/ArmA3/ArmA3Sync/download";
