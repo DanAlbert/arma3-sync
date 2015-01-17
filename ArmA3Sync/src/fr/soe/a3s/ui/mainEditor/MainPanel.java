@@ -254,7 +254,12 @@ public class MainPanel extends JFrame implements UIConstants {
 		menuItemeExportAsShortcut.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
-				menuItemExportAsShortcutPerformed();
+				SwingUtilities.invokeLater(new Runnable() {
+					@Override
+					public void run() {
+						menuItemExportAsShortcutPerformed();
+					}
+				});
 			}
 		});
 		menuItemACREwizard.addActionListener(new ActionListener() {
