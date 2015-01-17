@@ -205,7 +205,7 @@ public class LaunchService {
 		executor.shutdown();
 	}
 
-	private List<String> determineRunParameters() {
+	public List<String> determineRunParameters() {
 
 		List<String> params = new ArrayList<String>();
 		List<String> additionalParameters = getAdditionalParameters();

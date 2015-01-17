@@ -18,6 +18,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
@@ -32,6 +34,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComponent;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
@@ -44,6 +47,8 @@ import javax.swing.JTabbedPane;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.plaf.ColorUIResource;
+
+import net.jimmc.jshortcut.JShellLink;
 
 import fr.soe.a3s.constant.MinimizationType;
 import fr.soe.a3s.constant.RepositoryStatus;
@@ -60,6 +65,7 @@ import fr.soe.a3s.service.CommonService;
 import fr.soe.a3s.service.ConfigurationService;
 import fr.soe.a3s.service.ConnexionServiceFactory;
 import fr.soe.a3s.service.FtpService;
+import fr.soe.a3s.service.LaunchService;
 import fr.soe.a3s.service.PreferencesService;
 import fr.soe.a3s.service.ProfileService;
 import fr.soe.a3s.service.RepositoryService;
@@ -70,7 +76,6 @@ import fr.soe.a3s.ui.autoConfigEditor.AutoConfigExportPanel;
 import fr.soe.a3s.ui.autoConfigEditor.AutoConfigImportPanel;
 import fr.soe.a3s.ui.profileEditor.ProfilePanel;
 import fr.soe.a3s.ui.repositoryEditor.RepositoryPanel;
-import fr.soe.a3s.ui.shortcutEditor.ShortcutEditorPanel;
 import fr.soe.a3s.ui.tools.acre2Editor.FirstPageACRE2InstallerPanel;
 import fr.soe.a3s.ui.tools.acreEditor.FirstPageACREInstallerPanel;
 import fr.soe.a3s.ui.tools.aiaEditor.AiaInstallerPanel;
@@ -113,6 +118,7 @@ public class MainPanel extends JFrame implements UIConstants {
 	private final CommonService commonService = new CommonService();
 	private final PreferencesService preferencesService = new PreferencesService();
 	private final RepositoryService repositoryService = new RepositoryService();
+	private final LaunchService launchService = new LaunchService();
 	/* Data */
 	private final Map<String, Integer> mapTabIndexes = new LinkedHashMap<String, Integer>();
 
@@ -135,8 +141,8 @@ public class MainPanel extends JFrame implements UIConstants {
 		menuProfiles = new JMenu("Profiles");
 		menuBar.add(menuProfiles);
 		menuItemEdit = new JMenuItem("Edit", new ImageIcon(EDIT));
-		menuItemeExportAsShortcut = new JMenuItem("Export as shortcut",
-				new ImageIcon(RPT));
+		menuItemeExportAsShortcut = new JMenuItem("Shortcut", new ImageIcon(
+				SHORTCUT));
 		JSeparator s = new JSeparator();
 		menuProfiles.add(menuItemEdit);
 		menuProfiles.add(menuItemeExportAsShortcut);
@@ -532,21 +538,71 @@ public class MainPanel extends JFrame implements UIConstants {
 
 	private void menuItemExportAsShortcutPerformed() {
 
-		facade.getAddonsPanel().saveAddonGroups();
-		try {
-			profileService.saveLauncherOptions(configurationService
-					.getProfileName());
-			profileService.saveAddonSearchDirectoryPaths(configurationService
-					.getProfileName());
-		} catch (ProfileException e) {
-			e.printStackTrace();
+		/* Windows only */
+		String osName = System.getProperty("os.name");
+		if (!osName.contains("Windows")) {
+			JOptionPane.showMessageDialog(this,
+					"This feature is not available for your system.",
+					"Export profile as shortcut",
+					JOptionPane.INFORMATION_MESSAGE);
+			return;
 		}
 
-		ShortcutEditorPanel shortcutEditorPanel = new ShortcutEditorPanel(
-				facade);
-		shortcutEditorPanel.toFront();
-		shortcutEditorPanel.setVisible(true);
+		String profileName = configurationService.getProfileName();
 
+		assert (profileName != null);
+		if (profileName == null) {
+			return;// unexpected
+		}
+
+		try {
+			facade.getAddonsPanel().saveAddonGroups();
+			profileService.saveAddonSearchDirectoryPaths(profileName);
+			profileService.saveLauncherOptions(profileName);
+		} catch (ProfileException e) {
+			JOptionPane.showMessageDialog(this, e.getMessage(),
+					"Export profile as shortcut", JOptionPane.ERROR_MESSAGE);
+			return;
+		}
+
+		String exePath = configurationService.getLauncherOptions()
+				.getArma3ExePath();
+
+		if (exePath == null || "".equals(exePath)) {
+			String message = "ArmA 3 Executable location is missing for profile name "
+					+ profileName
+					+ "."
+					+ "\n"
+					+ "Please checkout Launcher Options panel.";
+			JOptionPane.showMessageDialog(this, message,
+					"Export profile as shortcut",
+					JOptionPane.INFORMATION_MESSAGE);
+			return;
+		}
+
+		try {
+			List<String> list = launchService.determineRunParameters();
+			String arguments = "";
+			for (String stg : list) {
+				arguments = arguments + " " + stg;
+			}
+			JShellLink link = new JShellLink();
+			link.setFolder(JShellLink.getDirectory("desktop"));
+			link.setName(profileName);
+			link.setPath(exePath);
+			link.setArguments(arguments);
+			link.save();
+			String message = "Shortcut has been created on desktop for profile "
+					+ profileName + ".";
+			JOptionPane.showMessageDialog(this, message,
+					"Export profile as shortcut",
+					JOptionPane.INFORMATION_MESSAGE);
+		} catch (Exception e) {
+			e.printStackTrace();
+			JOptionPane.showMessageDialog(this, "Failed to create shortcut"
+					+ "\n" + e.getMessage(), "Export profile as shortcut",
+					JOptionPane.ERROR_MESSAGE);
+		}
 	}
 
 	private void menuItemACREwizardPerformed() {

@@ -237,9 +237,11 @@ public interface UIConstants {
 			java.lang.ClassLoader
 					.getSystemResource("resources/pictures/system/aia.png"));
 
-	Image UPLOAD = Toolkit.getDefaultToolkit().getImage(java.lang.ClassLoader
-
-	.getSystemResource("resources/pictures/system/upload16x16.png"));
+	Image UPLOAD = Toolkit
+			.getDefaultToolkit()
+			.getImage(
+					java.lang.ClassLoader
+							.getSystemResource("resources/pictures/system/upload16x16.png"));
 
 	Image SAVE = Toolkit
 			.getDefaultToolkit()
@@ -288,5 +290,11 @@ public interface UIConstants {
 			.getImage(
 					java.lang.ClassLoader
 							.getSystemResource("resources/pictures/system/brick_16x16.png"));
+	
+	Image  SHORTCUT = Toolkit
+			.getDefaultToolkit()
+			.getImage(
+					java.lang.ClassLoader
+							.getSystemResource("resources/pictures/system/shortcut_16x16.png"));
 
 }
