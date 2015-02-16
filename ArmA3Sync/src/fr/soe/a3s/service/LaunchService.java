@@ -1,6 +1,16 @@
 package fr.soe.a3s.service;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -11,6 +21,8 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+
+import net.jimmc.jshortcut.JShellLink;
 
 import fr.soe.a3s.constant.GameExecutables;
 import fr.soe.a3s.constant.GameVersions;
@@ -169,7 +181,7 @@ public class LaunchService {
 		List<String> params = determineRunParameters();
 
 		/* Clear My Documents\ArmA 3\Arma3.cfg */
-		// eraseArma3CfgModLauncherList();
+		eraseArma3CfgModLauncherList();
 
 		/* Launch Steam for arma3.exe */
 		// if (arma3Path.toLowerCase().contains(
@@ -203,6 +215,53 @@ public class LaunchService {
 		runnables.add(c);
 		executor.submit(c);
 		executor.shutdown();
+	}
+
+	private void eraseArma3CfgModLauncherList() {
+
+		JShellLink link = new JShellLink();
+		String myDocumentsPath = JShellLink.getDirectory("personal");
+		String arma3CfgPath = myDocumentsPath + "/Arma 3/Arma3.cfg";
+		File file = new File(arma3CfgPath);
+		if (file.exists()) {
+			try {
+				DataInputStream fRo = new DataInputStream(new FileInputStream(
+						file));
+				BufferedReader d = new BufferedReader(
+						new InputStreamReader(fRo));
+				String ligne = "";
+				List<String> list = new ArrayList<String>();
+ 				boolean record = true;
+				while (true) {
+					ligne = d.readLine();
+					if (ligne == null) {
+						break;
+					} else {
+						if (ligne.equals("class ModLauncherList")) {
+							record = false;
+						} else if (!record && ligne.equals("};")) {
+							record = true;
+							continue;
+						}
+						if (record) {
+							list.add(ligne);
+						}
+					}
+				}
+				fRo.close();
+				d.close();
+
+				FileWriter ffw = new FileWriter(file);
+				for (String stg:list){
+					ffw.write(stg); // écrire une ligne dans le
+					ffw.write("\n"); 
+					// fichier resultat.txt
+				}
+				ffw.close(); // fermer le fichier à la fin des traitements
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
 	}
 
 	public List<String> determineRunParameters() {
