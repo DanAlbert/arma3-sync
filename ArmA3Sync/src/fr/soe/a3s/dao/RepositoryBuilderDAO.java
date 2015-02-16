@@ -20,6 +20,7 @@ import java.util.TreeSet;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
@@ -102,13 +103,13 @@ public class RepositoryBuilderDAO implements DataAccessConstants,
 			generateSync(repository.getExcludedFilesFromBuild(), sync, f);
 		}
 
-		ExecutorService executor = Executors.newFixedThreadPool(Runtime
-				.getRuntime().availableProcessors());
-
-		executor.invokeAll(callables);
-		executor.shutdownNow();
-
-		if (error) {
+		try {
+			ExecutorService executor = Executors.newFixedThreadPool(Runtime
+					.getRuntime().availableProcessors());
+			List<Future<Integer>> futures = executor.invokeAll(callables);
+			executor.shutdownNow();
+		} catch (Exception e) {
+			e.printStackTrace();
 			throw new RepositoryException("Build repository failed." + "\n"
 					+ "An unexpected error has occured.");
 		}
@@ -371,15 +372,17 @@ public class RepositoryBuilderDAO implements DataAccessConstants,
 			final SyncTreeDirectory parent, final File file) throws Exception {
 
 		if (file.isDirectory()) {
-			SyncTreeDirectory syncTreeDirectory = new SyncTreeDirectory(
-					file.getName(), parent);
-			parent.addTreeNode(syncTreeDirectory);
+			if (!file.getName().contains(A3S_FOlDER_NAME)){// always true unless deleteDitrectory(.a3s) failed
+				SyncTreeDirectory syncTreeDirectory = new SyncTreeDirectory(
+						file.getName(), parent);
+				parent.addTreeNode(syncTreeDirectory);
 
-			for (File f : file.listFiles()) {
-				if (f.getName().toLowerCase().equals("addons")) {
-					syncTreeDirectory.setMarkAsAddon(true);
+				for (File f : file.listFiles()) {
+					if (f.getName().toLowerCase().equals("addons")) {
+						syncTreeDirectory.setMarkAsAddon(true);
+					}
+					generateSync(excludedFilesFromBuild, syncTreeDirectory, f);
 				}
-				generateSync(excludedFilesFromBuild, syncTreeDirectory, f);
 			}
 		}
 		// exclude .zsync files
