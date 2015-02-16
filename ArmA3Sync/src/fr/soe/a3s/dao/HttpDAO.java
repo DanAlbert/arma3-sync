@@ -46,7 +46,7 @@ public class HttpDAO extends AbstractConnexionDAO {
 	private static final int BUFFER_SIZE = 4096;
 	private File downloadingFile;
 	private boolean acquiredSmaphore;
-	private static final int CONNECTION_TIMEOUT = 5000;
+	private static final int CONNECTION_TIMEOUT = 10000;
 	private static final int READ_TIMEOUT = 15000;
 
 	private void connect(String url) throws IOException {

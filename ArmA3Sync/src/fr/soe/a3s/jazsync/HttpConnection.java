@@ -64,7 +64,7 @@ public class HttpConnection {
 	private static final int BUFFER_SIZE = 4096;// 4KB
 	private long allData = 0;
 	private final HttpDAO httpDAO;
-	private static final int CONNECTION_TIMEOUT = 5000;
+	private static final int CONNECTION_TIMEOUT = 10000;
 	private static final int READ_TIMEOUT = 30000;
 
 	public HttpConnection(String hostname, String login, String password,

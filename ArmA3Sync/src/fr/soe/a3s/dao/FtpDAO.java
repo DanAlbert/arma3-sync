@@ -45,7 +45,7 @@ public class FtpDAO extends AbstractConnexionDAO {
 	private File downloadingFile;
 	private String rootRemotePath;
 	private boolean acquiredSmaphore;
-	private static final int CONNECTION_TIMEOUT = 5000;
+	private static final int CONNECTION_TIMEOUT = 10000;
 	private static final int READ_TIMEOUT = 30000;
 
 	private String connect(String url) throws NumberFormatException,
