@@ -592,7 +592,8 @@ public class MainPanel extends JFrame implements UIConstants {
 				arguments = arguments + " " + stg;
 			}
 			JShellLink link = new JShellLink();
-			link.setFolder(JShellLink.getDirectory("desktop"));
+			String path = JShellLink.getDirectory("desktop");
+			link.setFolder(path);
 			link.setName(profileName);
 			link.setPath(exePath);
 			link.setArguments(arguments);
