@@ -70,9 +70,8 @@ public class Console {
 				+ ": list repositories");
 		System.out.println(ConsoleCommands.UPDATE.toString()
 				+ ": check for updates");
-		System.out
-				.println(ConsoleCommands.SYNC.toString()
-						+ ": synchronize content with a repository (exact content files matching)");
+		System.out.println(ConsoleCommands.SYNC.toString()
+				+ ": synchronize content with a repository");
 		System.out.println(ConsoleCommands.COMMANDS.toString()
 				+ ": display commands");
 		System.out.println(ConsoleCommands.VERSION.toString()
@@ -262,12 +261,9 @@ public class Console {
 		}
 
 		// Folder location
-		System.out.print("Enter root shared folder path: ");
+		System.out
+				.print("Enter root shared folder path (leave blank to pass): ");
 		String path = c.nextLine();
-		while (path.isEmpty()) {
-			System.out.print("Enter root shared folder path: ");
-			path = c.nextLine();
-		}
 		while (!new File(path).exists()) {
 			System.out.println("Target folder does not exists!");
 			System.out.print("Enter root shared folder path: ");
@@ -365,6 +361,32 @@ public class Console {
 			System.exit(0);
 		}
 
+		// Folder location (if null)
+		try {
+			RepositoryDTO repositoryDTO = repositoryService.getRepository(name);
+			if (repositoryDTO.getPath() == null) {
+				System.out.print("Enter root shared folder path: ");
+				String path = c.nextLine();
+				while (path.isEmpty()) {
+					System.out.print("Enter root shared folder path: ");
+					path = c.nextLine();
+				}
+				while (!new File(path).exists()) {
+					System.out.println("Target folder does not exists!");
+					System.out.print("Enter root shared folder path: ");
+					path = c.nextLine();
+				}
+				while (!new File(path).isDirectory()) {
+					System.out.println("Target folder does not exists!");
+					System.out.print("Enter root shared folder path: ");
+					path = c.nextLine();
+				}
+			}
+		} catch (RepositoryException e1) {
+			System.out.println(e1.getMessage());
+			System.exit(0);
+		}
+
 		// Number of client connections
 		boolean numberOfConnectionsIsWrong = false;
 		String numberOfConnections = "";
@@ -372,7 +394,7 @@ public class Console {
 		do {
 			try {
 				System.out
-						.print("Set maximum number of client connections (1-10):");
+						.print("Set maximum number of client connections (1-10): ");
 				numberOfConnections = c.nextLine();
 				n = Integer.parseInt(numberOfConnections);
 				if (!(n >= 1 && n <= 10)) {
@@ -508,11 +530,31 @@ public class Console {
 			destinationFolderPath = c.nextLine();
 		}
 
+		System.out
+				.print("Perform Exact file matching (yes/no, choosing yes will erase all extra files into the target folder): ");
+		String withExactMatch = c.nextLine();
+		while (withExactMatch.isEmpty()) {
+			System.out.print("Perform Exact file matching (yes/no): ");
+			withExactMatch = c.nextLine();
+		}
+		while (!(withExactMatch.equalsIgnoreCase("yes") || withExactMatch
+				.equalsIgnoreCase("no"))) {
+			System.out.print("Perform Exact file matching (yes/no): ");
+			withExactMatch = c.nextLine();
+		}
+
+		boolean exactMath = false;
+		if (withExactMatch.equalsIgnoreCase("yes")) {
+			exactMath = true;
+			System.out
+					.print("Performing synchronization with exact files matching.");
+		}
+
 		RepositoryService repositoryService = new RepositoryService();
 		try {
 
 			repositoryService.readAll();
-			repositoryService.setExactMatch(true, repositoryName);
+			repositoryService.setExactMatch(exactMath, repositoryName);
 
 			repositoryService.setDefaultDownloadLocation(repositoryName,
 					destinationFolderPath);
@@ -658,7 +700,7 @@ public class Console {
 	}
 
 	public void syncRepository(final String repositoryName,
-			String destinationFolderPath) {
+			String destinationFolderPath, String withExactMath) {
 
 		assert (repositoryName != null);
 		assert (destinationFolderPath != null);
@@ -670,7 +712,6 @@ public class Console {
 
 		try {
 			repositoryService.readAll();
-			repositoryService.setExactMatch(true, repositoryName);
 
 			System.out.println("Repository Name = " + repositoryName);
 			System.out.println("Destination folder path = "
@@ -683,6 +724,15 @@ public class Console {
 
 			repositoryService.setDefaultDownloadLocation(repositoryName,
 					destinationFolderPath);
+
+			if (!(withExactMath.equalsIgnoreCase("true") || withExactMath
+					.equalsIgnoreCase("false"))) {
+				String message = "Unrecognized exact math parameter (true/false).";
+				throw new Exception(message);
+			}
+
+			repositoryService.setExactMatch(
+					Boolean.parseBoolean(withExactMath), repositoryName);
 
 			/* Check for addons */
 			checkForAddons(repositoryName);
@@ -827,7 +877,6 @@ public class Console {
 
 		System.out.println(message);
 
-		System.out.println("Synchronization done.");
 		if (exit) {
 			System.exit(0);
 		} else {
