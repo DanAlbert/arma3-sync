@@ -250,14 +250,21 @@ public class RepositoryService extends ObjectDTOtransformer implements
 					+ " not found!");
 		}
 
-		if (repository.getServerInfo() == null) {
-			throw new ServerInfoNotFoundException(repository.getProtocole()
-					.getUrl());
-		}
-
-		if (repository.getSync() == null) {
-			throw new SyncFileNotFoundException(repository.getProtocole()
-					.getUrl());
+		if (repository.getSync() == null || repository.getServerInfo() == null) {
+			String prompt = "";
+			if (repository.getProtocole() instanceof Ftp) {
+				prompt = Protocol.FTP.getPrompt();
+			} else if (repository.getProtocole() instanceof Http) {
+				prompt = Protocol.HTTP.getPrompt();
+			}
+			if (repository.getSync() == null) {
+				throw new SyncFileNotFoundException(prompt
+						+ repository.getProtocole().getUrl());
+			}
+			if (repository.getServerInfo() == null) {
+				throw new ServerInfoNotFoundException(prompt
+						+ repository.getProtocole().getUrl());
+			}
 		}
 
 		boolean noAutoDiscover = repository.isNoAutoDiscover();

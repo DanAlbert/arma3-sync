@@ -203,7 +203,8 @@ public class HttpDAO extends AbstractConnexionDAO {
 			int responseCode = httpURLConnection.getResponseCode();
 			if (responseCode != HttpURLConnection.HTTP_OK) {
 				String message = "Server return error " + responseCode
-						+ " on url " + repository.getProtocole().getUrl()
+						+ " on url:" + "\n" + "http://"
+						+ repository.getProtocole().getUrl()
 						+ SERVERINFO_FILE_PATH;
 				System.out.println(message);
 				throw new HttpException(message);
@@ -250,7 +251,8 @@ public class HttpDAO extends AbstractConnexionDAO {
 			int responseCode = httpURLConnection.getResponseCode();
 			if (responseCode != HttpURLConnection.HTTP_OK) {
 				String message = "Server return error " + responseCode
-						+ " on url " + repository.getProtocole().getUrl()
+						+ " on url:" + "\n" + "http://"
+						+ repository.getProtocole().getUrl()
 						+ CHANGELOGS_FILE_PATH;
 				System.out.println(message);
 				throw new HttpException(message);
@@ -297,8 +299,8 @@ public class HttpDAO extends AbstractConnexionDAO {
 			int responseCode = httpURLConnection.getResponseCode();
 			if (responseCode != HttpURLConnection.HTTP_OK) {
 				String message = "Server return error " + responseCode
-						+ " on url " + repository.getProtocole().getUrl()
-						+ EVENTS_FILE_PATH;
+						+ " on url:" + "\n" + "http://"
+						+ repository.getProtocole().getUrl() + EVENTS_FILE_PATH;
 				System.out.println(message);
 				throw new HttpException(message);
 			}
@@ -343,8 +345,8 @@ public class HttpDAO extends AbstractConnexionDAO {
 			int responseCode = httpURLConnection.getResponseCode();
 			if (responseCode != HttpURLConnection.HTTP_OK) {
 				String message = "Server return HTTP error " + responseCode
-						+ " on url " + repository.getProtocole().getUrl()
-						+ SYNC_FILE_PATH;
+						+ " on url:" + "\n" + "http://"
+						+ repository.getProtocole().getUrl() + SYNC_FILE_PATH;
 				System.out.println(message);
 				throw new HttpException(message);
 			}
