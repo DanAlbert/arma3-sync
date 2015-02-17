@@ -32,7 +32,7 @@ public class HttpService extends AbstractConnexionService implements
 		DataAccessConstants {
 
 	private final List<HttpDAO> httpDAOPool = new ArrayList<HttpDAO>();
-	private final Stack<SyncTreeNodeDTO> downloadFilesStack = new Stack();
+	private final Stack<SyncTreeNodeDTO> downloadFilesStack = new Stack<SyncTreeNodeDTO>();
 	private final List<Exception> errors = new ArrayList<Exception>();
 	private int semaphore = 1;
 	private boolean end = false;

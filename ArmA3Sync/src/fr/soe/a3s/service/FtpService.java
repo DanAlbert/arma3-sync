@@ -37,7 +37,7 @@ public class FtpService extends AbstractConnexionService implements
 		DataAccessConstants {
 
 	private final List<FtpDAO> ftpDAOPool = new ArrayList<FtpDAO>();
-	private final Stack<SyncTreeNodeDTO> downloadFilesStack = new Stack();
+	private final Stack<SyncTreeNodeDTO> downloadFilesStack = new Stack<SyncTreeNodeDTO>();
 	private final List<Exception> errors = new ArrayList<Exception>();
 	private int semaphore = 1;
 	boolean end = false;
