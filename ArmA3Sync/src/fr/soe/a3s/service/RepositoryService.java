@@ -543,7 +543,6 @@ public class RepositoryService extends ObjectDTOtransformer implements
 
 	private void setDestinationPaths(SyncTreeDirectoryDTO syncTreeDirectoryDTO,
 			SyncTreeDirectory syncTreeDirectory) {
-
 	}
 
 	// private void addFilesToDelete(SyncTreeDirectory directory, File file) {
