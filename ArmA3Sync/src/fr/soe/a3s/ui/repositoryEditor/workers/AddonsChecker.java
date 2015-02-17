@@ -96,6 +96,7 @@ public class AddonsChecker extends Thread {
 			String message = "";
 			if (e.getMessage() == null || "".equals(e.getMessage())) {
 				message = "An unexpected error has occured.";
+
 			} else {
 				message = e.getMessage();
 			}
