@@ -1,16 +1,11 @@
 package fr.soe.a3s.service;
 
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.FileWriter;
-import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -20,10 +15,8 @@ import java.util.TreeSet;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 
 import net.jimmc.jshortcut.JShellLink;
-
 import fr.soe.a3s.constant.GameExecutables;
 import fr.soe.a3s.constant.GameVersions;
 import fr.soe.a3s.dao.AddonDAO;
@@ -45,7 +38,7 @@ import fr.soe.a3s.exception.LaunchException;
 
 public class LaunchService {
 
-	private LauncherDAO launcherDAO = new LauncherDAO();
+	private final LauncherDAO launcherDAO = new LauncherDAO();
 	private static final ConfigurationDAO configurationDAO = new ConfigurationDAO();
 	private static final AddonDAO addonDAO = new AddonDAO();
 	private static final ProfileDAO profileDAO = new ProfileDAO();
@@ -231,7 +224,8 @@ public class LaunchService {
 						new InputStreamReader(fRo));
 				String ligne = "";
 				List<String> list = new ArrayList<String>();
- 				boolean record = true;
+				boolean record = true;
+				boolean found = false;
 				while (true) {
 					ligne = d.readLine();
 					if (ligne == null) {
@@ -239,6 +233,7 @@ public class LaunchService {
 					} else {
 						if (ligne.equals("class ModLauncherList")) {
 							record = false;
+							found = true;
 						} else if (!record && ligne.equals("};")) {
 							record = true;
 							continue;
@@ -248,16 +243,18 @@ public class LaunchService {
 						}
 					}
 				}
+
 				fRo.close();
 				d.close();
 
-				FileWriter ffw = new FileWriter(file);
-				for (String stg:list){
-					ffw.write(stg); // écrire une ligne dans le
-					ffw.write("\n"); 
-					// fichier resultat.txt
+				if (found) {
+					FileWriter ffw = new FileWriter(file);
+					for (String stg : list) {
+						ffw.write(stg);
+						ffw.write("\n");
+					}
+					ffw.close();
 				}
-				ffw.close(); // fermer le fichier à la fin des traitements
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
