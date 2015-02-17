@@ -96,7 +96,10 @@ public class AddonsChecker extends Thread {
 			String message = "";
 			if (e.getMessage() == null || "".equals(e.getMessage())) {
 				message = "An unexpected error has occured.";
-
+				String osName = System.getProperty("os.name");
+				if (osName.contains("Windows")) {
+					message = message + "\n" + "Try to run ArmA3Sync-DEBUG.exe";
+				}
 			} else {
 				message = e.getMessage();
 			}
