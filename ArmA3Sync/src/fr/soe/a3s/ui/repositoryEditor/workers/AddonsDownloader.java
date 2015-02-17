@@ -397,15 +397,15 @@ public class AddonsDownloader extends Thread {
 			}
 		} else {
 			SyncTreeDirectoryDTO directory = (SyncTreeDirectoryDTO) node;
-			if (node.getName().toLowerCase().contains("@task_force_radio")) {
+			if (node.getName().toLowerCase().contains("task_force_radio")) {
 				if (directory.isUpdated() || directory.isChanged()) {
 					tfarIsUpdated = true;
 				}
-			} else if (node.getName().toLowerCase().contains("@acre2")) {
+			} else if (node.getName().toLowerCase().contains("acre2")) {
 				if (directory.isUpdated() || directory.isChanged()) {
 					acre2IsUpdated = true;
 				}
-			} else if (node.getName().toLowerCase().contains("@acre")) {
+			} else if (node.getName().toLowerCase().contains("acre")) {
 				if (directory.isUpdated() || directory.isChanged()) {
 					acreIsUpdated = true;
 				}
