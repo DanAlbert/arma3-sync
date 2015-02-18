@@ -58,7 +58,8 @@ public class UploadEventsPanel extends ProgressPanel {
 				repositoryService.setRepositoryUploadProtocole(repositoryName,
 						protocoleDTO.getUrl(), protocoleDTO.getPort(),
 						protocoleDTO.getLogin(), protocoleDTO.getPassword(),
-						protocole);
+						protocole, protocoleDTO.getConnectionTimeOut(),
+						protocoleDTO.getReadTimeOut());
 			} else if (uploadProtocoleDTO == null) {
 				String message = "Please use the upload options to configure a connection.";
 				throw new CheckException(message);

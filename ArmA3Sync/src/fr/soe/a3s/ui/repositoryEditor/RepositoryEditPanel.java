@@ -42,8 +42,6 @@ import fr.soe.a3s.dto.AutoConfigDTO;
 import fr.soe.a3s.dto.ProtocolDTO;
 import fr.soe.a3s.dto.RepositoryDTO;
 import fr.soe.a3s.exception.CheckException;
-import fr.soe.a3s.exception.FtpException;
-import fr.soe.a3s.exception.HttpException;
 import fr.soe.a3s.exception.RepositoryException;
 import fr.soe.a3s.exception.WritingException;
 import fr.soe.a3s.service.AbstractConnexionService;
@@ -428,8 +426,7 @@ public class RepositoryEditPanel extends JDialog implements UIConstants,
 							.importAutoConfig(url);
 					if (autoConfigDTO != null) {
 						// Init UI fields
-						labelConnection
-								.setText("Connection success!");
+						labelConnection.setText("Connection success!");
 						labelConnection.setFont(new Font("Tohama", Font.ITALIC,
 								11));
 						labelConnection.setForeground(new Color(45, 125, 45));
@@ -467,8 +464,7 @@ public class RepositoryEditPanel extends JDialog implements UIConstants,
 							e1.getMessage(), "Error!",
 							JOptionPane.ERROR_MESSAGE);
 				} catch (ConnectException | HttpException | FtpException e2) {
-					labelConnection
-							.setText("Url is not reachable!");
+					labelConnection.setText("Url is not reachable!");
 					labelConnection
 							.setFont(new Font("Tohama", Font.ITALIC, 11));
 					labelConnection.setForeground(Color.RED);
@@ -513,12 +509,15 @@ public class RepositoryEditPanel extends JDialog implements UIConstants,
 
 		assert (protocole != null);
 
+		String connectionTimeOut = "";// TODO
+		String readTimeOut = "";// TODO
+
 		try {
 			if (!initialRepositoryName.isEmpty()) {
 				repositoryService.removeRepository(initialRepositoryName);
 			}
 			repositoryService.createRepository(name, url, port, login, pass,
-					protocole);
+					protocole, connectionTimeOut, readTimeOut);
 			repositoryService.write(name);
 		} catch (CheckException e) {
 			JOptionPane.showMessageDialog(this, e.getMessage(), "Error",

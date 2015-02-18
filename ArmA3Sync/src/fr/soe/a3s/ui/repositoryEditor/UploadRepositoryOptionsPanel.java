@@ -283,9 +283,14 @@ public class UploadRepositoryOptionsPanel extends JDialog implements
 
 		assert (protocol != null);
 
+		String connectionTimeOut = "";// TODO
+		String readTimeOut = "";// TODO
+
 		try {
-			repositoryService.setRepositoryUploadProtocole(repositoryName, url,
-					port, login, pass, protocol);
+			repositoryService
+					.setRepositoryUploadProtocole(repositoryName, url, port,
+							login, pass, protocol, connectionTimeOut,
+							readTimeOut);
 			repositoryService.write(repositoryName);
 		} catch (CheckException | RepositoryException | WritingException e) {
 			JOptionPane.showMessageDialog(this, e.getMessage(), "Error",
