@@ -275,13 +275,46 @@ public class Console {
 			path = c.nextLine();
 		}
 
-		path = (new File(path)).getAbsolutePath().toLowerCase();// normalize
-																// path
+		// Connection Time out
+		boolean connectionTimeOutIsWrong = false;
+		String connectionTimeOut = "";
+		do {
+			try {
+				System.out
+						.print("Enter connection time out in seconds (10 default, 0 unlimited): ");
+				connectionTimeOut = c.nextLine();
+				int time = Integer.parseInt(connectionTimeOut);
+				connectionTimeOutIsWrong = false;
+			} catch (NumberFormatException e) {
+				connectionTimeOutIsWrong = true;
+			}
+		} while (connectionTimeOutIsWrong);
+
+		// Read time out
+		boolean readTimeOutIsWrong = false;
+		String readTimeOut = "";
+		do {
+			try {
+				System.out
+						.print("Enter read time out in seconds (30 default, 0 unlimited): ");
+				readTimeOut = c.nextLine();
+				int time = Integer.parseInt(readTimeOut);
+				readTimeOutIsWrong = false;
+			} catch (NumberFormatException e) {
+				readTimeOutIsWrong = true;
+			}
+		} while (readTimeOutIsWrong);
+
 		Protocol protocole = Protocol.getEnum(prot);
 		RepositoryService repositoryService = new RepositoryService();
 		try {
 			repositoryService.createRepository(name, url, port, login,
-					password, protocole);
+					password, protocole, connectionTimeOut, readTimeOut);
+			if (!path.isEmpty()) {
+				path = (new File(path)).getAbsolutePath().toLowerCase();// normalize
+				// path
+				repositoryService.setRepositoryPath(name, path);
+			}
 			repositoryService.write(name);
 			System.out
 					.println("Repository creation finished.\nYou can now run the BUILD command to construct the repository");
@@ -290,6 +323,9 @@ public class Console {
 			return;
 		} catch (WritingException e) {
 			System.out.println("Failed to write repository.");
+			System.out.println(e.getMessage());
+			return;
+		} catch (RepositoryException e) {
 			System.out.println(e.getMessage());
 			return;
 		} finally {
@@ -381,6 +417,9 @@ public class Console {
 					System.out.print("Enter root shared folder path: ");
 					path = c.nextLine();
 				}
+				path = (new File(path)).getAbsolutePath().toLowerCase();// normalize
+				// path
+				repositoryService.setRepositoryPath(name, path);
 			}
 		} catch (RepositoryException e1) {
 			System.out.println(e1.getMessage());

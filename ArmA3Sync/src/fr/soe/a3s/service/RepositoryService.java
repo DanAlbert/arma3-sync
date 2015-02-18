@@ -102,8 +102,8 @@ public class RepositoryService extends ObjectDTOtransformer implements
 	}
 
 	public void createRepository(String name, String url, String port,
-			String login, String password, Protocol protocole)
-			throws CheckException {
+			String login, String password, Protocol protocole,
+			String connectionTimeOut, String readTimeOut) throws CheckException {
 
 		if (name == null || "".equals(name)) {
 			throw new CheckException("Repository name can't be empty.");
@@ -116,9 +116,11 @@ public class RepositoryService extends ObjectDTOtransformer implements
 
 		AbstractProtocole abstractProtocole = null;
 		if (protocole.equals(Protocol.FTP)) {
-			abstractProtocole = new Ftp(url, port, login, password);
+			abstractProtocole = new Ftp(url, port, login, password,
+					connectionTimeOut, readTimeOut);
 		} else if (protocole.equals(Protocol.HTTP)) {
-			abstractProtocole = new Http(url, port, login, password);
+			abstractProtocole = new Http(url, port, login, password,
+					connectionTimeOut, readTimeOut);
 		} else {
 			throw new CheckException("Protocole not supported yet.");
 		}
@@ -1232,16 +1234,19 @@ public class RepositoryService extends ObjectDTOtransformer implements
 	}
 
 	public void setRepositoryUploadProtocole(String repositoryName, String url,
-			String port, String login, String password, Protocol protocole)
+			String port, String login, String password, Protocol protocole,
+			String connectionTimeOut, String readTimeOut)
 			throws CheckException, RepositoryException {
 
 		Repository repository = repositoryDAO.getMap().get(repositoryName);
 		if (repository != null) {
 			AbstractProtocole abstractProtocole = null;
 			if (protocole.equals(Protocol.FTP)) {
-				abstractProtocole = new Ftp(url, port, login, password);
+				abstractProtocole = new Ftp(url, port, login, password,
+						connectionTimeOut, readTimeOut);
 			} else if (protocole.equals(Protocol.HTTP)) {
-				abstractProtocole = new Http(url, port, login, password);
+				abstractProtocole = new Http(url, port, login, password,
+						connectionTimeOut, readTimeOut);
 			} else {
 				throw new CheckException("Protocole not supported yet.");
 			}

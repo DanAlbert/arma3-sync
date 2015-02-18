@@ -223,6 +223,9 @@ public class ObjectDTOtransformer {
 		} else {
 			protocoleDTO.setProtocole(Protocol.FTP);
 		}
+		protocoleDTO.setConnectionTimeOut(repository.getProtocole()
+				.getConnectionTimeOut());
+		protocoleDTO.setReadTimeOut(repository.getProtocole().getReadTimeOut());
 		repositoryDTO.setProtocoleDTO(protocoleDTO);
 		// Repository upload protocole
 		ProtocolDTO repositoryUploadProtocoleDTO = new ProtocolDTO();
@@ -242,6 +245,10 @@ public class ObjectDTOtransformer {
 			} else {
 				repositoryUploadProtocoleDTO.setProtocole(Protocol.FTP);
 			}
+			repositoryUploadProtocoleDTO.setConnectionTimeOut(repository
+					.getRepositoryUploadProtocole().getConnectionTimeOut());
+			repositoryUploadProtocoleDTO.setReadTimeOut(repository
+					.getRepositoryUploadProtocole().getReadTimeOut());
 			repositoryDTO
 					.setRepositoryUploadProtocoleDTO(repositoryUploadProtocoleDTO);
 		}
@@ -270,6 +277,9 @@ public class ObjectDTOtransformer {
 		} else {
 			protocoleDTO.setProtocole(Protocol.FTP);
 		}
+		protocoleDTO.setConnectionTimeOut(autoConfig.getProtocole()
+				.getConnectionTimeOut());
+		protocoleDTO.setReadTimeOut(autoConfig.getProtocole().getReadTimeOut());
 		return autoConfigDTO;
 	}
 

@@ -11,6 +11,8 @@ public class ProtocolDTO {
 	private String port;
 	private EncryptionMode encryptionMode;
 	private Protocol protocole;
+	private String connectionTimeOut;
+	private String readTimeOut;
 
 	public String getLogin() {
 		return login;
@@ -60,4 +62,19 @@ public class ProtocolDTO {
 		this.protocole = protocole;
 	}
 
+	public String getConnectionTimeOut() {
+		return connectionTimeOut;
+	}
+
+	public void setConnectionTimeOut(String connectionTimeOut) {
+		this.connectionTimeOut = connectionTimeOut;
+	}
+
+	public String getReadTimeOut() {
+		return readTimeOut;
+	}
+
+	public void setReadTimeOut(String readTimeOut) {
+		this.readTimeOut = readTimeOut;
+	}
 }

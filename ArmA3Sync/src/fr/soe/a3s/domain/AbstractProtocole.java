@@ -3,6 +3,7 @@ package fr.soe.a3s.domain;
 import java.io.Serializable;
 
 import fr.soe.a3s.constant.EncryptionMode;
+import fr.soe.a3s.constant.TimeOutValues;
 import fr.soe.a3s.exception.CheckException;
 
 public abstract class AbstractProtocole implements Serializable {
@@ -16,45 +17,37 @@ public abstract class AbstractProtocole implements Serializable {
 	protected String url;
 	protected String port;
 	protected EncryptionMode encryptionMode;
+	protected String connectionTimeOut = Integer
+			.toString(TimeOutValues.CONNECTION_TIME_OUT.getValue());
+	protected String readTimeOut = Integer.toString(TimeOutValues.READ_TIME_OUT
+			.getValue());
 
 	public String getLogin() {
 		return login;
-	}
-
-	public void setLogin(String login) {
-		this.login = login;
 	}
 
 	public String getPassword() {
 		return password;
 	}
 
-	public void setPassword(String password) {
-		this.password = password;
-	}
-
 	public String getUrl() {
 		return url;
-	}
-
-	public void setUrl(String url) {
-		this.url = url;
 	}
 
 	public String getPort() {
 		return port;
 	}
 
-	public void setPort(String port) {
-		this.port = port;
-	}
-
 	public EncryptionMode getEncryptionMode() {
 		return encryptionMode;
 	}
 
-	public void setEncryptionMode(EncryptionMode encryptionMode) {
-		this.encryptionMode = encryptionMode;
+	public String getConnectionTimeOut() {
+		return connectionTimeOut;
+	}
+
+	public String getReadTimeOut() {
+		return readTimeOut;
 	}
 
 	public String getHostname() {
@@ -86,9 +79,25 @@ public abstract class AbstractProtocole implements Serializable {
 			throw new CheckException("Port field is empty!");
 		}
 		try {
-			Integer.parseInt(port);
+			Integer.parseInt(getPort());
 		} catch (NumberFormatException e) {
 			throw new CheckException("Port is invalid!");
+		}
+		if ("".equals(getConnectionTimeOut()) || getConnectionTimeOut() == null) {
+			throw new CheckException("Connection time out field is empty!");
+		}
+		try {
+			Integer.parseInt(getConnectionTimeOut());
+		} catch (NumberFormatException e) {
+			throw new CheckException("Connection time out is invalid!");
+		}
+		if ("".equals(getReadTimeOut()) || getReadTimeOut() == null) {
+			throw new CheckException("Read time out field is empty!");
+		}
+		try {
+			Integer.parseInt(getReadTimeOut());
+		} catch (NumberFormatException e) {
+			throw new CheckException("Read time out is invalid!");
 		}
 	}
 }
