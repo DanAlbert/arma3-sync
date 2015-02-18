@@ -57,6 +57,8 @@ public class HttpConnection {
 	private final String login;
 	private final String password;
 	private final String port;
+	private final String connectionTimeOut;
+	private final String readTimeOut;
 	private HttpURLConnection connection;
 	private String boundary;
 	private byte[] boundaryBytes;
@@ -64,15 +66,16 @@ public class HttpConnection {
 	private static final int BUFFER_SIZE = 4096;// 4KB
 	private long allData = 0;
 	private final HttpDAO httpDAO;
-	private static final int CONNECTION_TIMEOUT = 10000;
-	private static final int READ_TIMEOUT = 30000;
 
 	public HttpConnection(String hostname, String login, String password,
-			String port, HttpDAO httpDAO) {
+			String port, String connectionTimeOut, String readTimeOut,
+			HttpDAO httpDAO) {
 		this.hostname = hostname;
 		this.login = login;
 		this.password = password;
 		this.port = port;
+		this.connectionTimeOut = connectionTimeOut;
+		this.readTimeOut = readTimeOut;
 		this.httpDAO = httpDAO;
 	}
 
@@ -98,8 +101,8 @@ public class HttpConnection {
 
 		URL url2 = new URL("http", hostname, Integer.parseInt(port), file);
 		connection = (HttpURLConnection) url2.openConnection();
-		connection.setConnectTimeout(CONNECTION_TIMEOUT);
-		connection.setReadTimeout(READ_TIMEOUT);
+		connection.setConnectTimeout(Integer.parseInt(connectionTimeOut));
+		connection.setReadTimeout(Integer.parseInt(readTimeOut));
 		if (!(login.equalsIgnoreCase("anonymous"))) {
 			String encoding = Base64Coder.encodeLines((login + ":" + password)
 					.getBytes());

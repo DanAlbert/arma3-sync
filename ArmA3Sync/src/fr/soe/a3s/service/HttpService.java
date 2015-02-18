@@ -311,8 +311,12 @@ public class HttpService extends AbstractConnexionService implements
 			remotePath = remotePath + "/" + path;
 		}
 
+		String connectionTimeOut = repository.getProtocole()
+				.getConnectionTimeOut();
+		String readTimeOut = repository.getProtocole().getReadTimeOut();
+
 		httpDAO.downloadFile(hostname, login, password, port, remotePath,
-				destinationPath, node);
+				destinationPath, node, connectionTimeOut, readTimeOut);
 	}
 
 	private synchronized void addError(Exception e) {
@@ -367,6 +371,10 @@ public class HttpService extends AbstractConnexionService implements
 		String login = repository.getProtocole().getLogin();
 		String password = repository.getProtocole().getPassword();
 
+		String connectionTimeOut = repository.getProtocole()
+				.getConnectionTimeOut();
+		String readTimeOut = repository.getProtocole().getReadTimeOut();
+
 		String rootDestinationPath = repository.getDefaultDownloadLocation();
 
 		for (SyncTreeNodeDTO node : parent.getList()) {
@@ -389,7 +397,8 @@ public class HttpService extends AbstractConnexionService implements
 					}
 
 					httpDAOPool.get(0).getFileCompletion(hostname, login,
-							password, port, remotePath, destinationPath, node);
+							password, port, remotePath, destinationPath, node,
+							connectionTimeOut, readTimeOut);
 				} catch (Exception e) {
 					e.printStackTrace();
 					throw new WritingException(

@@ -70,6 +70,8 @@ public class Jazsync {
 	 * @param login
 	 * @param password
 	 * @param port
+	 * @param readTimeOut
+	 * @param connectionTimeOut
 	 * @param resume
 	 * @param httpDAO
 	 * @throws Exception
@@ -78,13 +80,14 @@ public class Jazsync {
 	public static void sync(File targetFile, String targetFileSha1,
 			String relativeFileUrl, String relativeZsyncFileUrl,
 			String hostname, String login, String password, String port,
-			HttpDAO httpDAO) throws Exception, FileNotFoundException {
+			String connectionTimeOut, String readTimeOut, HttpDAO httpDAO)
+			throws Exception, FileNotFoundException {
 
 		assert (targetFile != null);
 		assert (relativeZsyncFileUrl != null);
 
 		HttpConnection http = new HttpConnection(hostname, login, password,
-				port, httpDAO);
+				port, connectionTimeOut, readTimeOut, httpDAO);
 		MetaFileReader mfr = new MetaFileReader(relativeZsyncFileUrl, http);
 		FileMaker fm = new FileMaker(mfr, http);
 		fm.sync(targetFile, targetFileSha1, relativeFileUrl);
@@ -97,13 +100,14 @@ public class Jazsync {
 	 */
 	public static double getCompletion(File targetFile, String targetFileSha1,
 			String relativeZsyncFileUrl, String hostname, String login,
-			String password, String port, HttpDAO httpDAO) throws Exception {
+			String password, String port, String connectionTimeOut,
+			String readTimeOut, HttpDAO httpDAO) throws Exception {
 
 		assert (targetFile != null);
 		assert (relativeZsyncFileUrl != null);
 
 		HttpConnection http = new HttpConnection(hostname, login, password,
-				port, httpDAO);
+				port, connectionTimeOut, readTimeOut, httpDAO);
 		MetaFileReader mfr = new MetaFileReader(relativeZsyncFileUrl, http);
 		FileMaker fm = new FileMaker(mfr, http);
 		double completion = fm.getCompletion(targetFile, targetFileSha1);

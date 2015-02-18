@@ -22,6 +22,7 @@ import java.util.zip.GZIPOutputStream;
 
 import fr.soe.a3s.constant.DownloadStatus;
 import fr.soe.a3s.constant.Protocol;
+import fr.soe.a3s.constant.TimeOutValues;
 import fr.soe.a3s.domain.repository.AutoConfig;
 import fr.soe.a3s.domain.repository.Changelogs;
 import fr.soe.a3s.domain.repository.Events;
@@ -46,15 +47,15 @@ public class HttpDAO extends AbstractConnexionDAO {
 	private static final int BUFFER_SIZE = 4096;
 	private File downloadingFile;
 	private boolean acquiredSmaphore;
-	private static final int CONNECTION_TIMEOUT = 10000;
-	private static final int READ_TIMEOUT = 15000;
 
 	private void connect(String url) throws IOException {
 
 		URL urlObject = new URL(url);
 		httpURLConnection = (HttpURLConnection) urlObject.openConnection();
-		httpURLConnection.setConnectTimeout(CONNECTION_TIMEOUT);
-		httpURLConnection.setReadTimeout(READ_TIMEOUT);
+		httpURLConnection.setConnectTimeout(TimeOutValues.CONNECTION_TIME_OUT
+				.getValue());
+		httpURLConnection
+				.setReadTimeout(TimeOutValues.READ_TIME_OUT.getValue());
 	}
 
 	private void connect(Repository repository,
@@ -77,8 +78,10 @@ public class HttpDAO extends AbstractConnexionDAO {
 		URL urlObject = new URL("http", hostname, Integer.parseInt(port),
 				remotePath);
 		httpURLConnection = (HttpURLConnection) urlObject.openConnection();
-		httpURLConnection.setConnectTimeout(CONNECTION_TIMEOUT);
-		httpURLConnection.setReadTimeout(READ_TIMEOUT);
+		httpURLConnection.setConnectTimeout(Integer.parseInt(repository
+				.getProtocole().getConnectionTimeOut()));
+		httpURLConnection.setReadTimeout(Integer.parseInt(repository
+				.getProtocole().getReadTimeOut()));
 
 		if (!(login.equalsIgnoreCase("anonymous"))) {
 			String encoding = Base64Coder.encodeLines((login + ":" + password)
@@ -384,7 +387,8 @@ public class HttpDAO extends AbstractConnexionDAO {
 
 	public void downloadFile(String hostname, String login, String password,
 			String port, String remotePath, String destinationPath,
-			SyncTreeNodeDTO node) throws Exception, FileNotFoundException {
+			SyncTreeNodeDTO node, String connectionTimeOut, String readTimeOut)
+			throws Exception, FileNotFoundException {
 
 		this.downloadingNode = node;
 		File parentDirectory = new File(destinationPath);
@@ -405,7 +409,8 @@ public class HttpDAO extends AbstractConnexionDAO {
 			String sha1 = leaf.getLocalSHA1();
 
 			Jazsync.sync(this.downloadingFile, sha1, relativeFileUrl,
-					relativeZsyncFileUrl, hostname, login, password, port, this);
+					relativeZsyncFileUrl, hostname, login, password, port,
+					connectionTimeOut, readTimeOut, this);
 		} else {
 			this.downloadingFile.mkdir();
 		}
@@ -418,7 +423,8 @@ public class HttpDAO extends AbstractConnexionDAO {
 
 	public void getFileCompletion(String hostname, String login,
 			String password, String port, String remotePath,
-			String destinationPath, SyncTreeNodeDTO node) throws Exception {
+			String destinationPath, SyncTreeNodeDTO node,
+			String connectionTimeOut, String readTimeOut) throws Exception {
 
 		if (node.isLeaf()) {
 			File targetFile = new File(destinationPath + "/" + node.getName());
@@ -431,9 +437,9 @@ public class HttpDAO extends AbstractConnexionDAO {
 			SyncTreeLeafDTO leaf = (SyncTreeLeafDTO) node;
 			String sha1 = leaf.getLocalSHA1();
 
-			double complete = Jazsync
-					.getCompletion(targetFile, sha1, relativeZsyncFileUrl,
-							hostname, login, password, port, this);
+			double complete = Jazsync.getCompletion(targetFile, sha1,
+					relativeZsyncFileUrl, hostname, login, password, port,
+					connectionTimeOut, readTimeOut, this);
 
 			leaf.setComplete(complete);
 		}

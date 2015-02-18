@@ -29,6 +29,7 @@ import org.dom4j.io.SAXReader;
 
 import fr.soe.a3s.constant.DownloadStatus;
 import fr.soe.a3s.constant.Protocol;
+import fr.soe.a3s.constant.TimeOutValues;
 import fr.soe.a3s.domain.AbstractProtocole;
 import fr.soe.a3s.domain.repository.AutoConfig;
 import fr.soe.a3s.domain.repository.Changelogs;
@@ -45,8 +46,6 @@ public class FtpDAO extends AbstractConnexionDAO {
 	private File downloadingFile;
 	private String rootRemotePath;
 	private boolean acquiredSmaphore;
-	private static final int CONNECTION_TIMEOUT = 10000;
-	private static final int READ_TIMEOUT = 30000;
 
 	private String connect(String url) throws NumberFormatException,
 			SocketException, IOException {
@@ -74,8 +73,9 @@ public class FtpDAO extends AbstractConnexionDAO {
 		int index3 = address.lastIndexOf("/");
 		String remotePath = address.substring(index2, index3);
 
-		ftpClient.setConnectTimeout(CONNECTION_TIMEOUT);
-		ftpClient.setDataTimeout(READ_TIMEOUT);
+		ftpClient.setConnectTimeout(TimeOutValues.CONNECTION_TIME_OUT
+				.getValue());
+		ftpClient.setDataTimeout(TimeOutValues.READ_TIME_OUT.getValue());
 		ftpClient.connect(hostname, port);
 		ftpClient.login(login, password);
 		ftpClient.setFileType(FTP.BINARY_FILE_TYPE);
@@ -99,8 +99,9 @@ public class FtpDAO extends AbstractConnexionDAO {
 		String login = protocole.getLogin();
 		String password = protocole.getPassword();
 		ftpClient = new FTPClient();
-		ftpClient.setConnectTimeout(CONNECTION_TIMEOUT);
-		ftpClient.setDataTimeout(READ_TIMEOUT);
+		ftpClient.setConnectTimeout(Integer.parseInt(protocole
+				.getConnectionTimeOut()));
+		ftpClient.setDataTimeout(Integer.parseInt(protocole.getReadTimeOut()));
 		ftpClient.setBufferSize(1048576);// 1024*1024
 		boolean isLoged = false;
 		int reply = 0;
