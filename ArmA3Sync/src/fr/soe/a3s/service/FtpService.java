@@ -412,7 +412,11 @@ public class FtpService extends AbstractConnexionService implements
 		for (SyncTreeNodeDTO node : parent.getList()) {
 			if (node.isLeaf()) {
 				SyncTreeLeafDTO leaf = (SyncTreeLeafDTO) node;
-				leaf.setComplete(0);
+				if (leaf.isUpdated()) {
+					leaf.setComplete(0);
+				} else {
+					leaf.setComplete(100);
+				}
 			} else {
 				SyncTreeDirectoryDTO directory = (SyncTreeDirectoryDTO) node;
 				determineCompletion(repositoryName, directory);

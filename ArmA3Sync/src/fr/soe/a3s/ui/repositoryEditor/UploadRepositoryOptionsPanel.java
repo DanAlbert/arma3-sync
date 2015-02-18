@@ -26,7 +26,6 @@ import javax.swing.JTextField;
 import fr.soe.a3s.constant.Protocol;
 import fr.soe.a3s.dto.ProtocolDTO;
 import fr.soe.a3s.dto.RepositoryDTO;
-import fr.soe.a3s.exception.CheckException;
 import fr.soe.a3s.exception.RepositoryException;
 import fr.soe.a3s.service.RepositoryService;
 import fr.soe.a3s.ui.Facade;
@@ -292,7 +291,7 @@ public class UploadRepositoryOptionsPanel extends JDialog implements
 							login, pass, protocol, connectionTimeOut,
 							readTimeOut);
 			repositoryService.write(repositoryName);
-		} catch (CheckException | RepositoryException | WritingException e) {
+		} catch (Exception e) {
 			JOptionPane.showMessageDialog(this, e.getMessage(), "Error",
 					JOptionPane.WARNING_MESSAGE);
 			return;

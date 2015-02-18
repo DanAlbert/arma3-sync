@@ -17,10 +17,8 @@ public abstract class AbstractProtocole implements Serializable {
 	protected String url;
 	protected String port;
 	protected EncryptionMode encryptionMode;
-	protected String connectionTimeOut = Integer
-			.toString(TimeOutValues.CONNECTION_TIME_OUT.getValue());
-	protected String readTimeOut = Integer.toString(TimeOutValues.READ_TIME_OUT
-			.getValue());
+	protected String connectionTimeOut;
+	protected String readTimeOut;
 
 	public String getLogin() {
 		return login;
@@ -43,10 +41,18 @@ public abstract class AbstractProtocole implements Serializable {
 	}
 
 	public String getConnectionTimeOut() {
+		if (connectionTimeOut == null) {
+			connectionTimeOut = Integer
+					.toString(TimeOutValues.CONNECTION_TIME_OUT.getValue());
+		}
 		return connectionTimeOut;
 	}
 
 	public String getReadTimeOut() {
+		if (readTimeOut == null) {
+			readTimeOut = Integer.toString(TimeOutValues.READ_TIME_OUT
+					.getValue());
+		}
 		return readTimeOut;
 	}
 

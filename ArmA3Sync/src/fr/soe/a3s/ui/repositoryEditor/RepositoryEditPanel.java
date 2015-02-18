@@ -15,7 +15,6 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.net.ConnectException;
 import java.util.Arrays;
 
 import javax.swing.BorderFactory;
@@ -463,7 +462,7 @@ public class RepositoryEditPanel extends JDialog implements UIConstants,
 					JOptionPane.showMessageDialog(facade.getMainPanel(),
 							e1.getMessage(), "Error!",
 							JOptionPane.ERROR_MESSAGE);
-				} catch (ConnectException | HttpException | FtpException e2) {
+				} catch (Exception e2) {
 					labelConnection.setText("Url is not reachable!");
 					labelConnection
 							.setFont(new Font("Tohama", Font.ITALIC, 11));

@@ -32,6 +32,7 @@ public class AddonsChecker extends Thread {
 	/* Services */
 	private final RepositoryService repositoryService = new RepositoryService();
 	private final AddonService addonService = new AddonService();
+	private AbstractConnexionService connexionService;
 
 	public AddonsChecker(Facade facade, String repositoryName,
 			String eventName, boolean update, DownloadPanel downloadPanel) {
@@ -58,26 +59,39 @@ public class AddonsChecker extends Thread {
 		downloadPanel.getButtonDownloadStart().setEnabled(false);
 		downloadPanel.getProgressBarCheckForAddons().setMinimum(0);
 		downloadPanel.getProgressBarCheckForAddons().setMaximum(100);
-		repositoryService.getRepositoryBuilderDAO().addObserverFilesNumber3(
-				new ObserverFilesNumber3() {
-					@Override
-					public synchronized void update(int value) {
-						downloadPanel.getProgressBarCheckForAddons().setValue(
-								value);
-					}
-				});
 
 		try {
-			AbstractConnexionService connexionService = ConnexionServiceFactory
+			connexionService = ConnexionServiceFactory
 					.getServiceFromRepository(repositoryName);
 			connexionService.getSync(repositoryName);
 			connexionService.getServerInfo(repositoryName);
 			connexionService.getChangelogs(repositoryName);
 
+			repositoryService.getRepositoryBuilderDAO()
+					.addObserverFilesNumber3(new ObserverFilesNumber3() {
+						@Override
+						public synchronized void update(int value) {
+							downloadPanel.getProgressBarCheckForAddons()
+									.setValue(value);
+						}
+					});
+
 			parent = repositoryService.getSyncForCheckForAddons(repositoryName);
 
-			// connexionService .determineCompletion(repositoryName,parent);
-			// slow with zsync!
+			downloadPanel.getProgressBarCheckForAddons().setMinimum(0);
+			downloadPanel.getProgressBarCheckForAddons().setMaximum(100);
+			connexionService.getConnexionDAO().addObserverFilesNumber3(
+					new ObserverFilesNumber3() {
+						@Override
+						public void update(int value) {
+							downloadPanel.getProgressBarCheckForAddons()
+									.setValue(value);
+						}
+					});
+
+			// slower with http/zsync!
+			connexionService.determineCompletion(repositoryName, parent);
+
 			if (eventName != null) {
 				setEventAddonSelection();
 			} else if (update) {

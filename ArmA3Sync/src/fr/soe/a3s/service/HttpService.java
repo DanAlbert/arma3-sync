@@ -1,5 +1,6 @@
 package fr.soe.a3s.service;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.net.ConnectException;
 import java.util.ArrayList;
@@ -348,8 +349,7 @@ public class HttpService extends AbstractConnexionService implements
 
 	@Override
 	public void determineCompletion(String repositoryName,
-			SyncTreeDirectoryDTO parent) throws RepositoryException,
-			HttpException, WritingException {
+			SyncTreeDirectoryDTO parent) throws Exception {
 
 		Repository repository = repositoryDAO.getMap().get(repositoryName);
 		if (repository == null) {
@@ -370,17 +370,37 @@ public class HttpService extends AbstractConnexionService implements
 		String port = repository.getProtocole().getPort();
 		String login = repository.getProtocole().getLogin();
 		String password = repository.getProtocole().getPassword();
-
 		String connectionTimeOut = repository.getProtocole()
 				.getConnectionTimeOut();
 		String readTimeOut = repository.getProtocole().getReadTimeOut();
 
 		String rootDestinationPath = repository.getDefaultDownloadLocation();
 
+		List<SyncTreeLeafDTO> list = new ArrayList<SyncTreeLeafDTO>();
+
+		determineFileForComputingCompletion(rootRemotePath,
+				rootDestinationPath, parent, list);
+
+		httpDAOPool.get(0).setTotalNbFiles(list.size());
+
+		for (SyncTreeLeafDTO leaf : list) {
+			double complete;
+			complete = httpDAOPool.get(0).getFileCompletion(hostname, login,
+					password, port, leaf.getRemotePath(),
+					leaf.getDestinationPath(), leaf, connectionTimeOut,
+					readTimeOut);
+			leaf.setComplete(complete);
+		}
+	}
+
+	private void determineFileForComputingCompletion(String rootRemotePath,
+			String rootDestinationPath, SyncTreeDirectoryDTO parent,
+			List<SyncTreeLeafDTO> list) {
+
 		for (SyncTreeNodeDTO node : parent.getList()) {
 			if (node.isLeaf()) {
 				SyncTreeLeafDTO leaf = (SyncTreeLeafDTO) node;
-				try {
+				if (leaf.isUpdated()) {
 					String destinationPath = null;
 					String remotePath = rootRemotePath;
 					String path = determinePath(node);
@@ -391,22 +411,27 @@ public class HttpService extends AbstractConnexionService implements
 						destinationPath = rootDestinationPath + "/" + path;
 						remotePath = remotePath + "/" + path;
 					}
+					leaf.setDestinationPath(destinationPath);
+					leaf.setRemotePath(remotePath);
 
 					if (httpDAOPool.get(0).isCanceled()) {
 						break;
 					}
 
-					httpDAOPool.get(0).getFileCompletion(hostname, login,
-							password, port, remotePath, destinationPath, node,
-							connectionTimeOut, readTimeOut);
-				} catch (Exception e) {
-					e.printStackTrace();
-					throw new WritingException(
-							"An unexpected error has occured.\nInternal error.");
+					File file = new File(destinationPath + "/" + node.getName());
+					if (file.exists()) {
+						list.add(leaf);
+					} else {
+						leaf.setComplete(0);
+					}
+				} else {
+					leaf.setComplete(100);
 				}
+
 			} else {
 				SyncTreeDirectoryDTO directory = (SyncTreeDirectoryDTO) node;
-				determineCompletion(repositoryName, directory);
+				determineFileForComputingCompletion(rootRemotePath,
+						rootDestinationPath, directory, list);
 			}
 		}
 	}

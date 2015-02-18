@@ -12,6 +12,7 @@ public class SyncTreeLeafDTO implements SyncTreeNodeDTO {
 	private double complete;
 	private String localSHA1;
 	private String destinationPath;
+	private String remotePath;
 	private boolean deleted;
 	private boolean optional;
 	private String sha1;
@@ -95,6 +96,14 @@ public class SyncTreeLeafDTO implements SyncTreeNodeDTO {
 	@Override
 	public void setDestinationPath(String destinationPath) {
 		this.destinationPath = destinationPath;
+	}
+
+	public String getRemotePath() {
+		return remotePath;
+	}
+
+	public void setRemotePath(String remotePath) {
+		this.remotePath = remotePath;
 	}
 
 	@Override

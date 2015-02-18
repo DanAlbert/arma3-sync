@@ -197,7 +197,7 @@ public class FileMaker {
 			if (!http.getHttpDAO().isCanceled()) {
 				e.printStackTrace();
 				String message = "Failed to retrieve file "
-						+ targetFile.getName();
+						+ targetFile.getName() + "\n" + e.getMessage();
 				throw new Exception(message, e);
 			}
 		}
@@ -221,7 +221,8 @@ public class FileMaker {
 			throw e;
 		} catch (Exception e) {
 			e.printStackTrace();
-			String message = "Failed to retrieve file " + targetFile.getName();
+			String message = "Failed to retrieve file " + targetFile.getName()
+					+ "\n" + e.getMessage();
 			throw new Exception(message, e);
 		}
 	}
@@ -411,10 +412,6 @@ public class FileMaker {
 				}
 			}
 		}
-		// } catch (Exception ex) {
-		// ex.printStackTrace();
-		// throw new Exception(ex.getMessage());
-		// }
 	}
 
 	/**

@@ -421,28 +421,28 @@ public class HttpDAO extends AbstractConnexionDAO {
 		node.setDownloadStatus(DownloadStatus.DONE);
 	}
 
-	public void getFileCompletion(String hostname, String login,
+	public double getFileCompletion(String hostname, String login,
 			String password, String port, String remotePath,
 			String destinationPath, SyncTreeNodeDTO node,
 			String connectionTimeOut, String readTimeOut) throws Exception {
 
-		if (node.isLeaf()) {
-			File targetFile = new File(destinationPath + "/" + node.getName());
+		File targetFile = new File(destinationPath + "/" + node.getName());
 
-			String relativeZsyncFileUrl = remotePath + node.getName()
-					+ ZSYNC_EXTENSION;
-			String zsyncFileUrl = Protocol.HTTP.getPrompt() + hostname
-					+ relativeZsyncFileUrl;
+		String relativeZsyncFileUrl = remotePath + node.getName()
+				+ ZSYNC_EXTENSION;
+		String zsyncFileUrl = Protocol.HTTP.getPrompt() + hostname
+				+ relativeZsyncFileUrl;
 
-			SyncTreeLeafDTO leaf = (SyncTreeLeafDTO) node;
-			String sha1 = leaf.getLocalSHA1();
+		SyncTreeLeafDTO leaf = (SyncTreeLeafDTO) node;
+		String sha1 = leaf.getLocalSHA1();
 
-			double complete = Jazsync.getCompletion(targetFile, sha1,
-					relativeZsyncFileUrl, hostname, login, password, port,
-					connectionTimeOut, readTimeOut, this);
+		double complete = Jazsync.getCompletion(targetFile, sha1,
+				relativeZsyncFileUrl, hostname, login, password, port,
+				connectionTimeOut, readTimeOut, this);
 
-			leaf.setComplete(complete);
-		}
+		this.nbFiles++;
+		updateFilesNumberObserver3();
+		return complete;
 	}
 
 	public boolean uploadEvents(Repository repository) throws HttpException {

@@ -10,6 +10,7 @@ import fr.soe.a3s.controller.ObservableFileSize;
 import fr.soe.a3s.controller.ObservableFileSize2;
 import fr.soe.a3s.controller.ObservableFilesNumber;
 import fr.soe.a3s.controller.ObservableFilesNumber2;
+import fr.soe.a3s.controller.ObservableFilesNumber3;
 import fr.soe.a3s.controller.ObservableSpeed;
 import fr.soe.a3s.controller.ObserverActiveConnnection;
 import fr.soe.a3s.controller.ObserverEnd;
@@ -19,43 +20,33 @@ import fr.soe.a3s.controller.ObserverFileSize;
 import fr.soe.a3s.controller.ObserverFileSize2;
 import fr.soe.a3s.controller.ObserverFilesNumber;
 import fr.soe.a3s.controller.ObserverFilesNumber2;
+import fr.soe.a3s.controller.ObserverFilesNumber3;
 import fr.soe.a3s.controller.ObserverSpeed;
 import fr.soe.a3s.dto.sync.SyncTreeNodeDTO;
 
 public class AbstractConnexionDAO implements DataAccessConstants,
-		ObservableFilesNumber, ObservableFilesNumber2, ObservableFileSize,
-		ObservableFileSize2, ObservableSpeed, ObservableFileDownload,
-		ObservableEnd, ObservableActiveConnnection, ObservableError {
+		ObservableFilesNumber, ObservableFilesNumber2, ObservableFilesNumber3,
+		ObservableFileSize, ObservableFileSize2, ObservableSpeed,
+		ObservableFileDownload, ObservableEnd, ObservableActiveConnnection,
+		ObservableError {
 
 	protected ObserverFilesNumber observerFilesNumber;
-
 	protected ObserverFilesNumber2 observerFilesNumber2;
-
+	protected ObserverFilesNumber3 observerFilesNumber3;
 	protected ObserverFileSize observerFileSize;
-
 	protected ObserverFileSize2 observerFileSize2;
-
 	protected ObserverSpeed observerSpeed;
-
 	protected ObserverFileDownload observerFileDownload;
-
 	protected ObserverEnd observerEnd;
-
 	protected ObserverActiveConnnection observerActiveConnnection;
-
 	protected ObserverError observerError;
-
 	protected int countFileSize = 0;
-
 	protected long offset = 0;
-
 	protected long speed = 0;
-
 	protected boolean canceled = false;
-
 	protected SyncTreeNodeDTO downloadingNode;
-
 	protected boolean activeConnection;
+	protected long nbFiles, totalNbFiles;
 
 	/* File size controller */
 	@Override
@@ -91,6 +82,11 @@ public class AbstractConnexionDAO implements DataAccessConstants,
 	}
 
 	@Override
+	public void addObserverFilesNumber3(ObserverFilesNumber3 obs) {
+		this.observerFilesNumber3 = obs;
+	}
+
+	@Override
 	public void updateFilesNumberObserver() {
 		this.observerFilesNumber.update(downloadingNode);
 	}
@@ -98,6 +94,11 @@ public class AbstractConnexionDAO implements DataAccessConstants,
 	@Override
 	public void updateFilesNumberObserver2() {
 		this.observerFilesNumber2.update();
+	}
+
+	@Override
+	public void updateFilesNumberObserver3() {
+		observerFilesNumber3.update((int) (this.nbFiles * 100 / totalNbFiles));
 	}
 
 	/* Speed controller */
@@ -185,5 +186,9 @@ public class AbstractConnexionDAO implements DataAccessConstants,
 
 	public long getOffset() {
 		return this.offset;
+	}
+
+	public void setTotalNbFiles(long totalNbFiles) {
+		this.totalNbFiles = totalNbFiles;
 	}
 }

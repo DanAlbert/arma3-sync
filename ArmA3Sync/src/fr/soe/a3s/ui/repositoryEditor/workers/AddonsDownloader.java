@@ -124,7 +124,9 @@ public class AddonsDownloader extends Thread {
 						if (node.isLeaf() && totalFilesSize != 0) {// division
 																	// by 0
 							SyncTreeLeafDTO leaf = (SyncTreeLeafDTO) node;
-							long size = leaf.getSize();
+							// long size = leaf.getSize();
+							long size = (long) (leaf.getSize()
+									* (100 - leaf.getComplete()) / 100);
 							incrementedFilesSize = incrementedFilesSize + size;
 							downloadPanel
 									.getProgressBarDownloadAddons()
@@ -142,19 +144,44 @@ public class AddonsDownloader extends Thread {
 						if (node.isLeaf()) {
 							SyncTreeLeafDTO leaf = (SyncTreeLeafDTO) node;
 							long size = leaf.getSize();
+							long size2 = (long) (leaf.getSize()
+									* (100 - leaf.getComplete()) / 100);
 							if (size != 0) {// division by 0
 								downloadPanel
 										.getProgressBarDownloadSingleAddon()
 										.setValue((int) (value * 100 / size));
+
+								downloadPanel
+										.getLabelDownloadedValue()
+										.setText(
+												UnitConverter
+														.convertSize(incrementedFilesSize
+																+ value
+																* size2
+																/ size));
+
+								long speed = 0;
+								for (AbstractConnexionDAO connect : connexionService
+										.getConnexionDAOs()) {
+									speed = speed + connect.getSpeed();
+								}
+								if (speed != 0) {// division by 0
+									downloadPanel.getLabelSpeedValue().setText(
+											UnitConverter.convertSpeed(speed));
+									long remainingFileSize = totalFilesSize
+											- incrementedFilesSize - value
+											* size2 / size;
+									long time = remainingFileSize / speed;
+									downloadPanel.getLabelRemainingTimeValue()
+											.setText(
+													UnitConverter
+															.convertTime(time));
+								}
 							} else {
 								downloadPanel
 										.getProgressBarDownloadSingleAddon()
 										.setValue(100);
 							}
-							downloadPanel.getLabelDownloadedValue().setText(
-									UnitConverter
-											.convertSize(incrementedFilesSize
-													+ value));
 						}
 					}
 				});
@@ -172,11 +199,11 @@ public class AddonsDownloader extends Thread {
 						if (speed != 0) {// division by 0
 							downloadPanel.getLabelSpeedValue().setText(
 									UnitConverter.convertSpeed(speed));
-							long remainingFileSize = totalFilesSize
-									- incrementedFilesSize - offset;
-							long time = remainingFileSize / speed;
-							downloadPanel.getLabelRemainingTimeValue().setText(
-									UnitConverter.convertTime(time));
+							// long remainingFileSize = totalFilesSize
+							// - incrementedFilesSize;
+							// long time = remainingFileSize / speed;
+							// downloadPanel.getLabelRemainingTimeValue().setText(
+							// UnitConverter.convertTime(time));
 						}
 					}
 				});
