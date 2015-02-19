@@ -90,20 +90,26 @@ public abstract class AbstractProtocole implements Serializable {
 			throw new CheckException("Port is invalid!");
 		}
 		if ("".equals(getConnectionTimeOut()) || getConnectionTimeOut() == null) {
-			throw new CheckException("Connection time out field is empty!");
+			throw new CheckException("Connection timeout field is empty!");
 		}
 		try {
 			Integer.parseInt(getConnectionTimeOut());
 		} catch (NumberFormatException e) {
-			throw new CheckException("Connection time out is invalid!");
+			throw new CheckException("Connection timeout is invalid!");
 		}
 		if ("".equals(getReadTimeOut()) || getReadTimeOut() == null) {
-			throw new CheckException("Read time out field is empty!");
+			throw new CheckException("Read timeout field is empty!");
 		}
 		try {
 			Integer.parseInt(getReadTimeOut());
 		} catch (NumberFormatException e) {
-			throw new CheckException("Read time out is invalid!");
+			throw new CheckException("Read timeout is invalid!");
+		}
+		if (Integer.parseInt(getConnectionTimeOut()) == 0) {
+			throw new CheckException("Connection timeout should be >=1!");
+		}
+		if (Integer.parseInt(getReadTimeOut()) == 0) {
+			throw new CheckException("Read timeout should be >=1!");
 		}
 	}
 }

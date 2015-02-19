@@ -109,10 +109,10 @@ public class RepositoryService extends ObjectDTOtransformer implements
 			throw new CheckException("Repository name can't be empty.");
 		}
 
-		if (repositoryDAO.getMap().containsKey(name)) {
-			throw new CheckException("Repository with name " + name
-					+ " already exists.");
-		}
+		// if (repositoryDAO.getMap().containsKey(name)) {
+		// throw new CheckException("Repository with name " + name
+		// + " already exists.");
+		// }
 
 		AbstractProtocole abstractProtocole = null;
 		if (protocole.equals(Protocol.FTP)) {

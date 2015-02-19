@@ -63,7 +63,7 @@ public class RepositoryEditPanel extends JDialog implements UIConstants,
 		DataAccessConstants {
 
 	private final Facade facade;
-	private JButton buttonOK, buttonCancel;
+	private JButton buttonOK, buttonCancel, buttonAdvanced;
 	private JLabel labelRepositoryName;
 	private JLabel labelPort;
 	private JLabel labelConnection;
@@ -87,6 +87,7 @@ public class RepositoryEditPanel extends JDialog implements UIConstants,
 	private JComboBox comboBoxProtocol;
 	private final JPopupMenu popup;
 	private final JMenuItem menuItemPaste;
+	private RepositoryAdvancedPanel repositoryAdvancedPanel;
 
 	/* Service */
 	private final RepositoryService repositoryService = new RepositoryService();
@@ -107,11 +108,13 @@ public class RepositoryEditPanel extends JDialog implements UIConstants,
 		this.setLayout(new BorderLayout());
 		{
 			JPanel controlPanel = new JPanel();
+			buttonAdvanced = new JButton("Advanced");
 			buttonOK = new JButton("OK");
 			buttonCancel = new JButton("Cancel");
 			buttonOK.setPreferredSize(buttonCancel.getPreferredSize());
 			FlowLayout flowLayout = new FlowLayout(FlowLayout.RIGHT);
 			controlPanel.setLayout(flowLayout);
+			controlPanel.add(buttonAdvanced);
 			controlPanel.add(buttonOK);
 			controlPanel.add(buttonCancel);
 			this.add(controlPanel, BorderLayout.SOUTH);
@@ -288,6 +291,10 @@ public class RepositoryEditPanel extends JDialog implements UIConstants,
 		menuItemPaste.setActionCommand("Paste");
 		popup.add(menuItemPaste);
 
+		repositoryAdvancedPanel = new RepositoryAdvancedPanel(facade);
+		repositoryAdvancedPanel.init();
+		repositoryAdvancedPanel.setVisible(false);
+
 		textFieldAutoConfigUrl.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseReleased(MouseEvent e) {
@@ -302,6 +309,12 @@ public class RepositoryEditPanel extends JDialog implements UIConstants,
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
 				buttonImportPerformed();
+			}
+		});
+		buttonAdvanced.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				buttonAdvancedPerformed();
 			}
 		});
 		buttonOK.addActionListener(new ActionListener() {
@@ -370,6 +383,10 @@ public class RepositoryEditPanel extends JDialog implements UIConstants,
 			textFieldHost.setCaretPosition(0);
 			textFieldPort.setCaretPosition(0);
 			textFieldPort.setCaretPosition(0);
+			repositoryAdvancedPanel.getTextFiledReadTimeout().setText(
+					protocoleDTO.getReadTimeOut());
+			repositoryAdvancedPanel.getTextFiledConnectionTimeout().setText(
+					protocoleDTO.getConnectionTimeOut());
 		} catch (RepositoryException e) {
 			e.printStackTrace();
 			JOptionPane.showMessageDialog(facade.getMainPanel(),
@@ -473,6 +490,11 @@ public class RepositoryEditPanel extends JDialog implements UIConstants,
 		t.start();
 	}
 
+	private void buttonAdvancedPerformed() {
+
+		repositoryAdvancedPanel.setVisible(true);
+	}
+
 	private void buttonOKPerformed() {
 
 		String name = textFieldRepositoryName.getText().trim();
@@ -508,15 +530,19 @@ public class RepositoryEditPanel extends JDialog implements UIConstants,
 
 		assert (protocole != null);
 
-		String connectionTimeOut = "";// TODO
-		String readTimeOut = "";// TODO
+		String connectionTimeOut = repositoryAdvancedPanel
+				.getTextFiledConnectionTimeout().getText().trim();
+		String readTimeOut = repositoryAdvancedPanel.getTextFiledReadTimeout()
+				.getText().trim();
 
 		try {
-			if (!initialRepositoryName.isEmpty()) {
-				repositoryService.removeRepository(initialRepositoryName);
-			}
 			repositoryService.createRepository(name, url, port, login, pass,
 					protocole, connectionTimeOut, readTimeOut);
+
+			if (!initialRepositoryName.equals(name)) {
+				repositoryService.removeRepository(initialRepositoryName);
+			}
+
 			repositoryService.write(name);
 		} catch (CheckException e) {
 			JOptionPane.showMessageDialog(this, e.getMessage(), "Error",
