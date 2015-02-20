@@ -124,7 +124,6 @@ public class AddonsDownloader extends Thread {
 						if (node.isLeaf() && totalFilesSize != 0) {// division
 																	// by 0
 							SyncTreeLeafDTO leaf = (SyncTreeLeafDTO) node;
-							// long size = leaf.getSize();
 							long size = (long) (leaf.getSize()
 									* (100 - leaf.getComplete()) / 100);
 							incrementedFilesSize = incrementedFilesSize + size;
@@ -159,24 +158,6 @@ public class AddonsDownloader extends Thread {
 																+ value
 																* size2
 																/ size));
-
-								long speed = 0;
-								for (AbstractConnexionDAO connect : connexionService
-										.getConnexionDAOs()) {
-									speed = speed + connect.getSpeed();
-								}
-								if (speed != 0) {// division by 0
-									downloadPanel.getLabelSpeedValue().setText(
-											UnitConverter.convertSpeed(speed));
-									long remainingFileSize = totalFilesSize
-											- incrementedFilesSize - value
-											* size2 / size;
-									long time = remainingFileSize / speed;
-									downloadPanel.getLabelRemainingTimeValue()
-											.setText(
-													UnitConverter
-															.convertTime(time));
-								}
 							} else {
 								downloadPanel
 										.getProgressBarDownloadSingleAddon()
@@ -191,19 +172,23 @@ public class AddonsDownloader extends Thread {
 					public synchronized void update() {
 						long speed = 0;
 						long offset = 0;
+						long countFileSize = 0;
 						for (AbstractConnexionDAO connect : connexionService
 								.getConnexionDAOs()) {
 							speed = speed + connect.getSpeed();
 							offset = offset + connect.getOffset();
+							countFileSize = countFileSize
+									+ connect.getCountFileSize();
 						}
 						if (speed != 0) {// division by 0
 							downloadPanel.getLabelSpeedValue().setText(
 									UnitConverter.convertSpeed(speed));
-							// long remainingFileSize = totalFilesSize
-							// - incrementedFilesSize;
-							// long time = remainingFileSize / speed;
-							// downloadPanel.getLabelRemainingTimeValue().setText(
-							// UnitConverter.convertTime(time));
+							long remainingFileSize = totalFilesSize
+									- incrementedFilesSize
+									- (offset + countFileSize);
+							long time = remainingFileSize / speed;
+							downloadPanel.getLabelRemainingTimeValue().setText(
+									UnitConverter.convertTime(time));
 						}
 					}
 				});

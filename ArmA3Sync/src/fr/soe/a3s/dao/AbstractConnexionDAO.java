@@ -45,7 +45,7 @@ public class AbstractConnexionDAO implements DataAccessConstants,
 	protected long speed = 0;
 	protected boolean canceled = false;
 	protected SyncTreeNodeDTO downloadingNode;
-	protected boolean activeConnection;
+	protected boolean activeConnection = false;
 	protected long nbFiles, totalNbFiles;
 
 	/* File size controller */
@@ -112,22 +112,6 @@ public class AbstractConnexionDAO implements DataAccessConstants,
 		this.observerSpeed.update();
 	}
 
-	public void setCountFileSize(int countFileSize) {
-		this.countFileSize = countFileSize;
-	}
-
-	public boolean isCanceled() {
-		return canceled;
-	}
-
-	public void cancel(boolean canceled) {
-		this.canceled = canceled;
-	}
-
-	public void setOffset(long value) {
-		this.offset = value;
-	}
-
 	@Override
 	public void addObserverFileDownload(ObserverFileDownload obs) {
 		this.observerFileDownload = obs;
@@ -158,14 +142,6 @@ public class AbstractConnexionDAO implements DataAccessConstants,
 		this.observerError.error(errors);
 	}
 
-	public long getSpeed() {
-		return this.speed;
-	}
-
-	public void setSpeed(long speed) {
-		this.speed = speed;
-	}
-
 	@Override
 	public void addObserverActiveConnection(ObserverActiveConnnection obs) {
 		this.observerActiveConnnection = obs;
@@ -176,16 +152,46 @@ public class AbstractConnexionDAO implements DataAccessConstants,
 		this.observerActiveConnnection.update();
 	}
 
+	/* Getters and Setters */
+
+	public long getSpeed() {
+		return this.speed;
+	}
+
+	public void setSpeed(long speed) {
+		this.speed = speed;
+	}
+
+	public int getCountFileSize() {
+		return countFileSize;
+	}
+
+	public void setCountFileSize(int countFileSize) {
+		this.countFileSize = countFileSize;
+	}
+
+	public boolean isCanceled() {
+		return canceled;
+	}
+
+	public void cancel(boolean canceled) {
+		this.canceled = canceled;
+	}
+
+	public long getOffset() {
+		return this.offset;
+	}
+
+	public void setOffset(long value) {
+		this.offset = value;
+	}
+
 	public boolean isActiveConnection() {
 		return activeConnection;
 	}
 
 	public void setActiveConnection(boolean activeConnection) {
 		this.activeConnection = activeConnection;
-	}
-
-	public long getOffset() {
-		return this.offset;
 	}
 
 	public void setTotalNbFiles(long totalNbFiles) {
