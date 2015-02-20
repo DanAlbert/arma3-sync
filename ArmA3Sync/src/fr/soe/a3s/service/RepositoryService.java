@@ -1234,19 +1234,16 @@ public class RepositoryService extends ObjectDTOtransformer implements
 	}
 
 	public void setRepositoryUploadProtocole(String repositoryName, String url,
-			String port, String login, String password, Protocol protocole,
-			String connectionTimeOut, String readTimeOut)
+			String port, String login, String password, Protocol protocole)
 			throws CheckException, RepositoryException {
 
 		Repository repository = repositoryDAO.getMap().get(repositoryName);
 		if (repository != null) {
 			AbstractProtocole abstractProtocole = null;
 			if (protocole.equals(Protocol.FTP)) {
-				abstractProtocole = new Ftp(url, port, login, password,
-						connectionTimeOut, readTimeOut);
+				abstractProtocole = new Ftp(url, port, login, password);
 			} else if (protocole.equals(Protocol.HTTP)) {
-				abstractProtocole = new Http(url, port, login, password,
-						connectionTimeOut, readTimeOut);
+				abstractProtocole = new Http(url, port, login, password);
 			} else {
 				throw new CheckException("Protocole not supported yet.");
 			}

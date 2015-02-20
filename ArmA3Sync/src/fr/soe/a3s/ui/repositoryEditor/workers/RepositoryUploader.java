@@ -76,8 +76,7 @@ public class RepositoryUploader extends Thread implements DataAccessConstants {
 				repositoryService.setRepositoryUploadProtocole(repositoryName,
 						protocoleDTO.getUrl(), protocoleDTO.getPort(),
 						protocoleDTO.getLogin(), protocoleDTO.getPassword(),
-						protocole, protocoleDTO.getConnectionTimeOut(),
-						protocoleDTO.getReadTimeOut());
+						protocole);
 			} else if (uploadProtocoleDTO == null) {
 				String message = "Please use the upload options to configure a connection.";
 				throw new CheckException(message);
