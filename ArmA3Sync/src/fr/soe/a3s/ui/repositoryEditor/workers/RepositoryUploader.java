@@ -228,13 +228,15 @@ public class RepositoryUploader extends Thread implements DataAccessConstants {
 						@Override
 						public synchronized void update(long value) {
 							incrementedFilesSize = value + cumulative;
-							adminPanel
-									.getUploadrogressBar()
-									.setValue(
-											(int) (incrementedFilesSize * 100 / totalFilesSize));
 							adminPanel.getUploadedLabelValue().setText(
 									UnitConverter
 											.convertSize(incrementedFilesSize));
+							if (totalFilesSize != 0) {
+								adminPanel
+										.getUploadrogressBar()
+										.setValue(
+												(int) (incrementedFilesSize * 100 / totalFilesSize));
+							}
 						}
 					});
 			connexionService.getConnexionDAO().addObserverSpeed(

@@ -366,18 +366,16 @@ public class AdminPanel extends JPanel implements UIConstants {
 			textFieldMainSharedFolderLocation.setText(repositoryDTO.getPath());
 
 			if (repositoryDTO.getAutoConfigURL() != null) {
-
 				textFieldAutoConfigURL.setText(repositoryDTO.getProtocoleDTO()
 						.getProtocole().getPrompt()
 						+ repositoryDTO.getAutoConfigURL());
 			}
 
-			if (repositoryDTO.isOutOfSynk()) {
-				labelStatusValue.setText(RepositoryStatus.OUTOFSYNC
-						.getDescription());
-				labelStatusValue.setFont(new Font("Tohama", Font.BOLD, 11));
-				labelStatusValue.setForeground(Color.RED);
-			} else if (serverInfoDTO != null) {
+			RepositoryStatus repositoryStatus = repositoryService
+					.getRepositoryStatus(repositoryName);
+			updateRepositoryStatus(repositoryStatus);
+
+			if (serverInfoDTO != null) {
 				labelRevisionValue.setText(Integer.toString(serverInfoDTO
 						.getRevision()));
 				labelDateValue.setText(serverInfoDTO.getBuildDate()
@@ -386,25 +384,34 @@ public class AdminPanel extends JPanel implements UIConstants {
 						.getNumberOfFiles()));
 				long size = serverInfoDTO.getTotalFilesSize();
 				labelTotalSizeValue.setText(UnitConverter.convertSize(size));
-				if (repositoryDTO.getRevision() == serverInfoDTO.getRevision()) {
-					labelStatusValue.setText(RepositoryStatus.OK
-							.getDescription());
-					labelStatusValue.setFont(new Font("Tohama", Font.BOLD, 11));
-					labelStatusValue.setForeground(new Color(45, 125, 45));
-				} else {
-					labelStatusValue.setText(RepositoryStatus.UPDATED
-							.getDescription());
-					labelStatusValue.setFont(new Font("Tohama", Font.BOLD, 11));
-					labelStatusValue.setForeground(Color.RED);
-				}
-			} else {
-				labelStatusValue.setText(RepositoryStatus.INDETERMINATED
-						.getDescription());
 			}
 		} catch (RepositoryException e) {
 			e.printStackTrace();
 			JOptionPane.showMessageDialog(facade.getMainPanel(),
 					e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+		}
+	}
+
+	public void updateRepositoryStatus(RepositoryStatus repositoryStatus) {
+
+		if (repositoryStatus.equals(RepositoryStatus.OUTOFSYNC)) {
+			labelStatusValue.setText(RepositoryStatus.OUTOFSYNC
+					.getDescription());
+			labelStatusValue.setFont(new Font("Tohama", Font.BOLD, 11));
+			labelStatusValue.setForeground(Color.RED);
+		} else if (repositoryStatus.equals(RepositoryStatus.OK)) {
+			labelStatusValue.setText(RepositoryStatus.OK.getDescription());
+			labelStatusValue.setFont(new Font("Tohama", Font.BOLD, 11));
+			labelStatusValue.setForeground(new Color(45, 125, 45));
+		} else if (repositoryStatus.equals(RepositoryStatus.UPDATED)) {
+			labelStatusValue.setText(RepositoryStatus.UPDATED.getDescription());
+			labelStatusValue.setFont(new Font("Tohama", Font.BOLD, 11));
+			labelStatusValue.setForeground(Color.RED);
+		} else {
+			labelStatusValue.setText(RepositoryStatus.INDETERMINATED
+					.getDescription());
+			labelStatusValue.setText(RepositoryStatus.INDETERMINATED
+					.getDescription());
 		}
 	}
 

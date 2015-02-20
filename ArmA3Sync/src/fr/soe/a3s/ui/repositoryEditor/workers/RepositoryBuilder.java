@@ -2,6 +2,7 @@ package fr.soe.a3s.ui.repositoryEditor.workers;
 
 import javax.swing.JOptionPane;
 
+import fr.soe.a3s.constant.RepositoryStatus;
 import fr.soe.a3s.controller.ObserverFileSize2;
 import fr.soe.a3s.service.RepositoryService;
 import fr.soe.a3s.ui.Facade;
@@ -51,6 +52,12 @@ public class RepositoryBuilder extends Thread {
 			JOptionPane.showMessageDialog(facade.getMainPanel(),
 					"Repository build finished.", "Build repository",
 					JOptionPane.INFORMATION_MESSAGE);
+
+			this.adminPanel.init(repositoryName);
+			this.facade.getSyncPanel().init();
+			this.adminPanel.updateRepositoryStatus(RepositoryStatus.UPDATED);
+			this.adminPanel.getRepositoryPanel().getEventsPanel()
+					.init(repositoryName);// update addons list
 		} catch (Exception e) {
 			JOptionPane.showMessageDialog(facade.getMainPanel(),
 					e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
@@ -64,10 +71,6 @@ public class RepositoryBuilder extends Thread {
 			adminPanel.getButtonUploadOptions().setEnabled(true);
 			adminPanel.getButtonView().setEnabled(true);
 			adminPanel.getBuildProgressBar().setMaximum(0);
-			adminPanel.init(repositoryName);
-			facade.getSyncPanel().init();
-			this.adminPanel.getRepositoryPanel().getEventsPanel()
-					.init(repositoryName);// update addons list
 			System.gc();// Required for unlocking files!
 		}
 	}
