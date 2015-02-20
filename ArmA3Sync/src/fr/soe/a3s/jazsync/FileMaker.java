@@ -59,27 +59,16 @@ import fr.soe.a3s.dao.FileAccessMethods;
 public class FileMaker {
 
 	private final MetaFileReader mfr;
-
 	private final HttpConnection http;
-
 	private final ChainingHash hashtable;
-
 	private Configuration config;
-
 	private int bufferOffset;
-
 	private long fileOffset;
-
 	private final long[] fileMap;
-
 	private int missing;
-
 	private boolean rangeQueue;
-
 	private double complete;
-
 	private final DecimalFormat df = new DecimalFormat("#.##");
-
 	/** File existency and completion flag */
 	public int FILE_FLAG = 0;
 
@@ -179,17 +168,20 @@ public class FileMaker {
 		try {
 			http.openConnection(relativeFileUrl);
 			System.out
-					.println("No relevant data found, downloading whole file.");
+					.println("No relevant data found, downloading whole file: "
+							+ targetFile.getAbsolutePath());
 			if (targetFile.exists()) {
 				targetFile.delete();
 			}
 			boolean finished = http.getFile(mfr.getLength(), targetFile);
 			http.closeConnection();
 			if (!finished) {
-				System.out.println("Download is not finished.");
+				System.out.println("Download is not finished: "
+						+ targetFile.getAbsolutePath());
 				getResumedFile(targetFile, relativeFileUrl);
 			} else {
-				System.out.println("Target is 100.0% complete.");
+				System.out.println("Target is 100.0% complete: "
+						+ targetFile.getAbsolutePath());
 			}
 		} catch (FileNotFoundException e) {
 			throw e;
@@ -208,14 +200,16 @@ public class FileMaker {
 
 		try {
 			http.openConnection(relativeFileUrl);
-			System.out.println("Resuming download.");
+			System.out.println("Resuming download: "
+					+ targetFile.getAbsolutePath());
 			boolean finished = http.getResumedFile(mfr.getLength(), targetFile);
 			http.closeConnection();
 			if (!finished) {
 				System.out.println("Download is not finished.");
 				getResumedFile(targetFile, relativeFileUrl);
 			}
-			System.out.println("Target is 100.0% complete.");
+			System.out.println("Target is 100.0% complete: "
+					+ targetFile.getAbsolutePath());
 			http.closeConnection();
 		} catch (FileNotFoundException e) {
 			throw e;
