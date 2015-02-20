@@ -7,6 +7,8 @@ import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.HashSet;
@@ -526,50 +528,7 @@ public class DownloadPanel extends JPanel implements UIConstants {
 				} else if (e.getX() > arbre.getPathBounds(path).x + hotspot) {
 					return;
 				}
-
-				SyncTreeNodeDTO syncTreeNodeDTO = (SyncTreeNodeDTO) arbre
-						.getLastSelectedPathComponent();
-				syncTreeNodeDTO.setSelected(!syncTreeNodeDTO.isSelected());
-				SyncTreeDirectoryDTO parent = syncTreeNodeDTO.getParent();
-				if (syncTreeNodeDTO.isSelected()) {
-					selectAllAscending(parent);
-					if (!syncTreeNodeDTO.isLeaf()) {
-						SyncTreeDirectoryDTO syncTreeDirectoryDTO = (SyncTreeDirectoryDTO) syncTreeNodeDTO;
-						for (SyncTreeNodeDTO t : syncTreeDirectoryDTO.getList()) {
-							selectAllDescending(t);
-						}
-					}
-				} else {
-					if (!syncTreeNodeDTO.isLeaf()) {
-						SyncTreeDirectoryDTO syncTreeDirectoryDTO = (SyncTreeDirectoryDTO) syncTreeNodeDTO;
-						for (SyncTreeNodeDTO t : syncTreeDirectoryDTO.getList()) {
-							deselectAllDescending(t);
-						}
-					}
-					int nbNodesSelected = 0;
-					for (SyncTreeNodeDTO t : parent.getList()) {
-						if (t.isSelected()) {
-							nbNodesSelected++;
-						}
-					}
-					if (nbNodesSelected == 0) {
-						unselectAllAscending(parent);
-					}
-				}
-
-				if (!repositoryService.isDownloading(repositoryName)) {
-					totalFilesSize = 0;
-					compute(racine);
-					labelTotalFilesSizeValue.setText(UnitConverter
-							.convertSize(totalFilesSize));
-				}
-
-				SwingUtilities.invokeLater(new Runnable() {
-					@Override
-					public void run() {
-						arbre.updateUI();
-					}
-				});
+				addonSelectionPerformed();
 			}
 
 			@Override
@@ -578,6 +537,14 @@ public class DownloadPanel extends JPanel implements UIConstants {
 					popup.show((JComponent) e.getSource(), e.getX(), e.getY());
 				} else if (SwingUtilities.isRightMouseButton(e)) {
 					popup.show((JComponent) e.getSource(), e.getX(), e.getY());
+				}
+			}
+		});
+		arbre.addKeyListener(new KeyAdapter() {
+			@Override
+			public void keyPressed(KeyEvent evt) {
+				if (evt.getKeyCode() == evt.VK_SPACE) {
+					addonSelectionPerformed();
 				}
 			}
 		});
@@ -674,6 +641,58 @@ public class DownloadPanel extends JPanel implements UIConstants {
 		} else if (evt.getActionCommand().equals("Show")) {
 			showPerformed();
 		}
+	}
+
+	private void addonSelectionPerformed() {
+
+		SyncTreeNodeDTO syncTreeNodeDTO = (SyncTreeNodeDTO) arbre
+				.getLastSelectedPathComponent();
+
+		if (syncTreeNodeDTO == null) {
+			return;
+		}
+
+		syncTreeNodeDTO.setSelected(!syncTreeNodeDTO.isSelected());
+		SyncTreeDirectoryDTO parent = syncTreeNodeDTO.getParent();
+		if (syncTreeNodeDTO.isSelected()) {
+			selectAllAscending(parent);
+			if (!syncTreeNodeDTO.isLeaf()) {
+				SyncTreeDirectoryDTO syncTreeDirectoryDTO = (SyncTreeDirectoryDTO) syncTreeNodeDTO;
+				for (SyncTreeNodeDTO t : syncTreeDirectoryDTO.getList()) {
+					selectAllDescending(t);
+				}
+			}
+		} else {
+			if (!syncTreeNodeDTO.isLeaf()) {
+				SyncTreeDirectoryDTO syncTreeDirectoryDTO = (SyncTreeDirectoryDTO) syncTreeNodeDTO;
+				for (SyncTreeNodeDTO t : syncTreeDirectoryDTO.getList()) {
+					deselectAllDescending(t);
+				}
+			}
+			int nbNodesSelected = 0;
+			for (SyncTreeNodeDTO t : parent.getList()) {
+				if (t.isSelected()) {
+					nbNodesSelected++;
+				}
+			}
+			if (nbNodesSelected == 0) {
+				unselectAllAscending(parent);
+			}
+		}
+
+		if (!repositoryService.isDownloading(repositoryName)) {
+			totalFilesSize = 0;
+			compute(racine);
+			labelTotalFilesSizeValue.setText(UnitConverter
+					.convertSize(totalFilesSize));
+		}
+
+		SwingUtilities.invokeLater(new Runnable() {
+			@Override
+			public void run() {
+				arbre.updateUI();
+			}
+		});
 	}
 
 	private void hidePerformed() {

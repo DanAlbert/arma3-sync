@@ -286,42 +286,9 @@ public class AddonsPanel extends JPanel implements UIConstants {
 
 				if (e.getX() > arbre2.getPathBounds(arbre2TreePath).x + hotspot) {
 					return;
+				} else {
+					addonSelectionPerformed();
 				}
-
-				TreeNodeDTO treeNodeDTO = (TreeNodeDTO) arbre2
-						.getLastSelectedPathComponent();
-				treeNodeDTO.setSelected(!treeNodeDTO.isSelected());
-
-				if (treeNodeDTO.isLeaf() && !treeNodeDTO.isSelected()) {
-					TreeDirectoryDTO treeDirectoryDTO = treeNodeDTO.getParent();
-					treeDirectoryDTO.setSelected(false);
-					deselectAllAscending(treeDirectoryDTO);
-				} else if (treeNodeDTO.isLeaf() && treeNodeDTO.isSelected()) {
-					TreeDirectoryDTO treeDirectoryDTO = treeNodeDTO.getParent();
-					int nbNodes = treeDirectoryDTO.getList().size();
-					int nbSelectedNodes = 0;
-					for (TreeNodeDTO treDto : treeDirectoryDTO.getList()) {
-						if (treDto.isSelected()) {
-							nbSelectedNodes++;
-						}
-					}
-					if (nbNodes == nbSelectedNodes) {
-						treeDirectoryDTO.setSelected(true);
-					}
-					selectAllAscending(treeNodeDTO);
-				} else if (!treeNodeDTO.isLeaf()) {
-					TreeDirectoryDTO treeDirectoryDTO = (TreeDirectoryDTO) treeNodeDTO;
-					if (treeNodeDTO.isSelected()) {
-						selectAllAscending(treeNodeDTO);
-						selectAllDescending(treeDirectoryDTO);
-					} else {
-						deselectAllDescending(treeDirectoryDTO);
-					}
-				}
-				saveAddonGroups();
-				highlightMissingAddons();
-				refreshViewArbre2();
-				facade.getLaunchOptionsPanel().updateRunParameters();
 			}
 
 			@Override
@@ -338,6 +305,8 @@ public class AddonsPanel extends JPanel implements UIConstants {
 			public void keyPressed(KeyEvent evt) {
 				if (evt.getKeyCode() == evt.VK_DELETE) {
 					removePerformed();
+				} else if (evt.getKeyCode() == evt.VK_SPACE) {
+					addonSelectionPerformed();
 				}
 			}
 		});
@@ -541,6 +510,49 @@ public class AddonsPanel extends JPanel implements UIConstants {
 		} else {
 			arbre2.setToolTipText(null);
 		}
+	}
+
+	private void addonSelectionPerformed() {
+
+		TreeNodeDTO treeNodeDTO = (TreeNodeDTO) arbre2
+				.getLastSelectedPathComponent();
+
+		if (treeNodeDTO == null) {
+			return;
+		}
+
+		treeNodeDTO.setSelected(!treeNodeDTO.isSelected());
+
+		if (treeNodeDTO.isLeaf() && !treeNodeDTO.isSelected()) {
+			TreeDirectoryDTO treeDirectoryDTO = treeNodeDTO.getParent();
+			treeDirectoryDTO.setSelected(false);
+			deselectAllAscending(treeDirectoryDTO);
+		} else if (treeNodeDTO.isLeaf() && treeNodeDTO.isSelected()) {
+			TreeDirectoryDTO treeDirectoryDTO = treeNodeDTO.getParent();
+			int nbNodes = treeDirectoryDTO.getList().size();
+			int nbSelectedNodes = 0;
+			for (TreeNodeDTO treDto : treeDirectoryDTO.getList()) {
+				if (treDto.isSelected()) {
+					nbSelectedNodes++;
+				}
+			}
+			if (nbNodes == nbSelectedNodes) {
+				treeDirectoryDTO.setSelected(true);
+			}
+			selectAllAscending(treeNodeDTO);
+		} else if (!treeNodeDTO.isLeaf()) {
+			TreeDirectoryDTO treeDirectoryDTO = (TreeDirectoryDTO) treeNodeDTO;
+			if (treeNodeDTO.isSelected()) {
+				selectAllAscending(treeNodeDTO);
+				selectAllDescending(treeDirectoryDTO);
+			} else {
+				deselectAllDescending(treeDirectoryDTO);
+			}
+		}
+		saveAddonGroups();
+		highlightMissingAddons();
+		refreshViewArbre2();
+		facade.getLaunchOptionsPanel().updateRunParameters();
 	}
 
 	private void popupActionPerformed(ActionEvent evt) {

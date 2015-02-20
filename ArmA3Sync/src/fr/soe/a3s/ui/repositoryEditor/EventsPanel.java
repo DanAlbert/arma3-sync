@@ -3,6 +3,8 @@ package fr.soe.a3s.ui.repositoryEditor;
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.HashMap;
@@ -38,10 +40,7 @@ import javax.swing.plaf.basic.BasicSplitPaneUI;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 
-import fr.soe.a3s.constant.Protocol;
 import fr.soe.a3s.dto.EventDTO;
-import fr.soe.a3s.dto.ProtocolDTO;
-import fr.soe.a3s.dto.RepositoryDTO;
 import fr.soe.a3s.dto.TreeDirectoryDTO;
 import fr.soe.a3s.dto.TreeNodeDTO;
 import fr.soe.a3s.exception.CheckException;
@@ -260,36 +259,7 @@ public class EventsPanel extends JPanel implements UIConstants {
 					return;
 				}
 
-				TreeNodeDTO treeNodeDTO = (TreeNodeDTO) arbre
-						.getLastSelectedPathComponent();
-				treeNodeDTO.setSelected(!treeNodeDTO.isSelected());
-
-				if (treeNodeDTO.isLeaf() && !treeNodeDTO.isSelected()) {
-					TreeDirectoryDTO treeDirectoryDTO = treeNodeDTO.getParent();
-					treeDirectoryDTO.setSelected(false);
-				} else if (treeNodeDTO.isLeaf() && treeNodeDTO.isSelected()) {
-					TreeDirectoryDTO treeDirectoryDTO = treeNodeDTO.getParent();
-					int nbNodes = treeDirectoryDTO.getList().size();
-					int nbSelectedNodes = 0;
-					for (TreeNodeDTO treDto : treeDirectoryDTO.getList()) {
-						if (treDto.isSelected()) {
-							nbSelectedNodes++;
-						}
-					}
-					if (nbNodes == nbSelectedNodes) {
-						treeDirectoryDTO.setSelected(true);
-					}
-				} else if (!treeNodeDTO.isLeaf()) {
-					TreeDirectoryDTO treeDirectoryDTO = (TreeDirectoryDTO) treeNodeDTO;
-					if (treeNodeDTO.isSelected()) {
-						selectAllAscending(treeNodeDTO);
-						selectAllDescending(treeDirectoryDTO);
-					} else {
-						deselectAllDescending(treeDirectoryDTO);
-					}
-				}
-				saveSelection();
-				refreshViewArbre();
+				addonSelectionPerformed();
 			}
 
 			@Override
@@ -298,6 +268,14 @@ public class EventsPanel extends JPanel implements UIConstants {
 					popup.show((JComponent) e.getSource(), e.getX(), e.getY());
 				} else if (SwingUtilities.isRightMouseButton(e)) {
 					popup.show((JComponent) e.getSource(), e.getX(), e.getY());
+				}
+			}
+		});
+		arbre.addKeyListener(new KeyAdapter() {
+			@Override
+			public void keyPressed(KeyEvent evt) {
+				if (evt.getKeyCode() == evt.VK_SPACE) {
+					addonSelectionPerformed();
 				}
 			}
 		});
@@ -433,9 +411,9 @@ public class EventsPanel extends JPanel implements UIConstants {
 			facade.getSyncPanel().init();
 		}
 	}
-	
+
 	private void buttonUploadOptionsPerformed() {
-		
+
 		UploadRepositoryOptionsPanel uploadRepositoryOptionsPanel = new UploadRepositoryOptionsPanel(
 				facade);
 		uploadRepositoryOptionsPanel.init(repositoryName);
@@ -726,6 +704,45 @@ public class EventsPanel extends JPanel implements UIConstants {
 			treeNodeDTO.setSelected(true);
 			selectAllAscending(treeNodeDTO);
 			treeNodeDTO.setOptional(true);
+		}
+		saveSelection();
+		refreshViewArbre();
+	}
+
+	private void addonSelectionPerformed() {
+
+		TreeNodeDTO treeNodeDTO = (TreeNodeDTO) arbre
+				.getLastSelectedPathComponent();
+
+		if (treeNodeDTO == null) {
+			return;
+		}
+
+		treeNodeDTO.setSelected(!treeNodeDTO.isSelected());
+
+		if (treeNodeDTO.isLeaf() && !treeNodeDTO.isSelected()) {
+			TreeDirectoryDTO treeDirectoryDTO = treeNodeDTO.getParent();
+			treeDirectoryDTO.setSelected(false);
+		} else if (treeNodeDTO.isLeaf() && treeNodeDTO.isSelected()) {
+			TreeDirectoryDTO treeDirectoryDTO = treeNodeDTO.getParent();
+			int nbNodes = treeDirectoryDTO.getList().size();
+			int nbSelectedNodes = 0;
+			for (TreeNodeDTO treDto : treeDirectoryDTO.getList()) {
+				if (treDto.isSelected()) {
+					nbSelectedNodes++;
+				}
+			}
+			if (nbNodes == nbSelectedNodes) {
+				treeDirectoryDTO.setSelected(true);
+			}
+		} else if (!treeNodeDTO.isLeaf()) {
+			TreeDirectoryDTO treeDirectoryDTO = (TreeDirectoryDTO) treeNodeDTO;
+			if (treeNodeDTO.isSelected()) {
+				selectAllAscending(treeNodeDTO);
+				selectAllDescending(treeDirectoryDTO);
+			} else {
+				deselectAllDescending(treeDirectoryDTO);
+			}
 		}
 		saveSelection();
 		refreshViewArbre();
