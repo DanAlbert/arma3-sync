@@ -275,16 +275,19 @@ public class Console {
 			path = c.nextLine();
 		}
 
-		// Connection Time out
+		// Connection Timeout
 		boolean connectionTimeOutIsWrong = false;
 		String connectionTimeOut = "";
 		do {
 			try {
 				System.out
-						.print("Enter connection time out in seconds (10 default, 0 unlimited): ");
+						.print("Enter connection timeout in milliseconds (10000, >0): ");
 				connectionTimeOut = c.nextLine();
 				int time = Integer.parseInt(connectionTimeOut);
 				connectionTimeOutIsWrong = false;
+				if (time == 0) {
+					connectionTimeOutIsWrong = true;
+				}
 			} catch (NumberFormatException e) {
 				connectionTimeOutIsWrong = true;
 			}
@@ -296,10 +299,13 @@ public class Console {
 		do {
 			try {
 				System.out
-						.print("Enter read time out in seconds (30 default, 0 unlimited): ");
+						.print("Enter read timeout in milliseconds (30000 default, >0): ");
 				readTimeOut = c.nextLine();
 				int time = Integer.parseInt(readTimeOut);
 				readTimeOutIsWrong = false;
+				if (time == 0) {
+					readTimeOutIsWrong = true;
+				}
 			} catch (NumberFormatException e) {
 				readTimeOutIsWrong = true;
 			}
@@ -394,7 +400,8 @@ public class Console {
 			repositoryService.readAll();
 		} catch (LoadingException e) {
 			System.out.println("Failded to read on or more repositories");
-			System.exit(0);
+			System.out.println("");
+			execute();
 		}
 
 		// Folder location (if null)
@@ -423,7 +430,8 @@ public class Console {
 			}
 		} catch (RepositoryException e1) {
 			System.out.println(e1.getMessage());
-			System.exit(0);
+			System.out.println("");
+			execute();
 		}
 
 		// Number of client connections
