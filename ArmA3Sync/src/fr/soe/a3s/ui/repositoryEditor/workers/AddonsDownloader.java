@@ -2,6 +2,7 @@ package fr.soe.a3s.ui.repositoryEditor.workers;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -364,7 +365,7 @@ public class AddonsDownloader extends Thread {
 
 		/* End Message */
 		downloadPanel.getLabelDownloadStatus().setText("Error!");
-		String message = "Download finished with errors:";
+		String title = "Download finished with errors:";
 
 		List<String> messages = new ArrayList<String>();
 		List<String> causes = new ArrayList<String>();
@@ -383,11 +384,45 @@ public class AddonsDownloader extends Thread {
 				}
 			}
 		}
-		for (String m : messages) {
-			message = message + "\n" + " - " + m;
+
+		String message = title;
+		if (messages.size() > 5) {
+			for (int i = 0; i < 5; i++) {
+				String m = messages.get(i);
+				message = message + "\n" + " - " + m;
+			}
+			message = message + "\n" + "["
+					+ Integer.toString(messages.size() - 5) + "] more...";
+		} else {
+			for (String m : messages) {
+				message = message + "\n" + " - " + m;
+			}
 		}
-		JOptionPane.showMessageDialog(facade.getMainPanel(), message,
-				"Download", JOptionPane.ERROR_MESSAGE);
+
+		String fileName = "ArmA3Sync-log.txt";
+		message = message + "\n\n"
+				+ "Do you want export the errors to log file to desktop ("
+				+ fileName + ")?";
+
+		int value = JOptionPane.showConfirmDialog(facade.getMainPanel(),
+				message, "Download", 0, JOptionPane.ERROR_MESSAGE);
+
+		if (value == 0) {
+			try {
+				repositoryService.exportDownloadErrorsToDesktop(repositoryName,
+						messages, fileName);
+				JOptionPane.showMessageDialog(facade.getMainPanel(),
+						"Log file has been exported to desktop", "Download",
+						JOptionPane.INFORMATION_MESSAGE);
+			} catch (IOException e1) {
+				e1.printStackTrace();
+				JOptionPane.showMessageDialog(
+						facade.getMainPanel(),
+						"Failed to export log file to desktop" + "\n"
+								+ e1.getMessage(), "Download",
+						JOptionPane.ERROR_MESSAGE);
+			}
+		}
 
 		/* Check for Addons */
 		downloadPanel.checkForAddons();
