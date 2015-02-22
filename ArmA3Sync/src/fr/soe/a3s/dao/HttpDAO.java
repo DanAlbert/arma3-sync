@@ -356,7 +356,8 @@ public class HttpDAO extends AbstractConnexionDAO {
 		} catch (IOException e) {// happens if repository url is wrong
 			String message = "Failed to connect to repository "
 					+ repository.getName() + " on url " + "http://"
-					+ repository.getProtocole().getUrl();
+					+ repository.getProtocole().getUrl() + "\n"
+					+ e.getMessage();
 			System.out.println(message);
 			throw new ConnectException(message);
 		}

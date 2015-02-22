@@ -45,7 +45,7 @@ public class RepositoryAdvancedPanel extends JDialog implements UIConstants{
 		super(facade.getMainPanel(), "Advanced configuration", true);
 		this.facade = facade;
 		this.setResizable(false);
-		this.setSize(300, 160);
+		this.setSize(350, 160);
 		setIconImage(ICON);
 		this.setLocation(
 				(int) facade.getMainPanel().getLocation().getX()
@@ -88,23 +88,23 @@ public class RepositoryAdvancedPanel extends JDialog implements UIConstants{
 				labelConnectionTimeout = new JLabel();
 				advancedPanel.add(labelConnectionTimeout);
 				labelConnectionTimeout.setText("Connection timeout (milliseconds):");
-				labelConnectionTimeout.setBounds(18, 23, 172, 22);
+				labelConnectionTimeout.setBounds(18, 23, 202, 22);
 			}
 			{
 				labelReadTimeout = new JLabel();
 				advancedPanel.add(labelReadTimeout);
 				labelReadTimeout.setText("Read timeout (milliseconds):");
-				labelReadTimeout.setBounds(18, 51, 128, 25);
+				labelReadTimeout.setBounds(18, 51, 202, 25);
 			}
 			{
 				textFieldConnectionTimeout = new JTextField();
 				advancedPanel.add(textFieldConnectionTimeout);
-				textFieldConnectionTimeout.setBounds(190, 22, 65, 23);
+				textFieldConnectionTimeout.setBounds(232, 23, 65, 23);
 			}
 			{
 				textFiledReadTimeout = new JTextField();
 				advancedPanel.add(textFiledReadTimeout);
-				textFiledReadTimeout.setBounds(190, 52, 65, 23);
+				textFiledReadTimeout.setBounds(232, 52, 65, 23);
 			}
 			centerPanel.add(vertBox);
 		}

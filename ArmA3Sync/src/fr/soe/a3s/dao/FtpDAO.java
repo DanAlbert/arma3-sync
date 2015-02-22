@@ -114,7 +114,7 @@ public class FtpDAO extends AbstractConnexionDAO {
 		} catch (Exception e) {
 			String message = "Failed to connect to repository "
 					+ repositoryName + " on url " + "ftp://"
-					+ protocole.getUrl();
+					+ protocole.getUrl() + "\n" + e.getMessage();
 			System.out.println(message);
 			throw new ConnectException(message);
 		}
