@@ -264,15 +264,17 @@ public class Console {
 		System.out
 				.print("Enter root shared folder path (leave blank to pass): ");
 		String path = c.nextLine();
-		while (!new File(path).exists()) {
-			System.out.println("Target folder does not exists!");
-			System.out.print("Enter root shared folder path: ");
-			path = c.nextLine();
-		}
-		while (!new File(path).isDirectory()) {
-			System.out.println("Target folder does not exists!");
-			System.out.print("Enter root shared folder path: ");
-			path = c.nextLine();
+		if (!path.isEmpty()){
+			while (!new File(path).exists()) {
+				System.out.println("Target folder does not exists!");
+				System.out.print("Enter root shared folder path: ");
+				path = c.nextLine();
+			}
+			while (!new File(path).isDirectory()) {
+				System.out.println("Target folder does not exists!");
+				System.out.print("Enter root shared folder path: ");
+				path = c.nextLine();
+			}
 		}
 
 		// Connection Timeout

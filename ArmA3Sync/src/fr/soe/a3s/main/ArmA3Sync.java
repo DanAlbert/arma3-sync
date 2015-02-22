@@ -84,7 +84,7 @@ public class ArmA3Sync implements DataAccessConstants {
 			System.out.println("-CHECK " + "\"" + "Name of the Repository"
 					+ "\"" + ": check repository.");
 			System.out.println("-SYNC " + "\"" + "Name of the Repository"
-					+ "\"" + " " + "\"" + "Destination folder path" + "\""
+					+ "\"" + " " + "\"" + "Destination folder path " + "\""
 					+ "true/false (with/without exact content mathing)"
 					+ ": synchronize with repository.");
 			System.out.println("-CONSOLE: run ArmASync console management.");
