@@ -4,10 +4,13 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.PrintWriter;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
@@ -206,5 +209,15 @@ public class RepositoryDAO implements DataAccessConstants {
 		} catch (Exception e) {
 			throw new WritingException(e.getMessage());
 		}
+	}
+
+	public void writeLog(String title, String message, String path) throws IOException {
+
+		PrintWriter fWo = new PrintWriter(new FileWriter(
+				new File(path).getAbsolutePath()));
+		fWo.println(title);
+		fWo.println("\n");
+		fWo.println(message);
+		fWo.close();
 	}
 }

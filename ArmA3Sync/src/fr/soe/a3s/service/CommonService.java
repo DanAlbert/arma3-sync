@@ -35,8 +35,6 @@ public class CommonService {
 		preferencesDAO.write();
 	}
 	
-	
-
 	public void exportAutoConfig(List<String> listSelectedProfileNames,
 			List<String> listSelectedFavoriteServerNames,
 			List<String> listSelectedRepositoryNames, String path)
@@ -113,7 +111,7 @@ public class CommonService {
 			}
 		}
 	}
-
+	
 	public String getWiki() {
 		return WIKI;
 	}
