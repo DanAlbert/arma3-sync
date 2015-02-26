@@ -280,7 +280,7 @@ public class FtpService extends AbstractConnexionService implements
 												node, rootDestinationPath);
 
 										if (!found) {
-											String message = "File not found on repository : "
+											String message = "File not found on repository: "
 													+ node.getRelativePath();
 											addError(new FileNotFoundException(
 													message));

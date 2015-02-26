@@ -208,7 +208,7 @@ public class HttpService extends AbstractConnexionService implements
 												rootDestinationPath, repository);
 
 									} catch (FileNotFoundException e) {
-										String message = "File not found on repository : "
+										String message = "File not found on repository: "
 												+ node.getRelativePath();
 										addError(new FileNotFoundException(
 												message));
