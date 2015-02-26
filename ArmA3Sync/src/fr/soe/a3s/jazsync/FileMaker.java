@@ -214,10 +214,10 @@ public class FileMaker {
 		} catch (FileNotFoundException e) {
 			throw e;
 		} catch (Exception e) {
-			e.printStackTrace();
-			String message = "Failed to retrieve file " + targetFile.getName()
-					+ "\n" + e.getMessage();
-			throw new Exception(message, e);
+			if (!http.getHttpDAO().isCanceled()) {
+				e.printStackTrace();
+				throw new Exception(e.getMessage(), e);
+			}
 		}
 	}
 
@@ -393,7 +393,15 @@ public class FileMaker {
 			System.out.println("overhead: " + df.format(overhead) + "%");
 
 			if (resume) {
-				getResumedFile(targetFile, relativeFileUrl);
+				try {
+					getResumedFile(targetFile, relativeFileUrl);
+				} catch (FileNotFoundException e) {
+					throw e;
+				} catch (Exception e) {
+					String message = "Failed to retrieve file "
+							+ targetFile.getName() + "\n" + e.getMessage();
+					throw new Exception(message, e);
+				}
 			} else {
 				targetFileSha1 = FileAccessMethods.computeSHA1(targetFile);
 				if (targetFileSha1.equals(mfr.getSha1())) {

@@ -97,11 +97,11 @@ public class MetaFileReader {
 					/ (double) mf_blocksize);
 			fillHashTable(mfBytes);
 		} catch (MalformedURLException e) {
-			String message = "Wrong .zsync file url " + relativeZsyncFileUrl;
+			String message = "Wrong .zsync file URL: " + e.getMessage();
 			throw new Exception(message, e);
 		} catch (Exception e) {
-			String message = "Failed to retrieve .zsync file for url "
-					+ relativeZsyncFileUrl + "\n" + e.getMessage();
+			String message = "Failed to retrieve .zsync file for URL: "
+					+ e.getMessage();
 			throw new Exception(message, e);
 		}
 	}
