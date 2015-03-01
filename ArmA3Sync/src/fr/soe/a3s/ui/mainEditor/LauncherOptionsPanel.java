@@ -791,13 +791,15 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener, UI
 
         runParametersTextArea.setText("");
         List<String> params = launchService.getRunParameters();
-        String txt = "";
-        for (String stg : params) {
-            txt = txt + (stg) + "\n";
+        if (params!=null){
+            String txt = "";
+            for (String stg : params) {
+                txt = txt + (stg) + "\n";
+            }
+            runParametersTextArea.setText(txt);
+            runParametersTextArea.setRows(1);
+            runParametersTextArea.setCaretPosition(0);
         }
-        runParametersTextArea.setText(txt);
-        runParametersTextArea.setRows(1);
-        runParametersTextArea.setCaretPosition(0);
     }
 
     /* Additional Parameters */
