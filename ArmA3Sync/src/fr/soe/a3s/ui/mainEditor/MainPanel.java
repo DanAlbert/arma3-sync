@@ -50,6 +50,7 @@ import javax.swing.plaf.ColorUIResource;
 
 import net.jimmc.jshortcut.JShellLink;
 
+import fr.soe.a3s.constant.DefaultProfileName;
 import fr.soe.a3s.constant.MinimizationType;
 import fr.soe.a3s.constant.RepositoryStatus;
 import fr.soe.a3s.dto.RepositoryDTO;
@@ -458,14 +459,6 @@ public class MainPanel extends JFrame implements UIConstants {
 					"Error", JOptionPane.ERROR_MESSAGE);
 		}
 
-		// try {
-		// preferencesService.read();
-		// } catch (LoadingException e) {
-		// JOptionPane.showMessageDialog(this,
-		// "An error occured. \n Failded to load preferences.",
-		// "Error", JOptionPane.ERROR_MESSAGE);
-		// }
-
 		try {
 			repositoryService.readAll();
 		} catch (LoadingException e) {
@@ -474,6 +467,19 @@ public class MainPanel extends JFrame implements UIConstants {
 							this,
 							"An error occured.\nFailded to load on or more repositories.",
 							"Error", JOptionPane.ERROR_MESSAGE);
+		}
+
+		/* Ensure profile with name profileName really exists */
+		String profileName = configurationService.getProfileName();
+		if (profileName == null) {
+			configurationService.setProfileName(DefaultProfileName.DEFAULT
+					.getDescription());
+		} else {
+			List<String> profileNames = profileService.getProfileNames();
+			if (!profileNames.contains(profileName)) {
+				configurationService.setProfileName(DefaultProfileName.DEFAULT
+						.getDescription());
+			}
 		}
 
 		/* Set previous Height and Width */
@@ -505,6 +511,12 @@ public class MainPanel extends JFrame implements UIConstants {
 
 		/* Check repositories */
 		checkRepositories();
+
+		// Check ArmA 3 executable location
+		checkWellcomeDialog();
+
+		// Check for updates
+		checkForUpdate(false);
 	}
 
 	/* Menu Actions */

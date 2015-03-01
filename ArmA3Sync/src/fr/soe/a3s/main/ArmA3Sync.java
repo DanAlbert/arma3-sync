@@ -40,8 +40,12 @@ public class ArmA3Sync implements DataAccessConstants {
 	public static void main(String[] args) {
 
 		checkJRE();
-
+		
 		setFoldersAndPermissions();
+		
+		// Installed Version
+		System.out.println("ArmA3Sync Installed version = "
+				+ Version.getVersion());
 
 		Facade facade = new Facade();
 
@@ -175,16 +179,6 @@ public class ArmA3Sync implements DataAccessConstants {
 		mainPanel.drawGUI();
 		mainPanel.init();
 		mainPanel.setVisible(true);
-
-		// Check ArmA 3 executable location
-		mainPanel.checkWellcomeDialog();
-
-		// Installed Version
-		System.out.println("ArmA3Sync Installed version = "
-				+ Version.getVersion());
-
-		// Check for updates
-		mainPanel.checkForUpdate(false);
 	}
 
 	private static String lockInstance() {

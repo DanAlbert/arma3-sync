@@ -220,7 +220,6 @@ public class AddonOptionsPanel extends JPanel implements UIConstants {
 
 		directoryList2.removeAll();
 		List<String> list = profileService.getAddonNamesByPriority();
-		assert (list != null);
 		if (list != null) {
 			String[] addonNames = new String[list.size()];
 			for (int i = 0; i < list.size(); i++) {
