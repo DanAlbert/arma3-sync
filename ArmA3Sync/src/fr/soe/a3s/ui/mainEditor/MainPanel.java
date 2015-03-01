@@ -917,7 +917,7 @@ public class MainPanel extends JFrame implements UIConstants {
 
 		int numberMenuItems = menuProfiles.getItemCount();
 
-		for (int i = numberMenuItems - 1; i > 1; i--) {
+		for (int i = numberMenuItems - 1; i > 2; i--) {
 			JCheckBoxMenuItem checkBoxItem = (JCheckBoxMenuItem) menuProfiles
 					.getItem(i);
 			checkBoxItem.setSelected(false);
