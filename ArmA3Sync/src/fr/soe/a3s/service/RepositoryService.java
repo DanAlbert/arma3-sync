@@ -76,13 +76,21 @@ public class RepositoryService extends ObjectDTOtransformer implements
 
 	public void readAll() throws LoadingException {
 
+		Cipher cipher;
 		try {
-			Cipher cipher = getDecryptionCipher();
-			repositoryDAO.readAll(cipher);
+			cipher = getDecryptionCipher();
+			List<String> repositoriesFailedToLoad = repositoryDAO
+					.readAll(cipher);
+
+			if (!repositoriesFailedToLoad.isEmpty()) {
+				String message = "Failded to load repository:";
+				for (String name : repositoriesFailedToLoad) {
+					message = message + "\n" + " - " + name;
+				}
+				throw new LoadingException(message);
+			}
 		} catch (Exception e) {
 			e.printStackTrace();
-			throw new LoadingException(
-					"Failded to load on or more repositories.");
 		}
 	}
 

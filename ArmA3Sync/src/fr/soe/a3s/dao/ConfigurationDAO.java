@@ -12,6 +12,8 @@ import java.util.StringTokenizer;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
+import javax.swing.JOptionPane;
+
 import fr.soe.a3s.domain.configration.Configuration;
 import fr.soe.a3s.exception.LoadingException;
 import fr.soe.a3s.exception.WritingException;
@@ -38,7 +40,8 @@ public class ConfigurationDAO implements DataAccessConstants {
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
-			throw new LoadingException();
+			throw new LoadingException(
+					"Failded to load configuration settings.");
 		}
 	}
 
@@ -66,7 +69,7 @@ public class ConfigurationDAO implements DataAccessConstants {
 		if (!osName.contains("Windows")) {
 			return null;
 		}
-		
+
 		String steamPath = null;
 
 		try {
@@ -106,7 +109,7 @@ public class ConfigurationDAO implements DataAccessConstants {
 	public String determineArmA3Path() {
 
 		String arma3Path = null;
-		
+
 		String osName = System.getProperty("os.name");
 		if (!osName.contains("Windows")) {
 			return null;
@@ -142,7 +145,7 @@ public class ConfigurationDAO implements DataAccessConstants {
 	public String determineTS3path() {
 
 		String ts3Path = null;
-		
+
 		String osName = System.getProperty("os.name");
 		if (!osName.contains("Windows")) {
 			return null;
@@ -174,7 +177,7 @@ public class ConfigurationDAO implements DataAccessConstants {
 		}
 		return ts3Path;
 	}
-	
+
 	public String determineTS3version(String ts3InstallationDirectoryPath) {
 
 		assert (ts3InstallationDirectoryPath != null);
@@ -215,7 +218,7 @@ public class ConfigurationDAO implements DataAccessConstants {
 	public String determineArmA2Path() {
 
 		String arma2Path = null;
-		
+
 		String osName = System.getProperty("os.name");
 		if (!osName.contains("Windows")) {
 			return null;
@@ -251,7 +254,7 @@ public class ConfigurationDAO implements DataAccessConstants {
 	public String determineArmA2OAPath() {
 
 		String arma2OAPath = null;
-		
+
 		String osName = System.getProperty("os.name");
 		if (!osName.contains("Windows")) {
 			return null;
@@ -287,7 +290,7 @@ public class ConfigurationDAO implements DataAccessConstants {
 	public String determineArmAPath() {
 
 		String armaPath = null;
-		
+
 		String osName = System.getProperty("os.name");
 		if (!osName.contains("Windows")) {
 			return null;
@@ -323,7 +326,7 @@ public class ConfigurationDAO implements DataAccessConstants {
 	public String determineTOHPath() {
 
 		String tohPath = null;
-		
+
 		String osName = System.getProperty("os.name");
 		if (!osName.contains("Windows")) {
 			return null;
@@ -357,16 +360,15 @@ public class ConfigurationDAO implements DataAccessConstants {
 	}
 
 	public String determineRptPath() {
-		
+
 		String arma3RPTfolderPath = null;
-		
+
 		String osName = System.getProperty("os.name");
 		if (osName.contains("Windows")) {
 			String appDataFolderPath = System.getenv("APPDATA");// AppDATA\Roaming
 			if (appDataFolderPath != null) {
 				arma3RPTfolderPath = new File(appDataFolderPath)
-						.getParentFile().getAbsolutePath()
-						+ "\\Local\\Arma 3";
+						.getParentFile().getAbsolutePath() + "\\Local\\Arma 3";
 			}
 		}
 		return arma3RPTfolderPath;

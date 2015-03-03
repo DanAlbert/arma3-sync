@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.PrintWriter;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -17,6 +18,8 @@ import java.util.zip.GZIPOutputStream;
 
 import javax.crypto.Cipher;
 import javax.crypto.SealedObject;
+
+import com.sun.org.apache.bcel.internal.generic.ARRAYLENGTH;
 
 import fr.soe.a3s.domain.repository.AutoConfig;
 import fr.soe.a3s.domain.repository.Changelogs;
@@ -57,11 +60,11 @@ public class RepositoryDAO implements DataAccessConstants {
 		return response;
 	}
 
-	public void readAll(Cipher cipher) throws LoadingException {
+	public List<String> readAll(Cipher cipher) {
 
 		File directory = new File(REPOSITORY_FOLDER_PATH);
 		File[] subfiles = directory.listFiles();
-		boolean error = false;
+		List<String> repositoriesFailedToLoad = new ArrayList<String>();
 		mapRepositories.clear();
 		if (subfiles != null) {
 			for (File file : subfiles) {
@@ -80,16 +83,13 @@ public class RepositoryDAO implements DataAccessConstants {
 									repository);
 						}
 					} catch (Exception e) {
-						error = true;
 						e.printStackTrace();
+						repositoriesFailedToLoad.add(file.getName());
 					}
 				}
 			}
 		}
-
-		if (error) {
-			throw new LoadingException();
-		}
+		return repositoriesFailedToLoad;
 	}
 
 	public void write(Cipher cipher, String repositoryName)
@@ -211,7 +211,8 @@ public class RepositoryDAO implements DataAccessConstants {
 		}
 	}
 
-	public void writeLog(String title, String message, String path) throws IOException {
+	public void writeLog(String title, String message, String path)
+			throws IOException {
 
 		PrintWriter fWo = new PrintWriter(new FileWriter(
 				new File(path).getAbsolutePath()));

@@ -446,27 +446,19 @@ public class MainPanel extends JFrame implements UIConstants {
 		try {
 			configurationService.read();
 		} catch (LoadingException e1) {
-			JOptionPane.showMessageDialog(this,
-					"An error occured.\nFailded to load configuration.",
-					"Error", JOptionPane.ERROR_MESSAGE);
+			System.out.println(e1.getMessage());
 		}
 
 		try {
 			profileService.readAll();
 		} catch (LoadingException e2) {
-			JOptionPane.showMessageDialog(this,
-					"An error occured.\nFailded to load one or more profiles.",
-					"Error", JOptionPane.ERROR_MESSAGE);
+			System.out.println(e2.getMessage());
 		}
 
 		try {
 			repositoryService.readAll();
-		} catch (LoadingException e) {
-			JOptionPane
-					.showMessageDialog(
-							this,
-							"An error occured.\nFailded to load on or more repositories.",
-							"Error", JOptionPane.ERROR_MESSAGE);
+		} catch (LoadingException e3) {
+			System.out.println(e3.getMessage());
 		}
 
 		/* Ensure profile with name profileName really exists */

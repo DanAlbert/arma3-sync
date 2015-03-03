@@ -123,7 +123,7 @@ public class Console {
 		try {
 			repositoryService.readAll();
 		} catch (LoadingException e) {
-			System.out.println("Failded to load on or more repositories");
+			System.out.println(e.getMessage());
 			System.exit(0);
 		}
 
@@ -365,7 +365,7 @@ public class Console {
 			repositoryService.checkRepository(name, repositoryDTO.getPath());
 			System.out.println("Repository is synchronized.");
 		} catch (LoadingException e) {
-			System.out.println("Failded to load one or more repositories");
+			System.out.println(e.getMessage());
 		} catch (RepositoryException e) {
 			System.out.println(e.getMessage());
 		} catch (RepositoryCheckException e) {
@@ -401,9 +401,7 @@ public class Console {
 		try {
 			repositoryService.readAll();
 		} catch (LoadingException e) {
-			System.out.println("Failded to read on or more repositories");
-			System.out.println("");
-			execute();
+			System.out.println(e.getMessage());
 		}
 
 		// Folder location (if null)
@@ -546,7 +544,7 @@ public class Console {
 				System.out.println("Failded to remove repository.");
 			}
 		} catch (LoadingException e) {
-			System.out.println("Failded to remove repository.");
+			System.out.println(e.getMessage());
 		} finally {
 			System.out.println("");
 			execute();
@@ -601,7 +599,6 @@ public class Console {
 
 		RepositoryService repositoryService = new RepositoryService();
 		try {
-
 			repositoryService.readAll();
 			repositoryService.setExactMatch(exactMath, repositoryName);
 
@@ -687,8 +684,7 @@ public class Console {
 		try {
 			repositoryService.readAll();
 		} catch (LoadingException e) {
-			System.out.println("Failded to read on or more repositories");
-			System.exit(0);
+			System.out.println(e.getMessage());
 		}
 
 		this.value = 0;
@@ -733,7 +729,7 @@ public class Console {
 					repositoryDTO.getPath());
 			System.out.println("Repository is synchronized.");
 		} catch (LoadingException e) {
-			System.out.println("Failded to load on or more repositories");
+			System.out.println(e.getMessage());
 		} catch (RepositoryException e) {
 			System.out.println(e.getMessage());
 		} catch (RepositoryCheckException e) {

@@ -5,8 +5,10 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
@@ -18,74 +20,75 @@ import fr.soe.a3s.exception.WritingException;
 
 public class ProfileDAO implements DataAccessConstants {
 
-    private static final Map<String, Profile> mapProfiles = new HashMap<String, Profile>();
+	private static final Map<String, Profile> mapProfiles = new HashMap<String, Profile>();
 
-    public Map<String, Profile> getMap() {
-        return mapProfiles;
-    }
+	public Map<String, Profile> getMap() {
+		return mapProfiles;
+	}
 
-    public void readProfiles() throws LoadingException {
-        File directory = new File(PROFILES_FOLDER_PATH);
-        File[] subfiles = directory.listFiles();
-        boolean error = false;
-        if (subfiles != null) {
-            for (File file : subfiles) {
-                if (file.isFile() && file.getName().contains(PROFILE_EXTENSION)) {
-                    try {
-                        ObjectInputStream fRo = new ObjectInputStream(new GZIPInputStream(
-                                new FileInputStream(file)));
-                        Profile profile = (Profile) fRo.readObject();
-                        fRo.close();
-                        if (profile != null) {
-                            mapProfiles.put(profile.getName(), profile);
-                        }
-                    }
-                    catch (Exception e) {
-                        error = true;
-                        e.printStackTrace();
-                    }
-                }
-            }
-        }
+	public List<String> readProfiles()  {
 
-        if (!mapProfiles.containsKey(DefaultProfileName.DEFAULT.getDescription())) {
-            Profile profile = new Profile("Default");
-            mapProfiles.put(profile.getName(), profile);
-        }
+		File directory = new File(PROFILES_FOLDER_PATH);
+		File[] subfiles = directory.listFiles();
+		List<String> profilesFailedToLoad = new ArrayList<String>();
+		if (subfiles != null) {
+			for (File file : subfiles) {
+				if (file.isFile() && file.getName().contains(PROFILE_EXTENSION)) {
+					try {
+						ObjectInputStream fRo = new ObjectInputStream(
+								new GZIPInputStream(new FileInputStream(file)));
+						Profile profile = (Profile) fRo.readObject();
+						fRo.close();
+						if (profile != null) {
+							mapProfiles.put(profile.getName(), profile);
+						}
+					} catch (Exception e) {
+						e.printStackTrace();
+						profilesFailedToLoad.add(file.getName());
+					}
+				}
+			}
+		}
 
-        if (error) {
-            throw new LoadingException();
-        }
-    }
+		if (!mapProfiles.containsKey(DefaultProfileName.DEFAULT
+				.getDescription())) {
+			Profile profile = new Profile("Default");
+			mapProfiles.put(profile.getName(), profile);
+		}
 
-    public void writeProfiles() throws WritingException {
+		return profilesFailedToLoad;
+	}
 
-        /* Clear profiles folder */
-        File profilesFolder = new File(PROFILES_FOLDER_PATH);
-        FileAccessMethods.deleteDirectory(profilesFolder);
-        profilesFolder.mkdirs();
+	public void writeProfiles() throws WritingException {
 
-        boolean error = false;
-        for (Iterator<String> i = mapProfiles.keySet().iterator(); i.hasNext();) {
-            String profileName = i.next();
-            Profile profile = mapProfiles.get(profileName);
-            try {
-                mapProfiles.put(profile.getName(), profile);
-                String path = PROFILES_FOLDER_PATH + "/" + profile.getName() + PROFILE_EXTENSION;
-                File file = new File(path);
-                ObjectOutputStream fWo = new ObjectOutputStream(new GZIPOutputStream(
-                        new FileOutputStream(file)));
-                if (profile != null) fWo.writeObject(profile);
-                fWo.close();
-            }
-            catch (Exception e) {
-                e.printStackTrace();
-                error = true;
-            }
-        }
+		/* Clear profiles folder */
+		File profilesFolder = new File(PROFILES_FOLDER_PATH);
+		FileAccessMethods.deleteDirectory(profilesFolder);
+		profilesFolder.mkdirs();
 
-        if (error) {
-            throw new WritingException("Failded to write one or more profile(s).");
-        }
-    }
+		boolean error = false;
+		for (Iterator<String> i = mapProfiles.keySet().iterator(); i.hasNext();) {
+			String profileName = i.next();
+			Profile profile = mapProfiles.get(profileName);
+			try {
+				mapProfiles.put(profile.getName(), profile);
+				String path = PROFILES_FOLDER_PATH + "/" + profile.getName()
+						+ PROFILE_EXTENSION;
+				File file = new File(path);
+				ObjectOutputStream fWo = new ObjectOutputStream(
+						new GZIPOutputStream(new FileOutputStream(file)));
+				if (profile != null)
+					fWo.writeObject(profile);
+				fWo.close();
+			} catch (Exception e) {
+				e.printStackTrace();
+				error = true;
+			}
+		}
+
+		if (error) {
+			throw new WritingException(
+					"Failded to write one or more profile(s).");
+		}
+	}
 }
