@@ -497,11 +497,14 @@ public class MainPanel extends JFrame implements UIConstants {
 		this.facade.getAddonOptionsPanel().init();
 		this.facade.getLaunchOptionsPanel().init();
 		this.facade.getExternalApplicationsPanel().init();
+		this.facade.getSyncPanel().init();
+		this.facade.getOnlinePanel().init();
+		this.facade.getLaunchPanel().init();
 
 		/* Init Profiles menu */
 		updateProfilesMenu();
 
-		/* Check repositories */
+		/* Check repositories for update */
 		checkRepositories();
 
 		// Check ArmA 3 executable location
