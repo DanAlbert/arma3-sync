@@ -95,7 +95,7 @@ public class RepositoryBuilderDAO implements DataAccessConstants,
 		if (folderA3S.exists()) {
 			FileAccessMethods.deleteDirectory(folderA3S);
 		}
-		
+
 		/* Sync */
 		callables = new ArrayList<Callable<Integer>>();
 		final SyncTreeDirectory sync = new SyncTreeDirectory("racine", null);
@@ -372,7 +372,10 @@ public class RepositoryBuilderDAO implements DataAccessConstants,
 			final SyncTreeDirectory parent, final File file) throws Exception {
 
 		if (file.isDirectory()) {
-			if (!file.getName().contains(A3S_FOlDER_NAME)){// always true unless deleteDitrectory(.a3s) failed
+			if (!file.getName().contains(A3S_FOlDER_NAME)) {// always true
+															// unless
+															// deleteDitrectory(.a3s)
+															// failed
 				SyncTreeDirectory syncTreeDirectory = new SyncTreeDirectory(
 						file.getName(), parent);
 				parent.addTreeNode(syncTreeDirectory);
@@ -386,7 +389,8 @@ public class RepositoryBuilderDAO implements DataAccessConstants,
 			}
 		}
 		// exclude .zsync files
-		else if (!file.getName().contains(ZSYNC_EXTENSION)&& !!file.getName().contains(A3S_FOlDER_NAME)
+		else if (!file.getName().contains(ZSYNC_EXTENSION)
+				&& !file.getName().contains(A3S_FOlDER_NAME)
 				&& !excludedFilesFromBuild.contains(file.getAbsolutePath()
 						.toLowerCase())) {
 
