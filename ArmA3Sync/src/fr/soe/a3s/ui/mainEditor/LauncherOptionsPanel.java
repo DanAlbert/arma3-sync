@@ -791,7 +791,7 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener, UI
 
         runParametersTextArea.setText("");
         List<String> params = launchService.getRunParameters();
-        if (params!=null){
+        if (params != null) {
             String txt = "";
             for (String stg : params) {
                 txt = txt + (stg) + "\n";
@@ -893,32 +893,34 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener, UI
             if (arma3ExeFile.exists()) {
                 textFieldArmAExecutableLocation.setText(launcherOptionsDTO.getArma3ExePath());
             }
-            File parent = new File(arma3ExeFile.getParent());
-            List<String> list = new ArrayList<String>();
-            if (parent != null) {
-                File dllFolder = new File(parent.getAbsolutePath() + "/Dll");
-                File[] subfiles = dllFolder.listFiles();
-                if (subfiles != null) {
-                    for (File file : subfiles) {
-                        if (file.getName().toLowerCase().contains(".dll")) {
-                            list.add(file.getName().replaceAll(".dll", ""));
+            if (arma3ExeFile.getParentFile() != null) {
+                File parent = new File(arma3ExeFile.getParent());
+                List<String> list = new ArrayList<String>();
+                if (parent != null) {
+                    File dllFolder = new File(parent.getAbsolutePath() + "/Dll");
+                    File[] subfiles = dllFolder.listFiles();
+                    if (subfiles != null) {
+                        for (File file : subfiles) {
+                            if (file.getName().toLowerCase().contains(".dll")) {
+                                list.add(file.getName().replaceAll(".dll", ""));
+                            }
                         }
                     }
                 }
-            }
-            String[] tab = new String[list.size() + 1];
-            tab[0] = "";
-            for (int i = 0; i < list.size(); i++) {
-                tab[i + 1] = list.get(i);
-            }
-            ComboBoxModel mallocModel = new DefaultComboBoxModel(tab);
-            comboBoxMalloc.setModel(mallocModel);
-            if (launcherOptionsDTO.getMallocSelection() != null) {
-                comboBoxMalloc.setSelectedItem(launcherOptionsDTO.getMallocSelection());
-                checkBoxMalloc.setSelected(true);
-            }
-            else {
-                comboBoxMalloc.setSelectedIndex(0);
+                String[] tab = new String[list.size() + 1];
+                tab[0] = "";
+                for (int i = 0; i < list.size(); i++) {
+                    tab[i + 1] = list.get(i);
+                }
+                ComboBoxModel mallocModel = new DefaultComboBoxModel(tab);
+                comboBoxMalloc.setModel(mallocModel);
+                if (launcherOptionsDTO.getMallocSelection() != null) {
+                    comboBoxMalloc.setSelectedItem(launcherOptionsDTO.getMallocSelection());
+                    checkBoxMalloc.setSelected(true);
+                }
+                else {
+                    comboBoxMalloc.setSelectedIndex(0);
+                }
             }
         }
     }
