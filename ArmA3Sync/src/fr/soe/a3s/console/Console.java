@@ -371,7 +371,7 @@ public class Console {
 			System.out.println(e.getMessage());
 		} catch (RepositoryCheckException e) {
 			List<String> messages = new ArrayList<String>();
-			StringTokenizer stk = new StringTokenizer(e.getMessage());
+			StringTokenizer stk = new StringTokenizer(e.getMessage(), "*");
 			while (stk.hasMoreTokens()) {
 				messages.add(stk.nextToken());
 			}
@@ -388,6 +388,7 @@ public class Console {
 					message = message + "\n" + " - " + m;
 				}
 			}
+			System.out.println(message);
 		} catch (ServerInfoNotFoundException e) {
 			System.out.println(e.getMessage());
 		} catch (SyncFileNotFoundException e) {
@@ -751,11 +752,10 @@ public class Console {
 			System.out.println(e.getMessage());
 		} catch (RepositoryCheckException e) {
 			List<String> messages = new ArrayList<String>();
-			StringTokenizer stk = new StringTokenizer(e.getMessage());
+			StringTokenizer stk = new StringTokenizer(e.getMessage(), "*");
 			while (stk.hasMoreTokens()) {
 				messages.add(stk.nextToken());
 			}
-
 			String message = "Repository is out of synchronization.";
 			if (messages.size() > 5) {
 				for (int i = 0; i < 5; i++) {
@@ -769,6 +769,7 @@ public class Console {
 					message = message + "\n" + " - " + m;
 				}
 			}
+			System.out.println(message);
 		} catch (ServerInfoNotFoundException e) {
 			System.out.println(e.getMessage());
 		} catch (SyncFileNotFoundException e) {
