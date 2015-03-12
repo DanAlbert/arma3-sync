@@ -43,11 +43,17 @@ public class AddonService {
 					list.add((String) iter.next());
 				} else {
 					String path = (String) iter.next();
+					String osName = System.getProperty("os.name");
+					if (osName.contains("Windows")) {
+						path = path.toLowerCase();
+					}
 					String remove = null;
 					boolean contains = false;
 					for (String p : list) {
-						if (p.toLowerCase().contains(path.toLowerCase())
-								|| path.toLowerCase().contains(p.toLowerCase())) {
+						if (osName.contains("Windows")) {
+							p = p.toLowerCase();
+						}
+						if (p.contains(path) || path.contains(p)) {
 							contains = true;
 							if (path.length() < p.length()) {
 								remove = p;
