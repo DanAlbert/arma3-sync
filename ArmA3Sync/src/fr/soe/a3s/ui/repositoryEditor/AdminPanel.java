@@ -170,7 +170,7 @@ public class AdminPanel extends JPanel implements UIConstants {
 			locationPanel.setLayout(new BorderLayout());
 			textFieldMainSharedFolderLocation = new JTextField();
 			buttonSelectFTPfolderPath = new JButton("Select");
-			buttonSelectFTPfolderPath.setPreferredSize(new Dimension(75, 25));
+			buttonSelectFTPfolderPath.setPreferredSize(new Dimension(85, 25));
 			textFieldMainSharedFolderLocation.setEditable(false);
 			textFieldMainSharedFolderLocation.setBackground(Color.WHITE);
 			locationPanel.add(textFieldMainSharedFolderLocation,
@@ -191,9 +191,9 @@ public class AdminPanel extends JPanel implements UIConstants {
 			buildPanel.setLayout(new BorderLayout());
 			buildProgressBar = new JProgressBar();
 			buttonBuildOptions = new JButton("Options");
-			buttonBuildOptions.setPreferredSize(new Dimension(75, 25));
+			buttonBuildOptions.setPreferredSize(new Dimension(85, 25));
 			buttonBuild = new JButton("Build");
-			buttonBuild.setPreferredSize(new Dimension(75, 25));
+			buttonBuild.setPreferredSize(new Dimension(85, 25));
 			buildPanel.add(buildProgressBar, BorderLayout.CENTER);
 			JPanel panel = new JPanel();
 			panel.setLayout(new GridLayout(1, 2));
@@ -235,9 +235,9 @@ public class AdminPanel extends JPanel implements UIConstants {
 			uploadPanel.setLayout(new BorderLayout());
 			uploadrogressBar = new JProgressBar();
 			buttonUploadOptions = new JButton("Options");
-			buttonUploadOptions.setPreferredSize(new Dimension(75, 25));
+			buttonUploadOptions.setPreferredSize(new Dimension(85, 25));
 			buttonUpload = new JButton("Upload");
-			buttonUpload.setPreferredSize(new Dimension(75, 25));
+			buttonUpload.setPreferredSize(new Dimension(85, 25));
 			uploadPanel.add(uploadrogressBar, BorderLayout.CENTER);
 			JPanel panel = new JPanel();
 			panel.setLayout(new GridLayout(1, 2));
@@ -260,7 +260,7 @@ public class AdminPanel extends JPanel implements UIConstants {
 			autoConfigURLPanel.setLayout(new BorderLayout());
 			textFieldAutoConfigURL = new JTextField();
 			buttonCopyAutoConfigURL = new JButton("Copy");
-			buttonCopyAutoConfigURL.setPreferredSize(new Dimension(75, 25));
+			buttonCopyAutoConfigURL.setPreferredSize(new Dimension(85, 25));
 			textFieldAutoConfigURL.setEditable(false);
 			textFieldAutoConfigURL.setBackground(Color.WHITE);
 			autoConfigURLPanel.add(textFieldAutoConfigURL, BorderLayout.CENTER);
