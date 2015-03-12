@@ -29,12 +29,12 @@ public class Repository implements Serializable {
 	private boolean exactMatch = false;
 	/* Build options */
 	private List<FavoriteServer> favoriteServersSetToAutoconfig = new ArrayList<FavoriteServer>();
-	// Path of file excluded from build tolowercase!
+	// Path of file excluded from build
 	private Set<String> excludedFilesFromBuild = new HashSet<String>();
 	private Set<String> excludedFoldersFromSync = new HashSet<String>();
 	private int numberOfConnections;
 	/* Local data: Hide extra local folder content */
-	private Set<String> hidedFolderPaths = new HashSet<String>();
+	private Set<String> hidddenFolderPaths = new HashSet<String>();
 	/* Local data: SHA1 computation <Path,FileAttrbutes> */
 	private Map<String, FileAttributes> mapFiles = new HashMap<String, FileAttributes>();
 	/* Remote files */
@@ -218,10 +218,10 @@ public class Repository implements Serializable {
 	}
 
 	public Set<String> getHiddenFolderPath() {
-		if (hidedFolderPaths == null) {
-			hidedFolderPaths = new HashSet<String>();
+		if (hidddenFolderPaths == null) {
+			hidddenFolderPaths = new HashSet<String>();
 		}
-		return hidedFolderPaths;
+		return hidddenFolderPaths;
 	}
 
 	public List<FavoriteServer> getFavoriteServersSetToAutoconfig() {

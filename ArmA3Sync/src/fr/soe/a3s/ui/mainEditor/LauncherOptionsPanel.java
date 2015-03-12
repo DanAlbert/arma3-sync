@@ -9,7 +9,9 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -758,11 +760,36 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener,
 		if (returnVal == JFileChooser.APPROVE_OPTION) {
 			File file = fc.getSelectedFile();
 			String path = file.getAbsolutePath();
-			String parentPath = file.getParentFile().getAbsolutePath();
 			configurationService.setArmA3ExePath(path);
-			configurationService.getAddonSearchDirectoryPaths().add(
-					parentPath.toLowerCase());
-			facade.getAddonOptionsPanel().updateAddonSearchDirectories();
+			if (file.getParent() != null) {
+				String parentPath = file.getParentFile().getAbsolutePath();
+				Set<String> set = configurationService
+						.getAddonSearchDirectoryPaths();
+				Iterator iter = set.iterator();
+				List<String> list = new ArrayList<String>();
+				while (iter.hasNext()) {
+					list.add((String) iter.next());
+				}
+				boolean contains = false;
+				for (int i = 0; i < list.size(); i++) {
+					String osName = System.getProperty("os.name");
+					if (osName.contains("Windows")) {
+						if (parentPath.equalsIgnoreCase(list.get(i))) {
+							contains = true;
+						}
+					} else {
+						if (parentPath.equals(list.get(i))) {
+							contains = true;
+						}
+					}
+				}
+				if (!contains) {
+					configurationService.getAddonSearchDirectoryPaths().add(
+							parentPath);
+					facade.getAddonOptionsPanel()
+							.updateAddonSearchDirectories();
+				}
+			}
 			addonService.resetAvailableAddonTree();
 			facade.getAddonsPanel().updateAvailableAddons();
 			facade.getAddonsPanel().updateAddonGroups();

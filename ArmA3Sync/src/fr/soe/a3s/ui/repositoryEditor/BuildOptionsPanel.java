@@ -375,13 +375,29 @@ public class BuildOptionsPanel extends JDialog implements UIConstants {
 			if (file != null) {
 				String path = file.getAbsolutePath();
 				int size = excludedFilesFromBuildList.getModel().getSize();
-				Collection<String> list = new ArrayList<String>();
+				List<String> list = new ArrayList<String>();
 				for (int i = 0; i < size; i++) {
 					list.add((String) excludedFilesFromBuildList.getModel()
 							.getElementAt(i));
 				}
-				list.add(path.toLowerCase());
-				updateExcludedFilesFromBuild(list);
+				boolean contains = false;
+				for (int i = 0; i < list.size(); i++) {
+					String osName = System.getProperty("os.name");
+					if (osName.contains("Windows")) {
+						if (path.equalsIgnoreCase(list.get(i))) {
+							contains = true;
+						}
+					} else {
+						if (path.equals(list.get(i))) {
+							contains = true;
+						}
+					}
+				}
+
+				if (!contains) {
+					list.add(path);
+					updateExcludedFilesFromBuild(list);
+				}
 			}
 		}
 	}
@@ -415,13 +431,30 @@ public class BuildOptionsPanel extends JDialog implements UIConstants {
 			if (file != null) {
 				String path = file.getAbsolutePath();
 				int size = excludedFoldersFromSyncList.getModel().getSize();
-				Collection<String> list = new ArrayList<String>();
+				List<String> list = new ArrayList<String>();
 				for (int i = 0; i < size; i++) {
 					list.add((String) excludedFoldersFromSyncList.getModel()
 							.getElementAt(i));
 				}
-				list.add(path.toLowerCase());
-				updateExcludedFoldersFromSync(list);
+				boolean contains = false;
+				for (int i = 0; i < list.size(); i++) {
+					String osName = System.getProperty("os.name");
+					if (osName.contains("Windows")) {
+						if (path.equalsIgnoreCase(list.get(i))) {
+							contains = true;
+						}
+					} else {
+						if (path.equals(list.get(i))) {
+							contains = true;
+						}
+					}
+				}
+
+				if (!contains) {
+					list.add(path);
+					updateExcludedFoldersFromSync(list);
+				}
+				list.add(path);
 			}
 		}
 	}

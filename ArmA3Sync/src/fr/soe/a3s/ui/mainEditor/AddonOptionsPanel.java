@@ -20,7 +20,6 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.border.BevelBorder;
 
-import fr.soe.a3s.dto.TreeLeafDTO;
 import fr.soe.a3s.service.AddonService;
 import fr.soe.a3s.service.ConfigurationService;
 import fr.soe.a3s.service.ProfileService;
@@ -39,13 +38,13 @@ import fr.soe.a3s.ui.UIConstants;
  */
 public class AddonOptionsPanel extends JPanel implements UIConstants {
 
-	private Facade facade;
+	private final Facade facade;
 	private JScrollPane scrollPane1, scrollPane2;
 	private JList directoryList1, directoryList2;
 	private JButton add, delete, down, up;
-	private ConfigurationService configurationService = new ConfigurationService();
-	private AddonService addonService = new AddonService();
-	private ProfileService profileService = new ProfileService();
+	private final ConfigurationService configurationService = new ConfigurationService();
+	private final AddonService addonService = new AddonService();
+	private final ProfileService profileService = new ProfileService();
 
 	public AddonOptionsPanel(Facade facade) {
 		this.facade = facade;
@@ -121,11 +120,13 @@ public class AddonOptionsPanel extends JPanel implements UIConstants {
 		centerPanel.add(addonPrioritiesPanel, BorderLayout.CENTER);
 
 		add.addActionListener(new ActionListener() {
+			@Override
 			public void actionPerformed(ActionEvent arg0) {
 				buttonAddPerformed();
 			}
 		});
 		delete.addActionListener(new ActionListener() {
+			@Override
 			public void actionPerformed(ActionEvent arg0) {
 				buttonDeletePerformed();
 			}
@@ -169,13 +170,34 @@ public class AddonOptionsPanel extends JPanel implements UIConstants {
 			File file = fc.getSelectedFile();
 			if (file != null) {
 				String path = file.getAbsolutePath();
-				configurationService.getAddonSearchDirectoryPaths().add(
-						path.toLowerCase());
-				updateAddonSearchDirectories();
-				addonService.resetAvailableAddonTree();
-				facade.getAddonsPanel().updateAvailableAddons();
-				facade.getAddonsPanel().updateAddonGroups();
-				facade.getLaunchOptionsPanel().updateRunParameters();
+				int size = directoryList1.getModel().getSize();
+				List<String> list = new ArrayList<String>();
+				for (int i = 0; i < size; i++) {
+					list.add((String) directoryList1.getModel().getElementAt(i));
+				}
+				boolean contains = false;
+				for (int i = 0; i < list.size(); i++) {
+					String osName = System.getProperty("os.name");
+					if (osName.contains("Windows")) {
+						if (path.equalsIgnoreCase(list.get(i))) {
+							contains = true;
+						}
+					} else {
+						if (path.equals(list.get(i))) {
+							contains = true;
+						}
+					}
+				}
+
+				if (!contains) {
+					configurationService.getAddonSearchDirectoryPaths().add(
+							path);
+					updateAddonSearchDirectories();
+					addonService.resetAvailableAddonTree();
+					facade.getAddonsPanel().updateAvailableAddons();
+					facade.getAddonsPanel().updateAddonGroups();
+					facade.getLaunchOptionsPanel().updateRunParameters();
+				}
 			}
 		}
 	}
@@ -185,7 +207,7 @@ public class AddonOptionsPanel extends JPanel implements UIConstants {
 		String path = (String) directoryList1.getSelectedValue();
 
 		if (path != null) {
-			configurationService.removeSearchDirectoryPath(path);
+			configurationService.getAddonSearchDirectoryPaths().remove(path);
 			updateAddonSearchDirectories();
 			addonService.resetAvailableAddonTree();
 			facade.getAddonsPanel().updateAvailableAddons();
@@ -196,20 +218,21 @@ public class AddonOptionsPanel extends JPanel implements UIConstants {
 
 	public void updateAddonSearchDirectories() {
 
-		Set<String> addonSearchDirectoryPaths = configurationService
-				.getAddonSearchDirectoryPaths();
-
-		String[] paths = new String[addonSearchDirectoryPaths.size()];
-		Iterator iter = addonSearchDirectoryPaths.iterator();
-		int i = 0;
+		Set<String> set = configurationService.getAddonSearchDirectoryPaths();
+		Iterator iter = set.iterator();
+		List<String> paths = new ArrayList<String>();
 		while (iter.hasNext()) {
-			paths[i] = (String) iter.next();
+			paths.add((String) iter.next());
+		}
+		String[] tab = new String[paths.size()];
+		int i = 0;
+		for (String p : paths) {
+			tab[i] = p;
 			i++;
 		}
-
 		directoryList1.clearSelection();
-		directoryList1.setListData(paths);
-		int numberLigneShown = addonSearchDirectoryPaths.size();
+		directoryList1.setListData(tab);
+		int numberLigneShown = paths.size();
 		directoryList1.setVisibleRowCount(numberLigneShown);
 		directoryList1.setPreferredSize(directoryList1
 				.getPreferredScrollableViewportSize());

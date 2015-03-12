@@ -6,6 +6,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -39,7 +41,7 @@ import fr.soe.a3s.ui.UIConstants;
  */
 public class ProfilePanel extends JDialog implements UIConstants {
 
-	private Facade facade;
+	private final Facade facade;
 	private JButton buttonOK, buttonCancel;
 	private JList profilesList;
 	private JButton buttonDuplicate;
@@ -48,8 +50,8 @@ public class ProfilePanel extends JDialog implements UIConstants {
 	private JButton buttonEdit;
 	private JScrollPane scrollPane;
 	private String initProfileName;
-	private ProfileService profileService = new ProfileService();
-	private ConfigurationService configurationService = new ConfigurationService();
+	private final ProfileService profileService = new ProfileService();
+	private final ConfigurationService configurationService = new ConfigurationService();
 
 	public ProfilePanel(Facade facade) {
 		super(facade.getMainPanel(), "Profiles", true);
@@ -159,6 +161,7 @@ public class ProfilePanel extends JDialog implements UIConstants {
 		});
 		// Add Listeners
 		addWindowListener(new WindowAdapter() {
+			@Override
 			public void windowClosing(WindowEvent e) {
 				menuExitPerformed();
 			}
@@ -274,16 +277,21 @@ public class ProfilePanel extends JDialog implements UIConstants {
 			facade.getLaunchOptionsPanel().init();
 
 			// Addon options panel
-			Set<String> addonSearchDirectoryPaths = profileService
+			Set<String> set = profileService
 					.getAddonSearchDirectoryPaths(profileName);
+			Iterator iter = set.iterator();
+			List<String> paths = new ArrayList<String>();
+			while (iter.hasNext()) {
+				paths.add((String) iter.next());
+			}
+
 			configurationService.getAddonSearchDirectoryPaths().clear();
-			configurationService.getAddonSearchDirectoryPaths().addAll(
-					addonSearchDirectoryPaths);
+			configurationService.getAddonSearchDirectoryPaths().addAll(paths);
 			facade.getAddonOptionsPanel().init();
-			
+
 			// Addon panel
 			facade.getAddonsPanel().init();
-			
+
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

@@ -9,18 +9,18 @@ import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
 
-import javax.swing.BorderFactory;
 import javax.swing.Box;
-import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
-
-import org.apache.commons.net.ftp.Configurable;
 
 import fr.soe.a3s.service.AddonService;
 import fr.soe.a3s.service.ConfigurationService;
@@ -42,15 +42,15 @@ public class WellcomePanel extends JDialog implements UIConstants {
 	Facade facade;
 	private JTextField textField;
 	private JButton buttonSelect;
-	private ConfigurationService configurationService = new ConfigurationService();
-	private AddonService addonService = new AddonService();
+	private final ConfigurationService configurationService = new ConfigurationService();
+	private final AddonService addonService = new AddonService();
 	private JButton buttonOK;
 
 	public WellcomePanel(Facade facade) {
-		super(facade.getMainPanel(),"Configuration",true);
+		super(facade.getMainPanel(), "Configuration", true);
 		this.facade = facade;
 		setResizable(false);
-		this.setMinimumSize(new Dimension(345,125));
+		this.setMinimumSize(new Dimension(345, 125));
 		setIconImage(ICON);
 		this.setLocation(
 				(int) facade.getMainPanel().getLocation().getX()
@@ -103,7 +103,7 @@ public class WellcomePanel extends JDialog implements UIConstants {
 				vBox.add(Box.createVerticalStrut(5));
 				vBox.add(panel);
 			}
-			
+
 		}
 		buttonSelect.addActionListener(new ActionListener() {
 			@Override
@@ -118,9 +118,9 @@ public class WellcomePanel extends JDialog implements UIConstants {
 			}
 		});
 	}
-	
+
 	private void buttonOKPerformed() {
-		
+
 		this.dispose();
 		facade.getAddonOptionsPanel().updateAddonSearchDirectories();
 		addonService.resetAvailableAddonTree();
@@ -129,18 +129,18 @@ public class WellcomePanel extends JDialog implements UIConstants {
 		facade.getAddonsPanel().expandAddonGroups();
 		facade.getLaunchOptionsPanel().init();
 	}
-	
+
 	private void buttonSelectPerformed() {
-		
+
 		JFileChooser fc = null;
 		String arma3Path = configurationService.determineArmA3Path();
-		if (arma3Path==null){
+		if (arma3Path == null) {
 			fc = new JFileChooser();
-		}else {
+		} else {
 			File arma3Folder = new File(arma3Path);
-			if (arma3Folder.exists()){
+			if (arma3Folder.exists()) {
 				fc = new JFileChooser(arma3Path);
-			}else {
+			} else {
 				fc = new JFileChooser();
 			}
 		}
@@ -150,9 +150,37 @@ public class WellcomePanel extends JDialog implements UIConstants {
 		if (returnVal == JFileChooser.APPROVE_OPTION) {
 			File file = fc.getSelectedFile();
 			String path = file.getAbsolutePath();
-			String parentPath = file.getParentFile().getAbsolutePath();
 			configurationService.setArmA3ExePath(path);
-			configurationService.getAddonSearchDirectoryPaths().add(parentPath.toLowerCase());
+			if (file.getParent() != null) {
+				String parentPath = file.getParentFile().getAbsolutePath();
+				Set<String> set = configurationService
+						.getAddonSearchDirectoryPaths();
+				Iterator iter = set.iterator();
+				List<String> list = new ArrayList<String>();
+				while (iter.hasNext()) {
+					list.add((String) iter.next());
+				}
+				boolean contains = false;
+				for (int i = 0; i < list.size(); i++) {
+					String osName = System.getProperty("os.name");
+					if (osName.contains("Windows")) {
+						if (parentPath.equalsIgnoreCase(list.get(i))) {
+							contains = true;
+						}
+					} else {
+						if (parentPath.equals(list.get(i))) {
+							contains = true;
+						}
+					}
+				}
+				if (!contains) {
+					configurationService.getAddonSearchDirectoryPaths().add(
+							parentPath);
+					facade.getAddonOptionsPanel()
+							.updateAddonSearchDirectories();
+				}
+			}
+
 			textField.setText(path);
 		} else {
 			configurationService.setArmA3ExePath(null);
@@ -168,6 +196,7 @@ public class WellcomePanel extends JDialog implements UIConstants {
 			this.image = image;
 		}
 
+		@Override
 		public void paintComponent(Graphics g) {
 			super.paintComponent(g); // paint background
 			if (image != null) { // there is a picture: draw it

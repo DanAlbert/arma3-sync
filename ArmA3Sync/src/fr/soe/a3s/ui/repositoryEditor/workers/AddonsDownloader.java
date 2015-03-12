@@ -401,7 +401,7 @@ public class AddonsDownloader extends Thread {
 
 		String fileName = "ArmA3Sync-log.txt";
 		message = message + "\n\n"
-				+ "Do you want export the errors to log file to desktop ("
+				+ "Do you want export the errors log file to desktop ("
 				+ fileName + ")?";
 
 		int value = JOptionPane.showConfirmDialog(facade.getMainPanel(),
@@ -409,8 +409,10 @@ public class AddonsDownloader extends Thread {
 
 		if (value == 0) {
 			try {
-				repositoryService.exportDownloadErrorsToDesktop(repositoryName,
-						messages, fileName);
+				title = "Download finished with errors for repository name: "
+						+ repositoryName;
+				repositoryService.exportErrorsToDesktop(title, messages,
+						fileName);
 				JOptionPane.showMessageDialog(facade.getMainPanel(),
 						"Log file has been exported to desktop", "Download",
 						JOptionPane.INFORMATION_MESSAGE);

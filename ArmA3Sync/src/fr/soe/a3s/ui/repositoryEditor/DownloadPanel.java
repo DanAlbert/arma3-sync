@@ -11,8 +11,10 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 
 import javax.swing.BorderFactory;
@@ -739,15 +741,20 @@ public class DownloadPanel extends JPanel implements UIConstants {
 
 	private void defaultFolderDestinationSelection() {
 
-		Set<String> directories = configurationService
-				.getAddonSearchDirectoryPaths();
-		Iterator iter = directories.iterator();
-		String[] tab = new String[directories.size()];
-		int i = 0;
+		Set<String> set = configurationService.getAddonSearchDirectoryPaths();
+		Iterator iter = set.iterator();
+		List<String> paths = new ArrayList<String>();
 		while (iter.hasNext()) {
-			tab[i] = (String) iter.next();
+			paths.add((String) iter.next());
+		}
+
+		String[] tab = new String[paths.size()];
+		int i = 0;
+		for (String p : paths) {
+			tab[i] = p;
 			i++;
 		}
+
 		ComboBoxModel model = new DefaultComboBoxModel(tab);
 		comBoxDestinationFolder.setModel(model);
 		String path = repositoryService

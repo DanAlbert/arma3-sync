@@ -19,15 +19,12 @@ import java.util.zip.GZIPOutputStream;
 import javax.crypto.Cipher;
 import javax.crypto.SealedObject;
 
-import com.sun.org.apache.bcel.internal.generic.ARRAYLENGTH;
-
 import fr.soe.a3s.domain.repository.AutoConfig;
 import fr.soe.a3s.domain.repository.Changelogs;
 import fr.soe.a3s.domain.repository.Events;
 import fr.soe.a3s.domain.repository.Repository;
 import fr.soe.a3s.domain.repository.ServerInfo;
 import fr.soe.a3s.domain.repository.SyncTreeDirectory;
-import fr.soe.a3s.exception.LoadingException;
 import fr.soe.a3s.exception.WritingException;
 
 public class RepositoryDAO implements DataAccessConstants {
@@ -211,14 +208,11 @@ public class RepositoryDAO implements DataAccessConstants {
 		}
 	}
 
-	public void writeLog(String title, String message, String path)
-			throws IOException {
+	public void writeLog(String print, String path) throws IOException {
 
 		PrintWriter fWo = new PrintWriter(new FileWriter(
 				new File(path).getAbsolutePath()));
-		fWo.println(title);
-		fWo.println("\n");
-		fWo.println(message);
+		fWo.println(print);
 		fWo.close();
 	}
 }

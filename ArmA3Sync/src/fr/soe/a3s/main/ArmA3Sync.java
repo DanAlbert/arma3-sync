@@ -40,9 +40,9 @@ public class ArmA3Sync implements DataAccessConstants {
 	public static void main(String[] args) {
 
 		checkJRE();
-		
+
 		setFoldersAndPermissions();
-		
+
 		// Installed Version
 		System.out.println("ArmA3Sync Installed version = "
 				+ Version.getVersion());

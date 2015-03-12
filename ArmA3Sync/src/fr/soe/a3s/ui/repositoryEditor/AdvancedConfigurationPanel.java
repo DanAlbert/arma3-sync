@@ -9,7 +9,9 @@ import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 
 import javax.swing.BorderFactory;
@@ -35,7 +37,6 @@ import org.netbeans.swing.outline.OutlineModel;
 
 import fr.soe.a3s.dto.sync.SyncTreeDirectoryDTO;
 import fr.soe.a3s.dto.sync.SyncTreeNodeDTO;
-import fr.soe.a3s.exception.RepositoryException;
 import fr.soe.a3s.service.ConfigurationService;
 import fr.soe.a3s.service.RepositoryService;
 import fr.soe.a3s.ui.Facade;
@@ -291,17 +292,27 @@ public class AdvancedConfigurationPanel extends JFrame implements UIConstants {
 					setDestinationPath(node);
 					outlineModel.setValueAt(newPath, index, 1);
 					scrollPane.updateUI();
-					Set<String> addonSearchDirectories = configurationService
+					Set<String> set = configurationService
 							.getAddonSearchDirectoryPaths();
-					Iterator iter = addonSearchDirectories.iterator();
-					boolean contains = false;
+					Iterator iter = set.iterator();
+					List<String> list = new ArrayList<String>();
 					while (iter.hasNext()) {
-						String path = (String) iter.next();
-						if (newPath.contains(path)) {
-							contains = true;
-							break;
+						list.add((String) iter.next());
+					}
+					boolean contains = false;
+					for (int i = 0; i < list.size(); i++) {
+						String osName = System.getProperty("os.name");
+						if (osName.contains("Windows")) {
+							if (newPath.equalsIgnoreCase(list.get(i))) {
+								contains = true;
+							}
+						} else {
+							if (newPath.equals(list.get(i))) {
+								contains = true;
+							}
 						}
 					}
+
 					if (!contains) {
 						configurationService.getAddonSearchDirectoryPaths()
 								.add(newPath);

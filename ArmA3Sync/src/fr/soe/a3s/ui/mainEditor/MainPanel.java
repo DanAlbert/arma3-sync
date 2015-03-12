@@ -18,8 +18,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
-import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
@@ -34,7 +32,6 @@ import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComponent;
-import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
@@ -49,7 +46,6 @@ import javax.swing.UIManager;
 import javax.swing.plaf.ColorUIResource;
 
 import net.jimmc.jshortcut.JShellLink;
-
 import fr.soe.a3s.constant.DefaultProfileName;
 import fr.soe.a3s.constant.MinimizationType;
 import fr.soe.a3s.constant.RepositoryStatus;
@@ -944,11 +940,16 @@ public class MainPanel extends JFrame implements UIConstants {
 			facade.getLaunchOptionsPanel().init();
 
 			// Addon options panel
-			Set<String> addonSearchDirectoryPaths = profileService
+			Set<String> set = profileService
 					.getAddonSearchDirectoryPaths(profileName);
+			Iterator iter = set.iterator();
+			List<String> paths = new ArrayList<String>();
+			while (iter.hasNext()) {
+				paths.add((String) iter.next());
+			}
+
 			configurationService.getAddonSearchDirectoryPaths().clear();
-			configurationService.getAddonSearchDirectoryPaths().addAll(
-					addonSearchDirectoryPaths);
+			configurationService.getAddonSearchDirectoryPaths().addAll(paths);
 			facade.getAddonOptionsPanel().init();
 
 			// Addon panel

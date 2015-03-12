@@ -9,6 +9,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Scanner;
+import java.util.StringTokenizer;
 
 import fr.soe.a3s.constant.ConsoleCommands;
 import fr.soe.a3s.constant.Protocol;
@@ -264,7 +265,7 @@ public class Console {
 		System.out
 				.print("Enter root shared folder path (leave blank to pass): ");
 		String path = c.nextLine();
-		if (!path.isEmpty()){
+		if (!path.isEmpty()) {
 			while (!new File(path).exists()) {
 				System.out.println("Target folder does not exists!");
 				System.out.print("Enter root shared folder path: ");
@@ -369,8 +370,24 @@ public class Console {
 		} catch (RepositoryException e) {
 			System.out.println(e.getMessage());
 		} catch (RepositoryCheckException e) {
-			System.out
-					.println("Repository is out of synchronization and must be rebuilt.");
+			List<String> messages = new ArrayList<String>();
+			StringTokenizer stk = new StringTokenizer(e.getMessage());
+			while (stk.hasMoreTokens()) {
+				messages.add(stk.nextToken());
+			}
+			String message = "Repository is out of synchronization.";
+			if (messages.size() > 5) {
+				for (int i = 0; i < 5; i++) {
+					String m = messages.get(i);
+					message = message + "\n" + " - " + m;
+				}
+				message = message + "\n" + "["
+						+ Integer.toString(messages.size() - 5) + "] more...";
+			} else {
+				for (String m : messages) {
+					message = message + "\n" + " - " + m;
+				}
+			}
 		} catch (ServerInfoNotFoundException e) {
 			System.out.println(e.getMessage());
 		} catch (SyncFileNotFoundException e) {
@@ -467,8 +484,8 @@ public class Console {
 			if (!(new File(excludedFilePath)).exists()) {
 				System.out.println("Wrong path, file does not exists.");
 			} else {
-				repositoryService.addExcludedFilesPathFromBuild(name, new File(
-						excludedFilePath).getAbsolutePath().toLowerCase());
+				String path = new File(excludedFilePath).getAbsolutePath();
+				repositoryService.addExcludedFilesPathFromBuild(name, path);
 			}
 			System.out
 					.print("Add file path to exclude from build (leave blank to pass): ");
@@ -482,9 +499,9 @@ public class Console {
 			if (!(new File(excludedFoldersFromSync)).exists()) {
 				System.out.println("Wrong path, file does not exists.");
 			} else {
-				repositoryService.addExcludedFoldersFromSync(name, new File(
-						excludedFoldersFromSync).getAbsolutePath()
-						.toLowerCase());
+				String path = new File(excludedFoldersFromSync)
+						.getAbsolutePath();
+				repositoryService.addExcludedFoldersFromSync(name, path);
 			}
 			System.out
 					.print("Add folder path to exclude extra local content when sync (leave blank to pass): ");
@@ -733,8 +750,25 @@ public class Console {
 		} catch (RepositoryException e) {
 			System.out.println(e.getMessage());
 		} catch (RepositoryCheckException e) {
-			System.out
-					.println("Repository is out of synchronization and must be rebuilt.");
+			List<String> messages = new ArrayList<String>();
+			StringTokenizer stk = new StringTokenizer(e.getMessage());
+			while (stk.hasMoreTokens()) {
+				messages.add(stk.nextToken());
+			}
+
+			String message = "Repository is out of synchronization.";
+			if (messages.size() > 5) {
+				for (int i = 0; i < 5; i++) {
+					String m = messages.get(i);
+					message = message + "\n" + " - " + m;
+				}
+				message = message + "\n" + "["
+						+ Integer.toString(messages.size() - 5) + "] more...";
+			} else {
+				for (String m : messages) {
+					message = message + "\n" + " - " + m;
+				}
+			}
 		} catch (ServerInfoNotFoundException e) {
 			System.out.println(e.getMessage());
 		} catch (SyncFileNotFoundException e) {

@@ -6,12 +6,10 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
-import fr.soe.a3s.constant.DefaultProfileName;
 import fr.soe.a3s.dao.AddonDAO;
 import fr.soe.a3s.dao.ConfigurationDAO;
 import fr.soe.a3s.domain.Addon;
 import fr.soe.a3s.domain.configration.AiAOptions;
-import fr.soe.a3s.domain.configration.Configuration;
 import fr.soe.a3s.domain.configration.ExternalApplication;
 import fr.soe.a3s.domain.configration.FavoriteServer;
 import fr.soe.a3s.domain.configration.LauncherOptions;
@@ -40,12 +38,6 @@ public class ConfigurationService extends ObjectDTOtransformer {
 	public Set<String> getAddonSearchDirectoryPaths() {
 		return configurationDAO.getConfiguration()
 				.getAddonSearchDirectoryPaths();
-	}
-
-	public void removeSearchDirectoryPath(String path) {
-		Set<String> set = configurationDAO.getConfiguration()
-				.getAddonSearchDirectoryPaths();
-		set.remove(path);
 	}
 
 	/* Launch panel */
