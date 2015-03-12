@@ -281,7 +281,7 @@ public class AdminPanel extends JPanel implements UIConstants {
 			checkPanel.setLayout(new BorderLayout());
 			checkProgressBar = new JProgressBar();
 			buttonCheck = new JButton("Check");
-			buttonCheck.setPreferredSize(new Dimension(75, 25));
+			buttonCheck.setPreferredSize(new Dimension(85, 25));
 			checkPanel.add(checkProgressBar, BorderLayout.CENTER);
 			checkPanel.add(buttonCheck, BorderLayout.EAST);
 			vBox.add(checkPanel);
