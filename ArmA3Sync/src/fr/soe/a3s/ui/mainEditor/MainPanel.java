@@ -502,12 +502,6 @@ public class MainPanel extends JFrame implements UIConstants {
 
 		/* Check repositories for update */
 		checkRepositories();
-
-		// Check ArmA 3 executable location
-		checkWellcomeDialog();
-
-		// Check for updates
-		checkForUpdate(false);
 	}
 
 	/* Menu Actions */
