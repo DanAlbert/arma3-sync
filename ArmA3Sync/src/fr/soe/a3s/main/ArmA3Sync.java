@@ -179,6 +179,12 @@ public class ArmA3Sync implements DataAccessConstants {
 		mainPanel.drawGUI();
 		mainPanel.init();
 		mainPanel.setVisible(true);
+
+		// Check ArmA 3 executable location
+		mainPanel.checkWellcomeDialog();
+
+		// Check for updates
+		mainPanel.checkForUpdate(false);
 	}
 
 	private static String lockInstance() {
