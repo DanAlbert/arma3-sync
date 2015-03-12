@@ -71,16 +71,12 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener,
 			checkBoxNoSplashScreen, checkBoxDefaultWorld, checkBoxNoLogs,
 			checkBoxCheckSignatures, checkBoxExThreads, checkBoxEnableHT,
 			checkBoxNoFilePatching, checkBoxAutoRestart, checkBoxMalloc;
-
 	private JLabel labelMallocPath;
 
 	/* Services */
 	private final ConfigurationService configurationService = new ConfigurationService();
-
 	private final ProfileService profileService = new ProfileService();
-
 	private final AddonService addonService = new AddonService();
-
 	private final LaunchService launchService = new LaunchService();
 
 	public LauncherOptionsPanel(Facade facade) {
