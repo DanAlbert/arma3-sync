@@ -627,7 +627,7 @@ public class Console {
 			checkForAddons(repositoryName);
 
 			/* Sync */
-			sync(repositoryName, false);
+			syncRepository(repositoryName, false);
 
 		} catch (Exception e) {
 			List<Exception> errors = new ArrayList<Exception>();
@@ -731,7 +731,7 @@ public class Console {
 		}
 	}
 
-	public void check(String repositoryName) {
+	public void checkRepository(String repositoryName) {
 
 		System.out.println("");
 		System.out.println("Check repository.");
@@ -818,7 +818,7 @@ public class Console {
 			checkForAddons(repositoryName);
 
 			/* Sync */
-			sync(repositoryName, true);
+			syncRepository(repositoryName, true);
 
 		} catch (Exception e) {
 			List<Exception> errors = new ArrayList<Exception>();
@@ -827,7 +827,7 @@ public class Console {
 		}
 	}
 
-	private void sync(final String repositoryName, final boolean exit)
+	private void syncRepository(final String repositoryName, final boolean exit)
 			throws Exception {
 
 		System.out.println("Downloading...");

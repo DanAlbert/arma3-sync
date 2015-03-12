@@ -73,7 +73,7 @@ public class ArmA3Sync implements DataAccessConstants {
 		} else if (args.length == 2 && args[0].equalsIgnoreCase("-check")) {
 			Console console = new Console(false);
 			String repositoryName = args[1];
-			console.check(repositoryName);
+			console.checkRepository(repositoryName);
 		} else if (args.length == 4 && args[0].equalsIgnoreCase("-sync")) {
 			Console console = new Console(false);
 			String repositoryName = args[1];
