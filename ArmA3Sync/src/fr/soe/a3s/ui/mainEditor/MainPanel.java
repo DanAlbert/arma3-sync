@@ -499,7 +499,7 @@ public class MainPanel extends JFrame implements UIConstants {
 
 		/* Init Profiles menu */
 		updateProfilesMenu();
-
+		
 		/* Check repositories for update */
 		checkRepositories();
 	}
