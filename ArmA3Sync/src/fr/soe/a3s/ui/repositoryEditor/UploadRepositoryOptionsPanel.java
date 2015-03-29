@@ -108,7 +108,7 @@ public class UploadRepositoryOptionsPanel extends JDialog implements
 					protocolPanel.add(comboBoxProtocol);
 					protocolPanel.add(comboBoxProtocol);
 					ComboBoxModel comboBoxProtocolModel = new DefaultComboBoxModel(
-							new String[] { Protocol.FTP.getDescription(), });
+							new String[] { Protocol.FTP.getDescription() });
 					comboBoxProtocol.setModel(comboBoxProtocolModel);
 					comboBoxProtocol.setBounds(141, 24, 77, 23);
 				}
