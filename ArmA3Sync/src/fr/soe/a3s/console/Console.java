@@ -284,7 +284,7 @@ public class Console {
 		do {
 			try {
 				System.out
-						.print("Enter connection timeout in milliseconds (10000, >0): ");
+						.print("Enter connection timeout in milliseconds (default 10000, >0): ");
 				connectionTimeOut = c.nextLine();
 				int time = Integer.parseInt(connectionTimeOut);
 				connectionTimeOutIsWrong = false;
@@ -302,7 +302,7 @@ public class Console {
 		do {
 			try {
 				System.out
-						.print("Enter read timeout in milliseconds (30000 default, >0): ");
+						.print("Enter read timeout in milliseconds (default 30000, >0): ");
 				readTimeOut = c.nextLine();
 				int time = Integer.parseInt(readTimeOut);
 				readTimeOutIsWrong = false;
