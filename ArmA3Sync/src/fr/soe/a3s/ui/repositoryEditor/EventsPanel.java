@@ -384,24 +384,6 @@ public class EventsPanel extends JPanel implements UIConstants {
 
 	private void buttonUploadPerformed() {
 
-		// try {
-		// RepositoryDTO r = repositoryService.getRepository(repositoryName);
-		// ProtocoleDTO protocoleDTO = r.getProtocoleDTO();
-		// if (protocoleDTO.getProtocole().equals(Protocole.HTTP)) {
-		// JOptionPane
-		// .showMessageDialog(
-		// facade.getMainPanel(),
-		// "Uploading events is not currently available with http based repository.\n Use Save to Disk command on the host machine instead.",
-		// "Information", JOptionPane.INFORMATION_MESSAGE);
-		// return;
-		// }
-		//
-		// } catch (RepositoryException e) {
-		// JOptionPane.showMessageDialog(facade.getMainPanel(),
-		// e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-		// return;
-		// }
-
 		if (eventDTOs == null) {
 			JOptionPane.showMessageDialog(facade.getMainPanel(),
 					"Nothing to upload.", "Information",
