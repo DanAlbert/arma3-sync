@@ -23,6 +23,7 @@ import java.util.zip.GZIPOutputStream;
 import fr.soe.a3s.constant.DownloadStatus;
 import fr.soe.a3s.constant.Protocol;
 import fr.soe.a3s.constant.TimeOutValues;
+import fr.soe.a3s.domain.AbstractProtocole;
 import fr.soe.a3s.domain.repository.AutoConfig;
 import fr.soe.a3s.domain.repository.Changelogs;
 import fr.soe.a3s.domain.repository.Events;
@@ -58,10 +59,10 @@ public class HttpDAO extends AbstractConnexionDAO {
 				.setReadTimeout(TimeOutValues.READ_TIME_OUT.getValue());
 	}
 
-	private void connect(Repository repository,
+	private void connect(AbstractProtocole protocole,
 			String relativePathFromRepository) throws IOException {
 
-		String url = repository.getProtocole().getUrl();
+		String url = protocole.getUrl();
 		String hostname = url;
 		String remotePath = "";
 		int index = url.indexOf("/");
@@ -71,17 +72,15 @@ public class HttpDAO extends AbstractConnexionDAO {
 		}
 
 		remotePath = remotePath + relativePathFromRepository;
-		String port = repository.getProtocole().getPort();
-		String login = repository.getProtocole().getLogin();
-		String password = repository.getProtocole().getPassword();
+		String port = protocole.getPort();
+		String login = protocole.getLogin();
+		String password = protocole.getPassword();
 
 		URL urlObject = new URL("http", hostname, Integer.parseInt(port),
 				remotePath);
 		httpURLConnection = (HttpURLConnection) urlObject.openConnection();
-		httpURLConnection.setConnectTimeout(Integer.parseInt(repository
-				.getProtocole().getConnectionTimeOut()));
-		httpURLConnection.setReadTimeout(Integer.parseInt(repository
-				.getProtocole().getReadTimeOut()));
+		httpURLConnection.setConnectTimeout(Integer.parseInt(protocole.getConnectionTimeOut()));
+		httpURLConnection.setReadTimeout(Integer.parseInt(protocole.getReadTimeOut()));
 
 		if (!(login.equalsIgnoreCase("anonymous"))) {
 			String encoding = Base64Coder.encodeLines((login + ":" + password)
@@ -197,32 +196,32 @@ public class HttpDAO extends AbstractConnexionDAO {
 		return autoConfig;
 	}
 
-	public ServerInfo downloadSeverInfo(Repository repository)
+	public ServerInfo downloadSeverInfo(String repositoryName,AbstractProtocole protocole)
 			throws HttpException, WritingException, ConnectException {
 
 		ServerInfo serverInfo = null;
 		try {
-			connect(repository, SERVERINFO_FILE_PATH);
+			connect(protocole, SERVERINFO_FILE_PATH);
 			int responseCode = httpURLConnection.getResponseCode();
 			if (responseCode != HttpURLConnection.HTTP_OK) {
 				String message = "Server return error " + responseCode
 						+ " on url:" + "\n" + "http://"
-						+ repository.getProtocole().getUrl()
+						+ protocole.getUrl()
 						+ SERVERINFO_FILE_PATH;
 				System.out.println(message);
 				throw new HttpException(message);
 			}
 		} catch (IOException e) {// happens if repository url is wrong
 			String message = "Failed to connect to repository "
-					+ repository.getName() + " on url " + "http://"
-					+ repository.getProtocole().getUrl();
+					+ repositoryName + " on url " + "http://"
+					+ protocole.getUrl();
 			System.out.println(message);
 			throw new ConnectException(message);
 		}
 
 		try {
 			File directory = new File(TEMP_FOLDER_PATH + "/"
-					+ repository.getName());
+					+ repositoryName);
 			directory.mkdir();
 			File file = new File(directory + "/"
 					+ DataAccessConstants.SERVERINFO);
@@ -245,32 +244,32 @@ public class HttpDAO extends AbstractConnexionDAO {
 		return serverInfo;
 	}
 
-	public Changelogs downloadChangelogs(Repository repository)
+	public Changelogs downloadChangelogs(String repositoryName,AbstractProtocole protocole)
 			throws HttpException, WritingException, ConnectException {
 
 		Changelogs changelogs = null;
 		try {
-			connect(repository, CHANGELOGS_FILE_PATH);
+			connect(protocole, CHANGELOGS_FILE_PATH);
 			int responseCode = httpURLConnection.getResponseCode();
 			if (responseCode != HttpURLConnection.HTTP_OK) {
 				String message = "Server return error " + responseCode
 						+ " on url:" + "\n" + "http://"
-						+ repository.getProtocole().getUrl()
+						+ protocole.getUrl()
 						+ CHANGELOGS_FILE_PATH;
 				System.out.println(message);
 				throw new HttpException(message);
 			}
 		} catch (IOException e) {// happens if repository url is wrong
 			String message = "Failed to connect to repository "
-					+ repository.getName() + " on url " + "http://"
-					+ repository.getProtocole().getUrl();
+					+ repositoryName + " on url " + "http://"
+					+ protocole.getUrl();
 			System.out.println(message);
 			throw new ConnectException(message);
 		}
 
 		try {
 			File directory = new File(TEMP_FOLDER_PATH + "/"
-					+ repository.getName());
+					+ repositoryName);
 			directory.mkdir();
 			File file = new File(directory + "/"
 					+ DataAccessConstants.CHANGELOGS);
@@ -293,31 +292,31 @@ public class HttpDAO extends AbstractConnexionDAO {
 		return changelogs;
 	}
 
-	public Events downloadEvent(Repository repository) throws HttpException,
+	public Events downloadEvent(String repositoryName,AbstractProtocole protocole) throws HttpException,
 			WritingException, ConnectException {
 
 		Events events = null;
 		try {
-			connect(repository, EVENTS_FILE_PATH);
+			connect( protocole, EVENTS_FILE_PATH);
 			int responseCode = httpURLConnection.getResponseCode();
 			if (responseCode != HttpURLConnection.HTTP_OK) {
 				String message = "Server return error " + responseCode
 						+ " on url:" + "\n" + "http://"
-						+ repository.getProtocole().getUrl() + EVENTS_FILE_PATH;
+						+  protocole.getUrl() + EVENTS_FILE_PATH;
 				System.out.println(message);
 				throw new HttpException(message);
 			}
 		} catch (IOException e) {// happens if repository url is wrong
 			String message = "Failed to connect to repository "
-					+ repository.getName() + " on url " + "http://"
-					+ repository.getProtocole().getUrl();
+					+ repositoryName + " on url " + "http://"
+					+  protocole.getUrl();
 			System.out.println(message);
 			throw new ConnectException(message);
 		}
 
 		try {
 			File directory = new File(TEMP_FOLDER_PATH + "/"
-					+ repository.getName());
+					+ repositoryName);
 			directory.mkdir();
 			File file = new File(directory + "/" + DataAccessConstants.EVENTS);
 			download(file);
@@ -339,24 +338,24 @@ public class HttpDAO extends AbstractConnexionDAO {
 		return events;
 	}
 
-	public SyncTreeDirectory downloadSync(Repository repository)
+	public SyncTreeDirectory downloadSync(String repositoryName,AbstractProtocole protocole)
 			throws HttpException, WritingException, ConnectException {
 
 		SyncTreeDirectory syncTreeDirectory = null;
 		try {
-			connect(repository, SYNC_FILE_PATH);
+			connect(protocole, SYNC_FILE_PATH);
 			int responseCode = httpURLConnection.getResponseCode();
 			if (responseCode != HttpURLConnection.HTTP_OK) {
 				String message = "Server return HTTP error " + responseCode
 						+ " on url:" + "\n" + "http://"
-						+ repository.getProtocole().getUrl() + SYNC_FILE_PATH;
+						+ protocole.getUrl() + SYNC_FILE_PATH;
 				System.out.println(message);
 				throw new HttpException(message);
 			}
 		} catch (IOException e) {// happens if repository url is wrong
 			String message = "Failed to connect to repository "
-					+ repository.getName() + " on url " + "http://"
-					+ repository.getProtocole().getUrl() + "\n"
+					+ repositoryName + " on url " + "http://"
+					+ protocole.getUrl() + "\n"
 					+ e.getMessage();
 			System.out.println(message);
 			throw new ConnectException(message);
@@ -364,7 +363,7 @@ public class HttpDAO extends AbstractConnexionDAO {
 
 		try {
 			File directory = new File(TEMP_FOLDER_PATH + "/"
-					+ repository.getName());
+					+ repositoryName);
 			directory.mkdir();
 			File file = new File(directory + "/" + DataAccessConstants.SYNC);
 			download(file);
@@ -446,11 +445,10 @@ public class HttpDAO extends AbstractConnexionDAO {
 		return complete;
 	}
 
-	public boolean uploadEvents(Repository repository) throws HttpException {
+	public boolean uploadEvents(Events events,String repositoryName,AbstractProtocole protocole) throws HttpException {
 
 		boolean response = true;
 
-		if (repository.getEvents() != null) {
 			try {
 				// // set some connection properties
 				// String param = "value";
@@ -493,7 +491,7 @@ public class HttpDAO extends AbstractConnexionDAO {
 				// writer.append(CRLF).flush();
 				// writer.append("--" + boundary + "--").append(CRLF).flush();
 
-				connect(repository, EVENTS_FILE_PATH);
+				connect(protocole, A3S_FOlDER_PATH);
 
 				String attachmentName = "events";
 				String attachmentFileName = "events";
@@ -524,7 +522,7 @@ public class HttpDAO extends AbstractConnexionDAO {
 				ByteArrayOutputStream baos = new ByteArrayOutputStream();
 				ObjectOutputStream oos = new ObjectOutputStream(
 						new GZIPOutputStream(baos));
-				oos.writeObject(repository.getEvents());
+				oos.writeObject(events);
 				oos.flush();
 				oos.close();
 				InputStream uis = new ByteArrayInputStream(baos.toByteArray());
@@ -559,9 +557,6 @@ public class HttpDAO extends AbstractConnexionDAO {
 				e.printStackTrace();
 				response = false;
 			}
-		} else {
-			response = false;
-		}
 		return false;
 	}
 

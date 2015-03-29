@@ -100,19 +100,19 @@ public class HttpService extends AbstractConnexionService implements
 
 		try {
 			SyncTreeDirectory syncTreeDirectory = httpDAOPool.get(0)
-					.downloadSync(repository);
+					.downloadSync(repository.getName(),repository.getProtocole());
 			repository.setSync(syncTreeDirectory);// null if not found
 			ServerInfo serverInfo = httpDAOPool.get(0).downloadSeverInfo(
-					repository);
+					repository.getName(),repository.getProtocole());
 			repository.setServerInfo(serverInfo);// null if not found
 			if (serverInfo != null) {
 				repository.getHiddenFolderPath().addAll(
 						serverInfo.getHiddenFolderPaths());
 			}
 			Changelogs changelogs = httpDAOPool.get(0).downloadChangelogs(
-					repository);
+					repository.getName(),repository.getProtocole());
 			repository.setChangelogs(changelogs);// null if not found
-			Events events = httpDAOPool.get(0).downloadEvent(repository);
+			Events events = httpDAOPool.get(0).downloadEvent(repository.getName(),repository.getProtocole());
 			repository.setEvents(events);// null if not found
 		} catch (HttpException e) {
 			// error http 404 may happen if repository has not been built so far
@@ -130,7 +130,7 @@ public class HttpService extends AbstractConnexionService implements
 		}
 
 		SyncTreeDirectory syncTreeDirectory = httpDAOPool.get(0).downloadSync(
-				repository);
+				repository.getName(),repository.getProtocole());
 		repository.setSync(syncTreeDirectory);// null if not found
 	}
 
@@ -146,7 +146,7 @@ public class HttpService extends AbstractConnexionService implements
 		}
 
 		ServerInfo serverInfo = httpDAOPool.get(0)
-				.downloadSeverInfo(repository);
+				.downloadSeverInfo(repository.getName(),repository.getProtocole());
 		repository.setServerInfo(serverInfo);// null if not found
 	}
 
@@ -161,7 +161,7 @@ public class HttpService extends AbstractConnexionService implements
 		}
 
 		Changelogs changelogs = httpDAOPool.get(0).downloadChangelogs(
-				repository);
+				repository.getName(),repository.getProtocole());
 		repository.setChangelogs(changelogs);// null if not found
 	}
 
@@ -446,7 +446,7 @@ public class HttpService extends AbstractConnexionService implements
 					+ " not found!");
 		}
 
-		boolean response = httpDAOPool.get(0).uploadEvents(repository);
+		boolean response = httpDAOPool.get(0).uploadEvents(repository.getEvents(),repository.getName(),repository.getRepositoryUploadProtocole());
 		return response;
 	}
 
@@ -463,9 +463,18 @@ public class HttpService extends AbstractConnexionService implements
 
 	@Override
 	public void getSyncWithRepositoryUploadProtocole(String repositoryName)
-			throws RepositoryException, WritingException, ConnectException,
-			FtpException {
-		// unimplemented
+			throws RepositoryException, WritingException, ConnectException, HttpException
+			 {
+		
+		Repository repository = repositoryDAO.getMap().get(repositoryName);
+		if (repository == null) {
+			throw new RepositoryException("Repository " + repositoryName
+					+ " not found!");
+		}
+
+		SyncTreeDirectory syncTreeDirectory = httpDAOPool.get(0).downloadSync(
+				repository.getName(),repository.getRepositoryUploadProtocole());
+		repository.setSync(syncTreeDirectory);// null if not found
 	}
 
 	@Override

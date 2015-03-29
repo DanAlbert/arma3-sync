@@ -59,7 +59,7 @@ public abstract class AbstractConnexionService extends ObjectDTOtransformer {
 
 	public abstract void getSyncWithRepositoryUploadProtocole(
 			String repositoryName) throws RepositoryException,
-			WritingException, ConnectException, FtpException;
+			WritingException, ConnectException, FtpException, HttpException;
 
 	public abstract boolean remoteFileExists(String repositoryName,
 			SyncTreeNodeDTO remoteNode) throws RepositoryException,
