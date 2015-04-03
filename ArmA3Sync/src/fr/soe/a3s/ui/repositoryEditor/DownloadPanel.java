@@ -850,12 +850,7 @@ public class DownloadPanel extends JPanel implements UIConstants {
 	private void buttonCheckForAddonsCancelPerformed() {
 
 		if (addonsChecker != null) {
-			try {
-				addonsChecker.join();
-				addonsChecker.interrupt();
-			} catch (Exception e) {
-			}
-
+		    addonsChecker.cancel();
 			labelCheckForAddonsStatus.setText("Canceled");
 			buttonCheckForAddonsStart.setEnabled(true);
 			progressBarCheckForAddons.setMaximum(0);

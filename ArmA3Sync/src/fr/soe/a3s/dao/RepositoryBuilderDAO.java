@@ -51,23 +51,14 @@ public class RepositoryBuilderDAO implements DataAccessConstants,
 		ObservableFilesNumber3, ObservableFileSize2 {
 
 	private Protocol protocole;
-
 	private String repositortUrl;
-
 	private ObserverFilesNumber3 observerFilesNumber3;
-
 	private ObserverFileSize2 observerFileSize2;
-
 	private long nbFiles, totalNbFiles;
-
 	private long totalFilesSize;
-
 	private long cumulativeFileSize;
-
 	private boolean error;
-
 	private List<Callable<Integer>> callables;
-
 	private Map<String, FileAttributes> mapFiles;
 
 	@SuppressWarnings("unchecked")
@@ -432,8 +423,6 @@ public class RepositoryBuilderDAO implements DataAccessConstants,
 		this.totalNbFiles = repository.getServerInfo().getNumberOfFiles();
 		this.nbFiles = 0;
 		this.callables = new ArrayList<Callable<Integer>>();
-		// this.currentMapFiles = repository.getMapFiles();
-		// this.newMapFiles = new HashMap<String, FileAttributes>();
 		this.mapFiles = repository.getMapFiles();
 
 		// Remove no more existing files on disk from mapFiles

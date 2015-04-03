@@ -28,6 +28,7 @@ public class AddonsChecker extends Thread {
 	private boolean found;
 	private final boolean update;
 	private final DownloadPanel downloadPanel;
+	private boolean cancel = false;
 
 	/* Services */
 	private final RepositoryService repositoryService = new RepositoryService();
@@ -53,12 +54,13 @@ public class AddonsChecker extends Thread {
 		facade.getAddonOptionsPanel().updateAddonPriorities();
 
 		downloadPanel.getButtonCheckForAddonsCancel().setEnabled(true);
-		downloadPanel.getLabelCheckForAddonsStatus().setText("");
+		downloadPanel.getLabelCheckForAddonsStatus().setText("Checking files...");
 		downloadPanel.getButtonCheckForAddonsStart().setEnabled(false);
 		downloadPanel.getComBoxDestinationFolder().setEnabled(false);
 		downloadPanel.getButtonDownloadStart().setEnabled(false);
 		downloadPanel.getProgressBarCheckForAddons().setMinimum(0);
 		downloadPanel.getProgressBarCheckForAddons().setMaximum(100);
+		downloadPanel.getProgressBarCheckForAddons().setIndeterminate(true);
 
 		try {
 			connexionService = ConnexionServiceFactory
@@ -71,6 +73,7 @@ public class AddonsChecker extends Thread {
 					.addObserverFilesNumber3(new ObserverFilesNumber3() {
 						@Override
 						public synchronized void update(int value) {
+							downloadPanel.getProgressBarCheckForAddons().setIndeterminate(false);
 							downloadPanel.getProgressBarCheckForAddons()
 									.setValue(value);
 						}
@@ -84,6 +87,7 @@ public class AddonsChecker extends Thread {
 					new ObserverFilesNumber3() {
 						@Override
 						public void update(int value) {
+							downloadPanel.getProgressBarCheckForAddons().setIndeterminate(false);
 							downloadPanel.getProgressBarCheckForAddons()
 									.setValue(value);
 						}
@@ -106,21 +110,25 @@ public class AddonsChecker extends Thread {
 			facade.getAddonsPanel().updateModsetSelection(repositoryName);
 			downloadPanel.getLabelCheckForAddonsStatus().setText("Finished!");
 		} catch (Exception e) {
-			e.printStackTrace();
-			String message = "";
-			if (e.getMessage() == null || "".equals(e.getMessage())) {
-				message = "An unexpected error has occured.";
-				String osName = System.getProperty("os.name");
-				if (osName.contains("Windows")) {
-					message = message + "\n" + "Try to run ArmA3Sync-DEBUG.exe";
+			if (!cancel){
+				downloadPanel.getProgressBarCheckForAddons().setIndeterminate(false);
+				e.printStackTrace();
+				String message = "";
+				if (e.getMessage() == null || "".equals(e.getMessage())) {
+					message = "An unexpected error has occured.";
+					String osName = System.getProperty("os.name");
+					if (osName.contains("Windows")) {
+						message = message + "\n" + "Try to run ArmA3Sync-DEBUG.exe";
+					}
+				} else {
+					message = e.getMessage();
 				}
-			} else {
-				message = e.getMessage();
+				JOptionPane.showMessageDialog(facade.getMainPanel(), message,
+						"Check for Addons", JOptionPane.ERROR_MESSAGE);
+				downloadPanel.getLabelCheckForAddonsStatus().setText("Error!");
 			}
-			JOptionPane.showMessageDialog(facade.getMainPanel(), message,
-					"Check for Addons", JOptionPane.ERROR_MESSAGE);
-			downloadPanel.getLabelCheckForAddonsStatus().setText("");
 		} finally {
+			downloadPanel.getProgressBarCheckForAddons().setIndeterminate(false);
 			downloadPanel.getComBoxDestinationFolder().setEnabled(true);
 			downloadPanel.getButtonCheckForAddonsStart().setEnabled(true);
 			downloadPanel.getButtonCheckForAddonsCancel().setEnabled(true);
@@ -130,6 +138,14 @@ public class AddonsChecker extends Thread {
 			this.interrupt();
 			System.gc();
 		}
+	}
+	
+	public void cancel() {
+		
+		connexionService.cancel(false);
+		this.cancel = true;
+		this.interrupt();
+		System.gc();
 	}
 
 	private void setEventAddonSelection() {

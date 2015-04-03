@@ -384,8 +384,10 @@ public class HttpService extends AbstractConnexionService implements
 		httpDAOPool.get(0).setTotalNbFiles(list.size());
 
 		for (SyncTreeLeafDTO leaf : list) {
-			double complete;
-			complete = httpDAOPool.get(0).getFileCompletion(hostname, login,
+			if (httpDAOPool.get(0).isCanceled()) {
+				break;
+			}
+			double complete = httpDAOPool.get(0).getFileCompletion(hostname, login,
 					password, port, leaf.getRemotePath(),
 					leaf.getDestinationPath(), leaf, connectionTimeOut,
 					readTimeOut);
@@ -413,10 +415,6 @@ public class HttpService extends AbstractConnexionService implements
 					}
 					leaf.setDestinationPath(destinationPath);
 					leaf.setRemotePath(remotePath);
-
-					if (httpDAOPool.get(0).isCanceled()) {
-						break;
-					}
 
 					File file = new File(destinationPath + "/" + node.getName());
 					if (file.exists()) {
