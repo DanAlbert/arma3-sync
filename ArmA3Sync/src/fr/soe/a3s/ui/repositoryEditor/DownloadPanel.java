@@ -906,8 +906,7 @@ public class DownloadPanel extends JPanel implements UIConstants {
 					defaultDownloadLocation);
 		}
 
-		addonsDownloader = new AddonsDownloader(facade, repositoryName, racine,
-				totalFilesSize, this);
+		addonsDownloader = new AddonsDownloader(facade, repositoryName, racine, this);
 		addonsDownloader.setDaemon(true);
 		addonsDownloader.start();
 	}

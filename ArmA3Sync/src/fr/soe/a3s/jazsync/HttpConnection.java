@@ -362,8 +362,13 @@ public class HttpConnection {
 		// opens an output stream to save into file
 		FileOutputStream outputStream = new FileOutputStream(targetFile, false);
 
-		final long startTime = System.nanoTime();
 		httpDAO.setOffset(0);
+		if (length==0){
+			httpDAO.setCompletion(0);
+		}
+		httpDAO.updateTotalFileSizeObserver();
+
+		final long startTime = System.nanoTime();
 		CountingOutputStream dos = new CountingOutputStream(outputStream) {
 			@Override
 			protected void afterWrite(int n) throws IOException {
@@ -418,9 +423,18 @@ public class HttpConnection {
 		// opens an output stream to save into file
 		FileOutputStream outputStream = new FileOutputStream(targetFile, true);
 
-		final long startTime = System.nanoTime();
+
 		long offset = targetFile.length();
 		httpDAO.setOffset(offset);
+		if (length==0){
+			httpDAO.setCompletion(0);
+		}else 
+		{
+			httpDAO.setCompletion((length-offset)/length);
+		}
+		httpDAO.updateTotalFileSizeObserver();
+		
+		final long startTime = System.nanoTime();
 		CountingOutputStream dos = new CountingOutputStream(outputStream) {
 			@Override
 			protected void afterWrite(int n) throws IOException {

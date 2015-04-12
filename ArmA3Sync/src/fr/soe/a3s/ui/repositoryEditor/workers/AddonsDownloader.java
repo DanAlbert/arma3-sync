@@ -15,6 +15,7 @@ import fr.soe.a3s.controller.ObserverError;
 import fr.soe.a3s.controller.ObserverFileSize;
 import fr.soe.a3s.controller.ObserverFilesNumber;
 import fr.soe.a3s.controller.ObserverSpeed;
+import fr.soe.a3s.controller.ObserverTotalFileSize;
 import fr.soe.a3s.dao.AbstractConnexionDAO;
 import fr.soe.a3s.dao.FileAccessMethods;
 import fr.soe.a3s.dto.sync.SyncTreeDirectoryDTO;
@@ -35,7 +36,7 @@ public class AddonsDownloader extends Thread {
 	private final Facade facade;
 	private final SyncTreeDirectoryDTO racine;
 	private long incrementedFilesSize;
-	private final long totalFilesSize;
+	private long totalFilesSize;
 	private final String repositoryName;
 	private final List<SyncTreeNodeDTO> listFilesToUpdate = new ArrayList<SyncTreeNodeDTO>();
 	private final List<SyncTreeNodeDTO> listFilesToDelete = new ArrayList<SyncTreeNodeDTO>();
@@ -50,12 +51,11 @@ public class AddonsDownloader extends Thread {
 	private final RepositoryService repositoryService = new RepositoryService();
 
 	public AddonsDownloader(Facade facade, String repositoryName,
-			SyncTreeDirectoryDTO racine, long totalFilesSize,
+			SyncTreeDirectoryDTO racine,
 			DownloadPanel downloadPanel) {
 		this.facade = facade;
 		this.racine = racine;
-		this.repositoryName = repositoryName;
-		this.totalFilesSize = totalFilesSize;
+		this.repositoryName = repositoryName;;
 		this.downloadPanel = downloadPanel;
 	}
 
@@ -94,14 +94,14 @@ public class AddonsDownloader extends Thread {
 		}
 		listFilesToUpdate.clear();
 		listFilesToUpdate.addAll(list);
-
+		
 		if (listFilesToUpdate.isEmpty()) {
 			finish();
 			initDownloadPanelForFinishedDownload();
 			terminate();
 			return;
 		}
-
+		
 		// Download Files
 
 		try {
@@ -114,6 +114,11 @@ public class AddonsDownloader extends Thread {
 			terminate();
 			return;
 		}
+		
+		// Set total file size
+		determineTotalFileSize();
+		downloadPanel.getLabelTotalFilesSizeValue().setText(UnitConverter
+				.convertSize(totalFilesSize));
 
 		try {
 			for (AbstractConnexionDAO connect : connexionService
@@ -133,6 +138,15 @@ public class AddonsDownloader extends Thread {
 									.setValue(
 											(int) (((incrementedFilesSize) * 100) / totalFilesSize));
 						}
+					}
+				});
+				
+				connect.addObserverTotalFileSize(new ObserverTotalFileSize(){
+					@Override
+					public void update() {
+						determineTotalFileSize();
+						downloadPanel.getLabelTotalFilesSizeValue().setText(UnitConverter
+								.convertSize(totalFilesSize));
 					}
 				});
 
@@ -241,6 +255,17 @@ public class AddonsDownloader extends Thread {
 			finishWithErrors(errors);
 			initDownloadPanelForFinishedDownload();
 			terminate();
+		}
+	}
+
+	private void determineTotalFileSize() {
+		
+		totalFilesSize =  0;
+		for (SyncTreeNodeDTO node : listFilesToUpdate) {	
+			if (node instanceof SyncTreeLeafDTO){
+				SyncTreeLeafDTO leaf = (SyncTreeLeafDTO) node;
+				totalFilesSize = totalFilesSize + (long) (leaf.getSize()* (100 - leaf .getComplete()) / 100);
+			}
 		}
 	}
 

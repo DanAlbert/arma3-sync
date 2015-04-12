@@ -12,6 +12,7 @@ import fr.soe.a3s.controller.ObservableFilesNumber;
 import fr.soe.a3s.controller.ObservableFilesNumber2;
 import fr.soe.a3s.controller.ObservableFilesNumber3;
 import fr.soe.a3s.controller.ObservableSpeed;
+import fr.soe.a3s.controller.ObservableTotalFileSize;
 import fr.soe.a3s.controller.ObserverActiveConnnection;
 import fr.soe.a3s.controller.ObserverEnd;
 import fr.soe.a3s.controller.ObserverError;
@@ -22,19 +23,22 @@ import fr.soe.a3s.controller.ObserverFilesNumber;
 import fr.soe.a3s.controller.ObserverFilesNumber2;
 import fr.soe.a3s.controller.ObserverFilesNumber3;
 import fr.soe.a3s.controller.ObserverSpeed;
+import fr.soe.a3s.controller.ObserverTotalFileSize;
+import fr.soe.a3s.dto.sync.SyncTreeLeafDTO;
 import fr.soe.a3s.dto.sync.SyncTreeNodeDTO;
 
 public class AbstractConnexionDAO implements DataAccessConstants,
 		ObservableFilesNumber, ObservableFilesNumber2, ObservableFilesNumber3,
 		ObservableFileSize, ObservableFileSize2, ObservableSpeed,
 		ObservableFileDownload, ObservableEnd, ObservableActiveConnnection,
-		ObservableError {
+		ObservableError,ObservableTotalFileSize {
 
 	protected ObserverFilesNumber observerFilesNumber;
 	protected ObserverFilesNumber2 observerFilesNumber2;
 	protected ObserverFilesNumber3 observerFilesNumber3;
 	protected ObserverFileSize observerFileSize;
 	protected ObserverFileSize2 observerFileSize2;
+	protected ObserverTotalFileSize observerTotalFileSize;
 	protected ObserverSpeed observerSpeed;
 	protected ObserverFileDownload observerFileDownload;
 	protected ObserverEnd observerEnd;
@@ -112,6 +116,7 @@ public class AbstractConnexionDAO implements DataAccessConstants,
 		this.observerSpeed.update();
 	}
 
+	/* */
 	@Override
 	public void addObserverFileDownload(ObserverFileDownload obs) {
 		this.observerFileDownload = obs;
@@ -121,7 +126,8 @@ public class AbstractConnexionDAO implements DataAccessConstants,
 	public void updateFileDownloadObserver() {
 		this.observerFileDownload.proceed();
 	}
-
+	
+	/* */
 	@Override
 	public void addObserverEnd(ObserverEnd obs) {
 		this.observerEnd = obs;
@@ -132,6 +138,7 @@ public class AbstractConnexionDAO implements DataAccessConstants,
 		this.observerEnd.end();
 	}
 
+	/* */
 	@Override
 	public void addObserverError(ObserverError obs) {
 		this.observerError = obs;
@@ -142,6 +149,7 @@ public class AbstractConnexionDAO implements DataAccessConstants,
 		this.observerError.error(errors);
 	}
 
+	/* */
 	@Override
 	public void addObserverActiveConnection(ObserverActiveConnnection obs) {
 		this.observerActiveConnnection = obs;
@@ -151,7 +159,18 @@ public class AbstractConnexionDAO implements DataAccessConstants,
 	public void updateObserverActiveConnection() {
 		this.observerActiveConnnection.update();
 	}
+	
+	/* */
+	@Override
+	public void addObserverTotalFileSize(ObserverTotalFileSize obs) {
+		this.observerTotalFileSize = obs;
+	}
 
+	@Override
+	public void updateTotalFileSizeObserver() {
+		this.observerTotalFileSize.update();
+	}
+	
 	/* Getters and Setters */
 
 	public long getSpeed() {
@@ -196,5 +215,12 @@ public class AbstractConnexionDAO implements DataAccessConstants,
 
 	public void setTotalNbFiles(long totalNbFiles) {
 		this.totalNbFiles = totalNbFiles;
+	}
+	
+	public void setCompletion(double value) {
+		if (downloadingNode instanceof SyncTreeLeafDTO){
+			SyncTreeLeafDTO leaf = (SyncTreeLeafDTO) this.downloadingNode;
+			leaf.setComplete(value);
+		}
 	}
 }
