@@ -53,7 +53,7 @@ public class AddonsChecker extends Thread {
 		facade.getAddonsPanel().expandAddonGroups();
 		facade.getAddonOptionsPanel().updateAddonPriorities();
 
-		downloadPanel.getButtonCheckForAddonsCancel().setEnabled(true);
+		downloadPanel.getButtonCheckForAddonsCancel().setEnabled(false);
 		downloadPanel.getLabelCheckForAddonsStatus().setText("Checking files...");
 		downloadPanel.getButtonCheckForAddonsStart().setEnabled(false);
 		downloadPanel.getComBoxDestinationFolder().setEnabled(false);
@@ -93,22 +93,26 @@ public class AddonsChecker extends Thread {
 						}
 					});
 
+			downloadPanel.getButtonCheckForAddonsCancel().setEnabled(true);
+			
 			// slower with http/zsync!
 			connexionService.determineCompletion(repositoryName, parent);
 
-			if (eventName != null) {
-				setEventAddonSelection();
-			} else if (update) {
-				selectAllDescending(parent);
+			if (!cancel){
+				if (eventName != null) {
+					setEventAddonSelection();
+				} else if (update) {
+					selectAllDescending(parent);
+				}
+				downloadPanel.updateAddons(parent);
+				downloadPanel.getRepositoryPanel().getAdminPanel()
+						.init(repositoryName);
+				downloadPanel.getRepositoryPanel().getEventsPanel()
+						.init(repositoryName);
+				facade.getSyncPanel().init();
+				facade.getAddonsPanel().updateModsetSelection(repositoryName);
+				downloadPanel.getLabelCheckForAddonsStatus().setText("Finished!");
 			}
-			downloadPanel.updateAddons(parent);
-			downloadPanel.getRepositoryPanel().getAdminPanel()
-					.init(repositoryName);
-			downloadPanel.getRepositoryPanel().getEventsPanel()
-					.init(repositoryName);
-			facade.getSyncPanel().init();
-			facade.getAddonsPanel().updateModsetSelection(repositoryName);
-			downloadPanel.getLabelCheckForAddonsStatus().setText("Finished!");
 		} catch (Exception e) {
 			if (!cancel){
 				downloadPanel.getProgressBarCheckForAddons().setIndeterminate(false);
@@ -142,8 +146,10 @@ public class AddonsChecker extends Thread {
 	
 	public void cancel() {
 		
-		connexionService.cancel(false);
 		this.cancel = true;
+		connexionService.cancel(false);
+		downloadPanel.updateAddons(null);
+		downloadPanel.getLabelCheckForAddonsStatus().setText("Canceled!");
 		this.interrupt();
 		System.gc();
 	}

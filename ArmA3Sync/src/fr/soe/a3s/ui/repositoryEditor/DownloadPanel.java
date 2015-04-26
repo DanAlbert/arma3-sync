@@ -155,6 +155,7 @@ public class DownloadPanel extends JPanel implements UIConstants {
 					11));
 			labelCheckForAddonsStatus.setForeground(new Color(45, 125, 45));
 			checkForAddonsLabelPanel.add(labelCheckForAddonsStatus);
+			labelCheckForAddonsStatus.setPreferredSize(new java.awt.Dimension(83, 15));
 			vBox.add(checkForAddonsLabelPanel);
 		}
 		{
@@ -851,7 +852,7 @@ public class DownloadPanel extends JPanel implements UIConstants {
 
 		if (addonsChecker != null) {
 		    addonsChecker.cancel();
-			labelCheckForAddonsStatus.setText("Canceled");
+			labelCheckForAddonsStatus.setText("Canceled!");
 			buttonCheckForAddonsStart.setEnabled(true);
 			progressBarCheckForAddons.setMaximum(0);
 			arbre.setEnabled(true);
@@ -1039,7 +1040,9 @@ public class DownloadPanel extends JPanel implements UIConstants {
 		totalFilesSelected = 0;
 		totalFilesUpdated = 0;
 		totalFilesDeleted = 0;
-		compute(racine);
+		if (racine!=null){
+			compute(racine);
+		}
 		labelTotalFilesSizeValue.setText(UnitConverter
 				.convertSize(totalFilesSize));
 		labelTotalFilesUpdatedValue
@@ -1061,6 +1064,10 @@ public class DownloadPanel extends JPanel implements UIConstants {
 		checkBoxSelectAll.setSelected(false);
 	}
 
+	/**
+	 * Determine total file size, nb file to update and delete
+	 * @param syncTreeNodeDTO not null
+	 */
 	private void compute(SyncTreeNodeDTO syncTreeNodeDTO) {
 
 		if (syncTreeNodeDTO.isLeaf()) {
