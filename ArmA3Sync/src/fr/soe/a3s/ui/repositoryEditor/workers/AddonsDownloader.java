@@ -479,7 +479,7 @@ public class AddonsDownloader extends Thread {
 				if (directory.isUpdated() || directory.isChanged()) {
 					acre2IsUpdated = true;
 				}
-			} else if (node.getName().toLowerCase().contains("acre")) {
+			} else if (node.getName().toLowerCase().contains("acre")&&!node.getName().toLowerCase().contains("acre2")) {
 				if (directory.isUpdated() || directory.isChanged()) {
 					acreIsUpdated = true;
 				}
