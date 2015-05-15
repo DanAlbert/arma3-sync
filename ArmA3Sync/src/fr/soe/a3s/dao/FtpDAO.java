@@ -47,36 +47,48 @@ public class FtpDAO extends AbstractConnexionDAO {
 	private String rootRemotePath;
 	private boolean acquiredSmaphore;
 
-	private String connect(String url) throws NumberFormatException,
-			SocketException, IOException {
+	private String connect(AbstractProtocole protocole,
+			String relativePathFromRepository) throws NumberFormatException,
+			SocketException, IOException, NumberFormatException {
 
 		ftpClient = new FTPClient();
 
-		String address = url.replace(Protocol.FTP.getPrompt(), "");
-		int port = 21;
-		String login = "anonymous";
-		String password = "";
-
-		int index1 = address.indexOf(":");
-		int index2 = address.indexOf("/");
-		String hostname = address.substring(0, index2);
-		if (index1 != -1 && index1 < index2) {
-			hostname = address.substring(0, index1);
-			String p = address.substring(index1 + 1, index2);
-			try {
-				int value = Integer.parseInt(p);
-				port = value;
-			} catch (NumberFormatException e) {
-			}
+		String url = protocole.getUrl();
+		String hostname = url;
+		String remotePath = "";
+		int index = url.indexOf("/");
+		if (index != -1) {
+			hostname = url.substring(0, index);
+			remotePath = url.substring(index);
 		}
 
-		int index3 = address.lastIndexOf("/");
-		String remotePath = address.substring(index2, index3);
+		if (relativePathFromRepository != null) {
+			remotePath = remotePath + relativePathFromRepository;
+		}
+
+		String port = protocole.getPort();
+		String login = protocole.getLogin();
+		String password = protocole.getPassword();
+
+		/*
+		 * String address = url.replace(Protocol.FTP.getPrompt(), ""); int port
+		 * = 21; String login = "anonymous"; String password = "";
+		 * 
+		 * int index1 = address.indexOf(":"); int index2 = address.indexOf("/");
+		 * String hostname = address.substring(0, index2); if (index1 != -1 &&
+		 * index1 < index2) { hostname = address.substring(0, index1); String p
+		 * = address.substring(index1 + 1, index2); try { int value =
+		 * Integer.parseInt(p); port = value; } catch (NumberFormatException e)
+		 * { } }
+		 * 
+		 * int index3 = address.lastIndexOf("/"); String remotePath =
+		 * address.substring(index2, index3);
+		 */
 
 		ftpClient.setConnectTimeout(TimeOutValues.CONNECTION_TIME_OUT
 				.getValue());
 		ftpClient.setDataTimeout(TimeOutValues.READ_TIME_OUT.getValue());
-		ftpClient.connect(hostname, port);
+		ftpClient.connect(hostname, Integer.parseInt(port));// NumberFormatException
 		ftpClient.login(login, password);
 		ftpClient.setFileType(FTP.BINARY_FILE_TYPE);
 		ftpClient.enterLocalPassiveMode();// passive mode
@@ -150,28 +162,63 @@ public class FtpDAO extends AbstractConnexionDAO {
 		return found;
 	}
 
-	public AutoConfig downloadAutoConfig(String url) throws FtpException,
-			WritingException, ConnectException {
+	public AutoConfig downloadAutoConfig(String autoConfigURL)
+			throws FtpException, WritingException, ConnectException {
 
-		if (url == null) {
+		if (autoConfigURL == null) {
+			return null;
+		}
+
+		AbstractProtocole protocole = AutoConfigURLAccessMethods.parse(
+				autoConfigURL, Protocol.FTP);
+
+		if (protocole == null) {
 			return null;
 		}
 
 		int replyCode = 0;
 		String remotePath = null;
 		try {
-			remotePath = connect(url);
+			ftpClient = new FTPClient();
+
+			String port = protocole.getPort();
+			String login = protocole.getLogin();
+			String password = protocole.getPassword();
+			String url = protocole.getUrl();
+			String hostname = "";
+
+			int index1 = url.indexOf("/");
+			if (index1 != -1) {
+				hostname = url.substring(0, index1);
+			} else {
+				hostname = url;
+			}
+
+			int index2 = url.lastIndexOf("/");
+			if (index2 != -1) {
+				remotePath = url.substring(index1, index2);
+			}
+
+			ftpClient.setConnectTimeout(TimeOutValues.CONNECTION_TIME_OUT
+					.getValue());
+			ftpClient.setDataTimeout(TimeOutValues.READ_TIME_OUT.getValue());
+			ftpClient.connect(hostname, Integer.parseInt(port));// NumberFormatException
+			ftpClient.login(login, password);
+			ftpClient.setFileType(FTP.BINARY_FILE_TYPE);
+			ftpClient.enterLocalPassiveMode();// passive mode
 			replyCode = ftpClient.getReplyCode();
 		} catch (Exception e) {
 			throw new ConnectException("Connection failed.");
 		}
 
 		if (FTPReply.isPositiveCompletion(replyCode)) {
-			System.out.println("Connection ok on url: " + url);
+			System.out.println("Connection ok on url: " + "ftp://"
+					+ protocole.getUrl());
 		} else {
-			System.out.println("Connection ko on url: " + url);
+			System.out.println("Connection ko on url: " + "ftp://"
+					+ protocole.getUrl());
 			System.out.println("Server return error " + replyCode + " on url "
-					+ url);
+					+ "ftp://" + protocole.getUrl());
 			throw new FtpException("Connection failed.");
 		}
 
@@ -180,12 +227,15 @@ public class FtpDAO extends AbstractConnexionDAO {
 			File file = new File(TEMP_FOLDER_PATH + "/"
 					+ DataAccessConstants.AUTOCONFIG);
 			boolean found = download(file, remotePath);
+
 			if (found && file.exists()) {
 				ObjectInputStream fRo = new ObjectInputStream(
 						new GZIPInputStream(new FileInputStream(file)));
 				autoConfig = (AutoConfig) fRo.readObject();
 				fRo.close();
 				FileAccessMethods.deleteFile(file);
+			} else {
+				autoConfig = null;
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -270,8 +320,7 @@ public class FtpDAO extends AbstractConnexionDAO {
 		} catch (Exception e) {
 			e.printStackTrace();
 			serverInfo = null;
-			throw new WritingException("Failded to read file /.a3s/serverInfo"
-					+ "\n" + e.getMessage());
+			throw new WritingException("Failded to read file /.a3s/serverInfo");
 		}
 		return serverInfo;
 	}

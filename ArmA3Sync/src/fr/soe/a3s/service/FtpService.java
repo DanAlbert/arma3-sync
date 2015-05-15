@@ -124,7 +124,7 @@ public class FtpService extends AbstractConnexionService implements
 		repository.setEvents(events);
 		AutoConfig autoConfig = ftpDAOPool.get(0).downloadAutoconfig(
 				repositoryName, remotePath);
-		repository.setAutoConfig(autoConfig);
+		repository.setAutoConfig(autoConfig);// null if not found
 		if (autoConfig != null) {
 			List<FavoriteServer> favoriteServers = autoConfig
 					.getFavoriteServers();

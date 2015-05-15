@@ -57,7 +57,7 @@ public class HttpService extends AbstractConnexionService implements
 	public AutoConfigDTO importAutoConfig(String url) throws WritingException,
 			HttpException, ConnectException {
 
-		AutoConfig autoConfig = httpDAOPool.get(0).downloadAutoConfig(url);
+		AutoConfig autoConfig = httpDAOPool.get(0).importAutoConfig(url);
 		disconnect();
 		if (autoConfig != null) {
 			List<FavoriteServer> list1 = autoConfig.getFavoriteServers();
@@ -114,6 +114,27 @@ public class HttpService extends AbstractConnexionService implements
 			repository.setChangelogs(changelogs);// null if not found
 			Events events = httpDAOPool.get(0).downloadEvent(repository.getName(),repository.getProtocole());
 			repository.setEvents(events);// null if not found
+			AutoConfig autoConfig = httpDAOPool.get(0).downloadAutoconfig(
+					repositoryName, repository.getProtocole());
+			repository.setAutoConfig(autoConfig);// null if not found
+			if (autoConfig != null) {
+				List<FavoriteServer> favoriteServers = autoConfig
+						.getFavoriteServers();
+				for (FavoriteServer favoriteServer : favoriteServers) {
+					boolean contains = false;
+					for (FavoriteServer server : configurationDAO
+							.getConfiguration().getFavoriteServers()) {
+						if (favoriteServer.getName().equals(server.getName())) {
+							contains = true;
+							break;
+						}
+					}
+					if (!contains) {
+						configurationDAO.getConfiguration().getFavoriteServers()
+								.add(favoriteServer);
+					}
+				}
+			}
 		} catch (HttpException e) {
 			// error http 404 may happen if repository has not been built so far
 		}

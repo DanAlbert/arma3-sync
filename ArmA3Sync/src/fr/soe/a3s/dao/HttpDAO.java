@@ -49,16 +49,6 @@ public class HttpDAO extends AbstractConnexionDAO {
 	private File downloadingFile;
 	private boolean acquiredSmaphore;
 
-	private void connect(String url) throws IOException {
-
-		URL urlObject = new URL(url);
-		httpURLConnection = (HttpURLConnection) urlObject.openConnection();
-		httpURLConnection.setConnectTimeout(TimeOutValues.CONNECTION_TIME_OUT
-				.getValue());
-		httpURLConnection
-				.setReadTimeout(TimeOutValues.READ_TIME_OUT.getValue());
-	}
-
 	private void connect(AbstractProtocole protocole,
 			String relativePathFromRepository) throws IOException {
 
@@ -71,7 +61,10 @@ public class HttpDAO extends AbstractConnexionDAO {
 			remotePath = url.substring(index);
 		}
 
-		remotePath = remotePath + relativePathFromRepository;
+		if (relativePathFromRepository!=null){
+			remotePath = remotePath + relativePathFromRepository;
+		}
+		
 		String port = protocole.getPort();
 		String login = protocole.getLogin();
 		String password = protocole.getPassword();
@@ -79,56 +72,16 @@ public class HttpDAO extends AbstractConnexionDAO {
 		URL urlObject = new URL("http", hostname, Integer.parseInt(port),
 				remotePath);
 		httpURLConnection = (HttpURLConnection) urlObject.openConnection();
-		httpURLConnection.setConnectTimeout(Integer.parseInt(protocole.getConnectionTimeOut()));
-		httpURLConnection.setReadTimeout(Integer.parseInt(protocole.getReadTimeOut()));
+		httpURLConnection.setConnectTimeout(Integer.parseInt(protocole
+				.getConnectionTimeOut()));
+		httpURLConnection.setReadTimeout(Integer.parseInt(protocole
+				.getReadTimeOut()));
 
 		if (!(login.equalsIgnoreCase("anonymous"))) {
 			String encoding = Base64Coder.encodeLines((login + ":" + password)
 					.getBytes());
 			httpURLConnection.setRequestProperty("Authorization", "Basic "
 					+ encoding.substring(0, encoding.length() - 1));
-		}
-	}
-
-	@Deprecated
-	public void connectToRepository(Repository repository) throws HttpException {
-
-		try {
-			String url = repository.getProtocole().getUrl();
-			String hostname = url;
-			int index = url.indexOf("/");
-			if (index != -1) {
-				hostname = url.substring(0, index);
-			}
-
-			String port = repository.getProtocole().getPort();
-			String login = repository.getProtocole().getLogin();
-			String password = repository.getProtocole().getPassword();
-
-			URL urlObject = new URL("http", hostname, Integer.parseInt(port),
-					"");
-			httpURLConnection = (HttpURLConnection) urlObject.openConnection();
-			httpURLConnection.setConnectTimeout(5000);
-
-			if (!(login.equalsIgnoreCase("anonymous"))) {
-				String encoding = Base64Coder
-						.encodeLines((login + ":" + password).getBytes());
-				httpURLConnection.setRequestProperty("Authorization", "Basic "
-						+ encoding.substring(0, encoding.length() - 1));
-			}
-
-			// check url validity
-			int responseCode = httpURLConnection.getResponseCode();
-			System.out.println("Connection to " + repository.getName()
-					+ " success.");
-		} catch (Exception e) {// happen if host url is wrong
-			String message = "Failed to connect to repository "
-					+ repository.getName() + " on url " + "http://"
-					+ repository.getProtocole().getUrl();
-			System.out.println(message);
-			throw new HttpException(message);
-		} finally {
-			disconnect();
 		}
 	}
 
@@ -149,27 +102,269 @@ public class HttpDAO extends AbstractConnexionDAO {
 		inputStream.close();
 	}
 
-	public AutoConfig downloadAutoConfig(String url) throws WritingException,
-			HttpException {
+	public ServerInfo downloadSeverInfo(String repositoryName,
+			AbstractProtocole protocole) throws HttpException,
+			WritingException, ConnectException {
 
-		if (url == null) {
+		ServerInfo serverInfo = null;
+		try {
+			connect(protocole, SERVERINFO_FILE_PATH);
+			int responseCode = httpURLConnection.getResponseCode();
+			if (responseCode != HttpURLConnection.HTTP_OK) {
+				String message = "Server return error " + responseCode
+						+ " on url:" + "\n" + "http://" + protocole.getUrl()
+						+ SERVERINFO_FILE_PATH;
+				System.out.println(message);
+				throw new HttpException(message);
+			}
+		} catch (IOException e) {// happens if repository url is wrong
+			String message = "Failed to connect to repository "
+					+ repositoryName + " on url " + "http://"
+					+ protocole.getUrl();
+			System.out.println(message);
+			throw new ConnectException(message);
+		}
+
+		try {
+			File directory = new File(TEMP_FOLDER_PATH + "/" + repositoryName);
+			directory.mkdir();
+			File file = new File(directory + "/"
+					+ DataAccessConstants.SERVERINFO);
+			download(file);
+			if (file.exists()) {
+				ObjectInputStream fRo = new ObjectInputStream(
+						new GZIPInputStream(new FileInputStream(file)));
+				serverInfo = (ServerInfo) fRo.readObject();
+				fRo.close();
+			}
+			FileAccessMethods.deleteDirectory(directory);
+		} catch (Exception e) {
+			e.printStackTrace();
+			serverInfo = null;
+			throw new WritingException("Failded to read file /.a3s/serverInfo"
+					+ "\n" + e.getMessage());
+		} finally {
+			disconnect();
+		}
+		return serverInfo;
+	}
+
+	public Changelogs downloadChangelogs(String repositoryName,
+			AbstractProtocole protocole) throws HttpException,
+			WritingException, ConnectException {
+
+		Changelogs changelogs = null;
+		try {
+			connect(protocole, CHANGELOGS_FILE_PATH);
+			int responseCode = httpURLConnection.getResponseCode();
+			if (responseCode != HttpURLConnection.HTTP_OK) {
+				String message = "Server return error " + responseCode
+						+ " on url:" + "\n" + "http://" + protocole.getUrl()
+						+ CHANGELOGS_FILE_PATH;
+				System.out.println(message);
+				throw new HttpException(message);
+			}
+		} catch (IOException e) {// happens if repository url is wrong
+			String message = "Failed to connect to repository "
+					+ repositoryName + " on url " + "http://"
+					+ protocole.getUrl();
+			System.out.println(message);
+			throw new ConnectException(message);
+		}
+
+		try {
+			File directory = new File(TEMP_FOLDER_PATH + "/" + repositoryName);
+			directory.mkdir();
+			File file = new File(directory + "/"
+					+ DataAccessConstants.CHANGELOGS);
+			download(file);
+			if (file.exists()) {
+				ObjectInputStream fRo = new ObjectInputStream(
+						new GZIPInputStream(new FileInputStream(file)));
+				changelogs = (Changelogs) fRo.readObject();
+				fRo.close();
+			}
+			FileAccessMethods.deleteDirectory(directory);
+		} catch (Exception e) {
+			e.printStackTrace();
+			changelogs = null;
+			throw new WritingException("Failded to read file /.a3s/changelogs"
+					+ "\n" + e.getMessage());
+		} finally {
+			disconnect();
+		}
+		return changelogs;
+	}
+
+	public Events downloadEvent(String repositoryName,
+			AbstractProtocole protocole) throws HttpException,
+			WritingException, ConnectException {
+
+		Events events = null;
+		try {
+			connect(protocole, EVENTS_FILE_PATH);
+			int responseCode = httpURLConnection.getResponseCode();
+			if (responseCode != HttpURLConnection.HTTP_OK) {
+				String message = "Server return error " + responseCode
+						+ " on url:" + "\n" + "http://" + protocole.getUrl()
+						+ EVENTS_FILE_PATH;
+				System.out.println(message);
+				throw new HttpException(message);
+			}
+		} catch (IOException e) {// happens if repository url is wrong
+			String message = "Failed to connect to repository "
+					+ repositoryName + " on url " + "http://"
+					+ protocole.getUrl();
+			System.out.println(message);
+			throw new ConnectException(message);
+		}
+
+		try {
+			File directory = new File(TEMP_FOLDER_PATH + "/" + repositoryName);
+			directory.mkdir();
+			File file = new File(directory + "/" + DataAccessConstants.EVENTS);
+			download(file);
+			if (file.exists()) {
+				ObjectInputStream fRo = new ObjectInputStream(
+						new GZIPInputStream(new FileInputStream(file)));
+				events = (Events) fRo.readObject();
+				fRo.close();
+			}
+			FileAccessMethods.deleteDirectory(directory);
+		} catch (Exception e) {
+			e.printStackTrace();
+			events = null;
+			throw new WritingException("Failded to read file /.a3s/events"
+					+ "\n" + e.getMessage());
+		} finally {
+			disconnect();
+		}
+		return events;
+	}
+
+	public SyncTreeDirectory downloadSync(String repositoryName,
+			AbstractProtocole protocole) throws HttpException,
+			WritingException, ConnectException {
+
+		SyncTreeDirectory syncTreeDirectory = null;
+		try {
+			connect(protocole, SYNC_FILE_PATH);
+			int responseCode = httpURLConnection.getResponseCode();
+			if (responseCode != HttpURLConnection.HTTP_OK) {
+				String message = "Server return HTTP error " + responseCode
+						+ " on url:" + "\n" + "http://" + protocole.getUrl()
+						+ SYNC_FILE_PATH;
+				System.out.println(message);
+				throw new HttpException(message);
+			}
+		} catch (IOException e) {// happens if repository url is wrong
+			String message = "Failed to connect to repository "
+					+ repositoryName + " on url " + "http://"
+					+ protocole.getUrl();
+			System.out.println(message);
+			throw new ConnectException(message);
+		}
+
+		try {
+			File directory = new File(TEMP_FOLDER_PATH + "/" + repositoryName);
+			directory.mkdir();
+			File file = new File(directory + "/" + DataAccessConstants.SYNC);
+			download(file);
+			if (file.exists()) {
+				ObjectInputStream fRo = new ObjectInputStream(
+						new GZIPInputStream(new FileInputStream(file)));
+				syncTreeDirectory = (SyncTreeDirectory) fRo.readObject();
+				fRo.close();
+			}
+			FileAccessMethods.deleteDirectory(directory);
+		} catch (Exception e) {
+			e.printStackTrace();
+			syncTreeDirectory = null;
+			throw new WritingException("Failded to read file /.a3s/sync" + "\n"
+					+ e.getMessage());
+		} finally {
+			disconnect();
+		}
+		return syncTreeDirectory;
+	}
+
+	public AutoConfig downloadAutoconfig(String repositoryName,
+			AbstractProtocole protocole) throws HttpException,
+			ConnectException, WritingException {
+
+		AutoConfig autoConfig = null;
+		try {
+			connect(protocole, AUTOCONFIG_FILE_PATH);
+			int responseCode = httpURLConnection.getResponseCode();
+			if (responseCode != HttpURLConnection.HTTP_OK) {
+				String message = "Server return HTTP error " + responseCode
+						+ " on url:" + "\n" + "http://" + protocole.getUrl()
+						+ AUTOCONFIG_FILE_PATH;
+				System.out.println(message);
+				throw new HttpException(message);
+			}
+		} catch (IOException e) {// happens if repository url is wrong
+			String message = "Failed to connect to repository "
+					+ repositoryName + " on url " + "http://"
+					+ protocole.getUrl();
+			System.out.println(message);
+			throw new ConnectException(message);
+		}
+
+		try {
+			File directory = new File(TEMP_FOLDER_PATH + "/" + repositoryName);
+			directory.mkdir();
+			File file = new File(directory + "/"
+					+ DataAccessConstants.AUTOCONFIG);
+			download(file);
+			if (file.exists()) {
+				ObjectInputStream fRo = new ObjectInputStream(
+						new GZIPInputStream(new FileInputStream(file)));
+				autoConfig = (AutoConfig) fRo.readObject();
+				fRo.close();
+			}
+			FileAccessMethods.deleteDirectory(directory);
+		} catch (Exception e) {
+			e.printStackTrace();
+			autoConfig = null;
+			throw new WritingException("Failded to read file /.a3s/autoconfig"
+					+ "\n" + e.getMessage());
+		} finally {
+			disconnect();
+		}
+		return autoConfig;
+	}
+
+	public AutoConfig importAutoConfig(String autoConfigURL)
+			throws WritingException, HttpException {
+
+		if (autoConfigURL == null) {
 			return null;
 		}
 
+		AbstractProtocole protocole = AutoConfigURLAccessMethods.parse(
+				autoConfigURL, Protocol.HTTP);
+		
+		if (protocole==null){
+			return null;
+		}
+			
 		int responseCode = HttpURLConnection.HTTP_OK;
 		try {
-			connect(url);
+			connect(protocole, null);
 			responseCode = httpURLConnection.getResponseCode();
 		} catch (IOException e) {
 			throw new HttpException("Connection failed.");
 		}
 
 		if (responseCode == HttpURLConnection.HTTP_OK) {
-			System.out.println("Connection ok on url: " + url);
+			System.out.println("Connection ok on url: " + "http://"
+					+ protocole.getUrl());
 		} else {
-			System.out.println("Connection ko on url: " + url);
+			System.out.println("Connection ko on url: " + "http://"
+					+ protocole.getUrl());
 			System.out.println("Server return error " + responseCode
-					+ " on url " + url);
+					+ " on url " + "http://" + protocole.getUrl());
 			throw new HttpException("Connection failed.");
 		}
 
@@ -194,195 +389,6 @@ public class HttpDAO extends AbstractConnexionDAO {
 			disconnect();
 		}
 		return autoConfig;
-	}
-
-	public ServerInfo downloadSeverInfo(String repositoryName,AbstractProtocole protocole)
-			throws HttpException, WritingException, ConnectException {
-
-		ServerInfo serverInfo = null;
-		try {
-			connect(protocole, SERVERINFO_FILE_PATH);
-			int responseCode = httpURLConnection.getResponseCode();
-			if (responseCode != HttpURLConnection.HTTP_OK) {
-				String message = "Server return error " + responseCode
-						+ " on url:" + "\n" + "http://"
-						+ protocole.getUrl()
-						+ SERVERINFO_FILE_PATH;
-				System.out.println(message);
-				throw new HttpException(message);
-			}
-		} catch (IOException e) {// happens if repository url is wrong
-			String message = "Failed to connect to repository "
-					+ repositoryName + " on url " + "http://"
-					+ protocole.getUrl();
-			System.out.println(message);
-			throw new ConnectException(message);
-		}
-
-		try {
-			File directory = new File(TEMP_FOLDER_PATH + "/"
-					+ repositoryName);
-			directory.mkdir();
-			File file = new File(directory + "/"
-					+ DataAccessConstants.SERVERINFO);
-			download(file);
-			if (file.exists()) {
-				ObjectInputStream fRo = new ObjectInputStream(
-						new GZIPInputStream(new FileInputStream(file)));
-				serverInfo = (ServerInfo) fRo.readObject();
-				fRo.close();
-			}
-			FileAccessMethods.deleteDirectory(directory);
-		} catch (Exception e) {
-			e.printStackTrace();
-			serverInfo = null;
-			throw new WritingException("Failded to read file /.a3s/serverInfo"
-					+ "\n" + e.getMessage());
-		} finally {
-			disconnect();
-		}
-		return serverInfo;
-	}
-
-	public Changelogs downloadChangelogs(String repositoryName,AbstractProtocole protocole)
-			throws HttpException, WritingException, ConnectException {
-
-		Changelogs changelogs = null;
-		try {
-			connect(protocole, CHANGELOGS_FILE_PATH);
-			int responseCode = httpURLConnection.getResponseCode();
-			if (responseCode != HttpURLConnection.HTTP_OK) {
-				String message = "Server return error " + responseCode
-						+ " on url:" + "\n" + "http://"
-						+ protocole.getUrl()
-						+ CHANGELOGS_FILE_PATH;
-				System.out.println(message);
-				throw new HttpException(message);
-			}
-		} catch (IOException e) {// happens if repository url is wrong
-			String message = "Failed to connect to repository "
-					+ repositoryName + " on url " + "http://"
-					+ protocole.getUrl();
-			System.out.println(message);
-			throw new ConnectException(message);
-		}
-
-		try {
-			File directory = new File(TEMP_FOLDER_PATH + "/"
-					+ repositoryName);
-			directory.mkdir();
-			File file = new File(directory + "/"
-					+ DataAccessConstants.CHANGELOGS);
-			download(file);
-			if (file.exists()) {
-				ObjectInputStream fRo = new ObjectInputStream(
-						new GZIPInputStream(new FileInputStream(file)));
-				changelogs = (Changelogs) fRo.readObject();
-				fRo.close();
-			}
-			FileAccessMethods.deleteDirectory(directory);
-		} catch (Exception e) {
-			e.printStackTrace();
-			changelogs = null;
-			throw new WritingException("Failded to read file /.a3s/changelogs"
-					+ "\n" + e.getMessage());
-		} finally {
-			disconnect();
-		}
-		return changelogs;
-	}
-
-	public Events downloadEvent(String repositoryName,AbstractProtocole protocole) throws HttpException,
-			WritingException, ConnectException {
-
-		Events events = null;
-		try {
-			connect( protocole, EVENTS_FILE_PATH);
-			int responseCode = httpURLConnection.getResponseCode();
-			if (responseCode != HttpURLConnection.HTTP_OK) {
-				String message = "Server return error " + responseCode
-						+ " on url:" + "\n" + "http://"
-						+  protocole.getUrl() + EVENTS_FILE_PATH;
-				System.out.println(message);
-				throw new HttpException(message);
-			}
-		} catch (IOException e) {// happens if repository url is wrong
-			String message = "Failed to connect to repository "
-					+ repositoryName + " on url " + "http://"
-					+  protocole.getUrl();
-			System.out.println(message);
-			throw new ConnectException(message);
-		}
-
-		try {
-			File directory = new File(TEMP_FOLDER_PATH + "/"
-					+ repositoryName);
-			directory.mkdir();
-			File file = new File(directory + "/" + DataAccessConstants.EVENTS);
-			download(file);
-			if (file.exists()) {
-				ObjectInputStream fRo = new ObjectInputStream(
-						new GZIPInputStream(new FileInputStream(file)));
-				events = (Events) fRo.readObject();
-				fRo.close();
-			}
-			FileAccessMethods.deleteDirectory(directory);
-		} catch (Exception e) {
-			e.printStackTrace();
-			events = null;
-			throw new WritingException("Failded to read file /.a3s/events"
-					+ "\n" + e.getMessage());
-		} finally {
-			disconnect();
-		}
-		return events;
-	}
-
-	public SyncTreeDirectory downloadSync(String repositoryName,AbstractProtocole protocole)
-			throws HttpException, WritingException, ConnectException {
-
-		SyncTreeDirectory syncTreeDirectory = null;
-		try {
-			connect(protocole, SYNC_FILE_PATH);
-			int responseCode = httpURLConnection.getResponseCode();
-			if (responseCode != HttpURLConnection.HTTP_OK) {
-				String message = "Server return HTTP error " + responseCode
-						+ " on url:" + "\n" + "http://"
-						+ protocole.getUrl() + SYNC_FILE_PATH;
-				System.out.println(message);
-				throw new HttpException(message);
-			}
-		} catch (IOException e) {// happens if repository url is wrong
-			String message = "Failed to connect to repository "
-					+ repositoryName + " on url " + "http://"
-					+ protocole.getUrl() + "\n"
-					+ e.getMessage();
-			System.out.println(message);
-			throw new ConnectException(message);
-		}
-
-		try {
-			File directory = new File(TEMP_FOLDER_PATH + "/"
-					+ repositoryName);
-			directory.mkdir();
-			File file = new File(directory + "/" + DataAccessConstants.SYNC);
-			download(file);
-			if (file.exists()) {
-				ObjectInputStream fRo = new ObjectInputStream(
-						new GZIPInputStream(new FileInputStream(file)));
-				syncTreeDirectory = (SyncTreeDirectory) fRo.readObject();
-				fRo.close();
-			}
-			FileAccessMethods.deleteDirectory(directory);
-		} catch (Exception e) {
-			e.printStackTrace();
-			syncTreeDirectory = null;
-			throw new WritingException("Failded to read file /.a3s/sync" + "\n"
-					+ e.getMessage());
-		} finally {
-			disconnect();
-		}
-		return syncTreeDirectory;
 	}
 
 	public void downloadFile(String hostname, String login, String password,
@@ -445,118 +451,117 @@ public class HttpDAO extends AbstractConnexionDAO {
 		return complete;
 	}
 
-	public boolean uploadEvents(Events events,String repositoryName,AbstractProtocole protocole) throws HttpException {
+	public boolean uploadEvents(Events events, String repositoryName,
+			AbstractProtocole protocole) throws HttpException {
 
 		boolean response = true;
 
-			try {
-				// // set some connection properties
-				// String param = "value";
-				// String charset = "UTF-8";
-				// String CRLF = "\r\n";
-				// String boundary =
-				// Long.toHexString(System.currentTimeMillis()); // Just
-				// // generate some unique random value.
-				// httpURLConnection.setRequestProperty("Content-Type",
-				// "multipart/form-data; boundary=" + boundary);
-				// httpURLConnection.setDoOutput(true);
-				// OutputStream output = httpURLConnection.getOutputStream();
-				// PrintWriter writer = new PrintWriter(new OutputStreamWriter(
-				// output, charset), true);
-				//
-				// // Send normal param.
-				// writer.append("--" + boundary).append(CRLF);
-				// writer.append("Content-Disposition: form-data; name=\"param\"")
-				// .append(CRLF);
-				// writer.append("Content-Type: text/plain; charset=" + charset)
-				// .append(CRLF);
-				// writer.append(CRLF);
-				// writer.append(param).append(CRLF).flush();
-				//
-				// ByteArrayOutputStream baos = new ByteArrayOutputStream();
-				// ObjectOutputStream oos = new ObjectOutputStream(
-				// new GZIPOutputStream(baos));
-				// oos.writeObject(repository.getEvents());
-				// oos.flush();
-				// oos.close();
-				// InputStream uis = new
-				// ByteArrayInputStream(baos.toByteArray());
-				//
-				// byte[] buffer = new byte[4096];
-				// int length;
-				// while ((length = uis.read(buffer)) > 0) {
-				// output.write(buffer, 0, length);
-				// }
-				// output.flush();
-				// writer.append(CRLF).flush();
-				// writer.append("--" + boundary + "--").append(CRLF).flush();
+		try {
+			// // set some connection properties
+			// String param = "value";
+			// String charset = "UTF-8";
+			// String CRLF = "\r\n";
+			// String boundary =
+			// Long.toHexString(System.currentTimeMillis()); // Just
+			// // generate some unique random value.
+			// httpURLConnection.setRequestProperty("Content-Type",
+			// "multipart/form-data; boundary=" + boundary);
+			// httpURLConnection.setDoOutput(true);
+			// OutputStream output = httpURLConnection.getOutputStream();
+			// PrintWriter writer = new PrintWriter(new OutputStreamWriter(
+			// output, charset), true);
+			//
+			// // Send normal param.
+			// writer.append("--" + boundary).append(CRLF);
+			// writer.append("Content-Disposition: form-data; name=\"param\"")
+			// .append(CRLF);
+			// writer.append("Content-Type: text/plain; charset=" + charset)
+			// .append(CRLF);
+			// writer.append(CRLF);
+			// writer.append(param).append(CRLF).flush();
+			//
+			// ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			// ObjectOutputStream oos = new ObjectOutputStream(
+			// new GZIPOutputStream(baos));
+			// oos.writeObject(repository.getEvents());
+			// oos.flush();
+			// oos.close();
+			// InputStream uis = new
+			// ByteArrayInputStream(baos.toByteArray());
+			//
+			// byte[] buffer = new byte[4096];
+			// int length;
+			// while ((length = uis.read(buffer)) > 0) {
+			// output.write(buffer, 0, length);
+			// }
+			// output.flush();
+			// writer.append(CRLF).flush();
+			// writer.append("--" + boundary + "--").append(CRLF).flush();
 
-				connect(protocole, A3S_FOlDER_PATH);
+			connect(protocole, A3S_FOlDER_PATH);
 
-				String attachmentName = "events";
-				String attachmentFileName = "events";
-				String crlf = "\r\n";
-				String twoHyphens = "--";
-				String boundary = "*****";
+			String attachmentName = "events";
+			String attachmentFileName = "events";
+			String crlf = "\r\n";
+			String twoHyphens = "--";
+			String boundary = "*****";
 
-				httpURLConnection.setUseCaches(false);
-				httpURLConnection.setDoOutput(true);
+			httpURLConnection.setUseCaches(false);
+			httpURLConnection.setDoOutput(true);
 
-				httpURLConnection.setRequestMethod("POST");
-				httpURLConnection
-						.setRequestProperty("Connection", "Keep-Alive");
-				httpURLConnection.setRequestProperty("Cache-Control",
-						"no-cache");
-				httpURLConnection.setRequestProperty("Content-Type",
-						"multipart/form-data;boundary=" + boundary);
+			httpURLConnection.setRequestMethod("POST");
+			httpURLConnection.setRequestProperty("Connection", "Keep-Alive");
+			httpURLConnection.setRequestProperty("Cache-Control", "no-cache");
+			httpURLConnection.setRequestProperty("Content-Type",
+					"multipart/form-data;boundary=" + boundary);
 
-				DataOutputStream request = new DataOutputStream(
-						httpURLConnection.getOutputStream());
+			DataOutputStream request = new DataOutputStream(
+					httpURLConnection.getOutputStream());
 
-				request.writeBytes(twoHyphens + boundary + crlf);
-				request.writeBytes("Content-Disposition: form-data; name=\""
-						+ attachmentName + "\";filename=\""
-						+ attachmentFileName + "\"" + crlf);
-				request.writeBytes(crlf);
+			request.writeBytes(twoHyphens + boundary + crlf);
+			request.writeBytes("Content-Disposition: form-data; name=\""
+					+ attachmentName + "\";filename=\"" + attachmentFileName
+					+ "\"" + crlf);
+			request.writeBytes(crlf);
 
-				ByteArrayOutputStream baos = new ByteArrayOutputStream();
-				ObjectOutputStream oos = new ObjectOutputStream(
-						new GZIPOutputStream(baos));
-				oos.writeObject(events);
-				oos.flush();
-				oos.close();
-				InputStream uis = new ByteArrayInputStream(baos.toByteArray());
+			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			ObjectOutputStream oos = new ObjectOutputStream(
+					new GZIPOutputStream(baos));
+			oos.writeObject(events);
+			oos.flush();
+			oos.close();
+			InputStream uis = new ByteArrayInputStream(baos.toByteArray());
 
-				byte[] buffer = new byte[4096];
-				int length;
-				while ((length = uis.read(buffer)) > 0) {
-					request.write(buffer, 0, length);
-				}
-
-				request.writeBytes(crlf);
-				request.writeBytes(twoHyphens + boundary + twoHyphens + crlf);
-				request.flush();
-				request.close();
-
-				InputStream responseStream = new BufferedInputStream(
-						httpURLConnection.getInputStream());
-
-				BufferedReader responseStreamReader = new BufferedReader(
-						new InputStreamReader(responseStream));
-				String line = "";
-				StringBuilder stringBuilder = new StringBuilder();
-				while ((line = responseStreamReader.readLine()) != null) {
-					stringBuilder.append(line).append("\n");
-				}
-				responseStreamReader.close();
-
-				String res = stringBuilder.toString();
-				System.out.println(res);
-
-			} catch (IOException e) {
-				e.printStackTrace();
-				response = false;
+			byte[] buffer = new byte[4096];
+			int length;
+			while ((length = uis.read(buffer)) > 0) {
+				request.write(buffer, 0, length);
 			}
+
+			request.writeBytes(crlf);
+			request.writeBytes(twoHyphens + boundary + twoHyphens + crlf);
+			request.flush();
+			request.close();
+
+			InputStream responseStream = new BufferedInputStream(
+					httpURLConnection.getInputStream());
+
+			BufferedReader responseStreamReader = new BufferedReader(
+					new InputStreamReader(responseStream));
+			String line = "";
+			StringBuilder stringBuilder = new StringBuilder();
+			while ((line = responseStreamReader.readLine()) != null) {
+				stringBuilder.append(line).append("\n");
+			}
+			responseStreamReader.close();
+
+			String res = stringBuilder.toString();
+			System.out.println(res);
+
+		} catch (IOException e) {
+			e.printStackTrace();
+			response = false;
+		}
 		return false;
 	}
 
