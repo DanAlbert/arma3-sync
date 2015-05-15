@@ -10,7 +10,6 @@ import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.ConnectException;
-import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.zip.GZIPInputStream;
@@ -29,7 +28,6 @@ import org.dom4j.io.SAXReader;
 
 import fr.soe.a3s.constant.DownloadStatus;
 import fr.soe.a3s.constant.Protocol;
-import fr.soe.a3s.constant.TimeOutValues;
 import fr.soe.a3s.domain.AbstractProtocole;
 import fr.soe.a3s.domain.repository.AutoConfig;
 import fr.soe.a3s.domain.repository.Changelogs;
@@ -103,55 +101,6 @@ public class FtpDAO extends AbstractConnexionDAO {
 			System.out.println(message);
 			throw new FtpException(message);
 		}
-	}
-
-	private String connect2(AbstractProtocole protocole,
-			String relativePathFromRepository) throws NumberFormatException,
-			SocketException, IOException, NumberFormatException {
-
-		ftpClient = new FTPClient();
-
-		String url = protocole.getUrl();
-		String hostname = url;
-		String remotePath = "";
-		int index = url.indexOf("/");
-		if (index != -1) {
-			hostname = url.substring(0, index);
-			remotePath = url.substring(index);
-		}
-
-		if (relativePathFromRepository != null) {
-			remotePath = remotePath + relativePathFromRepository;
-		}
-
-		String port = protocole.getPort();
-		String login = protocole.getLogin();
-		String password = protocole.getPassword();
-
-		/*
-		 * String address = url.replace(Protocol.FTP.getPrompt(), ""); int port
-		 * = 21; String login = "anonymous"; String password = "";
-		 * 
-		 * int index1 = address.indexOf(":"); int index2 = address.indexOf("/");
-		 * String hostname = address.substring(0, index2); if (index1 != -1 &&
-		 * index1 < index2) { hostname = address.substring(0, index1); String p
-		 * = address.substring(index1 + 1, index2); try { int value =
-		 * Integer.parseInt(p); port = value; } catch (NumberFormatException e)
-		 * { } }
-		 * 
-		 * int index3 = address.lastIndexOf("/"); String remotePath =
-		 * address.substring(index2, index3);
-		 */
-
-		ftpClient.setConnectTimeout(TimeOutValues.CONNECTION_TIME_OUT
-				.getValue());
-		ftpClient.setDataTimeout(TimeOutValues.READ_TIME_OUT.getValue());
-		ftpClient.connect(hostname, Integer.parseInt(port));// NumberFormatException
-		ftpClient.login(login, password);
-		ftpClient.setFileType(FTP.BINARY_FILE_TYPE);
-		ftpClient.enterLocalPassiveMode();// passive mode
-
-		return remotePath;
 	}
 
 	private boolean download(File file, String remotePath) throws IOException {
