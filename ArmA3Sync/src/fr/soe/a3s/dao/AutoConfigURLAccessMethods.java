@@ -1,12 +1,9 @@
 package fr.soe.a3s.dao;
 
-import com.sun.xml.internal.txw2.DatatypeWriter;
-
 import fr.soe.a3s.constant.Protocol;
 import fr.soe.a3s.domain.AbstractProtocole;
 import fr.soe.a3s.domain.Ftp;
 import fr.soe.a3s.domain.Http;
-import fr.soe.a3s.domain.repository.Repository;
 
 public class AutoConfigURLAccessMethods implements DataAccessConstants {
 
@@ -48,61 +45,73 @@ public class AutoConfigURLAccessMethods implements DataAccessConstants {
 		if (!port.isEmpty()) {
 			autoConfigURL = autoConfigURL + ":" + port;
 		}
-		
+
 		autoConfigURL = autoConfigURL + AUTOCONFIG_FILE_PATH;
 
 		return autoConfigURL;
 	}
 
-	public static AbstractProtocole parse(String autoConfigURL,Protocol protocol) {
+	public static AbstractProtocole parse(String autoConfigURL,
+			Protocol protocol) {
 
 		String url = "";
 		String port = "";
 		String login = "";
 		String password = "";
-		
+
 		String hostname = "";
 		String relativePath = "";
-		
-		autoConfigURL = autoConfigURL.toLowerCase().trim().replaceAll(protocol.getPrompt(),"");
-		
+
+		autoConfigURL = autoConfigURL.toLowerCase().trim()
+				.replaceAll(protocol.getPrompt(), "");
+
 		int index = autoConfigURL.indexOf("/");
 		if (index != -1) {
 			hostname = autoConfigURL.substring(0, index);
 			relativePath = autoConfigURL.substring(index);
-		}else 
-		{
+		} else {
 			hostname = autoConfigURL;
 		}
-		
+
 		int index2 = hostname.indexOf(":");
 		if (index2 != -1) {
-			port = hostname.substring(index2+1);
-			hostname = hostname.substring(0,index2);
+			port = hostname.substring(index2 + 1);
+			hostname = hostname.substring(0, index2);
+		}
+
+		int index3 = relativePath.toLowerCase().lastIndexOf("/autoconfig");
+		if (index3 != -1) {
+			relativePath = relativePath.substring(0, index3);
 		}
 
 		url = hostname + relativePath;
-		
-		if (login.isEmpty()){
+
+		try {
+			Integer.parseInt(port);
+		} catch (NumberFormatException e) {
+			port = "";
+		}
+
+		if (login.isEmpty()) {
 			login = "anonymous";
 			password = "";
 		}
-		
-		if (protocol.equals(Protocol.FTP)){
-			if (port.isEmpty()){
+
+		if (protocol.equals(Protocol.FTP)) {
+			if (port.isEmpty()) {
 				port = "21";
 			}
 			return new Ftp(url, port, login, password);
-		}else if (protocol.equals(Protocol.HTTP)){
-			if (port.isEmpty()){
+		} else if (protocol.equals(Protocol.HTTP)) {
+			if (port.isEmpty()) {
 				port = "80";
 			}
 			return new Http(url, port, login, password);
-		}else {
+		} else {
 			return null;
 		}
 	}
-	
+
 	private String getUrlWithPort(String url, String port) {
 
 		int index = url.indexOf("/");

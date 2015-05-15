@@ -22,12 +22,10 @@ import java.util.zip.GZIPOutputStream;
 
 import fr.soe.a3s.constant.DownloadStatus;
 import fr.soe.a3s.constant.Protocol;
-import fr.soe.a3s.constant.TimeOutValues;
 import fr.soe.a3s.domain.AbstractProtocole;
 import fr.soe.a3s.domain.repository.AutoConfig;
 import fr.soe.a3s.domain.repository.Changelogs;
 import fr.soe.a3s.domain.repository.Events;
-import fr.soe.a3s.domain.repository.Repository;
 import fr.soe.a3s.domain.repository.ServerInfo;
 import fr.soe.a3s.domain.repository.SyncTreeDirectory;
 import fr.soe.a3s.dto.sync.SyncTreeLeafDTO;
@@ -53,18 +51,14 @@ public class HttpDAO extends AbstractConnexionDAO {
 			String relativePathFromRepository) throws IOException {
 
 		String url = protocole.getUrl();
-		String hostname = url;
-		String remotePath = "";
-		int index = url.indexOf("/");
-		if (index != -1) {
-			hostname = url.substring(0, index);
-			remotePath = url.substring(index);
-		}
+		String hostname = protocole.getHostname();
+		String remotePath = protocole.getRemotePath();// the repository relative
+														// url
 
-		if (relativePathFromRepository!=null){
+		if (relativePathFromRepository != null) {
 			remotePath = remotePath + relativePathFromRepository;
 		}
-		
+
 		String port = protocole.getPort();
 		String login = protocole.getLogin();
 		String password = protocole.getPassword();
@@ -141,8 +135,9 @@ public class HttpDAO extends AbstractConnexionDAO {
 		} catch (Exception e) {
 			e.printStackTrace();
 			serverInfo = null;
-			throw new WritingException("Failded to read file /.a3s/serverInfo"
-					+ "\n" + e.getMessage());
+			throw new WritingException(
+					"Failded to read the downloaded file Serverinfo." + "\n"
+							+ e.getMessage());
 		} finally {
 			disconnect();
 		}
@@ -158,7 +153,7 @@ public class HttpDAO extends AbstractConnexionDAO {
 			connect(protocole, CHANGELOGS_FILE_PATH);
 			int responseCode = httpURLConnection.getResponseCode();
 			if (responseCode != HttpURLConnection.HTTP_OK) {
-				String message = "Server return error " + responseCode
+				String message = "Server return HTTP error " + responseCode
 						+ " on url:" + "\n" + "http://" + protocole.getUrl()
 						+ CHANGELOGS_FILE_PATH;
 				System.out.println(message);
@@ -188,8 +183,9 @@ public class HttpDAO extends AbstractConnexionDAO {
 		} catch (Exception e) {
 			e.printStackTrace();
 			changelogs = null;
-			throw new WritingException("Failded to read file /.a3s/changelogs"
-					+ "\n" + e.getMessage());
+			throw new WritingException(
+					"Failded to read the downloaded file Changelogs." + "\n"
+							+ e.getMessage());
 		} finally {
 			disconnect();
 		}
@@ -205,7 +201,7 @@ public class HttpDAO extends AbstractConnexionDAO {
 			connect(protocole, EVENTS_FILE_PATH);
 			int responseCode = httpURLConnection.getResponseCode();
 			if (responseCode != HttpURLConnection.HTTP_OK) {
-				String message = "Server return error " + responseCode
+				String message = "Server return HTTP error " + responseCode
 						+ " on url:" + "\n" + "http://" + protocole.getUrl()
 						+ EVENTS_FILE_PATH;
 				System.out.println(message);
@@ -234,8 +230,9 @@ public class HttpDAO extends AbstractConnexionDAO {
 		} catch (Exception e) {
 			e.printStackTrace();
 			events = null;
-			throw new WritingException("Failded to read file /.a3s/events"
-					+ "\n" + e.getMessage());
+			throw new WritingException(
+					"Failded to read the downloaded file Events." + "\n"
+							+ e.getMessage());
 		} finally {
 			disconnect();
 		}
@@ -280,8 +277,9 @@ public class HttpDAO extends AbstractConnexionDAO {
 		} catch (Exception e) {
 			e.printStackTrace();
 			syncTreeDirectory = null;
-			throw new WritingException("Failded to read file /.a3s/sync" + "\n"
-					+ e.getMessage());
+			throw new WritingException(
+					"Failded to read the downloaded file Sync." + "\n"
+							+ e.getMessage());
 		} finally {
 			disconnect();
 		}
@@ -327,8 +325,9 @@ public class HttpDAO extends AbstractConnexionDAO {
 		} catch (Exception e) {
 			e.printStackTrace();
 			autoConfig = null;
-			throw new WritingException("Failded to read file /.a3s/autoconfig"
-					+ "\n" + e.getMessage());
+			throw new WritingException(
+					"Failded to read the downloaded file Autoconfig." + "\n"
+							+ e.getMessage());
 		} finally {
 			disconnect();
 		}
@@ -336,7 +335,7 @@ public class HttpDAO extends AbstractConnexionDAO {
 	}
 
 	public AutoConfig importAutoConfig(String autoConfigURL)
-			throws WritingException, HttpException {
+			throws WritingException, HttpException, ConnectException {
 
 		if (autoConfigURL == null) {
 			return null;
@@ -344,28 +343,19 @@ public class HttpDAO extends AbstractConnexionDAO {
 
 		AbstractProtocole protocole = AutoConfigURLAccessMethods.parse(
 				autoConfigURL, Protocol.HTTP);
-		
-		if (protocole==null){
+
+		if (protocole == null) {
 			return null;
 		}
-			
-		int responseCode = HttpURLConnection.HTTP_OK;
-		try {
-			connect(protocole, null);
-			responseCode = httpURLConnection.getResponseCode();
-		} catch (IOException e) {
-			throw new HttpException("Connection failed.");
-		}
 
-		if (responseCode == HttpURLConnection.HTTP_OK) {
-			System.out.println("Connection ok on url: " + "http://"
-					+ protocole.getUrl());
-		} else {
-			System.out.println("Connection ko on url: " + "http://"
-					+ protocole.getUrl());
-			System.out.println("Server return error " + responseCode
-					+ " on url " + "http://" + protocole.getUrl());
-			throw new HttpException("Connection failed.");
+		try {
+			connect(protocole, "/" + DataAccessConstants.AUTOCONFIG);
+			int responseCode = httpURLConnection.getResponseCode();
+			if (responseCode != HttpURLConnection.HTTP_OK) {
+				throw new HttpException("Connection failed.");
+			}
+		} catch (IOException e) {// happens if repository url is wrong
+			throw new ConnectException("Connection failed.");
 		}
 
 		AutoConfig autoConfig = null;
@@ -383,8 +373,9 @@ public class HttpDAO extends AbstractConnexionDAO {
 		} catch (Exception e) {
 			e.printStackTrace();
 			autoConfig = null;
-			throw new WritingException("Failded to read file /.a3s/autoconfig"
-					+ "\n" + e.getMessage());
+			throw new WritingException(
+					"Failded to read the downloaded file Autoconfig." + "\n"
+							+ e.getMessage());
 		} finally {
 			disconnect();
 		}

@@ -58,11 +58,11 @@ public class FtpService extends AbstractConnexionService implements
 	}
 
 	@Override
-	public AutoConfigDTO importAutoConfig(String url) throws FtpException,
-			WritingException, ConnectException {
+	public AutoConfigDTO importAutoConfig(String autoconfigURL)
+			throws FtpException, WritingException, ConnectException {
 
-		AutoConfig autoConfig = ftpDAOPool.get(0).downloadAutoConfig(url);
-		disconnect();
+		AutoConfig autoConfig = ftpDAOPool.get(0).importAutoConfig(
+				autoconfigURL);
 		if (autoConfig != null) {
 			List<FavoriteServer> list1 = autoConfig.getFavoriteServers();
 			List<FavoriteServer> list2 = configurationDAO.getConfiguration()
@@ -104,27 +104,37 @@ public class FtpService extends AbstractConnexionService implements
 
 		ftpDAOPool.get(0).connectToRepository(repository.getName(),
 				repository.getProtocole());
-		String remotePath = ftpDAOPool.get(0).getRootRemotePath();
 
+		// Sync
 		SyncTreeDirectory syncTreeDirectory = ftpDAOPool.get(0).downloadSync(
-				repositoryName, remotePath);
+				repositoryName, repository.getProtocole());
 		repository.setSync(syncTreeDirectory);// null if not found
+
+		// Serverinfo
 		ServerInfo serverInfo = ftpDAOPool.get(0).downloadSeverInfo(
-				repositoryName, remotePath);
+				repositoryName, repository.getProtocole());
 		repository.setServerInfo(serverInfo);// null if not found
+
 		if (serverInfo != null) {
 			repository.getHiddenFolderPath().addAll(
 					serverInfo.getHiddenFolderPaths());
 		}
+
+		// Cnangelogs
 		Changelogs changelogs = ftpDAOPool.get(0).downloadChangelogs(
-				repositoryName, remotePath);
+				repositoryName, repository.getProtocole());
 		repository.setChangelogs(changelogs);// null if not found
+
+		// Events
 		Events events = ftpDAOPool.get(0).downloadEvent(repositoryName,
-				remotePath);
+				repository.getProtocole());
 		repository.setEvents(events);
+
+		// Auto config
 		AutoConfig autoConfig = ftpDAOPool.get(0).downloadAutoconfig(
-				repositoryName, remotePath);
+				repositoryName, repository.getProtocole());
 		repository.setAutoConfig(autoConfig);// null if not found
+
 		if (autoConfig != null) {
 			List<FavoriteServer> favoriteServers = autoConfig
 					.getFavoriteServers();
@@ -159,10 +169,9 @@ public class FtpService extends AbstractConnexionService implements
 
 		ftpDAOPool.get(0).connectToRepository(repository.getName(),
 				repository.getProtocole());
-		String remotePath = ftpDAOPool.get(0).getRootRemotePath();
 
 		SyncTreeDirectory syncTreeDirectory = ftpDAOPool.get(0).downloadSync(
-				repositoryName, remotePath);
+				repositoryName, repository.getProtocole());
 		repository.setSync(syncTreeDirectory);
 
 		disconnect();
@@ -181,10 +190,9 @@ public class FtpService extends AbstractConnexionService implements
 
 		ftpDAOPool.get(0).connectToRepository(repository.getName(),
 				repository.getProtocole());
-		String remotePath = ftpDAOPool.get(0).getRootRemotePath();
 
 		ServerInfo serverInfo = ftpDAOPool.get(0).downloadSeverInfo(
-				repositoryName, remotePath);
+				repositoryName, repository.getProtocole());
 		repository.setServerInfo(serverInfo);
 
 		disconnect();
@@ -202,10 +210,9 @@ public class FtpService extends AbstractConnexionService implements
 
 		ftpDAOPool.get(0).connectToRepository(repository.getName(),
 				repository.getProtocole());
-		String remotePath = ftpDAOPool.get(0).getRootRemotePath();
 
 		Changelogs changelogs = ftpDAOPool.get(0).downloadChangelogs(
-				repositoryName, remotePath);
+				repositoryName, repository.getProtocole());
 		repository.setChangelogs(changelogs);
 
 		disconnect();
@@ -223,12 +230,11 @@ public class FtpService extends AbstractConnexionService implements
 
 		ftpDAOPool.get(0).connectToRepository(repository.getName(),
 				repository.getRepositoryUploadProtocole());
-		String remotePath = ftpDAOPool.get(0).getRootRemotePath();
 
 		boolean response = false;
 		try {
 			response = ftpDAOPool.get(0).uploadEvents(repository.getEvents(),
-					remotePath);
+					repository.getProtocole());
 		} catch (Exception e) {
 			e.printStackTrace();
 			throw new FtpException(e.getMessage());
@@ -242,7 +248,8 @@ public class FtpService extends AbstractConnexionService implements
 	public void downloadAddons(String repositoryName,
 			List<SyncTreeNodeDTO> listFiles) throws Exception {
 
-		Repository repository = repositoryDAO.getMap().get(repositoryName);
+		final Repository repository = repositoryDAO.getMap()
+				.get(repositoryName);
 		if (repository == null) {
 			throw new RepositoryException("Repository " + repositoryName
 					+ " not found!");
@@ -277,7 +284,8 @@ public class FtpService extends AbstractConnexionService implements
 										ftpDAO.updateObserverActiveConnection();
 
 										boolean found = downloadAddon(ftpDAO,
-												node, rootDestinationPath);
+												node, rootDestinationPath,
+												repository);
 
 										if (!found) {
 											String message = "File not found on repository: "
@@ -360,11 +368,11 @@ public class FtpService extends AbstractConnexionService implements
 	}
 
 	private boolean downloadAddon(final FtpDAO ftpDAO,
-			final SyncTreeNodeDTO node, final String rootDestinationPath)
-			throws Exception {
+			final SyncTreeNodeDTO node, final String rootDestinationPath,
+			final Repository repository) throws Exception {
 
 		String destinationPath = null;
-		String remotePath = ftpDAO.getRootRemotePath();
+		String remotePath = repository.getProtocole().getRemotePath();
 		String path = determinePath(node);
 		if (node.getDestinationPath() != null) {
 			destinationPath = node.getDestinationPath();
@@ -485,7 +493,8 @@ public class FtpService extends AbstractConnexionService implements
 
 		ftpDAOPool.get(0).connectToRepository(repository.getName(),
 				repository.getRepositoryUploadProtocole());
-		String remotePath = ftpDAOPool.get(0).getRootRemotePath();
+		String remotePath = repository.getRepositoryUploadProtocole()
+				.getRemotePath();
 
 		try {
 			return ftpDAOPool.get(0).fileExists(remotePath, node);
@@ -566,10 +575,9 @@ public class FtpService extends AbstractConnexionService implements
 
 		ftpDAOPool.get(0).connectToRepository(repository.getName(),
 				repository.getRepositoryUploadProtocole());
-		String remotePath = ftpDAOPool.get(0).getRootRemotePath();
 
 		SyncTreeDirectory syncTreeDirectory = ftpDAOPool.get(0).downloadSync(
-				repositoryName, remotePath);
+				repositoryName, repository.getProtocole());
 		repository.setSync(syncTreeDirectory);
 
 		disconnect();
@@ -589,14 +597,15 @@ public class FtpService extends AbstractConnexionService implements
 
 		ftpDAOPool.get(0).connectToRepository(repository.getName(),
 				repository.getRepositoryUploadProtocole());
-		String remotePath = ftpDAOPool.get(0).getRootRemotePath();
+		String remotePath = repository.getRepositoryUploadProtocole()
+				.getRemotePath();
 
 		try {
 			for (SyncTreeNodeDTO node : filesToDelete) {
 				if (ftpDAOPool.get(0).isCanceled()) {
 					return;
 				}
-				String parentPath = remotePath + "/"
+				String parentPath = repository.getProtocole() + "/"
 						+ node.getParent().getRelativePath();
 				ftpDAOPool.get(0).deleteFile(node.getName(), node.isLeaf(),
 						parentPath);
@@ -642,6 +651,8 @@ public class FtpService extends AbstractConnexionService implements
 			ftpDAOPool.get(0).uploadChangelogs(repository.getLocalChangelogs(),
 					remotePath);
 			ftpDAOPool.get(0).uploadAutoconfig(repository.getLocalAutoConfig(),
+					remotePath);
+			ftpDAOPool.get(0).uploadEvents(repository.getLocalEvents(),
 					remotePath);
 
 		} catch (IOException e) {

@@ -87,7 +87,7 @@ public class RepositoryEditPanel extends JDialog implements UIConstants,
 	private JComboBox comboBoxProtocol;
 	private final JPopupMenu popup;
 	private final JMenuItem menuItemPaste;
-	private RepositoryAdvancedPanel repositoryAdvancedPanel;
+	private final RepositoryAdvancedPanel repositoryAdvancedPanel;
 
 	/* Service */
 	private final RepositoryService repositoryService = new RepositoryService();
@@ -470,15 +470,21 @@ public class RepositoryEditPanel extends JDialog implements UIConstants,
 						facade.getOnlinePanel().init();
 						// Update join server list
 						facade.getLaunchPanel().init();
+					} else {
+						labelConnection.setText("Url is not reachable!");
+						labelConnection.setFont(new Font("Tohama", Font.ITALIC,
+								11));
+						labelConnection.setForeground(Color.RED);
 					}
 				} catch (WritingException e1) {
 					labelConnection.setText("Error");
 					labelConnection
 							.setFont(new Font("Tohama", Font.ITALIC, 11));
 					labelConnection.setForeground(Color.RED);
-					JOptionPane.showMessageDialog(facade.getMainPanel(),
-							e1.getMessage(), "Error!",
-							JOptionPane.ERROR_MESSAGE);
+					JOptionPane
+							.showMessageDialog(facade.getMainPanel(),
+									e1.getMessage(), "Error",
+									JOptionPane.ERROR_MESSAGE);
 				} catch (Exception e2) {
 					labelConnection.setText("Url is not reachable!");
 					labelConnection

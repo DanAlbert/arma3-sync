@@ -35,7 +35,10 @@ public class Repository implements Serializable {
 	private int numberOfConnections;
 	/* Local data: Hide extra local folder content */
 	private Set<String> hidddenFolderPaths = new HashSet<String>();
-	/* Local data: SHA1 computation for Client synchronization <Path,FileAttrbutes> */
+	/*
+	 * Local data: SHA1 computation for Client synchronization
+	 * <Path,FileAttrbutes>
+	 */
 	private Map<String, FileAttributes> mapFilesForSync = new HashMap<String, FileAttributes>();
 	/* Local data: SHA1 computation for Build repository <Path,FileAttrbutes> */
 	private Map<String, FileAttributes> mapFilesForBuild = new HashMap<String, FileAttributes>();
@@ -50,6 +53,7 @@ public class Repository implements Serializable {
 	private transient SyncTreeDirectory localSync;
 	private transient Changelogs localChangelogs;
 	private transient AutoConfig localAutoConfig;
+	private transient Events localEvents;
 	/* Resuming download */
 	private transient boolean downloading;
 	private transient int lastIndexFileDownloaded;
@@ -210,7 +214,7 @@ public class Repository implements Serializable {
 	public void setMapFilesForSync(Map<String, FileAttributes> mapFilesForSync) {
 		this.mapFilesForSync = mapFilesForSync;
 	}
-	
+
 	public Map<String, FileAttributes> getMapFilesForBuild() {
 		if (mapFilesForBuild == null) {
 			mapFilesForBuild = new HashMap<String, FileAttributes>();
@@ -307,6 +311,14 @@ public class Repository implements Serializable {
 
 	public void setLocalAutoConfig(AutoConfig localaAutoConfig) {
 		this.localAutoConfig = localaAutoConfig;
+	}
+
+	public Events getLocalEvents() {
+		return localEvents;
+	}
+
+	public void setLocalEvents(Events localEvents) {
+		this.localEvents = localEvents;
 	}
 
 	public boolean isExactMatch() {

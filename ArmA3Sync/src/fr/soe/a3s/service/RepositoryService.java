@@ -51,8 +51,6 @@ import fr.soe.a3s.dto.ServerInfoDTO;
 import fr.soe.a3s.dto.TreeDirectoryDTO;
 import fr.soe.a3s.dto.configuration.FavoriteServerDTO;
 import fr.soe.a3s.dto.sync.SyncTreeDirectoryDTO;
-import fr.soe.a3s.exception.AutoConfigNotFoundException;
-import fr.soe.a3s.exception.ChangelogsNotFoundException;
 import fr.soe.a3s.exception.CheckException;
 import fr.soe.a3s.exception.LoadingException;
 import fr.soe.a3s.exception.RepositoryCheckException;
@@ -1273,9 +1271,7 @@ public class RepositoryService extends ObjectDTOtransformer implements
 	}
 
 	public void readLocalRepository(String repositoryName)
-			throws SyncFileNotFoundException, ServerInfoNotFoundException,
-			ChangelogsNotFoundException, AutoConfigNotFoundException,
-			RepositoryException {
+			throws RepositoryException, LoadingException {
 
 		Repository repository = repositoryDAO.getMap().get(repositoryName);
 		if (repository == null) {
@@ -1287,34 +1283,38 @@ public class RepositoryService extends ObjectDTOtransformer implements
 		ServerInfo serverInfo = null;
 		Changelogs changelogs = null;
 		AutoConfig autoConfig = null;
+		Events events = null;
+
 		try {
 			sync = repositoryDAO.readSync(repositoryName);
 			serverInfo = repositoryDAO.readServerInfo(repositoryName);
 			changelogs = repositoryDAO.readChangelogs(repositoryName);
 			autoConfig = repositoryDAO.readAutoConfig(repositoryName);
+			events = repositoryDAO.readEvents(repositoryName);
 		} catch (Exception e) {
 			e.printStackTrace();
 			throw new RepositoryException(e.getMessage());
 		}
 
 		if (sync == null) {
-			throw new SyncFileNotFoundException(repository.getProtocole()
-					.getUrl());
+			throw new LoadingException("Can't read file sync on disk.");
 		} else if (serverInfo == null) {
-			throw new ServerInfoNotFoundException(repository.getProtocole()
-					.getUrl());
+			throw new LoadingException("Can't read file serverinfo on disk.");
 		} else if (changelogs == null) {
-			throw new ChangelogsNotFoundException(repository.getProtocole()
-					.getUrl());
+			throw new LoadingException("Can't read file changelogs on disk.");
 		} else if (autoConfig == null) {
-			throw new AutoConfigNotFoundException(repository.getProtocole()
-					.getUrl());
+			throw new LoadingException("Can't read file autoconfig on disk.");
+		} else if (autoConfig == null) {
+			throw new LoadingException("Can't read file autoconfig on disk.");
+		} else if (events == null) {
+			throw new LoadingException("Can't read file events on disk.");
 		}
 
 		repository.setLocalSync(sync);
 		repository.setLocalServerInfo(serverInfo);
 		repository.setLocalChangelogs(changelogs);
 		repository.setLocalAutoConfig(autoConfig);
+		repository.setLocalEvents(events);
 	}
 
 	public SyncTreeDirectoryDTO getSync(String repositoryName)
@@ -1377,8 +1377,8 @@ public class RepositoryService extends ObjectDTOtransformer implements
 			} else if (repository.getRevision() != serverInfo.getRevision()) {
 				if (serverInfo.isRepositoryContentUpdated()) {
 					return RepositoryStatus.UPDATED;
-				}else {
-					 return RepositoryStatus.OK;
+				} else {
+					return RepositoryStatus.OK;
 				}
 				/*
 				 * if (changelogs != null) {

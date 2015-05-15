@@ -20,19 +20,14 @@ import java.util.TreeSet;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
 import org.apache.commons.io.FileUtils;
 
 import fr.soe.a3s.constant.Protocol;
-import fr.soe.a3s.controller.ObservableFileSize2;
 import fr.soe.a3s.controller.ObservableFilesNumber3;
-import fr.soe.a3s.controller.ObserverFileSize2;
 import fr.soe.a3s.controller.ObserverFilesNumber3;
-import fr.soe.a3s.domain.AbstractProtocole;
-import fr.soe.a3s.domain.Ftp;
 import fr.soe.a3s.domain.Http;
 import fr.soe.a3s.domain.repository.AutoConfig;
 import fr.soe.a3s.domain.repository.Changelog;
@@ -45,7 +40,6 @@ import fr.soe.a3s.domain.repository.SyncTreeDirectory;
 import fr.soe.a3s.domain.repository.SyncTreeLeaf;
 import fr.soe.a3s.domain.repository.SyncTreeNode;
 import fr.soe.a3s.exception.RepositoryCheckException;
-import fr.soe.a3s.exception.RepositoryException;
 import fr.soe.a3s.jazsync.Jazsync;
 
 public class RepositoryBuilderDAO implements DataAccessConstants,
@@ -265,21 +259,21 @@ public class RepositoryBuilderDAO implements DataAccessConstants,
 			ObjectOutputStream fWo = new ObjectOutputStream(
 					new GZIPOutputStream(new FileOutputStream(
 							changelogsFile.getAbsolutePath())));
-			fWo.writeObject(oldChangelogs);
+			fWo.writeObject(changelogs);
 			fWo.close();
 		}
 
 		// Write Events file
 		File eventsFile = new File(repositoryMainDirectory.getAbsolutePath()
 				+ EVENTS_FILE_PATH);
-		if (oldEvents != null) {
+		if (events != null) {
 			ObjectOutputStream fWo = new ObjectOutputStream(
 					new GZIPOutputStream(new FileOutputStream(
 							eventsFile.getAbsolutePath())));
-			fWo.writeObject(oldEvents);
+			fWo.writeObject(events);
 			fWo.close();
 		}
-		
+
 		/* Write .zsync files for HTTP Repository */
 		if (repository.getProtocole() instanceof Http) {
 			writeZsyncFiles(sync, repository.getProtocole().getUrl());
@@ -391,8 +385,8 @@ public class RepositoryBuilderDAO implements DataAccessConstants,
 			parent.addTreeNode(treeSyncTreeLeaf);
 			treeSyncTreeLeaf.setDestinationPath(file.getParentFile()
 					.getAbsolutePath());
-			long size = FileUtils.sizeOf(file); 
-			treeSyncTreeLeaf.setSize(size); 
+			long size = FileUtils.sizeOf(file);
+			treeSyncTreeLeaf.setSize(size);
 
 			/*
 			 * Callable<Integer> c = new Callable<Integer>() {
@@ -408,9 +402,10 @@ public class RepositoryBuilderDAO implements DataAccessConstants,
 			 */
 		}
 	}
-	
-	private void determineRemoteSHA1(SyncTreeNode parent, Repository repository) throws Exception {
-		
+
+	private void determineRemoteSHA1(SyncTreeNode parent, Repository repository)
+			throws Exception {
+
 		this.callables = new ArrayList<Callable<Integer>>();
 		this.mapFiles = repository.getMapFilesForBuild();
 		this.nbFiles = 0;
@@ -443,9 +438,9 @@ public class RepositoryBuilderDAO implements DataAccessConstants,
 		executor.shutdownNow();
 		System.gc();
 	}
-	
+
 	private void generateRemoteSHA1(SyncTreeNode syncTreeNode) {
-		
+
 		if (!syncTreeNode.isLeaf()) {
 			SyncTreeDirectory directory = (SyncTreeDirectory) syncTreeNode;
 			for (SyncTreeNode n : directory.getList()) {
@@ -502,8 +497,8 @@ public class RepositoryBuilderDAO implements DataAccessConstants,
 		}
 	}
 
-	private void writeZsyncFiles(SyncTreeNode syncTreeNode,
-			String repositortUrl) throws Exception {
+	private void writeZsyncFiles(SyncTreeNode syncTreeNode, String repositortUrl)
+			throws Exception {
 
 		if (!syncTreeNode.isLeaf()) {
 			SyncTreeDirectory directory = (SyncTreeDirectory) syncTreeNode;
@@ -675,6 +670,7 @@ public class RepositoryBuilderDAO implements DataAccessConstants,
 			}
 			List<File> list1 = new ArrayList<File>();
 			list1.addAll(set1);
+			Collections.sort(list1);
 
 			Map<String, SyncTreeNode> map = new TreeMap<String, SyncTreeNode>();
 			List<SyncTreeNode> list2 = new ArrayList<SyncTreeNode>();
@@ -686,6 +682,8 @@ public class RepositoryBuilderDAO implements DataAccessConstants,
 			for (Iterator<String> i = map.keySet().iterator(); i.hasNext();) {
 				list2.add(map.get(i.next()));
 			}
+
+			Collections.sort(list2);
 
 			if (list1.size() != list2.size()) {
 				errorMessages.add("Error with directory size content: "
