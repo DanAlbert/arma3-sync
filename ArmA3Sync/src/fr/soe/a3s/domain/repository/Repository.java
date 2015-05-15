@@ -17,6 +17,7 @@ public class Repository implements Serializable {
 	 * 
 	 */
 	private static final long serialVersionUID = -8142021113361619970L;
+
 	private String name;
 	private AbstractProtocole protocole;
 	private boolean notify = false;
@@ -27,41 +28,40 @@ public class Repository implements Serializable {
 	private boolean outOfSynk = false;
 	private boolean noAutoDiscover = true;
 	private boolean exactMatch = false;
-	/* Build options */
-	private List<FavoriteServer> favoriteServersSetToAutoconfig = new ArrayList<FavoriteServer>();
-	// Path of file excluded from build
-	private Set<String> excludedFilesFromBuild = new HashSet<String>();
-	private Set<String> excludedFoldersFromSync = new HashSet<String>();
-	private int numberOfConnections;
-	/* Local data: Hide extra local folder content */
+	/* Local set for Hide extra local folder content */
 	private Set<String> hidddenFolderPaths = new HashSet<String>();
-	/*
-	 * Local data: SHA1 computation for Client synchronization
-	 * <Path,FileAttrbutes>
-	 */
-	private Map<String, FileAttributes> mapFilesForSync = new HashMap<String, FileAttributes>();
-	/* Local data: SHA1 computation for Build repository <Path,FileAttrbutes> */
-	private Map<String, FileAttributes> mapFilesForBuild = new HashMap<String, FileAttributes>();
-	/* Remote files for sync */
-	private transient ServerInfo serverInfo;
-	private transient SyncTreeDirectory sync;
-	private transient Changelogs changelogs;
-	private transient Events events;
-	private transient AutoConfig autoConfig;
-	/* Local files for build */
+
+	/** Check for Addons */
+	private transient ServerInfo serverInfo;// Gets from remote location
+	private transient SyncTreeDirectory sync;// Gets from remote location
+	private transient Changelogs changelogs;// Gets from remote location
+	private transient Events events;// Gets from remote location
+	private transient AutoConfig autoConfig;// Gets from remote location
+	/* Local data: SHA1 computation for Client synchronization */
+	private Map<String, FileAttributes> mapFilesForSync = new HashMap<String, FileAttributes>();// <Path,FileAttrbutes>
+
+	/** Repository download */
+	private transient boolean downloading;
+
+	/** Repository upload */
+	private AbstractProtocole repositoryUploadProtocole;
 	private transient ServerInfo localServerInfo;
 	private transient SyncTreeDirectory localSync;
 	private transient Changelogs localChangelogs;
 	private transient AutoConfig localAutoConfig;
 	private transient Events localEvents;
-	/* Resuming download */
-	private transient boolean downloading;
-	private transient int lastIndexFileDownloaded;
-	private transient long incrementedFilesSize;
-	private transient boolean resume;
-	/* Repository upload */
 	private transient boolean uploading;
-	private AbstractProtocole repositoryUploadProtocole;
+	private transient boolean resume;
+	private transient int lastIndexFileTransfered;
+	private transient long incrementedFilesSize;
+
+	/** Repository build options */
+	private List<FavoriteServer> favoriteServersSetToAutoconfig = new ArrayList<FavoriteServer>();
+	private Set<String> excludedFilesFromBuild = new HashSet<String>();
+	private Set<String> excludedFoldersFromSync = new HashSet<String>();
+	private int numberOfConnections;
+	/* Local data: SHA1 computation for Build repository */
+	private Map<String, FileAttributes> mapFilesForBuild = new HashMap<String, FileAttributes>();// <Path,FileAttrbutes>
 
 	public Repository(String name, AbstractProtocole protocole) {
 		this.name = name;
@@ -164,12 +164,12 @@ public class Repository implements Serializable {
 		this.downloading = downloading;
 	}
 
-	public int getLastIndexFileDownloaded() {
-		return lastIndexFileDownloaded;
+	public int getLastIndexFileTransfered() {
+		return lastIndexFileTransfered;
 	}
 
 	public void setLastIndexFileDonwloaded(int lastIndexFileDownloaded) {
-		this.lastIndexFileDownloaded = lastIndexFileDownloaded;
+		this.lastIndexFileTransfered = lastIndexFileDownloaded;
 	}
 
 	public long getIncrementedFilesSize() {
