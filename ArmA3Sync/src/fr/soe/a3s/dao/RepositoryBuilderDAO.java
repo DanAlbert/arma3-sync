@@ -163,9 +163,9 @@ public class RepositoryBuilderDAO implements DataAccessConstants,
 				}
 			}
 			if (oldSync != null) {
-				Map<String, SyncTreeDirectory> mapOldSync = new HashMap<String, SyncTreeDirectory>();
+				Map<String, SyncTreeDirectory> mapOldSync = new HashMap<String, SyncTreeDirectory>();// <AddonName,SyncTreeDirectory>
 				getAddons(oldSync, mapOldSync);
-				Map<String, SyncTreeDirectory> mapSync = new HashMap<String, SyncTreeDirectory>();
+				Map<String, SyncTreeDirectory> mapSync = new HashMap<String, SyncTreeDirectory>();// <AddonName,SyncTreeDirectory>
 				getAddons(sync, mapSync);
 				for (Iterator iter = mapSync.keySet().iterator(); iter
 						.hasNext();) {
@@ -274,7 +274,7 @@ public class RepositoryBuilderDAO implements DataAccessConstants,
 			fWo.close();
 		}
 
-		/* Write .zsync files for HTTP Repository */
+		/* Write .zsync files for HTTP based Repository */
 		if (repository.getProtocole() instanceof Http) {
 			writeZsyncFiles(sync, repository.getProtocole().getUrl());
 		}
