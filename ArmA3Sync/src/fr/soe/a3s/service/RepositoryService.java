@@ -253,8 +253,6 @@ public class RepositoryService extends ObjectDTOtransformer implements
 		}
 		repository.setPath(path);
 		repositoryBuilderDAO.buildRepository(repository);
-		Cipher cipher = getEncryptionCipher();
-		repositoryDAO.write(cipher, repositoryName);
 	}
 
 	public SyncTreeDirectoryDTO getSyncForCheckForAddons(String repositoryName)
@@ -791,7 +789,7 @@ public class RepositoryService extends ObjectDTOtransformer implements
 
 		Repository repository = repositoryDAO.getMap().get(repositoryName);
 		if (repository != null) {
-			return repository.getLastIndexFileDownloaded();
+			return repository.getLastIndexFileTransfered();
 		} else {
 			return 0;
 		}
