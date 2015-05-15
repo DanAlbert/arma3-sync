@@ -363,7 +363,7 @@ public class HttpConnection {
 		FileOutputStream outputStream = new FileOutputStream(targetFile, false);
 
 		httpDAO.setOffset(0);
-		if (length==0){
+		if (length == 0) {
 			httpDAO.setCompletion(0);
 		}
 		httpDAO.updateTotalFileSizeObserver();
@@ -423,17 +423,15 @@ public class HttpConnection {
 		// opens an output stream to save into file
 		FileOutputStream outputStream = new FileOutputStream(targetFile, true);
 
-
 		long offset = targetFile.length();
 		httpDAO.setOffset(offset);
-		if (length==0){
+		if (length == 0) {
 			httpDAO.setCompletion(0);
-		}else 
-		{
-			httpDAO.setCompletion((length-offset)/length);
+		} else {
+			httpDAO.setCompletion((length - offset) / length);
 		}
 		httpDAO.updateTotalFileSizeObserver();
-		
+
 		final long startTime = System.nanoTime();
 		CountingOutputStream dos = new CountingOutputStream(outputStream) {
 			@Override
