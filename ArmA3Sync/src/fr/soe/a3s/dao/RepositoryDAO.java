@@ -187,6 +187,25 @@ public class RepositoryDAO implements DataAccessConstants {
 		return sync;
 	}
 
+	public Events readEvents(String repositoryName)
+			throws FileNotFoundException, IOException, ClassNotFoundException {
+
+		Events events = null;
+		Repository repository = mapRepositories.get(repositoryName);
+		if (repository != null) {
+			String path = repository.getPath();
+			String eventsPath = path + "/" + EVENTS_FILE_PATH;
+			File file = new File(eventsPath);
+			if (file.exists()) {
+				ObjectInputStream fRo = new ObjectInputStream(
+						new GZIPInputStream(new FileInputStream(file)));
+				events = (Events) fRo.readObject();
+				fRo.close();
+			}
+		}
+		return events;
+	}
+
 	public void saveToDiskEvents(Events events, String repositoryPath)
 			throws WritingException {
 

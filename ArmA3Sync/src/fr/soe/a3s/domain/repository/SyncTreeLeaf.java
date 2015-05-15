@@ -91,7 +91,7 @@ public class SyncTreeLeaf implements SyncTreeNode, Serializable {
 
 	@Override
 	public int compareTo(Object other) {
-		String name = ((SyncTreeLeaf) other).getName();
+		String name = ((SyncTreeNode) other).getName();
 		int result = 1;
 		if (name.compareToIgnoreCase(getName()) > 0)
 			result = -1;

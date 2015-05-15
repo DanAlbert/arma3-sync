@@ -13,7 +13,7 @@ public class SyncTreeDirectory implements SyncTreeNode, Serializable {
 	private static final long serialVersionUID = -2855304993780573704L;
 	private String name;
 	private SyncTreeDirectory parent;
-	private List<SyncTreeNode> list = new ArrayList<SyncTreeNode>();
+	private final List<SyncTreeNode> list = new ArrayList<SyncTreeNode>();
 	private boolean markAsAddon = false;
 	private transient String destinationPath;
 	private boolean updated = false;
@@ -93,7 +93,7 @@ public class SyncTreeDirectory implements SyncTreeNode, Serializable {
 
 	@Override
 	public int compareTo(Object other) {
-		String name = ((SyncTreeDirectory) other).getName();
+		String name = ((SyncTreeNode) other).getName();
 		int result = 1;
 		if (name.compareToIgnoreCase(getName()) > 0)
 			result = -1;
