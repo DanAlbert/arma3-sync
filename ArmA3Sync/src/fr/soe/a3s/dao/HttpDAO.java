@@ -79,7 +79,7 @@ public class HttpDAO extends AbstractConnexionDAO {
 		}
 	}
 
-	private void download(File file) throws IOException {
+	private void downloadFile(File file) throws IOException {
 
 		// opens input stream from the HTTP connection
 		InputStream inputStream = httpURLConnection.getInputStream();
@@ -124,7 +124,7 @@ public class HttpDAO extends AbstractConnexionDAO {
 			directory.mkdir();
 			File file = new File(directory + "/"
 					+ DataAccessConstants.SERVERINFO);
-			download(file);
+			downloadFile(file);
 			if (file.exists()) {
 				ObjectInputStream fRo = new ObjectInputStream(
 						new GZIPInputStream(new FileInputStream(file)));
@@ -172,7 +172,7 @@ public class HttpDAO extends AbstractConnexionDAO {
 			directory.mkdir();
 			File file = new File(directory + "/"
 					+ DataAccessConstants.CHANGELOGS);
-			download(file);
+			downloadFile(file);
 			if (file.exists()) {
 				ObjectInputStream fRo = new ObjectInputStream(
 						new GZIPInputStream(new FileInputStream(file)));
@@ -219,7 +219,7 @@ public class HttpDAO extends AbstractConnexionDAO {
 			File directory = new File(TEMP_FOLDER_PATH + "/" + repositoryName);
 			directory.mkdir();
 			File file = new File(directory + "/" + DataAccessConstants.EVENTS);
-			download(file);
+			downloadFile(file);
 			if (file.exists()) {
 				ObjectInputStream fRo = new ObjectInputStream(
 						new GZIPInputStream(new FileInputStream(file)));
@@ -266,7 +266,7 @@ public class HttpDAO extends AbstractConnexionDAO {
 			File directory = new File(TEMP_FOLDER_PATH + "/" + repositoryName);
 			directory.mkdir();
 			File file = new File(directory + "/" + DataAccessConstants.SYNC);
-			download(file);
+			downloadFile(file);
 			if (file.exists()) {
 				ObjectInputStream fRo = new ObjectInputStream(
 						new GZIPInputStream(new FileInputStream(file)));
@@ -314,7 +314,7 @@ public class HttpDAO extends AbstractConnexionDAO {
 			directory.mkdir();
 			File file = new File(directory + "/"
 					+ DataAccessConstants.AUTOCONFIG);
-			download(file);
+			downloadFile(file);
 			if (file.exists()) {
 				ObjectInputStream fRo = new ObjectInputStream(
 						new GZIPInputStream(new FileInputStream(file)));
@@ -362,7 +362,7 @@ public class HttpDAO extends AbstractConnexionDAO {
 		try {
 			File file = new File(TEMP_FOLDER_PATH + "/"
 					+ DataAccessConstants.AUTOCONFIG);
-			download(file);
+			downloadFile(file);
 			if (file.exists()) {
 				ObjectInputStream fRo = new ObjectInputStream(
 						new GZIPInputStream(new FileInputStream(file)));
