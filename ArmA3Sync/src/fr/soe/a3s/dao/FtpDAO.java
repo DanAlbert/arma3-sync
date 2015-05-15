@@ -103,7 +103,7 @@ public class FtpDAO extends AbstractConnexionDAO {
 		}
 	}
 
-	private boolean download(File file, String remotePath) throws IOException {
+	private boolean downloadFile(File file, String remotePath) throws IOException {
 
 		boolean test = ftpClient.changeWorkingDirectory(remotePath);
 		FileOutputStream fos = new FileOutputStream(file);
@@ -122,7 +122,7 @@ public class FtpDAO extends AbstractConnexionDAO {
 			File directory = new File(TEMP_FOLDER_PATH + "/" + repositoryName);
 			directory.mkdir();
 			File file = new File(directory + "/" + DataAccessConstants.SYNC);
-			boolean found = download(file, remotePath);
+			boolean found = downloadFile(file, remotePath);
 			if (found && file.exists()) {
 				ObjectInputStream fRo = new ObjectInputStream(
 						new GZIPInputStream(new FileInputStream(file)));
@@ -151,7 +151,7 @@ public class FtpDAO extends AbstractConnexionDAO {
 			directory.mkdir();
 			File file = new File(directory + "/"
 					+ DataAccessConstants.SERVERINFO);
-			boolean found = download(file, remotePath);
+			boolean found = downloadFile(file, remotePath);
 			if (found && file.exists()) {
 				ObjectInputStream fRo = new ObjectInputStream(
 						new GZIPInputStream(new FileInputStream(file)));
@@ -180,7 +180,7 @@ public class FtpDAO extends AbstractConnexionDAO {
 			directory.mkdir();
 			File file = new File(directory + "/"
 					+ DataAccessConstants.CHANGELOGS);
-			boolean found = download(file, remotePath);
+			boolean found = downloadFile(file, remotePath);
 			if (found && file.exists()) {
 				ObjectInputStream fRo = new ObjectInputStream(
 						new GZIPInputStream(new FileInputStream(file)));
@@ -208,7 +208,7 @@ public class FtpDAO extends AbstractConnexionDAO {
 			File directory = new File(TEMP_FOLDER_PATH + "/" + repositoryName);
 			directory.mkdir();
 			File file = new File(directory + "/" + DataAccessConstants.EVENTS);
-			boolean found = download(file, remotePath);
+			boolean found = downloadFile(file, remotePath);
 			if (found && file.exists()) {
 				ObjectInputStream fRo = new ObjectInputStream(
 						new GZIPInputStream(new FileInputStream(file)));
@@ -237,7 +237,7 @@ public class FtpDAO extends AbstractConnexionDAO {
 			directory.mkdir();
 			File file = new File(directory + "/"
 					+ DataAccessConstants.AUTOCONFIG);
-			boolean found = download(file, remotePath);
+			boolean found = downloadFile(file, remotePath);
 			if (found && file.exists()) {
 				ObjectInputStream fRo = new ObjectInputStream(
 						new GZIPInputStream(new FileInputStream(file)));
@@ -279,7 +279,7 @@ public class FtpDAO extends AbstractConnexionDAO {
 		try {
 			File file = new File(TEMP_FOLDER_PATH + "/"
 					+ DataAccessConstants.AUTOCONFIG);
-			boolean found = download(file, protocole.getRemotePath());
+			boolean found = downloadFile(file, protocole.getRemotePath());
 			if (found && file.exists()) {
 				ObjectInputStream fRo = new ObjectInputStream(
 						new GZIPInputStream(new FileInputStream(file)));
@@ -420,9 +420,9 @@ public class FtpDAO extends AbstractConnexionDAO {
 		File file = new File(INSTALLATION_PATH + "/" + "a3s.xml");
 		boolean found = false;
 		if (devMode) {
-			found = download(file, UPDATE_REPOSITORY_DEV);
+			found = downloadFile(file, UPDATE_REPOSITORY_DEV);
 		} else {
-			found = download(file, UPDATE_REPOSITORY);
+			found = downloadFile(file, UPDATE_REPOSITORY);
 		}
 
 		String nom = null;
