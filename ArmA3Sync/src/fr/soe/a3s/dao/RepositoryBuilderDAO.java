@@ -31,6 +31,7 @@ import fr.soe.a3s.controller.ObservableFileSize2;
 import fr.soe.a3s.controller.ObservableFilesNumber3;
 import fr.soe.a3s.controller.ObserverFileSize2;
 import fr.soe.a3s.controller.ObserverFilesNumber3;
+import fr.soe.a3s.domain.AbstractProtocole;
 import fr.soe.a3s.domain.Ftp;
 import fr.soe.a3s.domain.Http;
 import fr.soe.a3s.domain.repository.AutoConfig;
@@ -48,18 +49,16 @@ import fr.soe.a3s.exception.RepositoryException;
 import fr.soe.a3s.jazsync.Jazsync;
 
 public class RepositoryBuilderDAO implements DataAccessConstants,
-		ObservableFilesNumber3, ObservableFileSize2 {
+		ObservableFilesNumber3 {
 
-	private Protocol protocole;
-	private String repositortUrl;
-	private ObserverFilesNumber3 observerFilesNumber3;
-	private ObserverFileSize2 observerFileSize2;
-	private long nbFiles, totalNbFiles;
-	private long totalFilesSize;
-	private long cumulativeFileSize;
-	private boolean error;
+	private long totalNbFiles, totalFilesSize;
+	private boolean repositoryContentUpdated;
+	/* Variables for SHA1 computation */
 	private List<Callable<Integer>> callables;
 	private Map<String, FileAttributes> mapFiles;
+	/* Variables for ObservableFilesNumber3 Interface */
+	private ObserverFilesNumber3 observerFilesNumber3;
+	private long nbFiles, cumulativeFileSize;
 
 	@SuppressWarnings("unchecked")
 	public void buildRepository(Repository repository) throws Exception {
@@ -67,55 +66,41 @@ public class RepositoryBuilderDAO implements DataAccessConstants,
 		assert (repository != null);
 		String repositoryPath = repository.getPath();
 		assert (repositoryPath != null);
-		repositortUrl = repository.getProtocole().getUrl();
-		if (repository.getProtocole() instanceof Http) {
-			protocole = Protocol.HTTP;
-		} else {
-			protocole = Protocol.FTP;
-		}
-
-		final File file = new File(repositoryPath);
-
-		totalFilesSize = FileUtils.sizeOfDirectory(file);
-		nbFiles = 0;
-		cumulativeFileSize = 0;
-		error = false;
+		final File repositoryMainDirectory = new File(repository.getPath());
+		assert (repositoryMainDirectory.exists());
 
 		/*
 		 * Read sync, serverInfo, changelogs and events file before .a3s folder
 		 * deletion
 		 */
-		Changelogs changelogs = readChangelogs(file);
-		Events events = readEvents(file);
-		SyncTreeDirectory oldSync = readSync(file);
-		ServerInfo oldServerInfo = readServerInfo(file);
+		Changelogs oldChangelogs = readChangelogs(repositoryMainDirectory);
+		Events oldEvents = readEvents(repositoryMainDirectory);
+		SyncTreeDirectory oldSync = readSync(repositoryMainDirectory);
+		ServerInfo oldServerInfo = readServerInfo(repositoryMainDirectory);
 
 		/* Remove .a3s folder */
-		File folderA3S = new File(file.getAbsolutePath() + "/.a3s");
+		File folderA3S = new File(repositoryMainDirectory.getAbsolutePath()
+				+ "/.a3s");
 		if (folderA3S.exists()) {
 			FileAccessMethods.deleteDirectory(folderA3S);
 		}
 
-		/* Sync */
-		callables = new ArrayList<Callable<Integer>>();
+		/* Generate new Sync */
 		final SyncTreeDirectory sync = new SyncTreeDirectory("racine", null);
-		for (File f : file.listFiles()) {
+		for (File f : repositoryMainDirectory.listFiles()) {
 			generateSync(repository.getExcludedFilesFromBuild(), sync, f);
 		}
 
-		try {
-			ExecutorService executor = Executors.newFixedThreadPool(Runtime
-					.getRuntime().availableProcessors());
-			List<Future<Integer>> futures = executor.invokeAll(callables);
-			executor.shutdownNow();
-		} catch (Exception e) {
-			e.printStackTrace();
-			throw new RepositoryException("Build repository failed." + "\n"
-					+ "An unexpected error has occured.");
-		}
+		/* Determine totalFilesSize and totalNbFiles */
+		this.totalFilesSize = FileUtils
+				.sizeOfDirectory(repositoryMainDirectory);
+		determineTotalNbFiles(sync);// totalNbFiles
 
-		/* ServerInfo */
-		ServerInfo serverInfo = new ServerInfo();
+		/* Determine SHA1 values for Sync */
+		determineRemoteSHA1(sync, repository);
+
+		/* Generate new ServerInfo */
+		final ServerInfo serverInfo = new ServerInfo();
 		int revision = 1;
 		if (oldServerInfo != null) {
 			revision = oldServerInfo.getRevision() + 1;
@@ -125,6 +110,7 @@ public class RepositoryBuilderDAO implements DataAccessConstants,
 		serverInfo.setNumberOfFiles(nbFiles);
 		serverInfo.setTotalFilesSize(totalFilesSize);
 		serverInfo.setNumberOfConnections(repository.getNumberOfConnections());
+		serverInfo.setRepositoryContentUpdated(repositoryContentUpdated);
 
 		int index = repository.getPath().lastIndexOf(File.separator);
 		String repositoryName = repository.getPath().substring(index + 1);
@@ -136,20 +122,20 @@ public class RepositoryBuilderDAO implements DataAccessConstants,
 					File.separator + repositoryName.toLowerCase());
 			String folderPath = path.substring(index + repositoryName.length()
 					+ 2);
-			folderPath = backlashReplace(folderPath);
+			folderPath = backslashReplace(folderPath);
 			serverInfo.getHiddenFolderPaths().add(folderPath);
 		}
 
-		/* AutoConfig */
-		AutoConfig autoConfig = new AutoConfig();
+		/* Generate new AutoConfig */
+		final AutoConfig autoConfig = new AutoConfig();
 		autoConfig.setRepositoryName(repository.getName());
 		autoConfig.setProtocole(repository.getProtocole());
 		autoConfig.getFavoriteServers().addAll(
 				repository.getFavoriteServersSetToAutoconfig());
 
-		/* Changelogs */
-		if (changelogs == null || changelogs.getList().isEmpty()) {
-			changelogs = new Changelogs();
+		/* Generate new Changelogs */
+		final Changelogs changelogs = new Changelogs();
+		if (oldChangelogs == null || oldChangelogs.getList().isEmpty()) {
 			Changelog changelog = new Changelog();
 			changelogs.getList().add(changelog);
 			changelog.setRevision(revision);
@@ -162,6 +148,7 @@ public class RepositoryBuilderDAO implements DataAccessConstants,
 			}
 		} else {
 			Changelog changelog = new Changelog();
+			changelogs.getList().addAll(oldChangelogs.getList());
 			changelogs.getList().add(changelog);
 			if (changelogs.getList().size() > 10) {
 				changelogs.getList().remove(0);
@@ -216,32 +203,28 @@ public class RepositoryBuilderDAO implements DataAccessConstants,
 			}
 		}
 
-		/* Repository */
-		repository.setServerInfo(serverInfo);
-		String autoConfigURL = repository.getProtocole().getUrl()
-				+ AUTOCONFIG_FILE_PATH;
-		if (repository.getProtocole() instanceof Http) {
-			if (!repository.getProtocole().getPort().equals("80")) {
-				autoConfigURL = getUrlWithPort(repository.getProtocole()
-						.getUrl(), repository.getProtocole().getPort());
-			}
-		} else if (repository.getProtocole() instanceof Ftp) {
-			if (!repository.getProtocole().getPort().equals("21")) {
-				autoConfigURL = getUrlWithPort(repository.getProtocole()
-						.getUrl(), repository.getProtocole().getPort());
-			}
+		/* Generate new Events */
+		final Events events = new Events();
+		if (oldEvents != null) {
+			events.getList().addAll(oldEvents.getList());
 		}
 
+		/* Repository update */
+		repository.setServerInfo(serverInfo);
+		String autoConfigURL = AutoConfigURLAccessMethods
+				.determineAutoConfigUrl(repository.getProtocole());
 		repository.setAutoConfigURL(autoConfigURL);
 		repository.setSync(sync);
-		repository.setChangelogs(changelogs);
+		repository.setChangelogs(oldChangelogs);
 
 		/* Write files */
-		File folder = new File(file.getAbsolutePath() + "/.a3s");
+		File folder = new File(repositoryMainDirectory.getAbsolutePath()
+				+ "/.a3s");
 		folder.mkdir();
 
-		// Sync file
-		File syncFile = new File(file.getAbsolutePath() + SYNC_FILE_PATH);
+		// Write Sync file
+		File syncFile = new File(repositoryMainDirectory.getAbsolutePath()
+				+ SYNC_FILE_PATH);
 		if (sync != null) {
 			ObjectOutputStream fWo = new ObjectOutputStream(
 					new GZIPOutputStream(new FileOutputStream(
@@ -250,9 +233,10 @@ public class RepositoryBuilderDAO implements DataAccessConstants,
 			fWo.close();
 		}
 
-		// ServerInfo file
-		File serverInfoFile = new File(file.getAbsolutePath()
-				+ SERVERINFO_FILE_PATH);
+		// Write ServerInfo file
+		File serverInfoFile = new File(
+				repositoryMainDirectory.getAbsolutePath()
+						+ SERVERINFO_FILE_PATH);
 		if (serverInfo != null) {
 			ObjectOutputStream fWo = new ObjectOutputStream(
 					new GZIPOutputStream(new FileOutputStream(
@@ -261,9 +245,10 @@ public class RepositoryBuilderDAO implements DataAccessConstants,
 			fWo.close();
 		}
 
-		// AutoConfig file
-		File autoConfigFile = new File(file.getAbsolutePath()
-				+ AUTOCONFIG_FILE_PATH);
+		// Write AutoConfig file
+		File autoConfigFile = new File(
+				repositoryMainDirectory.getAbsolutePath()
+						+ AUTOCONFIG_FILE_PATH);
 		if (autoConfig != null) {
 			ObjectOutputStream fWo = new ObjectOutputStream(
 					new GZIPOutputStream(new FileOutputStream(
@@ -272,29 +257,48 @@ public class RepositoryBuilderDAO implements DataAccessConstants,
 			fWo.close();
 		}
 
-		// Changelogs file
-		File changelogsFile = new File(file.getAbsolutePath()
-				+ CHANGELOGS_FILE_PATH);
+		// Write Changelogs file
+		File changelogsFile = new File(
+				repositoryMainDirectory.getAbsolutePath()
+						+ CHANGELOGS_FILE_PATH);
 		if (changelogs != null) {
 			ObjectOutputStream fWo = new ObjectOutputStream(
 					new GZIPOutputStream(new FileOutputStream(
 							changelogsFile.getAbsolutePath())));
-			fWo.writeObject(changelogs);
+			fWo.writeObject(oldChangelogs);
 			fWo.close();
 		}
 
-		// Events file
-		File eventsFile = new File(file.getAbsolutePath() + EVENTS_FILE_PATH);
-		if (events != null) {
+		// Write Events file
+		File eventsFile = new File(repositoryMainDirectory.getAbsolutePath()
+				+ EVENTS_FILE_PATH);
+		if (oldEvents != null) {
 			ObjectOutputStream fWo = new ObjectOutputStream(
 					new GZIPOutputStream(new FileOutputStream(
 							eventsFile.getAbsolutePath())));
-			fWo.writeObject(events);
+			fWo.writeObject(oldEvents);
 			fWo.close();
+		}
+		
+		/* Write .zsync files for HTTP Repository */
+		if (repository.getProtocole() instanceof Http) {
+			writeZsyncFiles(sync, repository.getProtocole().getUrl());
 		}
 	}
 
-	private String backlashReplace(String myStr) {
+	private void determineTotalNbFiles(SyncTreeNode node) {
+
+		if (!node.isLeaf()) {
+			SyncTreeDirectory directory = (SyncTreeDirectory) node;
+			for (SyncTreeNode n : directory.getList()) {
+				determineTotalNbFiles(n);
+			}
+		} else {
+			this.totalNbFiles++;
+		}
+	}
+
+	private String backslashReplace(String myStr) {
 
 		final StringBuilder result = new StringBuilder();
 		final StringCharacterIterator iterator = new StringCharacterIterator(
@@ -309,19 +313,6 @@ public class RepositoryBuilderDAO implements DataAccessConstants,
 			character = iterator.next();
 		}
 		return result.toString();
-	}
-
-	private String getUrlWithPort(String url, String port) {
-
-		int index = url.indexOf("/");
-		if (index != -1) {
-			String hostname = url.substring(0, index);
-			String urlWithPort = hostname + ":" + port + url.substring(index);
-			return urlWithPort;
-		} else {
-			String urlWithPort = url + ":" + port;
-			return urlWithPort;
-		}
 	}
 
 	private void getAddonsByName(final SyncTreeDirectory syncTreeDirectory,
@@ -379,6 +370,8 @@ public class RepositoryBuilderDAO implements DataAccessConstants,
 				SyncTreeDirectory syncTreeDirectory = new SyncTreeDirectory(
 						file.getName(), parent);
 				parent.addTreeNode(syncTreeDirectory);
+				syncTreeDirectory.setDestinationPath(file.getParentFile()
+						.getAbsolutePath());
 
 				for (File f : file.listFiles()) {
 					if (f.getName().toLowerCase().equals("addons")) {
@@ -396,24 +389,134 @@ public class RepositoryBuilderDAO implements DataAccessConstants,
 			final SyncTreeLeaf treeSyncTreeLeaf = new SyncTreeLeaf(
 					file.getName(), parent);
 			parent.addTreeNode(treeSyncTreeLeaf);
-			Callable<Integer> c = new Callable<Integer>() {
-				@Override
-				public Integer call() throws Exception {
-					long size = FileUtils.sizeOf(file);
-					treeSyncTreeLeaf.setSize(size);
-					String sha1 = FileAccessMethods.computeSHA1(file);
-					if (protocole.equals(Protocol.HTTP)) {
-						String url = Protocol.HTTP.getPrompt() + repositortUrl
-								+ "/" + determinePath(treeSyncTreeLeaf);
-						Jazsync.make(file, url, sha1);
+			treeSyncTreeLeaf.setDestinationPath(file.getParentFile()
+					.getAbsolutePath());
+			long size = FileUtils.sizeOf(file); 
+			treeSyncTreeLeaf.setSize(size); 
+
+			/*
+			 * Callable<Integer> c = new Callable<Integer>() {
+			 * 
+			 * @Override public Integer call() throws Exception { long size =
+			 * FileUtils.sizeOf(file); treeSyncTreeLeaf.setSize(size); String
+			 * sha1 = FileAccessMethods.computeSHA1(file); if
+			 * (protocole.equals(Protocol.HTTP)) { String url =
+			 * Protocol.HTTP.getPrompt() + repositortUrl + "/" +
+			 * determinePath(treeSyncTreeLeaf); Jazsync.make(file, url, sha1); }
+			 * treeSyncTreeLeaf.setSha1(sha1); increment(size);
+			 * updateFileSizeObserver2(); return 0; } }; callables.add(c);
+			 */
+		}
+	}
+	
+	private void determineRemoteSHA1(SyncTreeNode parent, Repository repository) throws Exception {
+		
+		this.callables = new ArrayList<Callable<Integer>>();
+		this.mapFiles = repository.getMapFilesForBuild();
+		this.nbFiles = 0;
+		this.cumulativeFileSize = 0;
+		this.repositoryContentUpdated = false;
+
+		// Remove no more existing files on disk from mapFiles
+		List<String> paths = new ArrayList<String>();
+		for (Iterator<String> iter = mapFiles.keySet().iterator(); iter
+				.hasNext();) {
+			String path = iter.next();
+			File file = new File(path);
+			if (!file.exists()) {
+				paths.add(path);
+			}
+		}
+
+		for (String path : paths) {
+			mapFiles.remove(path);
+			this.repositoryContentUpdated = true;
+		}
+
+		// Compute SHA1 for files on disk
+		generateRemoteSHA1(parent);
+
+		ExecutorService executor = Executors.newFixedThreadPool(Runtime
+				.getRuntime().availableProcessors());
+		executor.invokeAll(callables);
+
+		executor.shutdownNow();
+		System.gc();
+	}
+	
+	private void generateRemoteSHA1(SyncTreeNode syncTreeNode) {
+		
+		if (!syncTreeNode.isLeaf()) {
+			SyncTreeDirectory directory = (SyncTreeDirectory) syncTreeNode;
+			for (SyncTreeNode n : directory.getList()) {
+				generateRemoteSHA1(n);
+			}
+		} else {
+			final SyncTreeLeaf leaf = (SyncTreeLeaf) syncTreeNode;
+			if (leaf.getDestinationPath() != null) {
+				final File file = new File(leaf.getDestinationPath() + "/"
+						+ leaf.getName());
+				if (file.exists()) {
+					boolean compute = false;
+					final String path = file.getAbsolutePath();
+					final long lastModified = file.lastModified();
+					FileAttributes currentFileAttributes = mapFiles.get(path);
+					if (currentFileAttributes != null) {
+						String currentSHA1 = currentFileAttributes.getSha1();
+						long currentLastModified = currentFileAttributes
+								.getLastModified();
+						if (lastModified != currentLastModified
+								|| currentSHA1 == null) {
+							compute = true;
+						} else {
+							compute = false;
+						}
+					} else {
+						compute = true;
 					}
-					treeSyncTreeLeaf.setSha1(sha1);
-					increment(size);
-					updateFileSizeObserver2();
-					return 0;
+
+					if (compute) {
+						Callable<Integer> c = new Callable<Integer>() {
+							@Override
+							public Integer call() throws Exception {
+								String sha1 = FileAccessMethods
+										.computeSHA1(file);
+								leaf.setSha1(sha1);
+								increment();
+								updateFilesNumberObserver3();
+								mapFiles.put(path, new FileAttributes(sha1,
+										lastModified));
+								repositoryContentUpdated = true;
+								return 0;
+							}
+						};
+						callables.add(c);
+					} else {
+						String sha1 = currentFileAttributes.getSha1();
+						leaf.setSha1(sha1);
+						increment();
+						updateFilesNumberObserver3();
+					}
 				}
-			};
-			callables.add(c);
+			}
+		}
+	}
+
+	private void writeZsyncFiles(SyncTreeNode syncTreeNode,
+			String repositortUrl) throws Exception {
+
+		if (!syncTreeNode.isLeaf()) {
+			SyncTreeDirectory directory = (SyncTreeDirectory) syncTreeNode;
+			for (SyncTreeNode n : directory.getList()) {
+				writeZsyncFiles(n, repositortUrl);
+			}
+		} else {
+			final SyncTreeLeaf leaf = (SyncTreeLeaf) syncTreeNode;
+			File file = new File(leaf.getDestinationPath() + "/"
+					+ leaf.getName());
+			String url = Protocol.HTTP.getPrompt() + repositortUrl + "/"
+					+ determinePath(leaf);
+			Jazsync.make(file, url, leaf.getSha1());
 		}
 	}
 
@@ -423,7 +526,7 @@ public class RepositoryBuilderDAO implements DataAccessConstants,
 		this.totalNbFiles = repository.getServerInfo().getNumberOfFiles();
 		this.nbFiles = 0;
 		this.callables = new ArrayList<Callable<Integer>>();
-		this.mapFiles = repository.getMapFiles();
+		this.mapFiles = repository.getMapFilesForSync();
 
 		// Remove no more existing files on disk from mapFiles
 		List<String> paths = new ArrayList<String>();
@@ -449,10 +552,10 @@ public class RepositoryBuilderDAO implements DataAccessConstants,
 
 		executor.shutdownNow();
 		System.gc();
-		repository.setMapFiles(mapFiles);// to be write on disk
 	}
 
 	private void generateLocalSHA1(SyncTreeNode syncTreeNode) throws Exception {
+
 		if (!syncTreeNode.isLeaf()) {
 			SyncTreeDirectory directory = (SyncTreeDirectory) syncTreeNode;
 			for (SyncTreeNode n : directory.getList()) {
@@ -493,6 +596,7 @@ public class RepositoryBuilderDAO implements DataAccessConstants,
 								updateFilesNumberObserver3();
 								mapFiles.put(path, new FileAttributes(sha1,
 										lastModified));
+								repositoryContentUpdated = true;
 								return 0;
 							}
 						};
@@ -688,28 +792,10 @@ public class RepositoryBuilderDAO implements DataAccessConstants,
 
 	/* */
 
-	public synchronized void increment(long size) {
-		nbFiles++;
-		cumulativeFileSize = cumulativeFileSize + size;
-	}
-
 	public synchronized void increment() {
 		nbFiles++;
 	}
 
-	/* File size controller */
-	@Override
-	public void addObserverFileSize2(ObserverFileSize2 obs) {
-		this.observerFileSize2 = obs;
-	}
-
-	@Override
-	public void updateFileSizeObserver2() {
-		observerFileSize2
-				.update((int) (this.cumulativeFileSize * 100 / totalFilesSize));
-	}
-
-	/* Files number controller */
 	@Override
 	public void addObserverFilesNumber3(ObserverFilesNumber3 obs) {
 		this.observerFilesNumber3 = obs;

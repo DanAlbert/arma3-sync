@@ -56,15 +56,6 @@ public abstract class AbstractProtocole implements Serializable {
 		return readTimeOut;
 	}
 
-	public String getHostname() {
-		String hostname = this.url;
-		int index = url.indexOf("/");
-		if (index != -1) {
-			hostname = url.substring(0, index);
-		}
-		return hostname;
-	}
-
 	public String getRemotePath() {
 		String remotePath = "";
 		int index = url.indexOf("/");
@@ -75,6 +66,7 @@ public abstract class AbstractProtocole implements Serializable {
 	}
 
 	public void checkData() throws CheckException {
+		
 		if ("".equals(getUrl()) || getUrl() == null) {
 			throw new CheckException("URL field is empty!");
 		}

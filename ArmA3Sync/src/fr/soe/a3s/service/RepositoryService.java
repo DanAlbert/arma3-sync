@@ -241,6 +241,8 @@ public class RepositoryService extends ObjectDTOtransformer implements
 					+ " not found!");
 		}
 		repositoryBuilderDAO.buildRepository(repository);
+		Cipher cipher = getEncryptionCipher();
+		repositoryDAO.write(cipher, repositoryName);
 	}
 
 	public void buildRepository(String repositoryName, String path)
@@ -253,6 +255,8 @@ public class RepositoryService extends ObjectDTOtransformer implements
 		}
 		repository.setPath(path);
 		repositoryBuilderDAO.buildRepository(repository);
+		Cipher cipher = getEncryptionCipher();
+		repositoryDAO.write(cipher, repositoryName);
 	}
 
 	public SyncTreeDirectoryDTO getSyncForCheckForAddons(String repositoryName)
@@ -1371,19 +1375,24 @@ public class RepositoryService extends ObjectDTOtransformer implements
 			if (repository.getRevision() == serverInfo.getRevision()) {
 				return RepositoryStatus.OK;
 			} else if (repository.getRevision() != serverInfo.getRevision()) {
-				if (changelogs != null) {
-					if (changelogs.getList().size() != 0) {
-						Changelog changelog = changelogs.getList().get(
-								changelogs.getList().size() - 1);
-						if (changelog.getNewAddons().size() != 0
-								|| changelog.getDeletedAddons().size() != 0
-								|| changelog.getUpdatedAddons().size() != 0) {
-							return RepositoryStatus.UPDATED;
-						} else {
-							return RepositoryStatus.OK;
-						}
-					}
+				if (serverInfo.isRepositoryContentUpdated()) {
+					return RepositoryStatus.UPDATED;
+				}else {
+					 return RepositoryStatus.OK;
 				}
+				/*
+				 * if (changelogs != null) {
+				 * 
+				 * if (changelogs.getList().size() != 0) { Changelog changelog =
+				 * changelogs.getList().get( changelogs.getList().size() - 1);
+				 * if (changelog.getNewAddons().size() != 0 ||
+				 * changelog.getDeletedAddons().size() != 0 ||
+				 * changelog.getUpdatedAddons().size() != 0) { return
+				 * RepositoryStatus.UPDATED; } else { return
+				 * RepositoryStatus.OK; } }
+				 * 
+				 * }
+				 */
 			}
 		}
 		return RepositoryStatus.INDETERMINATED;

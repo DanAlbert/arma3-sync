@@ -35,15 +35,17 @@ public class Repository implements Serializable {
 	private int numberOfConnections;
 	/* Local data: Hide extra local folder content */
 	private Set<String> hidddenFolderPaths = new HashSet<String>();
-	/* Local data: SHA1 computation <Path,FileAttrbutes> */
-	private Map<String, FileAttributes> mapFiles = new HashMap<String, FileAttributes>();
-	/* Remote files */
+	/* Local data: SHA1 computation for Client synchronization <Path,FileAttrbutes> */
+	private Map<String, FileAttributes> mapFilesForSync = new HashMap<String, FileAttributes>();
+	/* Local data: SHA1 computation for Build repository <Path,FileAttrbutes> */
+	private Map<String, FileAttributes> mapFilesForBuild = new HashMap<String, FileAttributes>();
+	/* Remote files for sync */
 	private transient ServerInfo serverInfo;
 	private transient SyncTreeDirectory sync;
 	private transient Changelogs changelogs;
 	private transient Events events;
 	private transient AutoConfig autoConfig;
-	/* Local files */
+	/* Local files for build */
 	private transient ServerInfo localServerInfo;
 	private transient SyncTreeDirectory localSync;
 	private transient Changelogs localChangelogs;
@@ -198,15 +200,26 @@ public class Repository implements Serializable {
 		this.events = events;
 	}
 
-	public Map<String, FileAttributes> getMapFiles() {
-		if (mapFiles == null) {
-			mapFiles = new HashMap<String, FileAttributes>();
+	public Map<String, FileAttributes> getMapFilesForSync() {
+		if (mapFilesForSync == null) {
+			mapFilesForSync = new HashMap<String, FileAttributes>();
 		}
-		return mapFiles;
+		return mapFilesForSync;
 	}
 
-	public void setMapFiles(Map<String, FileAttributes> mapFiles) {
-		this.mapFiles = mapFiles;
+	public void setMapFilesForSync(Map<String, FileAttributes> mapFilesForSync) {
+		this.mapFilesForSync = mapFilesForSync;
+	}
+	
+	public Map<String, FileAttributes> getMapFilesForBuild() {
+		if (mapFilesForBuild == null) {
+			mapFilesForBuild = new HashMap<String, FileAttributes>();
+		}
+		return mapFilesForBuild;
+	}
+
+	public void setMapFilesForBuild(Map<String, FileAttributes> mapFilesForBuild) {
+		this.mapFilesForBuild = mapFilesForBuild;
 	}
 
 	public boolean isNoAutoDiscover() {

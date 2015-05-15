@@ -511,10 +511,10 @@ public class Console {
 
 		this.value = 0;
 
-		repositoryService.getRepositoryBuilderDAO().addObserverFileSize2(
-				new ObserverFileSize2() {
+		repositoryService.getRepositoryBuilderDAO().addObserverFilesNumber3(
+				new ObserverFilesNumber3() {
 					@Override
-					public void update(long v) {
+					public void update(int v) {
 						if (v > value) {
 							value = v;
 							System.out.println("Build complete: " + value
@@ -707,10 +707,10 @@ public class Console {
 
 		this.value = 0;
 
-		repositoryService.getRepositoryBuilderDAO().addObserverFileSize2(
-				new ObserverFileSize2() {
+		repositoryService.getRepositoryBuilderDAO().addObserverFilesNumber3(
+				new ObserverFilesNumber3() {
 					@Override
-					public void update(long v) {
+					public void update(int v) {
 						if (v > value) {
 							value = v;
 							System.out.println("Build complete: " + value

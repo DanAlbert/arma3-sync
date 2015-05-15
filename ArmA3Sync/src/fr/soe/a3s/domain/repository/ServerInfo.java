@@ -19,6 +19,8 @@ public class ServerInfo implements Serializable {
 	private Set<String> hiddenFolderPaths = new HashSet<String>();
 	/* Number of client connections */
 	private int numberOfConnections;
+	/* Repository content have changed since last Build */
+	public boolean repositoryContentUpdated;
 
 	public int getRevision() {
 		return revision;
@@ -65,5 +67,13 @@ public class ServerInfo implements Serializable {
 
 	public void setNumberOfConnections(int numberOfConnections) {
 		this.numberOfConnections = numberOfConnections;
+	}
+
+	public boolean isRepositoryContentUpdated() {
+		return repositoryContentUpdated;
+	}
+
+	public void setRepositoryContentUpdated(boolean repositoryContentUpdated) {
+		this.repositoryContentUpdated = repositoryContentUpdated;
 	}
 }
