@@ -25,6 +25,7 @@ import fr.soe.a3s.constant.RepositoryStatus;
 import fr.soe.a3s.dao.AddonDAO;
 import fr.soe.a3s.dao.DataAccessConstants;
 import fr.soe.a3s.dao.RepositoryBuilderDAO;
+import fr.soe.a3s.dao.RepositoryCheckerDAO;
 import fr.soe.a3s.dao.RepositoryDAO;
 import fr.soe.a3s.domain.AbstractProtocole;
 import fr.soe.a3s.domain.Addon;
@@ -65,6 +66,7 @@ public class RepositoryService extends ObjectDTOtransformer implements
 
 	private static final RepositoryDAO repositoryDAO = new RepositoryDAO();
 	private final RepositoryBuilderDAO repositoryBuilderDAO = new RepositoryBuilderDAO();
+	private final RepositoryCheckerDAO repositoryCheckerDAO = new RepositoryCheckerDAO();
 	private static final AddonDAO addonDAO = new AddonDAO();
 
 	private static final byte[] secreteKey = new byte[] { 0x01, 0x72, 0x43,
@@ -292,7 +294,7 @@ public class RepositoryService extends ObjectDTOtransformer implements
 				repository.getDefaultDownloadLocation(), noAutoDiscover);
 
 		// 2. Compute sha1 for local files on disk
-		repositoryBuilderDAO.determineLocalSHA1(parent, repository);
+		repositoryCheckerDAO.determineLocalSHA1(parent, repository);
 		Cipher cipher = getEncryptionCipher();
 		repositoryDAO.write(cipher, repositoryName);
 
@@ -682,7 +684,7 @@ public class RepositoryService extends ObjectDTOtransformer implements
 			throw new RepositoryException("Repository path does not match "
 					+ path + "!");
 		}
-		repositoryBuilderDAO.checkRepository(repository);
+		repositoryCheckerDAO.checkRepository(repository);
 	}
 
 	public String getDefaultDownloadLocation(String repositoryName) {
