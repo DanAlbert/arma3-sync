@@ -11,6 +11,7 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -787,8 +788,10 @@ public class DownloadPanel extends JPanel implements UIConstants {
 
 	private void updateExactMatchSelection() {
 
+		checkBoxExactMatch.setEnabled(true);
+		checkBoxAutoDiscover.setEnabled(true);
+		
 		if (eventName != null) {
-			checkBoxAutoDiscover.setEnabled(true);
 			checkBoxExactMatch.setEnabled(false);
 		} else {
 			boolean value = repositoryService.isExactMatch(repositoryName);
@@ -796,9 +799,7 @@ public class DownloadPanel extends JPanel implements UIConstants {
 			if (value == true) {
 				checkBoxAutoDiscover.setSelected(false);
 				checkBoxAutoDiscover.setEnabled(false);
-			} else {
-				checkBoxAutoDiscover.setEnabled(true);
-			}
+			} 
 		}
 	}
 

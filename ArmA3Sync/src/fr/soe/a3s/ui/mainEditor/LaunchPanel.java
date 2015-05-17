@@ -222,7 +222,7 @@ public class LaunchPanel extends JPanel implements UIConstants {
 					facade.getAddonsPanel().createGroupFromRepository(list);
 				} else if (objectDTO instanceof EventDTO) {
 					List<EventDTO> eventDTOs = new ArrayList<EventDTO>();
-					eventDTOs.add((EventDTO) objectDTO);
+					eventDTOs.add((EventDTO) objectDTO);;
 					facade.getAddonsPanel().createGroupFromEvents(eventDTOs);
 				}
 				facade.getAddonsPanel().selectModset(modsetName);
