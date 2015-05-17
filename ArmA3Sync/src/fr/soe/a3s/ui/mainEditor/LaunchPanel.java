@@ -53,6 +53,7 @@ public class LaunchPanel extends JPanel implements UIConstants {
 	private JLabel gameVersionLabel, joinServerLabel;
 	private JComboBox gameVersionComboBox, joinServerComboBox;
 	private JButton startButton;
+	private boolean init = false;
 	/* Data */
 	private Map<String, Object> map = new TreeMap<String, Object>();
 	/* Services */
@@ -143,6 +144,8 @@ public class LaunchPanel extends JPanel implements UIConstants {
 
 	public void init() {
 
+		this.init = true;
+		
 		String serverName = configurationService.getServerName();
 		String defaultModset = configurationService.getDefaultModset();
 		String gameVersion = configurationService.getGameVersion();
@@ -168,6 +171,7 @@ public class LaunchPanel extends JPanel implements UIConstants {
 				this.joinServerComboBox.setSelectedItem(serverName + " - "
 						+ defaultModset);
 			} else {
+				
 				this.joinServerComboBox.setSelectedItem(serverName);
 			}
 		}
@@ -194,10 +198,16 @@ public class LaunchPanel extends JPanel implements UIConstants {
 				e.printStackTrace();
 			}
 		}
+		
+		this.init = false;
 	}
 
 	private void serverSelectionPerformed() {
 
+		if (this.init){
+			return;
+		}
+		
 		String selection = (String) this.joinServerComboBox.getSelectedItem();
 		int selectedIndex = this.joinServerComboBox.getSelectedIndex();
 		if (selection == null || "".equals(selection)) {
