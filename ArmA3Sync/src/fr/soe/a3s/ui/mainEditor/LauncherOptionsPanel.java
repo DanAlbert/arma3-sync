@@ -653,7 +653,7 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener,
 	private void checkBoxCpuCountPerformed() {
 		if (!checkBoxCpuCount.isSelected()) {
 			comboBoxCpuCount.setSelectedIndex(0);
-		}
+		} 
 		updateRunParameters();
 	}
 
@@ -666,9 +666,15 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener,
 		if (!cpuCount.isEmpty()) {
 			checkBoxCpuCount.setSelected(true);
 			configurationService.setCpuCount(cpuCount);
+			checkBoxEnableHT.setSelected(false);
+			checkBoxEnableHT.setEnabled(false);
+			configurationService.setEnableHT(false);
 		} else {
 			checkBoxCpuCount.setSelected(false);
 			configurationService.setCpuCount(null);
+			checkBoxEnableHT.setSelected(false);
+			checkBoxEnableHT.setEnabled(true);
+			configurationService.setEnableHT(false);
 		}
 		updateRunParameters();
 	}
