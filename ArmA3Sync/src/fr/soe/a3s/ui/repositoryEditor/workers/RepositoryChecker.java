@@ -58,33 +58,6 @@ public class RepositoryChecker extends Thread {
 			this.adminPanel.getCheckProgressBar().setIndeterminate(false);
 			this.adminPanel.getCheckProgressBar().setMaximum(0);
 
-			/*
-			 * 
-			 * String message = title; if (messages.size() > 5) { for (int i =
-			 * 0; i < 5; i++) { String m = messages.get(i); message = message +
-			 * "\n" + " - " + m; } message = message + "\n" + "[" +
-			 * Integer.toString(messages.size() - 5) + "] more..."; } else { for
-			 * (String m : messages) { message = message + "\n" + " - " + m; } }
-			 * 
-			 * String fileName = "ArmA3Sync-log.txt"; message = message + "\n\n"
-			 * + "Do you want export the errors to log file to desktop (" +
-			 * fileName + ")?";
-			 * 
-			 * int value = JOptionPane.showConfirmDialog(facade.getMainPanel(),
-			 * message, "Download", 0, JOptionPane.ERROR_MESSAGE);
-			 * 
-			 * if (value == 0) { try {
-			 * repositoryService.exportDownloadErrorsToDesktop(repositoryName,
-			 * messages, fileName);
-			 * JOptionPane.showMessageDialog(facade.getMainPanel(),
-			 * "Log file has been exported to desktop", "Download",
-			 * JOptionPane.INFORMATION_MESSAGE); } catch (IOException e1) {
-			 * e1.printStackTrace(); JOptionPane.showMessageDialog(
-			 * facade.getMainPanel(), "Failed to export log file to desktop" +
-			 * "\n" + e1.getMessage(), "Download", JOptionPane.ERROR_MESSAGE); }
-			 * }
-			 */
-
 			List<String> messages = new ArrayList<String>();
 			StringTokenizer stk = new StringTokenizer(e1.getMessage(), "*");
 			while (stk.hasMoreTokens()) {

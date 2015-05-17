@@ -973,7 +973,7 @@ public class Console {
 		value = 0;
 
 		RepositoryService repositoryService = new RepositoryService();
-		repositoryService.getRepositoryBuilderDAO().addObserverFilesNumber3(
+		repositoryService.getRepositoryCheckerDAO().addObserverFilesNumber3(
 				new ObserverFilesNumber3() {
 					@Override
 					public synchronized void update(int v) {

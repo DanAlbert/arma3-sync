@@ -60,7 +60,7 @@ public class RepositoryUploader extends Thread implements DataAccessConstants {
 
 		disable();
 		adminPanel.getUploadrogressBar().setIndeterminate(true);
-		adminPanel.getUploadrogressBar().setString("Computing files...");
+		adminPanel.getUploadrogressBar().setString("Checking remote files...");
 
 		repositoryService.setUploading(repositoryName, true);
 
@@ -73,7 +73,7 @@ public class RepositoryUploader extends Thread implements DataAccessConstants {
 			ProtocolDTO uploadProtocoleDTO = repositoryDTO
 					.getRepositoryUploadProtocoleDTO();
 			if (uploadProtocoleDTO == null
-					&& uploadProtocoleDTO.getProtocole().equals(Protocol.FTP)) {
+					&& protocoleDTO.getProtocole().equals(Protocol.FTP)) {
 				repositoryService.setRepositoryUploadProtocole(repositoryName,
 						protocoleDTO.getUrl(), protocoleDTO.getPort(),
 						protocoleDTO.getLogin(), protocoleDTO.getPassword(),

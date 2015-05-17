@@ -22,6 +22,7 @@ import javax.crypto.spec.SecretKeySpec;
 import net.jimmc.jshortcut.JShellLink;
 import fr.soe.a3s.constant.Protocol;
 import fr.soe.a3s.constant.RepositoryStatus;
+import fr.soe.a3s.dao.AbstractConnexionDAO;
 import fr.soe.a3s.dao.AddonDAO;
 import fr.soe.a3s.dao.DataAccessConstants;
 import fr.soe.a3s.dao.RepositoryBuilderDAO;
@@ -863,6 +864,10 @@ public class RepositoryService extends ObjectDTOtransformer implements
 
 	public RepositoryBuilderDAO getRepositoryBuilderDAO() {
 		return repositoryBuilderDAO;
+	}
+	
+	public RepositoryCheckerDAO getRepositoryCheckerDAO() {
+		return repositoryCheckerDAO;
 	}
 
 	public List<EventDTO> getEvents(String repositoryName)

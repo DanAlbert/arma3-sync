@@ -69,7 +69,7 @@ public class AddonsChecker extends Thread {
 			connexionService.getServerInfo(repositoryName);
 			connexionService.getChangelogs(repositoryName);
 
-			repositoryService.getRepositoryBuilderDAO()
+			repositoryService.getRepositoryCheckerDAO()
 					.addObserverFilesNumber3(new ObserverFilesNumber3() {
 						@Override
 						public synchronized void update(int value) {
