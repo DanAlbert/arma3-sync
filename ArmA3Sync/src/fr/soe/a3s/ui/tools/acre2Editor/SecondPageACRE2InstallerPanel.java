@@ -129,9 +129,7 @@ public class SecondPageACRE2InstallerPanel extends WizardPanel {
 
 		if (copyPlugin) {
 			String message1 = "You can now run your game with @ACRE 2.";
-			String message2 = "Don't forget to run TS3 with administrator priviledges.";
 			labelMessage1.setText(message1);
-			labelMessage2.setText(message2);
 			labelMessage2.setFont(new Font("Tohama", Font.BOLD, 11));
 		}
 	}
