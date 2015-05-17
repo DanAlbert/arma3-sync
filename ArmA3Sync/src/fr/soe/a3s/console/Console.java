@@ -185,8 +185,12 @@ public class Console {
 			System.out.println("Port: " + port);
 			System.out.println("Login: " + login);
 			System.out.println("Password: " + password);
-			System.out.println("Auto-config url: " + protocole.getPrompt()
-					+ autoconfig);
+			if (autoconfig==null){
+				System.out.println("Auto-config url: " + autoconfig);
+			}else {
+				System.out.println("Auto-config url: " + protocole.getPrompt()
+						+ autoconfig);
+			}
 			System.out.println("Repository main folder path: " + path);
 			System.out.println("");
 		}
