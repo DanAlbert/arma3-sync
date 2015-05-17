@@ -45,7 +45,7 @@ public class Jazsync {
 	 * @param sha1
 	 * @throws Exception
 	 */
-	public static void make(File sourcefile, String url, String sha1)
+	public static void make(File sourcefile, File zsyncFile,String url, String sha1)
 			throws Exception {
 
 		assert (sourcefile != null);
@@ -54,8 +54,7 @@ public class Jazsync {
 		assert (url != null);
 		assert (sha1 != null);
 
-		File zsyncFile = new File(sourcefile.getParentFile() + "/"
-				+ sourcefile.getName() + ".zsync");
+
 		MetaFileMaker mfm = new MetaFileMaker(sourcefile, zsyncFile, url, sha1);
 	}
 

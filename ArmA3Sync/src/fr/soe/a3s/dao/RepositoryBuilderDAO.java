@@ -51,9 +51,10 @@ public class RepositoryBuilderDAO implements DataAccessConstants,
 	/* Variables for SHA1 computation */
 	private List<Callable<Integer>> callables;
 	private Map<String, FileAttributes> mapFiles;
+	private List<SyncTreeLeaf> updatedFiles = new ArrayList<SyncTreeLeaf>();
 	/* Variables for ObservableFilesNumber3 Interface */
 	private ObserverFilesNumber3 observerFilesNumber3;
-	private long nbFiles, cumulativeFileSize;
+	private long nbFiles;
 
 	@SuppressWarnings("unchecked")
 	public void buildRepository(Repository repository) throws Exception {
@@ -277,7 +278,7 @@ public class RepositoryBuilderDAO implements DataAccessConstants,
 
 		/* Write .zsync files for HTTP based Repository */
 		if (repository.getProtocole() instanceof Http) {
-			writeZsyncFiles(sync, repository.getProtocole().getUrl());
+			determineZSyncFiles(sync, repository.getProtocole().getUrl());
 		}
 	}
 
@@ -410,8 +411,8 @@ public class RepositoryBuilderDAO implements DataAccessConstants,
 		this.callables = new ArrayList<Callable<Integer>>();
 		this.mapFiles = repository.getMapFilesForBuild();
 		this.nbFiles = 0;
-		this.cumulativeFileSize = 0;
 		this.repositoryContentUpdated = false;
+		this.updatedFiles = new ArrayList<SyncTreeLeaf>();
 
 		// Remove no more existing files on disk from mapFiles
 		List<String> paths = new ArrayList<String>();
@@ -478,6 +479,7 @@ public class RepositoryBuilderDAO implements DataAccessConstants,
 								String sha1 = FileAccessMethods
 										.computeSHA1(file);
 								leaf.setSha1(sha1);
+								updatedFiles.add(leaf);
 								increment();
 								updateFilesNumberObserver3();
 								mapFiles.put(path, new FileAttributes(sha1,
@@ -498,24 +500,63 @@ public class RepositoryBuilderDAO implements DataAccessConstants,
 		}
 	}
 
-	private void writeZsyncFiles(SyncTreeNode syncTreeNode, String repositortUrl)
+	private void determineZSyncFiles(SyncTreeNode sync, String repositortUrl)
 			throws Exception {
+
+		this.callables = new ArrayList<Callable<Integer>>();
+		this.nbFiles = 0;
+
+		generateZsyncFiles(sync, repositortUrl);
+
+		ExecutorService executor = Executors.newFixedThreadPool(Runtime
+				.getRuntime().availableProcessors());
+		executor.invokeAll(callables);
+
+		executor.shutdownNow();
+		System.gc();
+	}
+
+	private void generateZsyncFiles(SyncTreeNode syncTreeNode,
+			String repositortUrl) throws Exception {
 
 		if (!syncTreeNode.isLeaf()) {
 			SyncTreeDirectory directory = (SyncTreeDirectory) syncTreeNode;
 			for (SyncTreeNode n : directory.getList()) {
-				writeZsyncFiles(n, repositortUrl);
+				generateZsyncFiles(n, repositortUrl);
 			}
 		} else {
 			final SyncTreeLeaf leaf = (SyncTreeLeaf) syncTreeNode;
-			File file = new File(leaf.getDestinationPath() + "/"
+			final File file = new File(leaf.getDestinationPath() + "/"
 					+ leaf.getName());
-			String url = Protocol.HTTP.getPrompt() + repositortUrl + "/"
+			final File zsyncFile = new File(file.getParentFile() + "/"
+					+ file.getName() + ".zsync");
+			final String url = Protocol.HTTP.getPrompt() + repositortUrl + "/"
 					+ determinePath(leaf);
-			Jazsync.make(file, url, leaf.getSha1());
+			boolean compute = false;
+			if (updatedFiles.contains(leaf)) {
+				compute = true;
+			} else if (!zsyncFile.exists()) {
+				compute = true;
+			}
+
+			if (compute) {
+				Callable<Integer> c = new Callable<Integer>() {
+					@Override
+					public Integer call() throws Exception {
+						Jazsync.make(file, zsyncFile, url, leaf.getSha1());
+						increment();
+						updateFilesNumberObserver3();
+						return 0;
+					}
+				};
+				callables.add(c);
+			} else {
+				increment();
+				updateFilesNumberObserver3();
+			}
 		}
 	}
-	
+
 	private String determinePath(SyncTreeNode syncTreeNode) {
 
 		assert (syncTreeNode.getParent() != null);
