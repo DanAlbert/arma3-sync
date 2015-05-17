@@ -991,6 +991,7 @@ public class AddonsPanel extends JPanel implements UIConstants {
 
 		for (TreeNodeDTO node : racine2.getList()) {
 			if (node.getName().equals(modsetName)) {
+				deselectAllDescending(racine2);
 				TreeDirectoryDTO treeDirectoryDTO = treeDirectoryDTO = (TreeDirectoryDTO) node;
 				selectAllDescending(treeDirectoryDTO);
 				saveAddonGroups();
