@@ -402,7 +402,7 @@ public class LaunchService {
             params.add("-nologs");
         }
 
-        //No launcher
+        //No Launcher
         if (launcherOptions.getArma3ExePath()!=null){
         	String arma3ExePath = launcherOptions.getArma3ExePath();
         	if (arma3ExePath.toLowerCase().contains(GameExecutables.GAME.getDescription())){
