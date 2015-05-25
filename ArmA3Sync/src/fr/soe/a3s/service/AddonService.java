@@ -177,17 +177,36 @@ public class AddonService {
 					break;
 				}
 			}
-			if (contains) {
-				String addonName = treeDirectory.getName();
-				Addon addon = new Addon(addonName, file.getParentFile()
+			if (contains) {// it is an addon
+				String name = treeDirectory.getName();
+				Addon addon = new Addon(name, file.getParentFile()
 						.getAbsolutePath());
-				addonDAO.getMap().put(addonName.toLowerCase(), addon);
+	
+				// Determine the symbolic key
+				String key = determineNewAdddonKey(name.toLowerCase());
+				addonDAO.getMap().put(key, addon);
+
+				// Set directory name with addon key
+				treeDirectory.setName(key);
+
+				// Mark every up directories to true
 				markRecursively(treeDirectory);
+
 			} else if (!contains && subfiles.length != 0) {
 				for (File f : subfiles) {
 					generateTree(f, treeDirectory);
 				}
 			}
+		}
+	}
+
+	private String determineNewAdddonKey(String key) {
+
+		if (addonDAO.getMap().containsKey(key)) {
+			String newKey = key + "*";
+			return determineNewAdddonKey(newKey);
+		} else {
+			return key;
 		}
 	}
 

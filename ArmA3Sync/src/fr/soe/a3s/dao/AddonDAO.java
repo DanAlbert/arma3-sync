@@ -7,7 +7,7 @@ import fr.soe.a3s.domain.Addon;
 
 public class AddonDAO {
 
-	/* Key = addon name to lower case */
+	/* Key = Symbolic addon name */
 	private static final Map<String, Addon> mapAddons = new HashMap<String, Addon>();
 
 	public Map<String, Addon> getMap() {
