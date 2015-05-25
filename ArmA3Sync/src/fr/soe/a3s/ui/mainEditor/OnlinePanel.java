@@ -50,17 +50,13 @@ import fr.soe.a3s.ui.UIConstants;
 public class OnlinePanel extends JPanel implements UIConstants {
 
 	private final Facade facade;
-
 	private final JButton buttonAdd, buttonDelete;
-
 	private final JTable tableServers;
-
 	private final MyTableModel model;
-
 	private final JScrollPane jScrollPane1;
-
+	// Services
 	private final ConfigurationService configurationService = new ConfigurationService();
-
+	private final RepositoryService repositoryService = new RepositoryService();
 	private boolean isModifying = false;
 
 	private final JComboBox comboBoxModsets;
@@ -267,7 +263,7 @@ public class OnlinePanel extends JPanel implements UIConstants {
 			favoriteServerDTO.setModsetName(modsetName);
 			list.add(favoriteServerDTO);
 		}
-
+		
 		list.remove(index);
 		configurationService.setFavoriteServers(list);
 		facade.getLaunchPanel().init();
