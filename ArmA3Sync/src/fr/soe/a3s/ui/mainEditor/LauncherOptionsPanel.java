@@ -544,11 +544,10 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener,
 
 	public void init() {
 
-		/* Launcher options */
+		/*
+		 * Launcher options Automatically updates Run Parameters
+		 */
 		updateOptions();
-
-		/* Run parameters */
-		updateRunParameters();
 
 		/* Additional Parameters */
 		try {
@@ -653,7 +652,7 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener,
 	private void checkBoxCpuCountPerformed() {
 		if (!checkBoxCpuCount.isSelected()) {
 			comboBoxCpuCount.setSelectedIndex(0);
-		} 
+		}
 		updateRunParameters();
 	}
 
