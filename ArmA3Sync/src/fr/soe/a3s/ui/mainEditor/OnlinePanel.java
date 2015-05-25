@@ -142,8 +142,12 @@ public class OnlinePanel extends JPanel implements UIConstants {
 					for (int i = 0; i < nbRows; i++) {
 						String description = (String) model.getValueAt(i, 0);
 						String ipAddress = (String) model.getValueAt(i, 1);
-						int port = Integer.parseInt((String) model.getValueAt(
-								i, 2));
+						int port = 0;
+						try {
+							port = Integer.parseInt((String) model.getValueAt(
+									i, 2));
+						} catch (NumberFormatException e) {
+						}
 						String password = (String) model.getValueAt(i, 3);
 						String modsetName = (String) model.getValueAt(i, 4);
 						FavoriteServerDTO favoriteServerDTO = new FavoriteServerDTO();

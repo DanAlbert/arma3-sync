@@ -11,6 +11,7 @@ public class FavoriteServer implements Comparable, Serializable {
 	private String password;
 	private boolean selected = false;
 	private String modsetName;
+	private String repositoryName;
 
 	public String getName() {
 		return name;
@@ -58,6 +59,14 @@ public class FavoriteServer implements Comparable, Serializable {
 
 	public void setModsetName(String modsetName) {
 		this.modsetName = modsetName;
+	}
+	
+	public String getRepositoryName() {
+		return repositoryName;
+	}
+
+	public void setRepositoryName(String repositoryName) {
+		this.repositoryName = repositoryName;
 	}
 
 	@Override

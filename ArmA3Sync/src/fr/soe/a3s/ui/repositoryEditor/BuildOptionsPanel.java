@@ -496,6 +496,7 @@ public class BuildOptionsPanel extends JDialog implements UIConstants {
 			for (FavoriteServerDTO f : favoriteServerDTOs) {
 				if (f.getName().equals(name)) {
 					selectedServerDTOs.add(f);
+					f.setRepositoryName(repositoryName);
 					break;
 				}
 			}

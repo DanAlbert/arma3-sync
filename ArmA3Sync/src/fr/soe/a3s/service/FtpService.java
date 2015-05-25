@@ -64,28 +64,7 @@ public class FtpService extends AbstractConnexionService implements
 		AutoConfig autoConfig = ftpDAOPool.get(0).importAutoConfig(
 				autoconfigURL);
 		if (autoConfig != null) {
-			List<FavoriteServer> list1 = autoConfig.getFavoriteServers();
-			List<FavoriteServer> list2 = configurationDAO.getConfiguration()
-					.getFavoriteServers();
-			List<FavoriteServer> newList = new ArrayList<FavoriteServer>();
-			newList.addAll(list1);
-			for (FavoriteServer favoriteServer2 : list2) {
-				boolean contains = false;
-				for (FavoriteServer favoriteServer : newList) {
-					if (favoriteServer.getName().equals(
-							favoriteServer2.getName())) {
-						contains = true;
-						break;
-					}
-				}
-				if (!contains) {
-					newList.add(favoriteServer2);
-				}
-			}
-
-			configurationDAO.getConfiguration().getFavoriteServers().clear();
-			configurationDAO.getConfiguration().getFavoriteServers()
-					.addAll(newList);
+			updateFavoriteServersFromAutoconfig(autoConfig);
 			return transformAutoConfig2DTO(autoConfig);
 		} else {
 			return null;
@@ -136,25 +115,40 @@ public class FtpService extends AbstractConnexionService implements
 		repository.setAutoConfig(autoConfig);// null if not found
 
 		if (autoConfig != null) {
-			List<FavoriteServer> favoriteServers = autoConfig
-					.getFavoriteServers();
-			for (FavoriteServer favoriteServer : favoriteServers) {
-				boolean contains = false;
-				for (FavoriteServer server : configurationDAO
-						.getConfiguration().getFavoriteServers()) {
-					if (favoriteServer.getName().equals(server.getName())) {
-						contains = true;
-						break;
-					}
-				}
-				if (!contains) {
-					configurationDAO.getConfiguration().getFavoriteServers()
-							.add(favoriteServer);
-				}
-			}
+			updateFavoriteServersFromAutoconfig(autoConfig);
 		}
 
 		disconnect();
+	}
+
+	private void updateFavoriteServersFromAutoconfig(AutoConfig autoConfig) {
+
+		List<FavoriteServer> list1 = autoConfig.getFavoriteServers();
+		List<FavoriteServer> list2 = configurationDAO.getConfiguration()
+				.getFavoriteServers();
+
+		List<FavoriteServer> newList = new ArrayList<FavoriteServer>();
+
+		for (FavoriteServer favoriteServerList2 : list2) {
+			if (!autoConfig.getRepositoryName().equals(
+					favoriteServerList2.getRepositoryName())) {
+				boolean nameIsDifferent = true;
+				for (FavoriteServer favoriteServerList1 : list1) {
+					if (favoriteServerList1.getName().equals(
+							favoriteServerList2.getName())) {
+						nameIsDifferent = false;
+					}
+				}
+				if (nameIsDifferent) {
+					newList.add(favoriteServerList2);
+				}
+			}
+		}
+		newList.addAll(list1);
+
+		configurationDAO.getConfiguration().getFavoriteServers().clear();
+		configurationDAO.getConfiguration().getFavoriteServers()
+				.addAll(newList);
 	}
 
 	@Override

@@ -65,7 +65,8 @@ public class ConnectionPanel extends ProgressPanel {
 							.getServiceFromRepository(repositoryName);
 					connexion.checkRepository(repositoryName);
 				} catch (Exception e) {
-					if (!canceled) {
+					e.printStackTrace();
+					if (!canceled && e.getMessage()!=null) {
 						setVisible(false);
 						JOptionPane.showMessageDialog(facade.getMainPanel(),
 								e.getMessage(), "Error",
@@ -74,6 +75,8 @@ public class ConnectionPanel extends ProgressPanel {
 				} finally {
 					if (!canceled) {
 						facade.getSyncPanel().init();
+						facade.getOnlinePanel().init();
+						facade.getLaunchPanel().init();
 						facade.getMainPanel().openRepository(repositoryName,
 								eventName, false);
 						progressBar.setIndeterminate(false);

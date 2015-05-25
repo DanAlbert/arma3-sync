@@ -109,6 +109,7 @@ public class ObjectDTOtransformer {
 		favoriteServerDTO.setPort(favoriteServer.getPort());
 		favoriteServerDTO.setPassword(favoriteServer.getPassword());
 		favoriteServerDTO.setModsetName(favoriteServer.getModsetName());
+		favoriteServerDTO.setRepositoryName(favoriteServer.getRepositoryName());
 		return favoriteServerDTO;
 	}
 
@@ -121,6 +122,7 @@ public class ObjectDTOtransformer {
 		favoriteServer.setPort(favoriteServerDTO.getPort());
 		favoriteServer.setPassword(favoriteServerDTO.getPassword());
 		favoriteServer.setModsetName(favoriteServerDTO.getModsetName());
+		favoriteServer.setRepositoryName(favoriteServerDTO.getRepositoryName());
 		return favoriteServer;
 	}
 

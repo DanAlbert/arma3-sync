@@ -7,6 +7,7 @@ public class FavoriteServerDTO {
 	private int port;
 	private String password;
 	private String modsetName;
+	private String repositoryName;
 
 	public String getName() {
 		return name;
@@ -47,6 +48,12 @@ public class FavoriteServerDTO {
 	public void setModsetName(String modsetName) {
 		this.modsetName = modsetName;
 	}
-	
-	
+
+	public String getRepositoryName() {
+		return repositoryName;
+	}
+
+	public void setRepositoryName(String repositoryName) {
+		this.repositoryName = repositoryName;
+	}
 }
