@@ -671,9 +671,7 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener,
 		} else {
 			checkBoxCpuCount.setSelected(false);
 			configurationService.setCpuCount(null);
-			checkBoxEnableHT.setSelected(false);
-			checkBoxEnableHT.setEnabled(true);
-			configurationService.setEnableHT(false);
+			checkBoxEnableHT.setEnabled(true);;
 		}
 		updateRunParameters();
 	}
