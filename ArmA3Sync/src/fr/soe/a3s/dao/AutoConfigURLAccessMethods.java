@@ -62,8 +62,9 @@ public class AutoConfigURLAccessMethods implements DataAccessConstants {
 		String hostname = "";
 		String relativePath = "";
 
-		autoConfigURL = autoConfigURL.toLowerCase().trim()
-				.replaceAll(protocol.getPrompt(), "");
+		if ( autoConfigURL.toLowerCase().trim().contains(protocol.getPrompt())){
+			autoConfigURL = autoConfigURL.substring(protocol.getPrompt().length());
+		}
 
 		int index = autoConfigURL.indexOf("/");
 		if (index != -1) {
