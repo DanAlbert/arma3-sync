@@ -571,7 +571,7 @@ public class FtpService extends AbstractConnexionService implements
 				repository.getRepositoryUploadProtocole());
 
 		SyncTreeDirectory syncTreeDirectory = ftpDAOPool.get(0).downloadSync(
-				repositoryName, repository.getProtocole());
+				repositoryName, repository.getRepositoryUploadProtocole());
 		repository.setSync(syncTreeDirectory);
 
 		disconnect();
@@ -599,10 +599,16 @@ public class FtpService extends AbstractConnexionService implements
 				if (ftpDAOPool.get(0).isCanceled()) {
 					return;
 				}
-				String parentPath = repository.getProtocole() + "/"
+				String parentPath = remotePath  + "/"
 						+ node.getParent().getRelativePath();
 				ftpDAOPool.get(0).deleteFile(node.getName(), node.isLeaf(),
 						parentPath);
+				
+				// Remove ZSync file
+				if (repository.getProtocole() instanceof Http && node.isLeaf()) {
+					ftpDAOPool.get(0).deleteFile(node.getName()+ ZSYNC_EXTENSION, node.isLeaf(),
+							parentPath);
+				}
 			}
 
 			for (SyncTreeNodeDTO node : filesToUpload) {
