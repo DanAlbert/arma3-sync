@@ -164,11 +164,6 @@ public class AdvancedConfigurationPanel extends JFrame implements UIConstants {
 	}
 
 	private void buttonClosePerformed() {
-		// try {
-		// this.repositoryService.setDestinationPaths(repositoryName, racine);
-		// } catch (RepositoryException e) {
-		// e.printStackTrace();
-		// }
 		this.dispose();
 		this.downloadPanel.getButtonAdvancedConfiguration().setEnabled(true);
 	}
