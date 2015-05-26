@@ -21,11 +21,6 @@ public class AutoConfigURLAccessMethods implements DataAccessConstants {
 		String login = protocole.getLogin();
 		String password = protocole.getPassword();
 
-		int index = repositoryUrl.indexOf("/");
-		if (index != -1) {
-			repositoryUrl = repositoryUrl.substring(0, index);
-		}
-
 		if (login.equalsIgnoreCase("anonymous")) {
 			login = "";
 			password = "";
