@@ -37,6 +37,7 @@ import fr.soe.a3s.ui.repositoryEditor.workers.RepositoryUploader;
 
 public class AdminPanel extends JPanel implements UIConstants {
 
+	private final Facade facade;
 	private JLabel labelRevision, labelRevisionValue;
 	private JLabel labelDate, labelDateValue;
 	private JLabel labelStatus, labelStatusValue;
@@ -44,11 +45,9 @@ public class AdminPanel extends JPanel implements UIConstants {
 	private JLabel labelTotalSize, labelTotalSizeValue;
 	private JLabel labelChangelog;
 	private JButton buttonView;
-	private final Facade facade;
 	private final RepositoryPanel repositoryPanel;
 	private JButton buttonSelectFTPfolderPath, buttonBuild,
 			buttonCopyAutoConfigURL, buttonCheck;
-	private final RepositoryService repositoryService = new RepositoryService();
 	private String repositoryName;
 	private JTextField textFieldMainSharedFolderLocation,
 			textFieldAutoConfigURL;
@@ -58,6 +57,9 @@ public class AdminPanel extends JPanel implements UIConstants {
 	private JButton buttonUploadOptions;
 	private JButton buttonUpload;
 	private JLabel uploadSizeLabelValue;
+	
+	// Sarvices
+	private final RepositoryService repositoryService = new RepositoryService();
 
 	/* Workers */
 	private RepositoryUploader repositoryUploader;
@@ -448,10 +450,6 @@ public class AdminPanel extends JPanel implements UIConstants {
 					e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
 			textFieldAutoConfigURL.setText("");
 		}
-
-		// Reset upload parameters
-		// repositoryService.saveTransfertParameters(repositoryName, 0, 0,
-		// false);
 	}
 
 	@Deprecated
@@ -506,10 +504,6 @@ public class AdminPanel extends JPanel implements UIConstants {
 					"Build repository", JOptionPane.WARNING_MESSAGE);
 			return;
 		}
-
-		// Reset upload parameters
-		// repositoryService.saveTransfertParameters(repositoryName, 0, 0,
-		// false);
 
 		RepositoryBuilder repositoryBuilder = new RepositoryBuilder(facade,
 				repositoryName, path, this);
