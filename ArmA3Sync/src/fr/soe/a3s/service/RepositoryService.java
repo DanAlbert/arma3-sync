@@ -22,7 +22,6 @@ import javax.crypto.spec.SecretKeySpec;
 import net.jimmc.jshortcut.JShellLink;
 import fr.soe.a3s.constant.Protocol;
 import fr.soe.a3s.constant.RepositoryStatus;
-import fr.soe.a3s.dao.AbstractConnexionDAO;
 import fr.soe.a3s.dao.AddonDAO;
 import fr.soe.a3s.dao.DataAccessConstants;
 import fr.soe.a3s.dao.RepositoryBuilderDAO;
@@ -122,11 +121,6 @@ public class RepositoryService extends ObjectDTOtransformer implements
 			throw new CheckException("Repository name can't be empty.");
 		}
 
-		// if (repositoryDAO.getMap().containsKey(name)) {
-		// throw new CheckException("Repository with name " + name
-		// + " already exists.");
-		// }
-
 		AbstractProtocole abstractProtocole = null;
 		if (protocole.equals(Protocol.FTP)) {
 			abstractProtocole = new Ftp(url, port, login, password,
@@ -135,7 +129,7 @@ public class RepositoryService extends ObjectDTOtransformer implements
 			abstractProtocole = new Http(url, port, login, password,
 					connectionTimeOut, readTimeOut);
 		} else {
-			throw new CheckException("Protocole not supported yet.");
+			throw new CheckException("Protocol not supported yet.");
 		}
 		abstractProtocole.checkData();
 
@@ -865,7 +859,7 @@ public class RepositoryService extends ObjectDTOtransformer implements
 	public RepositoryBuilderDAO getRepositoryBuilderDAO() {
 		return repositoryBuilderDAO;
 	}
-	
+
 	public RepositoryCheckerDAO getRepositoryCheckerDAO() {
 		return repositoryCheckerDAO;
 	}
