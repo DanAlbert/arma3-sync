@@ -61,6 +61,9 @@ public class ArmA3Sync implements DataAccessConstants {
 			Console console = new Console(false);
 			console.displayCommands();
 			console.execute();
+		} else if (args.length == 1 && args[0].equalsIgnoreCase("-update")) {
+			Console console = new Console(false);
+			console.checkForUpdates();
 		} else if (args.length == 2 && args[0].equalsIgnoreCase("-dev")
 				&& args[1].equalsIgnoreCase("-console")) {
 			Console console = new Console(true);
