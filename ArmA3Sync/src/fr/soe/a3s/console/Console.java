@@ -13,11 +13,11 @@ import java.util.StringTokenizer;
 
 import fr.soe.a3s.constant.ConsoleCommands;
 import fr.soe.a3s.constant.Protocol;
+import fr.soe.a3s.constant.TimeOutValues;
 import fr.soe.a3s.controller.ObserverActiveConnnection;
 import fr.soe.a3s.controller.ObserverEnd;
 import fr.soe.a3s.controller.ObserverError;
 import fr.soe.a3s.controller.ObserverFileSize;
-import fr.soe.a3s.controller.ObserverFileSize2;
 import fr.soe.a3s.controller.ObserverFilesNumber;
 import fr.soe.a3s.controller.ObserverFilesNumber3;
 import fr.soe.a3s.controller.ObserverSpeed;
@@ -185,9 +185,9 @@ public class Console {
 			System.out.println("Port: " + port);
 			System.out.println("Login: " + login);
 			System.out.println("Password: " + password);
-			if (autoconfig==null){
+			if (autoconfig == null) {
 				System.out.println("Auto-config url: " + autoconfig);
-			}else {
+			} else {
 				System.out.println("Auto-config url: " + protocole.getPrompt()
 						+ autoconfig);
 			}
@@ -286,17 +286,22 @@ public class Console {
 		boolean connectionTimeOutIsWrong = false;
 		String connectionTimeOut = "";
 		do {
-			try {
-				System.out
-						.print("Enter connection timeout in milliseconds (default 10000, >0): ");
-				connectionTimeOut = c.nextLine();
-				int time = Integer.parseInt(connectionTimeOut);
-				connectionTimeOutIsWrong = false;
-				if (time == 0) {
+			System.out
+					.print("Enter connection timeout in milliseconds (default 60000, >0): ");
+			connectionTimeOut = c.nextLine();
+			if (connectionTimeOut.isEmpty()) {
+				connectionTimeOut = Integer
+						.toString(TimeOutValues.CONNECTION_TIME_OUT.getValue());
+			} else {
+				try {
+					int time = Integer.parseInt(connectionTimeOut);
+					connectionTimeOutIsWrong = false;
+					if (time == 0) {
+						connectionTimeOutIsWrong = true;
+					}
+				} catch (NumberFormatException e) {
 					connectionTimeOutIsWrong = true;
 				}
-			} catch (NumberFormatException e) {
-				connectionTimeOutIsWrong = true;
 			}
 		} while (connectionTimeOutIsWrong);
 
@@ -304,17 +309,22 @@ public class Console {
 		boolean readTimeOutIsWrong = false;
 		String readTimeOut = "";
 		do {
-			try {
-				System.out
-						.print("Enter read timeout in milliseconds (default 30000, >0): ");
-				readTimeOut = c.nextLine();
-				int time = Integer.parseInt(readTimeOut);
-				readTimeOutIsWrong = false;
-				if (time == 0) {
+			System.out
+					.print("Enter read timeout in milliseconds (default 60000, >0): ");
+			readTimeOut = c.nextLine();
+			if (readTimeOut.isEmpty()) {
+				readTimeOut = Integer.toString(TimeOutValues.READ_TIME_OUT
+						.getValue());
+			} else {
+				try {
+					int time = Integer.parseInt(readTimeOut);
+					readTimeOutIsWrong = false;
+					if (time == 0) {
+						readTimeOutIsWrong = true;
+					}
+				} catch (NumberFormatException e) {
 					readTimeOutIsWrong = true;
 				}
-			} catch (NumberFormatException e) {
-				readTimeOutIsWrong = true;
 			}
 		} while (readTimeOutIsWrong);
 
