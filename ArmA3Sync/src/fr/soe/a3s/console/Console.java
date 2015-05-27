@@ -650,7 +650,7 @@ public class Console {
 		}
 	}
 
-	private void checkForUpdates() {
+	public void checkForUpdates() {
 
 		System.out.println("");
 		System.out.println("Check for updates.");
