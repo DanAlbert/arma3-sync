@@ -25,7 +25,7 @@ public class AddonService {
 	static {
 		GameSystemFolders[] tab1 = GameSystemFolders.values();
 		for (int i = 0; i < tab1.length; i++) {
-			excludedFolderList.add(tab1[i].toString().toLowerCase());
+			excludedFolderList.add(tab1[i].toString());
 		}
 	}
 	private static TreeDirectory availableAddonsTreeInstance = null;
@@ -40,20 +40,23 @@ public class AddonService {
 			Iterator iter = addonSearchDirectoryPaths.iterator();
 			while (iter.hasNext()) {
 				if (list.isEmpty()) {
-					list.add((String) iter.next());
+					String path = (String) iter.next();
+					list.add(path);
 				} else {
 					String path = (String) iter.next();
-					String osName = System.getProperty("os.name");
-					if (osName.contains("Windows")) {
-						path = path.toLowerCase();
-					}
 					String remove = null;
 					boolean contains = false;
 					for (String p : list) {
+						String pathForCompare = path;
+						String pForCompare = p;
+						String osName = System.getProperty("os.name");
 						if (osName.contains("Windows")) {
-							p = p.toLowerCase();
+							pathForCompare = path.toLowerCase();
+							pForCompare = p.toLowerCase();
 						}
-						if (p.contains(path) || path.contains(p)) {
+
+						if (pForCompare.contains(path)
+								|| pathForCompare.contains(p)) {
 							contains = true;
 							if (path.length() < p.length()) {
 								remove = p;
@@ -78,17 +81,47 @@ public class AddonService {
 			addonDAO.getMap().clear();
 			TreeDirectory racine = new TreeDirectory("racine1", null);
 
-			// get addons inside all locations
-			for (String path : list) {
-				File file = new File(path);
+			if (list.size() == 1) {
+				File file = new File(list.get(0));
 				if (file.exists() && file.isDirectory()) {
 					File[] subfiles = file.listFiles();
-					for (File f : subfiles) {
-						if (f.isDirectory()) {
-							if (!excludedFolderList.contains(f.getName()
-									.toLowerCase())) {
-								generateTree(f, racine);
-							}
+					if (subfiles != null) {
+						for (File f : subfiles) {
+							generateTree(f, racine);
+						}
+					}
+				}
+			} else {// multi addons locations
+
+				boolean sameNameFound = false;
+				List<String> fileNames = new ArrayList<String>();
+				for (String path : list) {
+					File file = new File(path);
+					if (file.exists()) {
+						if (!fileNames.contains(file.getName())) {
+							fileNames.add(file.getName());
+						} else {
+							sameNameFound = true;
+							break;
+						}
+					}
+				}
+
+				if (sameNameFound) {
+					for (String path : list) {
+						File file = new File(path);
+						if (file.exists()) {
+							TreeDirectory treeDirectory = new TreeDirectory(
+									file.getAbsolutePath(), racine);
+							racine.addTreeNode(treeDirectory);
+							generateTree(file, treeDirectory);
+						}
+					}
+				} else {
+					for (String path : list) {
+						File file = new File(path);
+						if (file.exists()) {
+							generateTree(file, racine);
 						}
 					}
 				}
@@ -153,20 +186,24 @@ public class AddonService {
 
 	private void generateTree(File file, TreeDirectory node) {
 
-		if (file.isDirectory()) {
+		if (file.isDirectory() && (!excludedFolderList.equals(file.getName()))) {
 
 			/* Check if directory already exists in the Tree */
-			TreeDirectory treeDirectory = null;
-			for (TreeNode n : node.getList()) {
-				if (n.getName().equals(file.getName()) && !n.isLeaf()) {
-					treeDirectory = (TreeDirectory) n;
-				}
-			}
+			/*
+			 * TreeDirectory treeDirectory = null; boolean found = false; for
+			 * (TreeNode n : node.getList()) { if
+			 * (n.getName().equals(file.getName()) && !n.isLeaf()) { found =
+			 * true; } }
+			 * 
+			 * if (found) { treeDirectory = new TreeDirectory(file.getName() +
+			 * "*", node); node.addTreeNode(treeDirectory); } else {
+			 * treeDirectory = new TreeDirectory(file.getName(), node);
+			 * node.addTreeNode(treeDirectory); }
+			 */
 
-			if (treeDirectory == null) {
-				treeDirectory = new TreeDirectory(file.getName(), node);
-				node.addTreeNode(treeDirectory);
-			}
+			TreeDirectory treeDirectory = new TreeDirectory(file.getName(),
+					node);
+			node.addTreeNode(treeDirectory);
 
 			File[] subfiles = file.listFiles();
 			boolean contains = false;
@@ -185,13 +222,13 @@ public class AddonService {
 						.getAbsolutePath());
 
 				// Determine the symbolic key
-				String key = determineNewAdddonKey(name.toLowerCase());
-				addonDAO.getMap().put(key, addon);
+				String key = determineNewAdddonKey(name);
+				addonDAO.getMap().put(key.toLowerCase(), addon);
 
 				// Set directory name with addon key
 				treeDirectory.setName(key);
 
-				// Mark every up directories to true
+				// Mark up every directories to true
 				markRecursively(treeDirectory);
 
 			} else if (!contains && subfiles.length != 0) {
@@ -204,7 +241,7 @@ public class AddonService {
 
 	private String determineNewAdddonKey(String key) {
 
-		if (addonDAO.getMap().containsKey(key)) {
+		if (addonDAO.getMap().containsKey(key.toLowerCase())) {
 			String newKey = key + "*";
 			return determineNewAdddonKey(newKey);
 		} else {
