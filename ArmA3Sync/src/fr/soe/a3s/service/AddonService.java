@@ -68,6 +68,8 @@ public class AddonService {
 						if (remove != null) {
 							list.remove(remove);
 							list.add(path);
+						} else {
+							list.add(path);
 						}
 					}
 				}
@@ -181,7 +183,7 @@ public class AddonService {
 				String name = treeDirectory.getName();
 				Addon addon = new Addon(name, file.getParentFile()
 						.getAbsolutePath());
-	
+
 				// Determine the symbolic key
 				String key = determineNewAdddonKey(name.toLowerCase());
 				addonDAO.getMap().put(key, addon);
