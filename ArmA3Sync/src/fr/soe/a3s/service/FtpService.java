@@ -5,7 +5,9 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.ConnectException;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Stack;
 import java.util.StringTokenizer;
 
@@ -503,6 +505,39 @@ public class FtpService extends AbstractConnexionService implements
 		return false;
 	}
 
+	@Override
+	public void remoteFileExists(String repositoryName,
+			Map<SyncTreeNodeDTO, Boolean> mapRemoteNodeExists)
+			throws RepositoryException, ConnectException, FtpException {
+
+		Repository repository = repositoryDAO.getMap().get(repositoryName);
+		if (repository == null) {
+			throw new RepositoryException("Repository " + repositoryName
+					+ " not found!");
+		}
+
+		ftpDAOPool.get(0).connectToRepository(repository.getName(),
+				repository.getRepositoryUploadProtocole());
+		String remotePath = repository.getRepositoryUploadProtocole()
+				.getRemotePath();
+
+		try {
+			for (Iterator<SyncTreeNodeDTO> iter = mapRemoteNodeExists.keySet()
+					.iterator(); iter.hasNext();) {
+				SyncTreeNodeDTO node = iter.next();
+				boolean exists = ftpDAOPool.get(0).fileExists(remotePath, node);
+				mapRemoteNodeExists.put(node, exists);
+			}
+		} catch (IOException e) {
+			if (!ftpDAOPool.get(0).isCanceled()) {
+				e.printStackTrace();
+				throw new FtpException(e.getMessage());
+			}
+		} finally {
+			disconnect();
+		}
+	}
+
 	// public List<String> fileExists(String repositoryName,
 	// Collection<SyncTreeNodeDTO> nodes) throws RepositoryException,
 	// ConnectException, FtpException {
@@ -599,14 +634,15 @@ public class FtpService extends AbstractConnexionService implements
 				if (ftpDAOPool.get(0).isCanceled()) {
 					return;
 				}
-				String parentPath = remotePath  + "/"
+				String parentPath = remotePath + "/"
 						+ node.getParent().getRelativePath();
 				ftpDAOPool.get(0).deleteFile(node.getName(), node.isLeaf(),
 						parentPath);
-				
+
 				// Remove ZSync file
 				if (repository.getProtocole() instanceof Http && node.isLeaf()) {
-					ftpDAOPool.get(0).deleteFile(node.getName()+ ZSYNC_EXTENSION, node.isLeaf(),
+					ftpDAOPool.get(0).deleteFile(
+							node.getName() + ZSYNC_EXTENSION, node.isLeaf(),
 							parentPath);
 				}
 			}
@@ -697,4 +733,5 @@ public class FtpService extends AbstractConnexionService implements
 	public int getNumberConnections() {
 		return ftpDAOPool.size();
 	}
+
 }

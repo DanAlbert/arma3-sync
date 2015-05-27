@@ -109,6 +109,20 @@ public class RepositoryUploader extends Thread implements DataAccessConstants {
 			} else {
 				Map<String, SyncTreeNodeDTO> mapRemoteSync = new HashMap<String, SyncTreeNodeDTO>();
 				syncToMap(remoteSync, mapRemoteSync);
+
+				Map<SyncTreeNodeDTO, Boolean> mapRemoteNodeExists = new HashMap<SyncTreeNodeDTO, Boolean>();
+				for (Iterator<String> iter = mapRemoteSync.keySet().iterator(); iter
+						.hasNext();) {
+					String path = iter.next();
+					SyncTreeNodeDTO remoteNode = mapRemoteSync.get(path);
+					if (remoteNode.isLeaf()) {
+						mapRemoteNodeExists.put(remoteNode, false);
+					}
+				}
+
+				connexionService.remoteFileExists(repositoryName,
+						mapRemoteNodeExists);
+
 				for (Iterator<String> iter = mapLocalSync.keySet().iterator(); iter
 						.hasNext();) {
 					String path = iter.next();
@@ -120,8 +134,9 @@ public class RepositoryUploader extends Thread implements DataAccessConstants {
 						if (localNode.isLeaf() && remoteNode.isLeaf()) {
 							boolean exists = false;
 							if (!canceled) {
-								exists = connexionService.remoteFileExists(
-										repositoryName, remoteNode);
+								// exists = connexionService.remoteFileExists(
+								// repositoryName, remoteNode);
+								exists = mapRemoteNodeExists.get(remoteNode);
 							}
 							if (exists) {
 								SyncTreeLeafDTO localLeaf = (SyncTreeLeafDTO) localNode;

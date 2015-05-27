@@ -5,6 +5,7 @@ import java.io.FileNotFoundException;
 import java.net.ConnectException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Stack;
 
 import fr.soe.a3s.controller.ObserverFileDownload;
@@ -534,6 +535,13 @@ public class HttpService extends AbstractConnexionService implements
 			ConnectException, FtpException {
 		// unimplemented
 		return false;
+	}
+
+	@Override
+	public void remoteFileExists(String repositoryName,
+			Map<SyncTreeNodeDTO, Boolean> mapRemoteNodeExists)
+			throws RepositoryException, ConnectException, FtpException {
+		// unimplemented
 	}
 
 	@Override

@@ -2,6 +2,7 @@ package fr.soe.a3s.service;
 
 import java.net.ConnectException;
 import java.util.List;
+import java.util.Map;
 
 import fr.soe.a3s.dao.AbstractConnexionDAO;
 import fr.soe.a3s.dto.AutoConfigDTO;
@@ -66,4 +67,8 @@ public abstract class AbstractConnexionService extends ObjectDTOtransformer {
 			ConnectException, FtpException;
 
 	public abstract int getNumberConnections();
+
+	public abstract void remoteFileExists(String repositoryName,
+			Map<SyncTreeNodeDTO, Boolean> mapRemoteNodeExists)
+			throws RepositoryException, ConnectException, FtpException;
 }
