@@ -186,14 +186,13 @@ public class RepositoryUploader extends Thread implements DataAccessConstants {
 				if (node.isLeaf()) {
 					SyncTreeLeafDTO leaf = (SyncTreeLeafDTO) node;
 					totalFilesSize = totalFilesSize + leaf.getSize();
-					System.out.println("leaf size =" + leaf.getSize());
 				}
 			}
 
 			// 5. Upload
 			adminPanel.getUploadrogressBar().setMaximum(100);
 			adminPanel.getUploadrogressBar().setString("Uploading files...");
-			adminPanel.getUploadrogressBar().setIndeterminate(false);
+			adminPanel.getUploadrogressBar().setIndeterminate(true);
 
 			// Resume Upload
 			lastIndexFileUploaded = repositoryService
@@ -229,6 +228,8 @@ public class RepositoryUploader extends Thread implements DataAccessConstants {
 					new ObserverFilesNumber2() {
 						@Override
 						public void update() {
+							adminPanel.getUploadrogressBar().setIndeterminate(
+									false);
 							lastIndexFileUploaded++;
 							SyncTreeNodeDTO node = filesToUpload
 									.get(lastIndexFileUploaded - 1);
@@ -284,6 +285,7 @@ public class RepositoryUploader extends Thread implements DataAccessConstants {
 						JOptionPane.INFORMATION_MESSAGE);
 			}
 		} catch (Exception e) {
+			adminPanel.getUploadrogressBar().setIndeterminate(false);
 			e.printStackTrace();
 			JOptionPane.showMessageDialog(facade.getMainPanel(),
 					e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
