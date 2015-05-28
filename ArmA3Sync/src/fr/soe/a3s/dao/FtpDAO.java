@@ -103,7 +103,8 @@ public class FtpDAO extends AbstractConnexionDAO {
 		}
 	}
 
-	private boolean downloadFile(File file, String remotePath) throws IOException {
+	private boolean downloadFile(File file, String remotePath)
+			throws IOException {
 
 		boolean test = ftpClient.changeWorkingDirectory(remotePath);
 		FileOutputStream fos = new FileOutputStream(file);
@@ -475,6 +476,10 @@ public class FtpDAO extends AbstractConnexionDAO {
 			remotePath = remotePath + "/" + node.getParent().getRelativePath();
 			ftpClient.changeWorkingDirectory(remotePath);
 
+			System.out.println("Uploading file: " + file.getAbsolutePath());
+			System.out.println("to target directory: " + remotePath);
+			System.out.println("");
+
 			this.offset = 0;
 
 			final long startTime = System.nanoTime();
@@ -483,7 +488,7 @@ public class FtpDAO extends AbstractConnexionDAO {
 				@Override
 				protected void afterRead(int n) {
 					super.afterRead(n);
-					System.out.println(getCount());
+					// System.out.println(getCount());
 					int nbBytes = getCount();
 					countFileSize = getCount();
 					updateFileSizeObserver2();
