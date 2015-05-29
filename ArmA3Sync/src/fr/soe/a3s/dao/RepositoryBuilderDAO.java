@@ -211,7 +211,7 @@ public class RepositoryBuilderDAO implements DataAccessConstants,
 				.determineAutoConfigUrl(repository.getProtocole());
 		repository.setAutoConfigURL(autoConfigURL);
 		repository.setSync(sync);
-		repository.setChangelogs(oldChangelogs);
+		repository.setChangelogs(changelogs);
 
 		/* Write files */
 		File folder = new File(repositoryMainDirectory.getAbsolutePath()
