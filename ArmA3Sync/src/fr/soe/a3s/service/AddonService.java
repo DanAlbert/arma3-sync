@@ -45,6 +45,7 @@ public class AddonService {
 				} else {
 					String path = (String) iter.next();
 					String remove = null;
+					String add = null;
 					boolean contains = false;
 					for (String p : list) {
 						String pathForCompare = path;
@@ -55,11 +56,17 @@ public class AddonService {
 							pForCompare = p.toLowerCase();
 						}
 
-						if (pForCompare.contains(path)
-								|| pathForCompare.contains(p)) {
-							contains = true;
+						if (pForCompare.contains(pathForCompare)
+								|| pathForCompare.contains(pForCompare)) {
 							if (path.length() < p.length()) {
+								contains = true;
+								add = path;
 								remove = p;
+								break;
+							} else if (path.length() > p.length()) {
+								contains = true;
+								add = p;
+								remove = path;
 								break;
 							}
 						}
@@ -68,11 +75,11 @@ public class AddonService {
 					if (!contains) {
 						list.add(path);
 					} else {
-						if (remove != null) {
+						if (!list.contains(add)) {
+							list.add(add);
+						}
+						if (list.contains(remove)) {
 							list.remove(remove);
-							list.add(path);
-						} else {
-							list.add(path);
 						}
 					}
 				}
@@ -83,7 +90,7 @@ public class AddonService {
 
 			if (list.size() == 1) {
 				File file = new File(list.get(0));
-				if (file.exists() && file.isDirectory()) {
+				if (file.exists()) {
 					File[] subfiles = file.listFiles();
 					if (subfiles != null) {
 						for (File f : subfiles) {
@@ -91,15 +98,14 @@ public class AddonService {
 						}
 					}
 				}
-			} else {// multi addons locations
-
+			} else {
 				boolean sameNameFound = false;
-				List<String> fileNames = new ArrayList<String>();
+				List<String> directoryNames = new ArrayList<String>();
 				for (String path : list) {
 					File file = new File(path);
 					if (file.exists()) {
-						if (!fileNames.contains(file.getName())) {
-							fileNames.add(file.getName());
+						if (!directoryNames.contains(file.getName())) {
+							directoryNames.add(file.getName());
 						} else {
 							sameNameFound = true;
 							break;
@@ -114,14 +120,27 @@ public class AddonService {
 							TreeDirectory treeDirectory = new TreeDirectory(
 									file.getAbsolutePath(), racine);
 							racine.addTreeNode(treeDirectory);
-							generateTree(file, treeDirectory);
+							File[] subfiles = file.listFiles();
+							if (subfiles != null) {
+								for (File f : subfiles) {
+									generateTree(f, treeDirectory);
+								}
+							}
 						}
 					}
 				} else {
 					for (String path : list) {
 						File file = new File(path);
 						if (file.exists()) {
-							generateTree(file, racine);
+							TreeDirectory treeDirectory = new TreeDirectory(
+									file.getName(), racine);
+							racine.addTreeNode(treeDirectory);
+							File[] subfiles = file.listFiles();
+							if (subfiles != null) {
+								for (File f : subfiles) {
+									generateTree(f, treeDirectory);
+								}
+							}
 						}
 					}
 				}
