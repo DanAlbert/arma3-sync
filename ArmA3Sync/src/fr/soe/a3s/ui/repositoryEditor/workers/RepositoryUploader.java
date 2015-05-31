@@ -279,6 +279,11 @@ public class RepositoryUploader extends Thread implements DataAccessConstants {
 			connexionService.uploadRepository(repositoryName, newFilesToUpload,
 					filesToDelete, resume);
 
+			adminPanel.getUploadrogressBar().setString("100%");
+			adminPanel.getUploadrogressBar().setValue(100);
+			adminPanel.getUploadrogressBar().setIndeterminate(
+					false);
+			
 			if (!canceled) {
 				JOptionPane.showMessageDialog(facade.getMainPanel(),
 						"Repository upload finished.", "Repository upload",

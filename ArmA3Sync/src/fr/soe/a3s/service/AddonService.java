@@ -205,7 +205,7 @@ public class AddonService {
 
 	private void generateTree(File file, TreeDirectory node) {
 
-		if (file.isDirectory() && (!excludedFolderList.equals(file.getName()))) {
+		if (file.isDirectory() && (!excludedFolderList.contains(file.getName()))) {
 
 			/* Check if directory already exists in the Tree */
 			/*
