@@ -36,60 +36,65 @@ public class AddonService {
 
 			Set<String> addonSearchDirectoryPaths = configurationDAO
 					.getConfiguration().getAddonSearchDirectoryPaths();
+
 			List<String> list = new ArrayList<String>();
 			Iterator iter = addonSearchDirectoryPaths.iterator();
 			while (iter.hasNext()) {
-				if (list.isEmpty()) {
-					String path = (String) iter.next();
-					list.add(path);
-				} else {
-					String path = (String) iter.next();
-					String remove = null;
-					String add = null;
-					boolean contains = false;
-					for (String p : list) {
-						String pathForCompare = path;
-						String pForCompare = p;
-						String osName = System.getProperty("os.name");
-						if (osName.contains("Windows")) {
-							pathForCompare = path.toLowerCase();
-							pForCompare = p.toLowerCase();
-						}
+				list.add((String) iter.next());
+			}
 
-						if (pForCompare.contains(pathForCompare)
-								|| pathForCompare.contains(pForCompare)) {
-							if (path.length() < p.length()) {
-								contains = true;
-								add = path;
-								remove = p;
-								break;
-							} else if (path.length() > p.length()) {
-								contains = true;
-								add = p;
-								remove = path;
-								break;
+			List<String> newList = new ArrayList<String>();
+
+			for (int i = 0; i < list.size(); i++) {
+				String ipath = list.get(i);
+				String ipathForCompare = ipath;
+				
+				if (!new File(ipath).exists()){
+					continue;
+				}
+				
+				String osName = System.getProperty("os.name");
+				if (osName.contains("Windows")) {
+					ipathForCompare = ipath.toLowerCase();
+				}
+				String pathToKeep = ipath;
+				
+				File iparentFile = new File(ipath).getParentFile();
+				
+				for (int j = 0; j < list.size(); j++) {
+					String jpath = list.get(j);
+					
+					if (!new File(jpath).exists()){
+						continue;
+					}
+					
+					String jpathForCompare = jpath;
+					if (osName.contains("Windows")) {
+						jpathForCompare = jpath.toLowerCase();
+					}
+					
+					File jparentFile = new File(jpath).getParentFile();
+					
+					if (!iparentFile.equals(jparentFile)){
+						if (ipathForCompare.contains(jpathForCompare)
+								|| jpathForCompare.contains(ipathForCompare)) {
+							if (jpath.length() < pathToKeep.length()) {
+								pathToKeep = jpath;
 							}
 						}
 					}
-
-					if (!contains) {
-						list.add(path);
-					} else {
-						if (!list.contains(add)) {
-							list.add(add);
-						}
-						if (list.contains(remove)) {
-							list.remove(remove);
-						}
-					}
+				}
+				
+				if (!newList.contains(pathToKeep)){
+					newList.add(pathToKeep);
 				}
 			}
-
+			
 			addonDAO.getMap().clear();
 			TreeDirectory racine = new TreeDirectory("racine1", null);
 
-			if (list.size() == 1) {
-				File file = new File(list.get(0));
+			if (newList.size() == 1) {
+				File file = new File(newList.get(0));
 				if (file.exists()) {
 					File[] subfiles = file.listFiles();
 					if (subfiles != null) {
@@ -101,7 +106,7 @@ public class AddonService {
 			} else {
 				boolean sameNameFound = false;
 				List<String> directoryNames = new ArrayList<String>();
-				for (String path : list) {
+				for (String path : newList) {
 					File file = new File(path);
 					if (file.exists()) {
 						if (!directoryNames.contains(file.getName())) {
@@ -114,7 +119,7 @@ public class AddonService {
 				}
 
 				if (sameNameFound) {
-					for (String path : list) {
+					for (String path : newList) {
 						File file = new File(path);
 						if (file.exists()) {
 							TreeDirectory treeDirectory = new TreeDirectory(
@@ -129,7 +134,7 @@ public class AddonService {
 						}
 					}
 				} else {
-					for (String path : list) {
+					for (String path : newList) {
 						File file = new File(path);
 						if (file.exists()) {
 							TreeDirectory treeDirectory = new TreeDirectory(
@@ -205,7 +210,8 @@ public class AddonService {
 
 	private void generateTree(File file, TreeDirectory node) {
 
-		if (file.isDirectory() && (!excludedFolderList.contains(file.getName()))) {
+		if (file.isDirectory()
+				&& (!excludedFolderList.contains(file.getName()))) {
 
 			/* Check if directory already exists in the Tree */
 			/*
