@@ -55,7 +55,6 @@ import fr.soe.a3s.ui.mainEditor.tree.AddonTreeModel;
 import fr.soe.a3s.ui.mainEditor.tree.CheckTreeCellRenderer;
 import fr.soe.a3s.ui.mainEditor.tree.MyRenderer2;
 import fr.soe.a3s.ui.mainEditor.tree.TreeDnD;
-import fr.soe.a3s.ui.mainEditor.tree.TreeDnD2;
 
 /**
  * This code was edited or generated using CloudGarden's Jigloo SWT/Swing GUI
@@ -79,7 +78,6 @@ public class AddonsPanel extends JPanel implements UIConstants {
 	private AddonTreeModel addonTreeModel1, addonTreeModel2;
 	private JPopupMenu popup;
 	private TreeDnD treeDnD;
-	private TreeDnD2 treeDnD2;
 	private JMenuItem menuItemAddGroup, menuItemRename, menuItemRemove;
 	private final ConfigurationService configurationService = new ConfigurationService();
 	private final ProfileService profileService = new ProfileService();
