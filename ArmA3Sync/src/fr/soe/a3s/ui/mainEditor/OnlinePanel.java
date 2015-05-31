@@ -263,8 +263,11 @@ public class OnlinePanel extends JPanel implements UIConstants {
 			favoriteServerDTO.setModsetName(modsetName);
 			list.add(favoriteServerDTO);
 		}
-		
-		list.remove(index);
+
+		if (index < list.size()) {
+			list.remove(index);
+		}
+
 		configurationService.setFavoriteServers(list);
 		facade.getLaunchPanel().init();
 		init();
