@@ -302,45 +302,6 @@ public class HttpConnection {
 		contLen = bytes.length;
 		allData += contLen;
 
-		// pripad, kdy data obsahuji hranice (code 206 - partial content)
-		if (boundary != null) {
-			int range = 0;
-			byte[] rangeBytes = new byte[(int) contLen + blockLength];
-			for (int i = 0; i < bytes.length; i++) {
-				// jestlize jsou ve streamu "--"
-				if (bytes[i] == 45 && bytes[i + 1] == 45) {
-					// zkontrolujeme jestli za "--" je boundary hodnota
-					if (boundaryCompare(bytes, i + 2, boundaryBytes)) {
-						i += 2 + boundaryBytes.length; // presuneme se za
-														// boundary
-						/*
-						 * pokud je za boundary dalsi "--" jde o konec streamu v
-						 * opacnem pripade si data zkopirujeme
-						 */
-						if (bytes[i] != 45 && bytes[i + 1] != 45) {
-							try {
-								System.arraycopy(bytes, dataBegin(bytes, i),
-										rangeBytes, range, blockLength);
-							} catch (ArrayIndexOutOfBoundsException e) {
-								// e.printStackTrace();
-								/*
-								 * osetreni vyjimky v pripade kopirovani
-								 * kratsiho bloku dat
-								 */
-								System.arraycopy(bytes, dataBegin(bytes, i),
-										rangeBytes, range, bytes.length
-												- dataBegin(bytes, i));
-							}
-							range += blockLength;
-						}
-					}
-				}
-			}
-			byte[] ranges = new byte[range];
-			System.arraycopy(rangeBytes, 0, ranges, 0, ranges.length);
-			return ranges;
-		}
-
 		return bytes;
 	}
 
