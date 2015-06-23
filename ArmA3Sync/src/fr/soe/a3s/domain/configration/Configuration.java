@@ -53,10 +53,6 @@ public class Configuration implements Serializable {
 		this.serverName = serverName;
 	}
 
-	public Set<String> getAddonSearchDirectoryPaths() {
-		return addonSearchDirectoryPaths;
-	}
-
 	public LauncherOptions getLauncherOptions() {
 		return launcherOptions;
 	}
@@ -69,6 +65,10 @@ public class Configuration implements Serializable {
 		return externalApplications;
 	}
 
+	public Set<String> getAddonSearchDirectoryPaths() {
+		return addonSearchDirectoryPaths;
+	}
+	
 	public void setAddonSearchDirectoryPaths(
 			Set<String> addonSearchDirectoryPaths) {
 		this.addonSearchDirectoryPaths = addonSearchDirectoryPaths;
