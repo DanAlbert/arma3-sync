@@ -21,7 +21,6 @@ import javax.swing.JScrollPane;
 import javax.swing.border.BevelBorder;
 
 import fr.soe.a3s.service.AddonService;
-import fr.soe.a3s.service.ConfigurationService;
 import fr.soe.a3s.service.ProfileService;
 import fr.soe.a3s.ui.Facade;
 import fr.soe.a3s.ui.UIConstants;
@@ -42,7 +41,6 @@ public class AddonOptionsPanel extends JPanel implements UIConstants {
 	private JScrollPane scrollPane1, scrollPane2;
 	private JList directoryList1, directoryList2;
 	private JButton add, delete, down, up;
-	private final ConfigurationService configurationService = new ConfigurationService();
 	private final AddonService addonService = new AddonService();
 	private final ProfileService profileService = new ProfileService();
 
@@ -190,8 +188,7 @@ public class AddonOptionsPanel extends JPanel implements UIConstants {
 				}
 
 				if (!contains) {
-					configurationService.getAddonSearchDirectoryPaths().add(
-							path);
+					profileService.addAddonSearchDirectoryPath(path);
 					updateAddonSearchDirectories();
 					addonService.resetAvailableAddonTree();
 					facade.getAddonsPanel().updateAvailableAddons();
@@ -207,7 +204,7 @@ public class AddonOptionsPanel extends JPanel implements UIConstants {
 		String path = (String) directoryList1.getSelectedValue();
 
 		if (path != null) {
-			configurationService.getAddonSearchDirectoryPaths().remove(path);
+			profileService.removeAddonSearchDirectoryPath(path);
 			updateAddonSearchDirectories();
 			addonService.resetAvailableAddonTree();
 			facade.getAddonsPanel().updateAvailableAddons();
@@ -218,7 +215,7 @@ public class AddonOptionsPanel extends JPanel implements UIConstants {
 
 	public void updateAddonSearchDirectories() {
 
-		Set<String> set = configurationService.getAddonSearchDirectoryPaths();
+		List<String> set = profileService.getAddonSearchDirectoryPaths();
 		Iterator iter = set.iterator();
 		List<String> paths = new ArrayList<String>();
 		while (iter.hasNext()) {

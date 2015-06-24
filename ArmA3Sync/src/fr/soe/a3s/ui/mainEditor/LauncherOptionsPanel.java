@@ -64,8 +64,7 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener,
 			scrollPaneAditionalParameters;
 	private JTextField textFieldArmAExecutableLocation,
 			textFieldSteamExecutableLocation;
-	private JButton buttonSelectArmAExe, buttonSelectSteamExe,
-			buttonAutoRestartPreferences;
+	private JButton buttonSelectArmAExe, buttonSelectSteamExe;
 	private JComboBox comboBoxProfiles, comboBoxMaxMemory, comboBoxCpuCount,
 			comboBoxExThreads, comboBoxMalloc;
 	private JCheckBox checkBoxProfiles, checkBoxNoPause, checkBoxWindowMode,
@@ -196,16 +195,9 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener,
 		{
 			checkBoxAutoRestart = new JCheckBox();
 			checkBoxAutoRestart.setText("Auto-restart");
-			// checkBoxAutoRestart
-			// .setPreferredSize(new java.awt.Dimension(90, 23));
 			checkBoxAutoRestart.setFocusable(false);
-			buttonAutoRestartPreferences = new JButton();
-			ImageIcon autoRestartOptionsIcon = new ImageIcon(PREFERENCES);
-			buttonAutoRestartPreferences.setIcon(autoRestartOptionsIcon);
-			buttonAutoRestartPreferences.setFocusable(false);
 			Box hBox = Box.createHorizontalBox();
 			hBox.add(checkBoxAutoRestart);
-			// hBox.add(buttonAutoRestartPreferences);
 			hBox.add(Box.createHorizontalGlue());
 			vBox.add(hBox);
 		}
@@ -422,12 +414,6 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener,
 				checkBoxCheckSignaturesPerformed();
 			}
 		});
-		buttonAutoRestartPreferences.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				buttonAutoRestartPreferencesPerformed();
-			}
-		});
 		checkBoxAutoRestart.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
@@ -544,20 +530,13 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener,
 
 	public void init() {
 
-		/*
-		 * Launcher options Automatically updates Run Parameters
-		 */
+		/* Launcher options Automatically updates Run Parameters */
 		updateOptions();
 
 		/* Additional Parameters */
-		try {
-			String additionalParameters = profileService
-					.getAdditionalParameters();
-			if (additionalParameters != null) {
-				additionalParametersTextArea.setText(additionalParameters);
-			}
-		} catch (ProfileException e) {
-			e.printStackTrace();
+		String additionalParameters = profileService.getAdditionalParameters();
+		if (additionalParameters != null) {
+			additionalParametersTextArea.setText(additionalParameters);
 		}
 	}
 
@@ -577,53 +556,45 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener,
 		}
 		if (!gameProfileName.equals("Default")) {
 			checkBoxProfiles.setSelected(true);
-			configurationService.setGameProfile(gameProfileName);
+			profileService.setGameProfile(gameProfileName);
 		} else {
 			checkBoxProfiles.setSelected(false);
-			configurationService.setGameProfile(null);
+			profileService.setGameProfile(null);
 		}
 		updateRunParameters();
 	}
 
 	private void checkBoxShowScriptErrorsPerformed() {
-		configurationService
-				.setCheckBoxShowScriptErrors(checkBoxShowScriptErrors
-						.isSelected());
+		profileService.setCheckBoxShowScriptErrors(checkBoxShowScriptErrors
+				.isSelected());
 		updateRunParameters();
 	}
 
 	private void checkBoxNoPausePerformed() {
-		configurationService.setCheckBoxNoPause(checkBoxNoPause.isSelected());
+		profileService.setCheckBoxNoPause(checkBoxNoPause.isSelected());
 		updateRunParameters();
 	}
 
 	private void checkBoxNoFilePatchingPerformed() {
-		configurationService.setCheckBoxNoFilePatching(checkBoxNoFilePatching
+		profileService.setCheckBoxNoFilePatching(checkBoxNoFilePatching
 				.isSelected());
 		updateRunParameters();
 	}
 
 	private void checkBoxWindowModePerformed() {
-		configurationService.setCheckBoxWindowMode(checkBoxWindowMode
-				.isSelected());
+		profileService.setCheckBoxWindowMode(checkBoxWindowMode.isSelected());
 		updateRunParameters();
 	}
 
 	private void checkBoxCheckSignaturesPerformed() {
-		configurationService.setCheckBoxCheckSignatures(checkBoxCheckSignatures
+		profileService.setCheckBoxCheckSignatures(checkBoxCheckSignatures
 				.isSelected());
 		updateRunParameters();
 	}
 
 	private void checkBoxAutoRestartPerformed() {
-		configurationService.setCheckBoxAutoRestart(checkBoxAutoRestart
-				.isSelected());
-	}
-
-	private void buttonAutoRestartPreferencesPerformed() {
-		AutoRestartPanel autoRestartPanel = new AutoRestartPanel(facade);
-		autoRestartPanel.setVisible(true);
-
+		;
+		profileService.setCheckBoxAutoRestart(checkBoxAutoRestart.isSelected());
 	}
 
 	private void checkBoxMaxMemoryPerformed() {
@@ -641,10 +612,10 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener,
 		}
 		if (!maxMemory.isEmpty()) {
 			checkBoxMaxMemory.setSelected(true);
-			configurationService.setMaxMemory(maxMemory);
+			profileService.setMaxMemory(maxMemory);
 		} else {
 			checkBoxMaxMemory.setSelected(false);
-			configurationService.setMaxMemory(null);
+			profileService.setMaxMemory(null);
 		}
 		updateRunParameters();
 	}
@@ -664,14 +635,14 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener,
 		}
 		if (!cpuCount.isEmpty()) {
 			checkBoxCpuCount.setSelected(true);
-			configurationService.setCpuCount(cpuCount);
+			profileService.setCpuCount(cpuCount);
 			checkBoxEnableHT.setSelected(false);
 			checkBoxEnableHT.setEnabled(false);
-			configurationService.setEnableHT(false);
+			profileService.setEnableHT(false);
 		} else {
 			checkBoxCpuCount.setSelected(false);
-			configurationService.setCpuCount(null);
-			checkBoxEnableHT.setEnabled(true);;
+			profileService.setCpuCount(null);
+			checkBoxEnableHT.setEnabled(true);
 		}
 		updateRunParameters();
 	}
@@ -691,10 +662,10 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener,
 		}
 		if (!exThreads.isEmpty()) {
 			checkBoxExThreads.setSelected(true);
-			configurationService.setExThreads(exThreads);
+			profileService.setExThreads(exThreads);
 		} else {
 			checkBoxExThreads.setSelected(false);
-			configurationService.setExThreads(null);
+			profileService.setExThreads(null);
 		}
 		updateRunParameters();
 	}
@@ -714,32 +685,31 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener,
 		}
 		if (!mallocDll.isEmpty()) {
 			checkBoxMalloc.setSelected(true);
-			configurationService.setMalloc(mallocDll);
+			profileService.setMalloc(mallocDll);
 		} else {
 			checkBoxMalloc.setSelected(false);
-			configurationService.setMalloc(null);
+			profileService.setMalloc(null);
 		}
 		updateRunParameters();
 	}
 
 	private void checkBoxEnableHTPerformed() {
-		configurationService.setEnableHT(checkBoxEnableHT.isSelected());
+		profileService.setEnableHT(checkBoxEnableHT.isSelected());
 		updateRunParameters();
 	}
 
 	private void checkBoxNoSplashScreenPerformed() {
-		configurationService.setNoSplashScreen(checkBoxNoSplashScreen
-				.isSelected());
+		profileService.setNoSplashScreen(checkBoxNoSplashScreen.isSelected());
 		updateRunParameters();
 	}
 
 	private void checkBoxDefaultWorldPerformed() {
-		configurationService.setDefaultWorld(checkBoxDefaultWorld.isSelected());
+		profileService.setDefaultWorld(checkBoxDefaultWorld.isSelected());
 		updateRunParameters();
 	}
 
 	private void checkBoxNoLogsPerformed() {
-		configurationService.setNoLogs(checkBoxNoLogs.isSelected());
+		profileService.setNoLogs(checkBoxNoLogs.isSelected());
 		updateRunParameters();
 	}
 
@@ -763,61 +733,8 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener,
 		if (returnVal == JFileChooser.APPROVE_OPTION) {
 			File file = fc.getSelectedFile();
 			String path = file.getAbsolutePath();
-			configurationService.setArmA3ExePath(path);
-			if (file.getParent() != null) {
-				String parentPath = file.getParentFile().getAbsolutePath();
-				Set<String> set = configurationService
-						.getAddonSearchDirectoryPaths();
-				Iterator iter = set.iterator();
-				List<String> list = new ArrayList<String>();
-				while (iter.hasNext()) {
-					list.add((String) iter.next());
-				}
-				boolean contains = false;
-				for (int i = 0; i < list.size(); i++) {
-					String osName = System.getProperty("os.name");
-					if (osName.contains("Windows")) {
-						if (parentPath.equalsIgnoreCase(list.get(i))) {
-							contains = true;
-						}
-					} else {
-						if (parentPath.equals(list.get(i))) {
-							contains = true;
-						}
-					}
-				}
-				if (!contains) {
-					configurationService.getAddonSearchDirectoryPaths().add(
-							parentPath);
-					facade.getAddonOptionsPanel()
-							.updateAddonSearchDirectories();
-				}
-			}
-			addonService.resetAvailableAddonTree();
-			facade.getAddonsPanel().updateAvailableAddons();
-			facade.getAddonsPanel().updateAddonGroups();
-			facade.getAddonsPanel().expandAddonGroups();
+			profileService.setArmA3ExePath(path);
 			textFieldArmAExecutableLocation.setText(path);
-		} else {
-			configurationService.setArmA3ExePath(null);
-			textFieldArmAExecutableLocation.setText("");
-		}
-	}
-
-	private void buttonSelectSteamExePerformed() {
-
-		String steamExePath = configurationService.determineSteamExePath();
-		JFileChooser fc = new JFileChooser(steamExePath);
-		fc.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
-		int returnVal = fc.showOpenDialog(LauncherOptionsPanel.this);
-		if (returnVal == JFileChooser.APPROVE_OPTION) {
-			File file = fc.getSelectedFile();
-			String path = file.getAbsolutePath();
-			configurationService.setSteamExePath(path);
-			textFieldSteamExecutableLocation.setText(path);
-		} else {
-			configurationService.setSteamExePath(null);
-			textFieldSteamExecutableLocation.setText("");
 		}
 	}
 
@@ -853,25 +770,19 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener,
 
 	public void updateAdditionalParameters() {
 
-		try {
-			String additionalParameters = profileService
-					.getAdditionalParameters();
-			if (additionalParameters != null) {
-				additionalParametersTextArea.setText(additionalParameters);
-				additionalParametersTextArea.setCaretPosition(0);
-				additionalParametersTextArea.updateUI();
-			} else {
-				additionalParametersTextArea.setText("");
-			}
-		} catch (ProfileException e) {
-			System.out.println(e.getMessage());
-			e.printStackTrace();
+		String additionalParameters = profileService.getAdditionalParameters();
+		if (additionalParameters != null) {
+			additionalParametersTextArea.setText(additionalParameters);
+			additionalParametersTextArea.setCaretPosition(0);
+			additionalParametersTextArea.updateUI();
+		} else {
+			additionalParametersTextArea.setText("");
 		}
 	}
 
-	public void updateOptions() {
+	private void updateOptions() {
 
-		LauncherOptionsDTO launcherOptionsDTO = configurationService
+		LauncherOptionsDTO launcherOptionsDTO = profileService
 				.getLauncherOptions();
 
 		/* Launcher options */

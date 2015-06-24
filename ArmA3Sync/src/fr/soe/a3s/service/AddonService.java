@@ -9,7 +9,9 @@ import java.util.Set;
 import fr.soe.a3s.constant.GameSystemFolders;
 import fr.soe.a3s.dao.AddonDAO;
 import fr.soe.a3s.dao.ConfigurationDAO;
+import fr.soe.a3s.dao.ProfileDAO;
 import fr.soe.a3s.domain.Addon;
+import fr.soe.a3s.domain.Profile;
 import fr.soe.a3s.domain.TreeDirectory;
 import fr.soe.a3s.domain.TreeLeaf;
 import fr.soe.a3s.domain.TreeNode;
@@ -20,6 +22,7 @@ import fr.soe.a3s.dto.TreeNodeDTO;
 public class AddonService {
 
 	private static final ConfigurationDAO configurationDAO = new ConfigurationDAO();
+	private static final ProfileDAO profileDAO = new ProfileDAO();
 	private static final AddonDAO addonDAO = new AddonDAO();
 	private static List<String> excludedFolderList = new ArrayList<String>();
 	static {
@@ -34,13 +37,15 @@ public class AddonService {
 
 		if (availableAddonsTreeInstance == null) {
 
-			Set<String> addonSearchDirectoryPaths = configurationDAO
-					.getConfiguration().getAddonSearchDirectoryPaths();
-
 			List<String> list = new ArrayList<String>();
-			Iterator iter = addonSearchDirectoryPaths.iterator();
-			while (iter.hasNext()) {
-				list.add((String) iter.next());
+			
+			String profileName = configurationDAO.getConfiguration().getProfileName();
+			Profile profile = profileDAO.getMap().get(profileName);
+			if (profile!=null){
+				Iterator iter = profile.getAddonSearchDirectories().iterator();
+				while (iter.hasNext()) {
+					list.add((String) iter.next());
+				}
 			}
 
 			List<String> newList = new ArrayList<String>();

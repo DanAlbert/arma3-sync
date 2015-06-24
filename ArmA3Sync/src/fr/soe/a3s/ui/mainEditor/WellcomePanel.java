@@ -22,8 +22,10 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
+import fr.soe.a3s.domain.Profile;
 import fr.soe.a3s.service.AddonService;
 import fr.soe.a3s.service.ConfigurationService;
+import fr.soe.a3s.service.ProfileService;
 import fr.soe.a3s.ui.Facade;
 import fr.soe.a3s.ui.UIConstants;
 
@@ -42,9 +44,11 @@ public class WellcomePanel extends JDialog implements UIConstants {
 	Facade facade;
 	private JTextField textField;
 	private JButton buttonSelect;
+	private JButton buttonOK;
+	// Services
 	private final ConfigurationService configurationService = new ConfigurationService();
 	private final AddonService addonService = new AddonService();
-	private JButton buttonOK;
+	private final ProfileService profileService = new ProfileService();
 
 	public WellcomePanel(Facade facade) {
 		super(facade.getMainPanel(), "Configuration", true);
@@ -150,11 +154,10 @@ public class WellcomePanel extends JDialog implements UIConstants {
 		if (returnVal == JFileChooser.APPROVE_OPTION) {
 			File file = fc.getSelectedFile();
 			String path = file.getAbsolutePath();
-			configurationService.setArmA3ExePath(path);
+			profileService.setArmA3ExePath(path);
 			if (file.getParent() != null) {
 				String parentPath = file.getParentFile().getAbsolutePath();
-				Set<String> set = configurationService
-						.getAddonSearchDirectoryPaths();
+				List<String> set = profileService.getAddonSearchDirectoryPaths();
 				Iterator iter = set.iterator();
 				List<String> list = new ArrayList<String>();
 				while (iter.hasNext()) {
@@ -174,16 +177,14 @@ public class WellcomePanel extends JDialog implements UIConstants {
 					}
 				}
 				if (!contains) {
-					configurationService.getAddonSearchDirectoryPaths().add(
-							parentPath);
+					profileService.addAddonSearchDirectoryPath(parentPath);
 					facade.getAddonOptionsPanel()
 							.updateAddonSearchDirectories();
 				}
 			}
-
 			textField.setText(path);
 		} else {
-			configurationService.setArmA3ExePath(null);
+			profileService.setArmA3ExePath(null);
 			textField.setText("");
 		}
 	}

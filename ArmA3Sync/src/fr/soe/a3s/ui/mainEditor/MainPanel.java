@@ -499,7 +499,7 @@ public class MainPanel extends JFrame implements UIConstants {
 
 		/* Init Profiles menu */
 		updateProfilesMenu();
-		
+
 		/* Check repositories for update */
 		checkRepositories();
 	}
@@ -524,14 +524,6 @@ public class MainPanel extends JFrame implements UIConstants {
 	private void menuItemEditPerformed() {
 
 		facade.getAddonsPanel().saveAddonGroups();
-		try {
-			profileService.saveLauncherOptions(configurationService
-					.getProfileName());
-			profileService.saveAddonSearchDirectoryPaths(configurationService
-					.getProfileName());
-		} catch (ProfileException e) {
-			e.printStackTrace();
-		}
 
 		ProfilePanel profilePanel = new ProfilePanel(facade);
 		profilePanel.toFront();
@@ -551,24 +543,14 @@ public class MainPanel extends JFrame implements UIConstants {
 		}
 
 		String profileName = configurationService.getProfileName();
-
 		assert (profileName != null);
 		if (profileName == null) {
 			return;// unexpected
 		}
 
-		try {
-			facade.getAddonsPanel().saveAddonGroups();
-			profileService.saveAddonSearchDirectoryPaths(profileName);
-			profileService.saveLauncherOptions(profileName);
-		} catch (ProfileException e) {
-			JOptionPane.showMessageDialog(this, e.getMessage(),
-					"Export profile as shortcut", JOptionPane.ERROR_MESSAGE);
-			return;
-		}
+		facade.getAddonsPanel().saveAddonGroups();
 
-		String exePath = configurationService.getLauncherOptions()
-				.getArma3ExePath();
+		String exePath = profileService.getArma3ExePath();
 
 		if (exePath == null || "".equals(exePath)) {
 			String message = "ArmA 3 Executable location is missing for profile name "
@@ -901,16 +883,7 @@ public class MainPanel extends JFrame implements UIConstants {
 
 	private void menuItemProfilePerformed(ActionEvent e) {
 
-		// Save current profile
-		try {
-			facade.getAddonsPanel().saveAddonGroups();
-			profileService.saveLauncherOptions(configurationService
-					.getProfileName());
-			profileService.saveAddonSearchDirectoryPaths(configurationService
-					.getProfileName());
-		} catch (ProfileException ex) {
-			ex.printStackTrace();
-		}
+		facade.getAddonsPanel().saveAddonGroups();
 
 		int numberMenuItems = menuProfiles.getItemCount();
 
@@ -924,42 +897,16 @@ public class MainPanel extends JFrame implements UIConstants {
 		menuItemProfile.setSelected(true);
 		String profileName = menuItemProfile.getText();
 		configurationService.setProfileName(profileName);
+		
 		facade.getInfoPanel().init();
-
-		try {
-			// Launcher options panel
-			LauncherOptionsDTO launcherOptionsDTO = profileService
-					.getLauncherOptions(profileName);
-			configurationService.setLauncherOptions(launcherOptionsDTO);
-			facade.getLaunchOptionsPanel().init();
-
-			// Addon options panel
-			Set<String> set = profileService
-					.getAddonSearchDirectoryPaths(profileName);
-			Iterator iter = set.iterator();
-			List<String> paths = new ArrayList<String>();
-			while (iter.hasNext()) {
-				paths.add((String) iter.next());
-			}
-
-			configurationService.getAddonSearchDirectoryPaths().clear();
-			configurationService.getAddonSearchDirectoryPaths().addAll(paths);
-			facade.getAddonOptionsPanel().init();
-
-			// Addon panel
-			facade.getAddonsPanel().init();
-
-		} catch (Exception e2) {
-			e2.printStackTrace();
-		}
-		facade.getLaunchOptionsPanel().updateRunParameters();
-		facade.getLaunchOptionsPanel().updateAdditionalParameters();
+		facade.getAddonsPanel().init();
+		facade.getAddonOptionsPanel().init();
+		facade.getLaunchOptionsPanel().init();
 	}
 
 	public void checkWellcomeDialog() {
 
-		String path = configurationService.getLauncherOptions()
-				.getArma3ExePath();
+		String path = profileService.getArma3ExePath();
 		if (path == null || "".equals(path)) {
 			try {
 				Thread.sleep(500);

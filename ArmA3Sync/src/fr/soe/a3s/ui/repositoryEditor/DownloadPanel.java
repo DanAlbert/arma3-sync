@@ -11,7 +11,6 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.io.File;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -53,8 +52,8 @@ import fr.soe.a3s.dto.sync.SyncTreeDirectoryDTO;
 import fr.soe.a3s.dto.sync.SyncTreeLeafDTO;
 import fr.soe.a3s.dto.sync.SyncTreeNodeDTO;
 import fr.soe.a3s.exception.WritingException;
-import fr.soe.a3s.service.ConfigurationService;
 import fr.soe.a3s.service.LaunchService;
+import fr.soe.a3s.service.ProfileService;
 import fr.soe.a3s.service.RepositoryService;
 import fr.soe.a3s.ui.Facade;
 import fr.soe.a3s.ui.UIConstants;
@@ -122,7 +121,7 @@ public class DownloadPanel extends JPanel implements UIConstants {
 
 	/* Services */
 	private final RepositoryService repositoryService = new RepositoryService();
-	private final ConfigurationService configurationService = new ConfigurationService();
+	private final ProfileService profileService = new ProfileService();
 
 	/* Workers */
 	private AddonsChecker addonsChecker;
@@ -156,7 +155,8 @@ public class DownloadPanel extends JPanel implements UIConstants {
 					11));
 			labelCheckForAddonsStatus.setForeground(new Color(45, 125, 45));
 			checkForAddonsLabelPanel.add(labelCheckForAddonsStatus);
-			labelCheckForAddonsStatus.setPreferredSize(new java.awt.Dimension(83, 15));
+			labelCheckForAddonsStatus.setPreferredSize(new java.awt.Dimension(
+					83, 15));
 			vBox.add(checkForAddonsLabelPanel);
 		}
 		{
@@ -743,7 +743,7 @@ public class DownloadPanel extends JPanel implements UIConstants {
 
 	private void defaultFolderDestinationSelection() {
 
-		Set<String> set = configurationService.getAddonSearchDirectoryPaths();
+		List<String> set = profileService.getAddonSearchDirectoryPaths();
 		Iterator iter = set.iterator();
 		List<String> paths = new ArrayList<String>();
 		while (iter.hasNext()) {
@@ -790,7 +790,7 @@ public class DownloadPanel extends JPanel implements UIConstants {
 
 		checkBoxExactMatch.setEnabled(true);
 		checkBoxAutoDiscover.setEnabled(true);
-		
+
 		if (eventName != null) {
 			checkBoxExactMatch.setEnabled(false);
 		} else {
@@ -799,7 +799,7 @@ public class DownloadPanel extends JPanel implements UIConstants {
 			if (value == true) {
 				checkBoxAutoDiscover.setSelected(false);
 				checkBoxAutoDiscover.setEnabled(false);
-			} 
+			}
 		}
 	}
 
@@ -852,7 +852,7 @@ public class DownloadPanel extends JPanel implements UIConstants {
 	private void buttonCheckForAddonsCancelPerformed() {
 
 		if (addonsChecker != null) {
-		    addonsChecker.cancel();
+			addonsChecker.cancel();
 			labelCheckForAddonsStatus.setText("Canceled!");
 			buttonCheckForAddonsStart.setEnabled(true);
 			progressBarCheckForAddons.setMaximum(0);
@@ -908,7 +908,8 @@ public class DownloadPanel extends JPanel implements UIConstants {
 					defaultDownloadLocation);
 		}
 
-		addonsDownloader = new AddonsDownloader(facade, repositoryName, racine, this);
+		addonsDownloader = new AddonsDownloader(facade, repositoryName, racine,
+				this);
 		addonsDownloader.setDaemon(true);
 		addonsDownloader.start();
 	}
@@ -1041,7 +1042,7 @@ public class DownloadPanel extends JPanel implements UIConstants {
 		totalFilesSelected = 0;
 		totalFilesUpdated = 0;
 		totalFilesDeleted = 0;
-		if (racine!=null){
+		if (racine != null) {
 			compute(racine);
 		}
 		labelTotalFilesSizeValue.setText(UnitConverter
@@ -1067,7 +1068,9 @@ public class DownloadPanel extends JPanel implements UIConstants {
 
 	/**
 	 * Determine total file size, nb file to update and delete
-	 * @param syncTreeNodeDTO not null
+	 * 
+	 * @param syncTreeNodeDTO
+	 *            not null
 	 */
 	private void compute(SyncTreeNodeDTO syncTreeNodeDTO) {
 

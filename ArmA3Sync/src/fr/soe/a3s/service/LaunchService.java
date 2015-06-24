@@ -39,15 +39,19 @@ public class LaunchService {
 
 	private final LauncherDAO launcherDAO = new LauncherDAO();
 	private static final ConfigurationDAO configurationDAO = new ConfigurationDAO();
-	private static final AddonDAO addonDAO = new AddonDAO();
 	private static final ProfileDAO profileDAO = new ProfileDAO();
+	private static final AddonDAO addonDAO = new AddonDAO();
 	private List<String> missingAddonNames = new ArrayList<String>();
 
 	public void checkArmA3ExecutableLocation() throws LaunchException {
 
-		Configuration configuration = configurationDAO.getConfiguration();
-		String arma3ExePath = configuration.getLauncherOptions()
-				.getArma3ExePath();
+		String profileName = configurationDAO.getConfiguration()
+				.getProfileName();
+		Profile profile = profileDAO.getMap().get(profileName);
+		String arma3ExePath = null;
+		if (profile != null) {
+			arma3ExePath = profile.getLauncherOptions().getArma3ExePath();
+		}
 
 		if (arma3ExePath == null || "".equals(arma3ExePath)
 				|| !(new File(arma3ExePath)).exists()) {
@@ -134,29 +138,33 @@ public class LaunchService {
 
 	public void launchArmA3() {
 
-		/* Get arma3.exe path */
-		String arma3Path = configurationDAO.getConfiguration()
-				.getLauncherOptions().getArma3ExePath();
+		String profileName = configurationDAO.getConfiguration()
+				.getProfileName();
+		Profile profile = profileDAO.getMap().get(profileName);
+		String arma3ExePath = null;
+		if (profile != null) {
+			LauncherOptions launcherOptions = profile.getLauncherOptions();
 
-		/* Get auto restart option */
-		LauncherOptions launcherOptions = configurationDAO.getConfiguration()
-				.getLauncherOptions();
+			/* Get arma3.exe path */
+			String arma3Path = launcherOptions.getArma3ExePath();
 
-		/* Run Parameters */
-		List<String> params = determineRunParameters();
+			/* Run Parameters */
+			List<String> params = determineRunParameters();
 
-		/* Clear My Documents\ArmA 3\Arma3.cfg */
-		eraseArma3CfgModLauncherList();
+			/* Clear My Documents\ArmA 3\Arma3.cfg */
+			eraseArma3CfgModLauncherList();
 
-		/* Launch arma3.exe/arma3server.exe/other */
-		ExecutorService executor = Executors.newSingleThreadExecutor();
-		List<Callable<Integer>> runnables = new ArrayList<Callable<Integer>>();
-		String executableName = new File(arma3Path).getName();
-		Callable<Integer> c = launcherDAO.call2(executableName, arma3Path,
-				params, launcherOptions);
-		runnables.add(c);
-		executor.submit(c);
-		executor.shutdown();
+			/* Launch arma3.exe/arma3server.exe/other */
+			ExecutorService executor = Executors.newSingleThreadExecutor();
+			List<Callable<Integer>> runnables = new ArrayList<Callable<Integer>>();
+			String executableName = new File(arma3Path).getName();
+			Callable<Integer> c = launcherDAO.call2(executableName, arma3Path,
+					params, launcherOptions);
+			runnables.add(c);
+			executor.submit(c);
+			executor.shutdown();
+		}
+
 	}
 
 	private void eraseArma3CfgModLauncherList() {
@@ -267,8 +275,6 @@ public class LaunchService {
 		}
 		return message;
 	}
-	
-	
 
 	public List<String> getRunParameters() {
 
@@ -283,7 +289,8 @@ public class LaunchService {
 		}
 
 		/* Launcher options */
-		LauncherOptions launcherOptions = configuration.getLauncherOptions();
+		LauncherOptions launcherOptions = profile.getLauncherOptions();
+
 		// Malloc must be set at first place
 		if (launcherOptions.getMallocSelection() != null) {
 			params.add("-malloc=" + launcherOptions.getMallocSelection());
@@ -386,8 +393,7 @@ public class LaunchService {
 		}
 
 		/* Clean addon paths for those inside the arma 3 installation directory */
-		String arma3ExePath = configuration.getLauncherOptions()
-				.getArma3ExePath();
+		String arma3ExePath = launcherOptions.getArma3ExePath();
 
 		if (arma3ExePath != null) {
 			if (new File(arma3ExePath).getParentFile() != null) {

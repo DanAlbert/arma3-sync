@@ -33,6 +33,7 @@ import fr.soe.a3s.service.CommonService;
 import fr.soe.a3s.service.ConfigurationService;
 import fr.soe.a3s.service.LaunchService;
 import fr.soe.a3s.service.PreferencesService;
+import fr.soe.a3s.service.ProfileService;
 import fr.soe.a3s.service.RepositoryService;
 import fr.soe.a3s.ui.Facade;
 import fr.soe.a3s.ui.UIConstants;
@@ -60,7 +61,8 @@ public class LaunchPanel extends JPanel implements UIConstants {
 	private final LaunchService launchService = new LaunchService();
 	private final ConfigurationService configurationService = new ConfigurationService();
 	private final CommonService commonService = new CommonService();
-	private final RepositoryService repositoryService = new RepositoryService();;
+	private final RepositoryService repositoryService = new RepositoryService();
+	private final ProfileService profileService = new ProfileService();
 
 	public LaunchPanel(Facade facade) {
 
@@ -313,8 +315,7 @@ public class LaunchPanel extends JPanel implements UIConstants {
 					facade.getMainPanel().setVisible(false);
 					facade.getMainPanel().setToTray();
 				} else if (MinimizationType.CLOSE.equals(minimize)) {
-					if (!configurationService.getLauncherOptions()
-							.isAutoRestart()) {
+					if (!profileService.isAutoRestart()) {
 						facade.getMainPanel().menuExitPerformed();
 					}
 				}

@@ -19,6 +19,7 @@ import javax.swing.JTextField;
 
 import fr.soe.a3s.service.AddonService;
 import fr.soe.a3s.service.ConfigurationService;
+import fr.soe.a3s.service.ProfileService;
 import fr.soe.a3s.ui.Facade;
 import fr.soe.a3s.ui.UIConstants;
 
@@ -52,6 +53,7 @@ public abstract class WizardPanel extends JDialog implements UIConstants {
 	/* Services */
 	protected final ConfigurationService configurationService = new ConfigurationService();
 	protected final AddonService addonService = new AddonService();
+	protected final ProfileService profileService = new ProfileService();
 
 	protected JButton buttonFist, buttonSecond;
 

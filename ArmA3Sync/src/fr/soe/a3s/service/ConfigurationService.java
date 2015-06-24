@@ -34,12 +34,6 @@ public class ConfigurationService extends ObjectDTOtransformer {
 		configurationDAO.write();
 	}
 
-	/* Addon options panel */
-	public Set<String> getAddonSearchDirectoryPaths() {
-		return configurationDAO.getConfiguration()
-				.getAddonSearchDirectoryPaths();
-	}
-
 	/* Launch panel */
 	public String getProfileName() {
 		return configurationDAO.getConfiguration().getProfileName();
@@ -143,123 +137,8 @@ public class ConfigurationService extends ObjectDTOtransformer {
 		}
 	}
 
-	/* Launcher options panel */
-	public LauncherOptionsDTO getLauncherOptions() {
-		LauncherOptions launcherOptions = configurationDAO.getConfiguration()
-				.getLauncherOptions();
-		LauncherOptionsDTO launcherOptionsDTO = transformLauncherOptions2DTO(launcherOptions);
-		return launcherOptionsDTO;
-	}
-
-	public void setArmA3ExePath(String path) {
-		configurationDAO.getConfiguration().getLauncherOptions()
-				.setArma3ExePath(path);
-	}
-
-	public void setSteamExePath(String path) {
-		configurationDAO.getConfiguration().getLauncherOptions()
-				.setSteamExePath(path);
-	}
-
-	public void setGameProfile(String gameProfileName) {
-		configurationDAO.getConfiguration().getLauncherOptions()
-				.setGameProfile(gameProfileName);
-	}
-
-	public void setCheckBoxShowScriptErrors(boolean value) {
-		configurationDAO.getConfiguration().getLauncherOptions()
-				.setShowScriptErrors(value);
-	}
-
-	public void setCheckBoxNoPause(boolean value) {
-		configurationDAO.getConfiguration().getLauncherOptions()
-				.setNoPause(value);
-	}
-
-	public void setCheckBoxNoFilePatching(boolean value) {
-		configurationDAO.getConfiguration().getLauncherOptions()
-				.setNoFilePatching(value);
-	}
-
-	public void setCheckBoxWindowMode(boolean value) {
-		configurationDAO.getConfiguration().getLauncherOptions()
-				.setWindowMode(value);
-	}
-
-	public void setCheckBoxCheckSignatures(boolean value) {
-		configurationDAO.getConfiguration().getLauncherOptions()
-				.setCheckSignatures(value);
-	}
-
-	public void setCheckBoxAutoRestart(boolean value) {
-		configurationDAO.getConfiguration().getLauncherOptions()
-				.setAutoRestart(value);
-	}
-
-	public void setCheckBoxXPCompatibilityMode(boolean value) {
-		configurationDAO.getConfiguration().getLauncherOptions()
-				.setXpCompatibilityMode(value);
-	}
-
-	public void setMaxMemory(String maxMemory) {
-		configurationDAO.getConfiguration().getLauncherOptions()
-				.setMaxMemorySelection(maxMemory);
-	}
-
-	public void setCpuCount(String cpuCount) {
-		if (cpuCount == null) {
-			configurationDAO.getConfiguration().getLauncherOptions()
-					.setCpuCountSelection(0);
-		} else {
-			configurationDAO.getConfiguration().getLauncherOptions()
-					.setCpuCountSelection(Integer.parseInt(cpuCount));
-		}
-	}
-
-	public void setExThreads(String exThreads) {
-		configurationDAO.getConfiguration().getLauncherOptions()
-				.setExThreadsSelection(exThreads);
-	}
-
-	public void setMalloc(String malloc) {
-		configurationDAO.getConfiguration().getLauncherOptions()
-				.setMallocSelection(malloc);
-	}
-
-	public void setEnableHT(boolean value) {
-		configurationDAO.getConfiguration().getLauncherOptions()
-				.setEnableHT(value);
-	}
-
-	public void setNoSplashScreen(boolean value) {
-		configurationDAO.getConfiguration().getLauncherOptions()
-				.setNoSplashScreen(value);
-	}
-
-	public void setDefaultWorld(boolean value) {
-		configurationDAO.getConfiguration().getLauncherOptions()
-				.setDefaultWorld(value);
-	}
-
-	public void setNoLogs(boolean value) {
-		configurationDAO.getConfiguration().getLauncherOptions()
-				.setNoLogs(value);
-	}
-
 	public String determineArmA3Path() {
 		return configurationDAO.determineArmA3Path();
-	}
-
-	public String determineSteamExePath() {
-		String path = configurationDAO.determineSteamPath();
-		if (path == null) {
-			return null;
-		} else {
-			String steamExePath = path + "\\" + "steam.exe";
-			configurationDAO.getConfiguration().getLauncherOptions()
-					.setSteamExePath(steamExePath);
-			return steamExePath;
-		}
 	}
 
 	/* ACRE */
@@ -491,24 +370,5 @@ public class ConfigurationService extends ObjectDTOtransformer {
 
 	public int getWidth() {
 		return configurationDAO.getConfiguration().getWidth();
-	}
-
-	public void setLauncherOptions(LauncherOptionsDTO launcherOptionsDTO) {
-
-		setGameProfile(launcherOptionsDTO.getGameProfile());
-		setCheckBoxShowScriptErrors(launcherOptionsDTO.isShowScriptError());
-		setCheckBoxNoPause(launcherOptionsDTO.isNoPause());
-		setCheckBoxNoFilePatching(launcherOptionsDTO.isNoFilePatching());
-		setCheckBoxWindowMode(launcherOptionsDTO.isWindowMode());
-		setCheckBoxCheckSignatures(launcherOptionsDTO.isCheckSignatures());
-		setCheckBoxAutoRestart(launcherOptionsDTO.isAutoRestart());
-		setMaxMemory(launcherOptionsDTO.getMaxMemorySelection());
-		setCpuCount(Integer.toString(launcherOptionsDTO.getCpuCountSelection()));
-		setExThreads(launcherOptionsDTO.getExThreadsSelection());
-		setNoSplashScreen(launcherOptionsDTO.isNoSplashScreen());
-		setDefaultWorld(launcherOptionsDTO.isDefaultWorld());
-		setNoLogs(launcherOptionsDTO.isNoLogs());
-		setEnableHT(launcherOptionsDTO.isEnableHT());
-		setArmA3ExePath(launcherOptionsDTO.getArma3ExePath());
 	}
 }

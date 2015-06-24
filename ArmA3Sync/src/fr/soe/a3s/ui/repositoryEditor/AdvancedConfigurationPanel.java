@@ -37,7 +37,7 @@ import org.netbeans.swing.outline.OutlineModel;
 
 import fr.soe.a3s.dto.sync.SyncTreeDirectoryDTO;
 import fr.soe.a3s.dto.sync.SyncTreeNodeDTO;
-import fr.soe.a3s.service.ConfigurationService;
+import fr.soe.a3s.service.ProfileService;
 import fr.soe.a3s.service.RepositoryService;
 import fr.soe.a3s.ui.Facade;
 import fr.soe.a3s.ui.UIConstants;
@@ -56,10 +56,11 @@ public class AdvancedConfigurationPanel extends JFrame implements UIConstants {
 	private AddonSyncRowModel rowModel;
 	private OutlineModel outlineModel;
 	private Outline outline;
-	private final ConfigurationService configurationService = new ConfigurationService();
-	private final RepositoryService repositoryService = new RepositoryService();
 	private final String defaultDestinationPath;// may be null
 	private final String repositoryName;
+	// Services
+	private final RepositoryService repositoryService = new RepositoryService();
+	private final ProfileService profileService = new ProfileService();
 
 	public AdvancedConfigurationPanel(Facade facade,
 			SyncTreeDirectoryDTO racine, String defaultDestinationPath,
@@ -287,8 +288,7 @@ public class AdvancedConfigurationPanel extends JFrame implements UIConstants {
 					setDestinationPath(node);
 					outlineModel.setValueAt(newPath, index, 1);
 					scrollPane.updateUI();
-					Set<String> set = configurationService
-							.getAddonSearchDirectoryPaths();
+					List<String> set = profileService.getAddonSearchDirectoryPaths();
 					Iterator iter = set.iterator();
 					List<String> list = new ArrayList<String>();
 					while (iter.hasNext()) {
@@ -309,8 +309,7 @@ public class AdvancedConfigurationPanel extends JFrame implements UIConstants {
 					}
 
 					if (!contains) {
-						configurationService.getAddonSearchDirectoryPaths()
-								.add(newPath);
+						profileService.addAddonSearchDirectoryPath(newPath);
 						facade.getAddonOptionsPanel()
 								.updateAddonSearchDirectories();
 					}

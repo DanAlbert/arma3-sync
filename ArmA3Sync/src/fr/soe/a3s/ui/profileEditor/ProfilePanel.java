@@ -255,6 +255,7 @@ public class ProfilePanel extends JDialog implements UIConstants {
 	}
 
 	private void buttonOKPerformed() {
+		
 		String profileName = (String) profilesList.getSelectedValue();
 		if (profileName == null) {
 			JOptionPane.showMessageDialog(this, "You must select a profile.",
@@ -262,41 +263,11 @@ public class ProfilePanel extends JDialog implements UIConstants {
 			return;
 		}
 		configurationService.setProfileName(profileName);
-		try {
-			// Launcher options panel
-			LauncherOptionsDTO launcherOptionsDTO = profileService
-					.getLauncherOptions(profileName);
-			if (launcherOptionsDTO.getSteamExePath() == null
-					&& !profileName.equals("Default")) {
-				LauncherOptionsDTO launcherOptionsDTODefault = profileService
-						.getLauncherOptions("Default");
-				launcherOptionsDTO.setArma3ExePath(launcherOptionsDTODefault
-						.getArma3ExePath());
-			}
-			configurationService.setLauncherOptions(launcherOptionsDTO);
-			facade.getLaunchOptionsPanel().init();
-
-			// Addon options panel
-			Set<String> set = profileService
-					.getAddonSearchDirectoryPaths(profileName);
-			Iterator iter = set.iterator();
-			List<String> paths = new ArrayList<String>();
-			while (iter.hasNext()) {
-				paths.add((String) iter.next());
-			}
-
-			configurationService.getAddonSearchDirectoryPaths().clear();
-			configurationService.getAddonSearchDirectoryPaths().addAll(paths);
-			facade.getAddonOptionsPanel().init();
-
-			// Addon panel
-			facade.getAddonsPanel().init();
-
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		facade.getMainPanel().updateProfilesMenu();
 		facade.getInfoPanel().init();
+		facade.getAddonsPanel().init();
+		facade.getAddonOptionsPanel().init();
+		facade.getLaunchOptionsPanel().init();
+		facade.getMainPanel().updateProfilesMenu();
 		this.dispose();
 	}
 

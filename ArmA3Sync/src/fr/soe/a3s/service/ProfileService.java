@@ -26,7 +26,6 @@ import fr.soe.a3s.exception.WritingException;
 public class ProfileService extends ObjectDTOtransformer {
 
 	private static final ConfigurationDAO configurationDAO = new ConfigurationDAO();
-
 	private static final ProfileDAO profileDAO = new ProfileDAO();
 
 	public void readAll() throws LoadingException {
@@ -47,6 +46,7 @@ public class ProfileService extends ObjectDTOtransformer {
 
 	public void setAdditionalParameters(String additionalParameters)
 			throws ProfileException {
+
 		String profileName = configurationDAO.getConfiguration()
 				.getProfileName();
 		Profile profile = profileDAO.getMap().get(profileName);
@@ -57,14 +57,16 @@ public class ProfileService extends ObjectDTOtransformer {
 		}
 	}
 
-	public String getAdditionalParameters() throws ProfileException {
+	public String getAdditionalParameters() {
+
 		String profileName = configurationDAO.getConfiguration()
 				.getProfileName();
+
 		Profile profile = profileDAO.getMap().get(profileName);
 		if (profile != null) {
 			return profile.getAdditionalParameters();
 		} else {
-			throw new ProfileException("Profile " + profileName + " not found!");
+			return null;
 		}
 	}
 
@@ -80,6 +82,7 @@ public class ProfileService extends ObjectDTOtransformer {
 	}
 
 	public void createProfile(String profileName) throws ProfileException {
+
 		Profile profile = new Profile(profileName);
 		if (profileDAO.getMap().containsKey(profileName)) {
 			throw new ProfileException("Profile with name " + profileName
@@ -96,8 +99,8 @@ public class ProfileService extends ObjectDTOtransformer {
 			TreeDirectory treeDirectory = profile.getTree();
 			TreeDirectory duplicateTreeDirectory = duplicateProfile.getTree();
 			duplicateTree(treeDirectory, duplicateTreeDirectory);
-			duplicateProfile.setAddonSearchDirectoryPaths(profile
-					.getAddonSearchDirectoryPaths());
+			duplicateProfile.setAddonSearchDirectories(profile
+					.getAddonSearchDirectories());
 			duplicateProfile.setAdditionalParameters(profile
 					.getAdditionalParameters());
 			duplicateLauncherOptions(profile.getLauncherOptions(),
@@ -105,6 +108,29 @@ public class ProfileService extends ObjectDTOtransformer {
 			profileDAO.getMap().put(duplicateProfile.getName(),
 					duplicateProfile);
 		}
+	}
+
+	public void renameProfile(String initProfileName, String newProfileName)
+			throws ProfileException {
+
+		Profile profile = profileDAO.getMap().get(initProfileName);
+		if (profile == null) {
+			throw new ProfileException("Profile with name " + initProfileName
+					+ " does not exists.");
+		}
+		profile.setName(newProfileName);
+		profileDAO.getMap().remove(initProfileName);
+		profileDAO.getMap().put(profile.getName(), profile);
+	}
+
+	public void removeProfile(String profileName) throws ProfileException {
+
+		Profile profile = profileDAO.getMap().get(profileName);
+		if (profile == null) {
+			throw new ProfileException("Profile with name " + profileName
+					+ " does not exists.");
+		}
+		profileDAO.getMap().remove(profileName);
 	}
 
 	private void duplicateTree(TreeDirectory treeDirectory,
@@ -144,6 +170,8 @@ public class ProfileService extends ObjectDTOtransformer {
 				.getCpuCountSelection());
 		duplicateLauncherOptions.setExThreadsSelection(launcherOptions
 				.getExThreadsSelection());
+		duplicateLauncherOptions.setMallocSelection(launcherOptions
+				.getMallocSelection());
 		duplicateLauncherOptions.setDefaultWorld(launcherOptions
 				.isDefaultWorld());
 		duplicateLauncherOptions.setGameProfile(launcherOptions
@@ -167,112 +195,61 @@ public class ProfileService extends ObjectDTOtransformer {
 				.getArma3ExePath());
 	}
 
-	public void renameProfile(String initProfileName, String newProfileName)
-			throws ProfileException {
-		Profile profile = profileDAO.getMap().get(initProfileName);
-		if (profile == null) {
-			throw new ProfileException("Profile with name " + initProfileName
-					+ " does not exists.");
-		}
-		profile.setName(newProfileName);
-		profileDAO.getMap().remove(initProfileName);
-		profileDAO.getMap().put(profile.getName(), profile);
-	}
+	public LauncherOptionsDTO getLauncherOptions() {
 
-	public void removeProfile(String profileName) throws ProfileException {
+		String profileName = configurationDAO.getConfiguration()
+				.getProfileName();
+
 		Profile profile = profileDAO.getMap().get(profileName);
-		if (profile == null) {
-			throw new ProfileException("Profile with name " + profileName
-					+ " does not exists.");
+		if (profile != null) {
+			LauncherOptions launcherOptions = profile.getLauncherOptions();
+			LauncherOptionsDTO launcherOptionsDTO = transformLauncherOptions2DTO(launcherOptions);
+			return launcherOptionsDTO;
+		} else {
+			return null;
 		}
-		profileDAO.getMap().remove(profileName);
 	}
 
-	public LauncherOptionsDTO getLauncherOptions(String profileName)
-			throws ProfileException {
+	public List<String> getAddonSearchDirectoryPaths() {
+
+		String profileName = configurationDAO.getConfiguration()
+				.getProfileName();
 
 		Profile profile = profileDAO.getMap().get(profileName);
 		if (profile == null) {
-			throw new ProfileException("Profile with name " + profileName
-					+ " does not exists.");
+			return new ArrayList<String>();
+		} else {
+			return profile.getAddonSearchDirectories();
 		}
-		LauncherOptions launcherOptions = profile.getLauncherOptions();
-		LauncherOptionsDTO launcherOptionsDTO = transformLauncherOptions2DTO(launcherOptions);
-		return launcherOptionsDTO;
 	}
 
-	public void saveLauncherOptions(String profileName) throws ProfileException {
+	public void addAddonSearchDirectoryPath(String path) {
+
+		String profileName = configurationDAO.getConfiguration()
+				.getProfileName();
 
 		Profile profile = profileDAO.getMap().get(profileName);
-		if (profile == null) {
-			throw new ProfileException("Profile with name " + profileName
-					+ " does not exists.");
+		if (profile != null) {
+			profile.getAddonSearchDirectories().add(path);
 		}
-		LauncherOptions launcherOptions = configurationDAO.getConfiguration()
-				.getLauncherOptions();
-
-		profile.getLauncherOptions().setArma3ExePath(
-				launcherOptions.getArma3ExePath());
-
-		profile.getLauncherOptions().setGameProfile(
-				launcherOptions.getGameProfile());
-		profile.getLauncherOptions().setShowScriptErrors(
-				launcherOptions.isShowScriptErrors());
-		profile.getLauncherOptions().setNoPause(launcherOptions.isNoPause());
-		profile.getLauncherOptions().setNoFilePatching(
-				launcherOptions.isNoFilePatching());
-		profile.getLauncherOptions().setWindowMode(
-				launcherOptions.isWindowMode());
-		profile.getLauncherOptions().setCheckSignatures(
-				launcherOptions.isCheckSignatures());
-		profile.getLauncherOptions().setAutoRestart(
-				launcherOptions.isAutoRestart());
-		profile.getLauncherOptions().setMaxMemorySelection(
-				launcherOptions.getMaxMemorySelection());
-		profile.getLauncherOptions().setCpuCountSelection(
-				launcherOptions.getCpuCountSelection());
-		profile.getLauncherOptions().setExThreadsSelection(
-				launcherOptions.getExThreadsSelection());
-		profile.getLauncherOptions().setEnableHT(launcherOptions.isEnableHT());
-		profile.getLauncherOptions().setNoSplashScreen(
-				launcherOptions.isNoSplashScreen());
-		profile.getLauncherOptions().setDefaultWorld(
-				launcherOptions.isDefaultWorld());
-		profile.getLauncherOptions().setNoLogs(launcherOptions.isNologs());
 	}
 
-	public void saveAddonSearchDirectoryPaths(String profileName)
-			throws ProfileException {
+	public void removeAddonSearchDirectoryPath(String path) {
+
+		String profileName = configurationDAO.getConfiguration()
+				.getProfileName();
 
 		Profile profile = profileDAO.getMap().get(profileName);
-		if (profile == null) {
-			throw new ProfileException("Profile with name " + profileName
-					+ " does not exists.");
+		if (profile != null) {
+			profile.getAddonSearchDirectories().remove(path);
 		}
-
-		Set<String> addonSearchDirectoryPaths = configurationDAO
-				.getConfiguration().getAddonSearchDirectoryPaths();
-		profile.getAddonSearchDirectoryPaths().clear();
-		profile.getAddonSearchDirectoryPaths()
-				.addAll(addonSearchDirectoryPaths);
-	}
-
-	public Set<String> getAddonSearchDirectoryPaths(String profileName)
-			throws ProfileException {
-
-		Profile profile = profileDAO.getMap().get(profileName);
-		if (profile == null) {
-			throw new ProfileException("Profile with name " + profileName
-					+ " does not exists.");
-		}
-
-		return profile.getAddonSearchDirectoryPaths();
 	}
 
 	public TreeDirectoryDTO getAddonGroupsTree() {
 
 		String profileName = configurationDAO.getConfiguration()
 				.getProfileName();
+
 		if (profileName == null) {
 			configurationDAO.getConfiguration().setProfileName(
 					DefaultProfileName.DEFAULT.getDescription());
@@ -292,6 +269,7 @@ public class ProfileService extends ObjectDTOtransformer {
 
 		String profileName = configurationDAO.getConfiguration()
 				.getProfileName();
+
 		if (profileName == null) {
 			configurationDAO.getConfiguration().setProfileName(
 					DefaultProfileName.DEFAULT.getDescription());
@@ -440,6 +418,213 @@ public class ProfileService extends ObjectDTOtransformer {
 				list.set(index, previousName);
 				list.set(index + 1, name);
 			}
+		}
+	}
+
+	public void setGameProfile(String gameProfileName) {
+
+		String profileName = configurationDAO.getConfiguration()
+				.getProfileName();
+
+		Profile profile = profileDAO.getMap().get(profileName);
+		if (profile != null) {
+			profile.getLauncherOptions().setGameProfile(gameProfileName);
+		}
+	}
+
+	public void setCheckBoxShowScriptErrors(boolean selected) {
+
+		String profileName = configurationDAO.getConfiguration()
+				.getProfileName();
+
+		Profile profile = profileDAO.getMap().get(profileName);
+		if (profile != null) {
+			profile.getLauncherOptions().setShowScriptErrors(selected);
+		}
+	}
+
+	public void setCheckBoxNoPause(boolean selected) {
+
+		String profileName = configurationDAO.getConfiguration()
+				.getProfileName();
+
+		Profile profile = profileDAO.getMap().get(profileName);
+		if (profile != null) {
+			profile.getLauncherOptions().setNoPause(selected);
+		}
+	}
+
+	public void setCheckBoxNoFilePatching(boolean selected) {
+
+		String profileName = configurationDAO.getConfiguration()
+				.getProfileName();
+
+		Profile profile = profileDAO.getMap().get(profileName);
+		if (profile != null) {
+			profile.getLauncherOptions().setNoFilePatching(selected);
+		}
+	}
+
+	public void setCheckBoxWindowMode(boolean selected) {
+
+		String profileName = configurationDAO.getConfiguration()
+				.getProfileName();
+
+		Profile profile = profileDAO.getMap().get(profileName);
+		if (profile != null) {
+			profile.getLauncherOptions().setWindowMode(selected);
+		}
+	}
+
+	public void setCheckBoxCheckSignatures(boolean selected) {
+
+		String profileName = configurationDAO.getConfiguration()
+				.getProfileName();
+
+		Profile profile = profileDAO.getMap().get(profileName);
+		if (profile != null) {
+			profile.getLauncherOptions().setCheckSignatures(selected);
+		}
+	}
+
+	public void setCheckBoxAutoRestart(boolean selected) {
+
+		String profileName = configurationDAO.getConfiguration()
+				.getProfileName();
+
+		Profile profile = profileDAO.getMap().get(profileName);
+		if (profile != null) {
+			profile.getLauncherOptions().setAutoRestart(selected);
+		}
+	}
+
+	public boolean isAutoRestart() {
+
+		String profileName = configurationDAO.getConfiguration()
+				.getProfileName();
+
+		Profile profile = profileDAO.getMap().get(profileName);
+		if (profile != null) {
+			return profile.getLauncherOptions().isAutoRestart();
+		} else {
+			return false;
+		}
+	}
+
+	public void setMaxMemory(String maxMemory) {
+
+		String profileName = configurationDAO.getConfiguration()
+				.getProfileName();
+
+		Profile profile = profileDAO.getMap().get(profileName);
+		if (profile != null) {
+			profile.getLauncherOptions().setMaxMemorySelection(maxMemory);
+		}
+	}
+
+	public void setCpuCount(String cpuCount) {
+
+		String profileName = configurationDAO.getConfiguration()
+				.getProfileName();
+
+		Profile profile = profileDAO.getMap().get(profileName);
+		if (profile != null) {
+			if (cpuCount == null) {
+				profile.getLauncherOptions().setCpuCountSelection(0);
+			} else {
+				profile.getLauncherOptions().setCpuCountSelection(
+						Integer.parseInt(cpuCount));
+			}
+		}
+	}
+
+	public void setEnableHT(boolean selected) {
+
+		String profileName = configurationDAO.getConfiguration()
+				.getProfileName();
+
+		Profile profile = profileDAO.getMap().get(profileName);
+		if (profile != null) {
+			profile.getLauncherOptions().setEnableHT(selected);
+		}
+	}
+
+	public void setExThreads(String exThreads) {
+
+		String profileName = configurationDAO.getConfiguration()
+				.getProfileName();
+
+		Profile profile = profileDAO.getMap().get(profileName);
+		if (profile != null) {
+			profile.getLauncherOptions().setExThreadsSelection(exThreads);
+		}
+	}
+
+	public void setMalloc(String mallocDll) {
+
+		String profileName = configurationDAO.getConfiguration()
+				.getProfileName();
+
+		Profile profile = profileDAO.getMap().get(profileName);
+		if (profile != null) {
+			profile.getLauncherOptions().setMallocSelection(mallocDll);
+		}
+	}
+
+	public void setNoSplashScreen(boolean selected) {
+
+		String profileName = configurationDAO.getConfiguration()
+				.getProfileName();
+
+		Profile profile = profileDAO.getMap().get(profileName);
+		if (profile != null) {
+			profile.getLauncherOptions().setNoSplashScreen(selected);
+		}
+	}
+
+	public void setDefaultWorld(boolean selected) {
+
+		String profileName = configurationDAO.getConfiguration()
+				.getProfileName();
+
+		Profile profile = profileDAO.getMap().get(profileName);
+		if (profile != null) {
+			profile.getLauncherOptions().setDefaultWorld(selected);
+		}
+	}
+
+	public void setNoLogs(boolean selected) {
+
+		String profileName = configurationDAO.getConfiguration()
+				.getProfileName();
+
+		Profile profile = profileDAO.getMap().get(profileName);
+		if (profile != null) {
+			profile.getLauncherOptions().setNoLogs(selected);
+		}
+	}
+
+	public void setArmA3ExePath(String arma3ExePath) {
+
+		String profileName = configurationDAO.getConfiguration()
+				.getProfileName();
+
+		Profile profile = profileDAO.getMap().get(profileName);
+		if (profile != null) {
+			profile.getLauncherOptions().setArma3ExePath(arma3ExePath);
+		}
+	}
+
+	public String getArma3ExePath() {
+
+		String profileName = configurationDAO.getConfiguration()
+				.getProfileName();
+
+		Profile profile = profileDAO.getMap().get(profileName);
+		if (profile != null) {
+			return profile.getLauncherOptions().getArma3ExePath();
+		} else {
+			return null;
 		}
 	}
 }

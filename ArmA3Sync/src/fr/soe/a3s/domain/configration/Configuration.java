@@ -19,8 +19,6 @@ public class Configuration implements Serializable {
 	private String serverName;
 	private String defaultModset;
 	private boolean viewModeTree = true;
-	private Set<String> addonSearchDirectoryPaths = new TreeSet<String>();
-	private final LauncherOptions launcherOptions = new LauncherOptions();
 	private List<FavoriteServer> favoriteServers = new ArrayList<FavoriteServer>();
 	private List<ExternalApplication> externalApplications = new ArrayList<ExternalApplication>();
 	private AcreOptions acreOptions = new AcreOptions();
@@ -53,9 +51,9 @@ public class Configuration implements Serializable {
 		this.serverName = serverName;
 	}
 
-	public LauncherOptions getLauncherOptions() {
-		return launcherOptions;
-	}
+	// public LauncherOptions getLauncherOptions() {
+	// return launcherOptions;
+	// }
 
 	public List<FavoriteServer> getFavoriteServers() {
 		return favoriteServers;
@@ -63,15 +61,6 @@ public class Configuration implements Serializable {
 
 	public List<ExternalApplication> getExternalApplications() {
 		return externalApplications;
-	}
-
-	public Set<String> getAddonSearchDirectoryPaths() {
-		return addonSearchDirectoryPaths;
-	}
-	
-	public void setAddonSearchDirectoryPaths(
-			Set<String> addonSearchDirectoryPaths) {
-		this.addonSearchDirectoryPaths = addonSearchDirectoryPaths;
 	}
 
 	public void setFavoriteServers(List<FavoriteServer> favoriteServers) {

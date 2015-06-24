@@ -267,8 +267,7 @@ public class FirstPageACREInstallerPanel extends WizardPanel {
 	private void determinePaths() {
 
 		/* ArmA 3 directory */
-		String arma3ExePath = configurationService.getLauncherOptions()
-				.getArma3ExePath();
+		String arma3ExePath = profileService.getArma3ExePath();
 
 		if (arma3ExePath != null) {
 			String arma3InstallationDirectoryPath = (new File(arma3ExePath))
