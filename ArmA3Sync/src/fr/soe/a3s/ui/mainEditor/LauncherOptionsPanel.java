@@ -102,13 +102,15 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener,
 		performancePanel.setBorder(BorderFactory.createTitledBorder(
 				BorderFactory.createEtchedBorder(), "Performance"));
 
-		/* Launch options */
+		/* Launcher options */
 		launcherOptionsPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
 		Box vBox = Box.createVerticalBox();
 		launcherOptionsPanel.add(vBox);
 		{
 			checkBoxProfiles = new JCheckBox();
-			checkBoxProfiles.setText("Profile:   ");
+			checkBoxProfiles.setText("Profile:");
+			checkBoxProfiles.setPreferredSize(new Dimension(65, 23));
+			checkBoxProfiles.preferredSize();
 			checkBoxProfiles.setFocusable(false);
 			comboBoxProfiles = new JComboBox();
 			javax.swing.filechooser.FileSystemView fsv = javax.swing.filechooser.FileSystemView
@@ -140,10 +142,11 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener,
 			ComboBoxModel profilesModel = new DefaultComboBoxModel(tab);
 			comboBoxProfiles.setModel(profilesModel);
 			comboBoxProfiles.setFocusable(false);
-			comboBoxProfiles.setPreferredSize(new Dimension(120, 8));
+			comboBoxProfiles.setPreferredSize(new Dimension(175, 23));
 			Box hBox = Box.createHorizontalBox();
 			hBox.add(checkBoxProfiles);
 			hBox.add(comboBoxProfiles);
+			hBox.add(Box.createHorizontalGlue());
 			vBox.add(hBox);
 		}
 		{
@@ -168,6 +171,7 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener,
 		{
 			checkBoxWindowMode = new JCheckBox();
 			checkBoxWindowMode.setText("Window Mode");
+			checkBoxWindowMode.setPreferredSize(new Dimension(140, 23));
 			checkBoxWindowMode.setFocusable(false);
 			Box hBox = Box.createHorizontalBox();
 			hBox.add(checkBoxWindowMode);
@@ -266,12 +270,15 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener,
 		}
 		{
 			checkBoxMalloc = new JCheckBox();
-			checkBoxMalloc.setText("Malloc");
+			checkBoxMalloc.setText("Malloc:");
 			checkBoxMalloc.setFocusable(false);
 			checkBoxMalloc.setPreferredSize(new java.awt.Dimension(100, 23));
 			comboBoxMalloc = new JComboBox();
 			comboBoxMalloc.setFocusable(false);
-			comboBoxMalloc.setPreferredSize(new java.awt.Dimension(70, 25));
+			comboBoxMalloc.setPreferredSize(new java.awt.Dimension(70, 23));
+			ComboBoxModel mallocModel = new DefaultComboBoxModel(
+					new String[] { "" });
+			comboBoxMalloc.setModel(mallocModel);
 			Box hBox = Box.createHorizontalBox();
 			hBox.add(checkBoxMalloc);
 			hBox.add(comboBoxMalloc);
@@ -593,7 +600,6 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener,
 	}
 
 	private void checkBoxAutoRestartPerformed() {
-		;
 		profileService.setCheckBoxAutoRestart(checkBoxAutoRestart.isSelected());
 	}
 
@@ -735,6 +741,7 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener,
 			String path = file.getAbsolutePath();
 			profileService.setArmA3ExePath(path);
 			textFieldArmAExecutableLocation.setText(path);
+			updateOptions();//update Malloc comboBox Model
 		}
 	}
 
@@ -836,6 +843,8 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener,
 		checkBoxNoLogs.setSelected(launcherOptionsDTO.isNoLogs());
 
 		/* ArmA 3 Executable Location and Malloc */
+		checkBoxMalloc.setSelected(false);
+		comboBoxMalloc.setSelectedIndex(0);//default empty
 		String arma3ExePath = launcherOptionsDTO.getArma3ExePath();
 		if (arma3ExePath != null) {
 			File arma3ExeFile = new File(arma3ExePath);
