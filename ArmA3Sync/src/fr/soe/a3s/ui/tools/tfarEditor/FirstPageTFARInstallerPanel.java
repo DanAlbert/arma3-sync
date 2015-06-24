@@ -478,15 +478,21 @@ public class FirstPageTFARInstallerPanel extends WizardPanel {
 			message = "TS3 installation directory is missing \\plugins folder";
 		}
 
-		String acrePlugin = textFieldPluginInstallationDirectory.getText()
+		String tfarPlugin = textFieldPluginInstallationDirectory.getText()
 				+ "/" + labelPluginValue.getText();
-		if (!new File(acrePlugin).exists()) {
+		if (!new File(tfarPlugin).exists()) {
 			if (labelPluginValue.getText().equals("Unknown")) {
 				message = "TFAR plugin is missing.";
 			} else {
 				message = "TFAR plugin " + labelPluginValue.getText()
 						+ " is missing.";
 			}
+		}
+
+		String tfarUserconfigHpp = textFieldUserconfigInstallationDirectory
+				.getText() + "/task_force_radio/radio_settings.hpp";
+		if (!new File(tfarUserconfigHpp).exists()){
+			message = "TFAR userconfig file radio_settings.hpp not found";
 		}
 
 		LaunchService launchService = new LaunchService();
