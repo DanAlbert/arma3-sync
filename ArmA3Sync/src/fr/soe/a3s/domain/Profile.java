@@ -73,6 +73,7 @@ public class Profile implements Serializable {
 			if (addonSearchDirectories.isEmpty()
 					&& !addonSearchDirectoryPaths.isEmpty()) {
 				addonSearchDirectories.addAll(addonSearchDirectoryPaths);
+				addonSearchDirectoryPaths.clear();
 			}
 		}
 		return addonSearchDirectories;

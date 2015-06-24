@@ -387,7 +387,7 @@ public class ProfileService extends ObjectDTOtransformer {
 		}
 	}
 
-	public void upPriority(int index) {
+	public void upAddonPriority(int index) {
 
 		String profileName = configurationDAO.getConfiguration()
 				.getProfileName();
@@ -404,7 +404,7 @@ public class ProfileService extends ObjectDTOtransformer {
 		}
 	}
 
-	public void downPriority(int index) {
+	public void downAddonPriority(int index) {
 
 		String profileName = configurationDAO.getConfiguration()
 				.getProfileName();
@@ -412,6 +412,40 @@ public class ProfileService extends ObjectDTOtransformer {
 		Profile profile = profileDAO.getMap().get(profileName);
 		if (profile != null) {
 			List<String> list = profile.getAddonNamesByPriority();
+			if (!(index >= list.size() - 1)) {
+				String name = list.get(index);
+				String previousName = list.get(index + 1);
+				list.set(index, previousName);
+				list.set(index + 1, name);
+			}
+		}
+	}
+	
+	public void upDirectoryPriority(int index) {
+		
+		String profileName = configurationDAO.getConfiguration()
+				.getProfileName();
+
+		Profile profile = profileDAO.getMap().get(profileName);
+		if (profile != null) {
+			List<String> list = profile.getAddonSearchDirectories();
+			if (index != 0 && !(index > list.size() - 1)) {
+				String name = list.get(index);
+				String nextName = list.get(index - 1);
+				list.set(index, nextName);
+				list.set(index - 1, name);
+			}
+		}
+	}
+	
+	public void downDirectoryPriority(int index) {
+
+		String profileName = configurationDAO.getConfiguration()
+				.getProfileName();
+
+		Profile profile = profileDAO.getMap().get(profileName);
+		if (profile != null) {
+			List<String> list = profile.getAddonSearchDirectories();
 			if (!(index >= list.size() - 1)) {
 				String name = list.get(index);
 				String previousName = list.get(index + 1);

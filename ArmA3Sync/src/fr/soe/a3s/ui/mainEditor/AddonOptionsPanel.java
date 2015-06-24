@@ -40,7 +40,10 @@ public class AddonOptionsPanel extends JPanel implements UIConstants {
 	private final Facade facade;
 	private JScrollPane scrollPane1, scrollPane2;
 	private JList directoryList1, directoryList2;
-	private JButton add, delete, down, up;
+	private JButton add, delete, downAddonPriority, upAddonPriority;
+	private JButton upDirectoryPriority;
+	private JButton downDirectoryPriority;
+	/* Services */
 	private final AddonService addonService = new AddonService();
 	private final ProfileService profileService = new ProfileService();
 
@@ -84,6 +87,14 @@ public class AddonOptionsPanel extends JPanel implements UIConstants {
 			ImageIcon deleteIcon = new ImageIcon(DELETE);
 			delete.setIcon(deleteIcon);
 			vertBox2.add(delete);
+			upDirectoryPriority = new JButton();
+			ImageIcon upIcon = new ImageIcon(UP);
+			upDirectoryPriority.setIcon(upIcon);
+			vertBox2.add(upDirectoryPriority);
+			downDirectoryPriority = new JButton();
+			ImageIcon downIcon = new ImageIcon(DOWN);
+			downDirectoryPriority.setIcon(downIcon);
+			vertBox2.add(downDirectoryPriority);
 			addonSearchDirectoriesPanel.add(vertBox2, BorderLayout.EAST);
 		}
 		centerPanel.add(addonSearchDirectoriesPanel, BorderLayout.CENTER);
@@ -105,14 +116,14 @@ public class AddonOptionsPanel extends JPanel implements UIConstants {
 		{
 			Box vertBox2 = Box.createVerticalBox();
 			vertBox2.add(Box.createVerticalStrut(15));
-			up = new JButton();
+			upAddonPriority = new JButton();
 			ImageIcon upIcon = new ImageIcon(UP);
-			up.setIcon(upIcon);
-			vertBox2.add(up);
-			down = new JButton();
+			upAddonPriority.setIcon(upIcon);
+			vertBox2.add(upAddonPriority);
+			downAddonPriority = new JButton();
 			ImageIcon downIcon = new ImageIcon(DOWN);
-			down.setIcon(downIcon);
-			vertBox2.add(down);
+			downAddonPriority.setIcon(downIcon);
+			vertBox2.add(downAddonPriority);
 			addonPrioritiesPanel.add(vertBox2, BorderLayout.EAST);
 		}
 		centerPanel.add(addonPrioritiesPanel, BorderLayout.CENTER);
@@ -129,16 +140,28 @@ public class AddonOptionsPanel extends JPanel implements UIConstants {
 				buttonDeletePerformed();
 			}
 		});
-		up.addActionListener(new ActionListener() {
+		upDirectoryPriority.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
-				buttonUpPerformed();
+				upDirectoryPriorityPerformed();
 			}
 		});
-		down.addActionListener(new ActionListener() {
+		downDirectoryPriority.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				buttonDownPerformed();
+				downDirectoryPriorityPerformed();
+			}
+		});
+		upAddonPriority.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				upAddonPrioriyPerformed();
+			}
+		});
+		downAddonPriority.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				downAddonPriorityPerformed();
 			}
 		});
 		setContextualHelp();
@@ -148,6 +171,10 @@ public class AddonOptionsPanel extends JPanel implements UIConstants {
 
 		add.setToolTipText("Add a new addon search directory");
 		delete.setToolTipText("Delete the selected directory");
+		upDirectoryPriority.setToolTipText("Up directory search priority");
+		downDirectoryPriority.setToolTipText("Down directory search priority");
+		upAddonPriority.setToolTipText("Up addon launch priority");
+		downAddonPriority.setToolTipText("Down addon launch priority");
 	}
 
 	public void init() {
@@ -255,24 +282,50 @@ public class AddonOptionsPanel extends JPanel implements UIConstants {
 		}
 	}
 
-	private void buttonUpPerformed() {
+	private void upDirectoryPriorityPerformed() {
+
+		int index = directoryList1.getSelectedIndex();
+
+		if (index != -1) {
+			profileService.upDirectoryPriority(index);
+			this.updateAddonSearchDirectories();
+			directoryList1.setSelectedIndex(index - 1);
+			addonService.resetAvailableAddonTree();
+			facade.getAddonsPanel().updateAvailableAddons();
+		}
+	}
+
+	private void downDirectoryPriorityPerformed() {
+
+		int index = directoryList1.getSelectedIndex();
+
+		if (index != -1) {
+			profileService.downDirectoryPriority(index);
+			this.updateAddonSearchDirectories();
+			directoryList1.setSelectedIndex(index + 1);
+			addonService.resetAvailableAddonTree();
+			facade.getAddonsPanel().updateAvailableAddons();
+		}
+	}
+
+	private void upAddonPrioriyPerformed() {
 
 		int index = directoryList2.getSelectedIndex();
 
 		if (index != -1) {
-			profileService.upPriority(index);
+			profileService.upAddonPriority(index);
 			this.updateAddonPriorities();
 			directoryList2.setSelectedIndex(index - 1);
 			facade.getLaunchOptionsPanel().updateRunParameters();
 		}
 	}
 
-	private void buttonDownPerformed() {
+	private void downAddonPriorityPerformed() {
 
 		int index = directoryList2.getSelectedIndex();
 
 		if (index != -1) {
-			profileService.downPriority(index);
+			profileService.downAddonPriority(index);
 			this.updateAddonPriorities();
 			directoryList2.setSelectedIndex(index + 1);
 			facade.getLaunchOptionsPanel().updateRunParameters();
