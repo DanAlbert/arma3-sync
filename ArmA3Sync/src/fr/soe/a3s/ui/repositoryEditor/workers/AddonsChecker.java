@@ -29,7 +29,6 @@ public class AddonsChecker extends Thread {
 	private final boolean update;
 	private final DownloadPanel downloadPanel;
 	private boolean cancel = false;
-
 	/* Services */
 	private final RepositoryService repositoryService = new RepositoryService();
 	private final AddonService addonService = new AddonService();
@@ -47,33 +46,23 @@ public class AddonsChecker extends Thread {
 	@Override
 	public void run() {
 
-		addonService.resetAvailableAddonTree();
-		facade.getAddonsPanel().updateAvailableAddons();
-		facade.getAddonsPanel().updateAddonGroups();
-		facade.getAddonsPanel().expandAddonGroups();
-		facade.getAddonOptionsPanel().updateAddonPriorities();
-
-		downloadPanel.getButtonCheckForAddonsCancel().setEnabled(false);
-		downloadPanel.getLabelCheckForAddonsStatus().setText("Checking files...");
-		downloadPanel.getButtonCheckForAddonsStart().setEnabled(false);
-		downloadPanel.getComBoxDestinationFolder().setEnabled(false);
-		downloadPanel.getButtonDownloadStart().setEnabled(false);
-		downloadPanel.getProgressBarCheckForAddons().setMinimum(0);
-		downloadPanel.getProgressBarCheckForAddons().setMaximum(100);
-		downloadPanel.getProgressBarCheckForAddons().setIndeterminate(true);
+		// Initialize download panel for start checking
+		initDownlaodPanelForStartCheck();
 
 		try {
+			// 1. Try to retrieve the remote repository sync file. Throws
+			// exception if sync file can't be obtained
 			connexionService = ConnexionServiceFactory
 					.getServiceFromRepository(repositoryName);
 			connexionService.getSync(repositoryName);
-			connexionService.getServerInfo(repositoryName);
-			connexionService.getChangelogs(repositoryName);
 
+			// 2. Compare remote and local files SHA1
 			repositoryService.getRepositoryCheckerDAO()
 					.addObserverFilesNumber3(new ObserverFilesNumber3() {
 						@Override
 						public synchronized void update(int value) {
-							downloadPanel.getProgressBarCheckForAddons().setIndeterminate(false);
+							downloadPanel.getProgressBarCheckForAddons()
+									.setIndeterminate(false);
 							downloadPanel.getProgressBarCheckForAddons()
 									.setValue(value);
 						}
@@ -81,48 +70,75 @@ public class AddonsChecker extends Thread {
 
 			parent = repositoryService.getSyncForCheckForAddons(repositoryName);
 
+			// 3. Determine file completion, slower with http/zsync!
 			downloadPanel.getProgressBarCheckForAddons().setMinimum(0);
 			downloadPanel.getProgressBarCheckForAddons().setMaximum(100);
+			downloadPanel.getButtonCheckForAddonsCancel().setEnabled(true);
+
 			connexionService.getConnexionDAO().addObserverFilesNumber3(
 					new ObserverFilesNumber3() {
 						@Override
 						public void update(int value) {
-							downloadPanel.getProgressBarCheckForAddons().setIndeterminate(false);
+							downloadPanel.getProgressBarCheckForAddons()
+									.setIndeterminate(false);
 							downloadPanel.getProgressBarCheckForAddons()
 									.setValue(value);
 						}
 					});
 
-			downloadPanel.getButtonCheckForAddonsCancel().setEnabled(true);
-			
-			// slower with http/zsync!
 			connexionService.determineCompletion(repositoryName, parent);
 
-			if (!cancel){
+			if (!cancel) {
+				// 4. Updates adddons groups
+				addonService.resetAvailableAddonTree();
+				facade.getAddonsPanel().updateAvailableAddons();
+				facade.getAddonsPanel().updateAddonGroups();
+				facade.getAddonsPanel().expandAddonGroups();
+				facade.getAddonsPanel().updateModsetSelection(repositoryName);
+				facade.getAddonOptionsPanel().updateAddonPriorities();
+				// 5. Updates download panel tree
+				downloadPanel.updateAddons(parent);
+				// 6. Update event mode
 				if (eventName != null) {
 					setEventAddonSelection();
 				} else if (update) {
 					selectAllDescending(parent);
 				}
-				downloadPanel.updateAddons(parent);
-				downloadPanel.getRepositoryPanel().getAdminPanel()
-						.init(repositoryName);
+
 				downloadPanel.getRepositoryPanel().getEventsPanel()
 						.init(repositoryName);
-				facade.getSyncPanel().init();
-				facade.getAddonsPanel().updateModsetSelection(repositoryName);
-				downloadPanel.getLabelCheckForAddonsStatus().setText("Finished!");
+
+				downloadPanel.getLabelCheckForAddonsStatus().setText(
+						"Finished!");
 			}
 		} catch (Exception e) {
-			if (!cancel){
-				downloadPanel.getProgressBarCheckForAddons().setIndeterminate(false);
+			downloadPanel.getProgressBarCheckForAddons()
+					.setIndeterminate(false);
+			if (!cancel) {
+				downloadPanel.getLabelCheckForAddonsStatus().setText("Error!");
+				JOptionPane.showMessageDialog(facade.getMainPanel(),
+						e.getMessage(), "Check for Addons",
+						JOptionPane.ERROR_MESSAGE);
+			}
+			initDownlaodPanelForEndCheck();
+			terminate();
+		}
+
+		//
+		try {
+
+		} catch (Exception e) {
+			if (!cancel) {
+				downloadPanel.getProgressBarCheckForAddons().setIndeterminate(
+						false);
 				e.printStackTrace();
 				String message = "";
 				if (e.getMessage() == null || "".equals(e.getMessage())) {
 					message = "An unexpected error has occured.";
 					String osName = System.getProperty("os.name");
 					if (osName.contains("Windows")) {
-						message = message + "\n" + "Try to run ArmA3Sync-DEBUG.exe";
+						message = message + "\n"
+								+ "Try to run ArmA3Sync-DEBUG.exe";
 					}
 				} else {
 					message = e.getMessage();
@@ -132,7 +148,8 @@ public class AddonsChecker extends Thread {
 				downloadPanel.getLabelCheckForAddonsStatus().setText("Error!");
 			}
 		} finally {
-			downloadPanel.getProgressBarCheckForAddons().setIndeterminate(false);
+			downloadPanel.getProgressBarCheckForAddons()
+					.setIndeterminate(false);
 			downloadPanel.getComBoxDestinationFolder().setEnabled(true);
 			downloadPanel.getButtonCheckForAddonsStart().setEnabled(true);
 			downloadPanel.getButtonCheckForAddonsCancel().setEnabled(true);
@@ -143,9 +160,39 @@ public class AddonsChecker extends Thread {
 			System.gc();
 		}
 	}
-	
+
+	private void initDownlaodPanelForStartCheck() {
+
+		downloadPanel.getButtonCheckForAddonsCancel().setEnabled(false);
+		downloadPanel.getLabelCheckForAddonsStatus().setText(
+				"Checking files...");
+		downloadPanel.getButtonCheckForAddonsStart().setEnabled(false);
+		downloadPanel.getComBoxDestinationFolder().setEnabled(false);
+		downloadPanel.getButtonDownloadStart().setEnabled(false);
+		downloadPanel.getProgressBarCheckForAddons().setMinimum(0);
+		downloadPanel.getProgressBarCheckForAddons().setMaximum(100);
+		downloadPanel.getProgressBarCheckForAddons().setIndeterminate(true);
+	}
+
+	private void initDownlaodPanelForEndCheck() {
+
+		downloadPanel.getProgressBarCheckForAddons().setIndeterminate(false);
+		downloadPanel.getComBoxDestinationFolder().setEnabled(true);
+		downloadPanel.getButtonCheckForAddonsStart().setEnabled(true);
+		downloadPanel.getButtonCheckForAddonsCancel().setEnabled(true);
+		downloadPanel.getButtonDownloadStart().setEnabled(true);
+		downloadPanel.getProgressBarCheckForAddons().setMaximum(0);
+		downloadPanel.getArbre().setEnabled(true);
+	}
+
+	private void terminate() {
+
+		this.interrupt();
+		System.gc();
+	}
+
 	public void cancel() {
-		
+
 		this.cancel = true;
 		connexionService.cancel(false);
 		downloadPanel.updateAddons(null);

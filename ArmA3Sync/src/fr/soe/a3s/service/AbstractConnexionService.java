@@ -26,7 +26,7 @@ public abstract class AbstractConnexionService extends ObjectDTOtransformer {
 
 	public abstract void getSync(String repositoryName)
 			throws RepositoryException, FtpException, HttpException,
-			WritingException, ConnectException, IOException;
+			ConnectException, IOException;
 
 	public abstract AbstractConnexionDAO getConnexionDAO();
 
