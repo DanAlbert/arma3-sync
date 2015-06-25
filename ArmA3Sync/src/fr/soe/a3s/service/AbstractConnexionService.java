@@ -1,5 +1,6 @@
 package fr.soe.a3s.service;
 
+import java.io.IOException;
 import java.net.ConnectException;
 import java.util.List;
 import java.util.Map;
@@ -17,15 +18,15 @@ public abstract class AbstractConnexionService extends ObjectDTOtransformer {
 
 	public abstract AutoConfigDTO importAutoConfig(String url)
 			throws WritingException, HttpException, FtpException,
-			ConnectException;
+			ConnectException, IOException;
 
 	public abstract void checkRepository(String repositoryName)
-			throws FtpException, RepositoryException, WritingException,
-			ConnectException;
+			throws RepositoryException, ConnectException, IOException,
+			FtpException;
 
 	public abstract void getSync(String repositoryName)
 			throws RepositoryException, FtpException, HttpException,
-			WritingException, ConnectException;
+			WritingException, ConnectException, IOException;
 
 	public abstract AbstractConnexionDAO getConnexionDAO();
 
@@ -47,11 +48,11 @@ public abstract class AbstractConnexionService extends ObjectDTOtransformer {
 
 	public abstract void getServerInfo(String repositoryName)
 			throws RepositoryException, ConnectException, FtpException,
-			WritingException, HttpException;
+			WritingException, HttpException, IOException;
 
 	public abstract void getChangelogs(String repositoryName)
 			throws ConnectException, FtpException, RepositoryException,
-			WritingException, HttpException;
+			WritingException, HttpException, IOException;
 
 	public abstract void uploadRepository(String repositoryName,
 			List<SyncTreeNodeDTO> filesToUpload,
@@ -60,7 +61,8 @@ public abstract class AbstractConnexionService extends ObjectDTOtransformer {
 
 	public abstract void getSyncWithRepositoryUploadProtocole(
 			String repositoryName) throws RepositoryException,
-			WritingException, ConnectException, FtpException, HttpException;
+			WritingException, ConnectException, FtpException, HttpException,
+			IOException;
 
 	public abstract boolean remoteFileExists(String repositoryName,
 			SyncTreeNodeDTO remoteNode) throws RepositoryException,

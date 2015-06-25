@@ -36,7 +36,6 @@ import fr.soe.a3s.domain.repository.ServerInfo;
 import fr.soe.a3s.domain.repository.SyncTreeDirectory;
 import fr.soe.a3s.dto.sync.SyncTreeNodeDTO;
 import fr.soe.a3s.exception.FtpException;
-import fr.soe.a3s.exception.WritingException;
 
 public class FtpDAO extends AbstractConnexionDAO {
 
@@ -114,13 +113,13 @@ public class FtpDAO extends AbstractConnexionDAO {
 	}
 
 	public SyncTreeDirectory downloadSync(String repositoryName,
-			AbstractProtocole protocole) throws WritingException,
-			ConnectException, FtpException {
+			AbstractProtocole protocole) throws IOException, FtpException {
 
 		SyncTreeDirectory syncTreeDirectory = null;
+		String remotePath = protocole.getRemotePath() + A3S_FOlDER_PATH;
+		File directory = new File(TEMP_FOLDER_PATH + "/" + repositoryName);
+
 		try {
-			String remotePath = protocole.getRemotePath() + A3S_FOlDER_PATH;
-			File directory = new File(TEMP_FOLDER_PATH + "/" + repositoryName);
 			directory.mkdir();
 			File file = new File(directory + "/" + DataAccessConstants.SYNC);
 			boolean found = downloadFile(file, remotePath);
@@ -129,26 +128,27 @@ public class FtpDAO extends AbstractConnexionDAO {
 						new GZIPInputStream(new FileInputStream(file)));
 				syncTreeDirectory = (SyncTreeDirectory) fRo.readObject();
 				fRo.close();
+			} else {
+				throw new FtpException("File not found on repository: "
+						+ Protocol.FTP.getPrompt() + remotePath + "/"
+						+ file.getName());
 			}
+		} catch (ClassNotFoundException e) {
+			new RuntimeException(e);
+		} finally {
 			FileAccessMethods.deleteDirectory(directory);
-		} catch (Exception e) {
-			e.printStackTrace();
-			syncTreeDirectory = null;
-			throw new WritingException(
-					"Failded to read the downloaded file Sync." + "\n"
-							+ e.getMessage());
 		}
 		return syncTreeDirectory;
 	}
 
 	public ServerInfo downloadSeverInfo(String repositoryName,
-			AbstractProtocole protocole) throws WritingException,
-			ConnectException, FtpException {
+			AbstractProtocole protocole) throws IOException, FtpException {
 
 		ServerInfo serverInfo = null;
+		String remotePath = protocole.getRemotePath() + A3S_FOlDER_PATH;
+		File directory = new File(TEMP_FOLDER_PATH + "/" + repositoryName);
+
 		try {
-			String remotePath = protocole.getRemotePath() + A3S_FOlDER_PATH;
-			File directory = new File(TEMP_FOLDER_PATH + "/" + repositoryName);
 			directory.mkdir();
 			File file = new File(directory + "/"
 					+ DataAccessConstants.SERVERINFO);
@@ -158,26 +158,27 @@ public class FtpDAO extends AbstractConnexionDAO {
 						new GZIPInputStream(new FileInputStream(file)));
 				serverInfo = (ServerInfo) fRo.readObject();
 				fRo.close();
+			} else {
+				throw new FtpException("File not found on repository: "
+						+ Protocol.FTP.getPrompt() + remotePath + "/"
+						+ file.getName());
 			}
+		} catch (ClassNotFoundException e) {
+			new RuntimeException(e);
+		} finally {
 			FileAccessMethods.deleteDirectory(directory);
-		} catch (Exception e) {
-			e.printStackTrace();
-			serverInfo = null;
-			throw new WritingException(
-					"Failded to read the downloaded file Serverinfo." + "\n"
-							+ e.getMessage());
 		}
 		return serverInfo;
 	}
 
 	public Changelogs downloadChangelogs(String repositoryName,
-			AbstractProtocole protocole) throws WritingException,
-			ConnectException, FtpException {
+			AbstractProtocole protocole) throws IOException, FtpException {
 
 		Changelogs changelogs = null;
+		String remotePath = protocole.getRemotePath() + A3S_FOlDER_PATH;
+		File directory = new File(TEMP_FOLDER_PATH + "/" + repositoryName);
+
 		try {
-			String remotePath = protocole.getRemotePath() + A3S_FOlDER_PATH;
-			File directory = new File(TEMP_FOLDER_PATH + "/" + repositoryName);
 			directory.mkdir();
 			File file = new File(directory + "/"
 					+ DataAccessConstants.CHANGELOGS);
@@ -187,26 +188,27 @@ public class FtpDAO extends AbstractConnexionDAO {
 						new GZIPInputStream(new FileInputStream(file)));
 				changelogs = (Changelogs) fRo.readObject();
 				fRo.close();
+			} else {
+				throw new FtpException("File not found on repository: "
+						+ Protocol.FTP.getPrompt() + remotePath + "/"
+						+ file.getName());
 			}
+		} catch (ClassNotFoundException e) {
+			new RuntimeException(e);
+		} finally {
 			FileAccessMethods.deleteDirectory(directory);
-		} catch (Exception e) {
-			e.printStackTrace();
-			changelogs = null;
-			throw new WritingException(
-					"Failded to read the downloaded file Changelogs." + "\n"
-							+ e.getMessage());
 		}
 		return changelogs;
 	}
 
 	public Events downloadEvent(String repositoryName,
-			AbstractProtocole protocole) throws WritingException,
-			ConnectException, FtpException {
+			AbstractProtocole protocole) throws IOException, FtpException {
 
 		Events events = null;
+		String remotePath = protocole.getRemotePath() + A3S_FOlDER_PATH;
+		File directory = new File(TEMP_FOLDER_PATH + "/" + repositoryName);
+
 		try {
-			String remotePath = protocole.getRemotePath() + A3S_FOlDER_PATH;
-			File directory = new File(TEMP_FOLDER_PATH + "/" + repositoryName);
 			directory.mkdir();
 			File file = new File(directory + "/" + DataAccessConstants.EVENTS);
 			boolean found = downloadFile(file, remotePath);
@@ -215,26 +217,27 @@ public class FtpDAO extends AbstractConnexionDAO {
 						new GZIPInputStream(new FileInputStream(file)));
 				events = (Events) fRo.readObject();
 				fRo.close();
+			} else {
+				throw new FtpException("File not found on repository: "
+						+ Protocol.FTP.getPrompt() + remotePath + "/"
+						+ file.getName());
 			}
+		} catch (ClassNotFoundException e) {
+			new RuntimeException(e);
+		} finally {
 			FileAccessMethods.deleteDirectory(directory);
-		} catch (Exception e) {
-			e.printStackTrace();
-			events = null;
-			throw new WritingException(
-					"Failded to read the downloaded file Events." + "\n"
-							+ e.getMessage());
 		}
 		return events;
 	}
 
 	public AutoConfig downloadAutoconfig(String repositoryName,
-			AbstractProtocole protocole) throws WritingException,
-			ConnectException, FtpException {
+			AbstractProtocole protocole) throws IOException, FtpException {
 
 		AutoConfig autoConfig = null;
+		String remotePath = protocole.getRemotePath() + A3S_FOlDER_PATH;
+		File directory = new File(TEMP_FOLDER_PATH + "/" + repositoryName);
+
 		try {
-			String remotePath = protocole.getRemotePath() + A3S_FOlDER_PATH;
-			File directory = new File(TEMP_FOLDER_PATH + "/" + repositoryName);
 			directory.mkdir();
 			File file = new File(directory + "/"
 					+ DataAccessConstants.AUTOCONFIG);
@@ -244,20 +247,21 @@ public class FtpDAO extends AbstractConnexionDAO {
 						new GZIPInputStream(new FileInputStream(file)));
 				autoConfig = (AutoConfig) fRo.readObject();
 				fRo.close();
+			} else {
+				throw new FtpException("File not found on repository: "
+						+ Protocol.FTP.getPrompt() + remotePath + "/"
+						+ file.getName());
 			}
+		} catch (ClassNotFoundException e) {
+			new RuntimeException(e);
+		} finally {
 			FileAccessMethods.deleteDirectory(directory);
-		} catch (Exception e) {
-			e.printStackTrace();
-			autoConfig = null;
-			throw new WritingException(
-					"Failded to read the downloaded file Autoconfig." + "\n"
-							+ e.getMessage());
 		}
 		return autoConfig;
 	}
 
 	public AutoConfig importAutoConfig(String autoConfigURL)
-			throws FtpException, WritingException, ConnectException {
+			throws FtpException, IOException {
 
 		if (autoConfigURL == null) {
 			return null;
@@ -277,25 +281,22 @@ public class FtpDAO extends AbstractConnexionDAO {
 		}
 
 		AutoConfig autoConfig = null;
+		File file = new File(TEMP_FOLDER_PATH + "/"
+				+ DataAccessConstants.AUTOCONFIG);
+
 		try {
-			File file = new File(TEMP_FOLDER_PATH + "/"
-					+ DataAccessConstants.AUTOCONFIG);
+
 			boolean found = downloadFile(file, protocole.getRemotePath());
 			if (found && file.exists()) {
 				ObjectInputStream fRo = new ObjectInputStream(
 						new GZIPInputStream(new FileInputStream(file)));
 				autoConfig = (AutoConfig) fRo.readObject();
 				fRo.close();
-				FileAccessMethods.deleteFile(file);
 			}
-		} catch (Exception e) {
-			e.printStackTrace();
-			autoConfig = null;
-			throw new WritingException(
-					"Failded to read the downloaded file Autoconfig." + "\n"
-							+ e.getMessage());
+		} catch (ClassNotFoundException e) {
+			new RuntimeException(e);
 		} finally {
-			disconnect();
+			FileAccessMethods.deleteFile(file);
 		}
 		return autoConfig;
 	}

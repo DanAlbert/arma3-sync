@@ -61,7 +61,7 @@ public class FtpService extends AbstractConnexionService implements
 
 	@Override
 	public AutoConfigDTO importAutoConfig(String autoconfigURL)
-			throws FtpException, WritingException, ConnectException {
+			throws FtpException, ConnectException, IOException {
 
 		AutoConfig autoConfig = ftpDAOPool.get(0).importAutoConfig(
 				autoconfigURL);
@@ -73,9 +73,15 @@ public class FtpService extends AbstractConnexionService implements
 		}
 	}
 
+	/**
+	 * Retrieves serverInfo, changelogs, useerconfig and Events
+	 * 
+	 * @throws FtpException
+	 */
 	@Override
-	public void checkRepository(String repositoryName) throws FtpException,
-			RepositoryException, WritingException, ConnectException {
+	public void checkRepository(String repositoryName)
+			throws RepositoryException, ConnectException, IOException,
+			FtpException {
 
 		Repository repository = repositoryDAO.getMap().get(repositoryName);
 		if (repository == null) {
@@ -86,38 +92,47 @@ public class FtpService extends AbstractConnexionService implements
 		ftpDAOPool.get(0).connectToRepository(repository.getName(),
 				repository.getProtocole());
 
-		// Sync
-		SyncTreeDirectory syncTreeDirectory = ftpDAOPool.get(0).downloadSync(
-				repositoryName, repository.getProtocole());
-		repository.setSync(syncTreeDirectory);// null if not found
-
-		// Serverinfo
-		ServerInfo serverInfo = ftpDAOPool.get(0).downloadSeverInfo(
-				repositoryName, repository.getProtocole());
-		repository.setServerInfo(serverInfo);// null if not found
-
-		if (serverInfo != null) {
-			repository.getHiddenFolderPath().addAll(
-					serverInfo.getHiddenFolderPaths());
+		/* Serverinfo */
+		try {
+			ServerInfo serverInfo = ftpDAOPool.get(0).downloadSeverInfo(
+					repositoryName, repository.getProtocole());
+			repository.setServerInfo(serverInfo);
+			if (serverInfo != null) {
+				repository.getHiddenFolderPath().addAll(
+						serverInfo.getHiddenFolderPaths());
+			}
+		} catch (FtpException e) {// null if not found
+			repository.setServerInfo(null);
 		}
 
-		// Cnangelogs
-		Changelogs changelogs = ftpDAOPool.get(0).downloadChangelogs(
-				repositoryName, repository.getProtocole());
-		repository.setChangelogs(changelogs);// null if not found
+		/* Changelogs */
+		try {
+			Changelogs changelogs = ftpDAOPool.get(0).downloadChangelogs(
+					repositoryName, repository.getProtocole());
+			repository.setChangelogs(changelogs);
+		} catch (FtpException e) {// null if not found
+			repository.setChangelogs(null);
+		}
 
-		// Events
-		Events events = ftpDAOPool.get(0).downloadEvent(repositoryName,
-				repository.getProtocole());
-		repository.setEvents(events);
+		/* Events */
+		try {
+			Events events = ftpDAOPool.get(0).downloadEvent(repositoryName,
+					repository.getProtocole());
+			repository.setEvents(events);
+		} catch (FtpException e) {// null if not found
+			repository.setEvents(null);
+		}
 
-		// Auto config
-		AutoConfig autoConfig = ftpDAOPool.get(0).downloadAutoconfig(
-				repositoryName, repository.getProtocole());
-		repository.setAutoConfig(autoConfig);// null if not found
-
-		if (autoConfig != null) {
-			updateFavoriteServersFromAutoconfig(autoConfig);
+		/* Autoconfig */
+		try {
+			AutoConfig autoConfig = ftpDAOPool.get(0).downloadAutoconfig(
+					repositoryName, repository.getProtocole());
+			repository.setAutoConfig(autoConfig);
+			if (autoConfig != null) {
+				updateFavoriteServersFromAutoconfig(autoConfig);
+			}
+		} catch (FtpException e) {// null if not found
+			repository.setAutoConfig(null);
 		}
 
 		disconnect();
@@ -155,7 +170,7 @@ public class FtpService extends AbstractConnexionService implements
 
 	@Override
 	public void getSync(String repositoryName) throws RepositoryException,
-			FtpException, WritingException, ConnectException {
+			FtpException, ConnectException, IOException {
 
 		Repository repository = repositoryDAO.getMap().get(repositoryName);
 		if (repository == null) {
@@ -176,7 +191,7 @@ public class FtpService extends AbstractConnexionService implements
 	@Override
 	public void getServerInfo(String repositoryName)
 			throws RepositoryException, ConnectException, FtpException,
-			WritingException {
+			IOException {
 
 		Repository repository = repositoryDAO.getMap().get(repositoryName);
 		if (repository == null) {
@@ -196,7 +211,7 @@ public class FtpService extends AbstractConnexionService implements
 
 	@Override
 	public void getChangelogs(String repositoryName) throws ConnectException,
-			FtpException, RepositoryException, WritingException {
+			FtpException, RepositoryException, WritingException, IOException {
 
 		Repository repository = repositoryDAO.getMap().get(repositoryName);
 		if (repository == null) {
@@ -593,8 +608,8 @@ public class FtpService extends AbstractConnexionService implements
 
 	@Override
 	public void getSyncWithRepositoryUploadProtocole(String repositoryName)
-			throws RepositoryException, WritingException, ConnectException,
-			FtpException {
+			throws RepositoryException, ConnectException, FtpException,
+			IOException {
 
 		Repository repository = repositoryDAO.getMap().get(repositoryName);
 		if (repository == null) {

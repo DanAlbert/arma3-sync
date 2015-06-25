@@ -2,6 +2,7 @@ package fr.soe.a3s.service;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.net.ConnectException;
 import java.util.ArrayList;
 import java.util.List;
@@ -28,7 +29,6 @@ import fr.soe.a3s.dto.sync.SyncTreeNodeDTO;
 import fr.soe.a3s.exception.FtpException;
 import fr.soe.a3s.exception.HttpException;
 import fr.soe.a3s.exception.RepositoryException;
-import fr.soe.a3s.exception.WritingException;
 
 public class HttpService extends AbstractConnexionService implements
 		DataAccessConstants {
@@ -56,7 +56,7 @@ public class HttpService extends AbstractConnexionService implements
 
 	@Override
 	public AutoConfigDTO importAutoConfig(String autoconfigURL)
-			throws WritingException, HttpException, ConnectException {
+			throws HttpException, ConnectException, IOException {
 
 		AutoConfig autoConfig = httpDAOPool.get(0).importAutoConfig(
 				autoconfigURL);
@@ -70,22 +70,12 @@ public class HttpService extends AbstractConnexionService implements
 
 	@Override
 	public void checkRepository(String repositoryName)
-			throws RepositoryException, WritingException, ConnectException {
+			throws RepositoryException, ConnectException, IOException {
 
 		Repository repository = repositoryDAO.getMap().get(repositoryName);
 		if (repository == null) {
 			throw new RepositoryException("Repository " + repositoryName
 					+ " not found!");
-		}
-
-		try {
-			SyncTreeDirectory syncTreeDirectory = httpDAOPool.get(0)
-					.downloadSync(repository.getName(),
-							repository.getProtocole());
-			repository.setSync(syncTreeDirectory);// null if not found
-		} catch (HttpException e) {
-			// error http 404 may happen if repository has not been built so far
-			repository.setSync(null);
 		}
 
 		try {
@@ -164,7 +154,7 @@ public class HttpService extends AbstractConnexionService implements
 
 	@Override
 	public void getSync(String repositoryName) throws RepositoryException,
-			HttpException, WritingException, ConnectException {
+			HttpException, ConnectException, IOException {
 
 		Repository repository = repositoryDAO.getMap().get(repositoryName);
 		if (repository == null) {
@@ -179,8 +169,8 @@ public class HttpService extends AbstractConnexionService implements
 
 	@Override
 	public void getServerInfo(String repositoryName)
-			throws RepositoryException, ConnectException, WritingException,
-			HttpException {
+			throws RepositoryException, ConnectException, HttpException,
+			IOException {
 
 		Repository repository = repositoryDAO.getMap().get(repositoryName);
 		if (repository == null) {
@@ -195,7 +185,7 @@ public class HttpService extends AbstractConnexionService implements
 
 	@Override
 	public void getChangelogs(String repositoryName) throws ConnectException,
-			RepositoryException, WritingException, HttpException {
+			RepositoryException, HttpException, IOException {
 
 		Repository repository = repositoryDAO.getMap().get(repositoryName);
 		if (repository == null) {
@@ -506,8 +496,8 @@ public class HttpService extends AbstractConnexionService implements
 
 	@Override
 	public void getSyncWithRepositoryUploadProtocole(String repositoryName)
-			throws RepositoryException, WritingException, ConnectException,
-			HttpException {
+			throws RepositoryException, ConnectException, HttpException,
+			IOException {
 
 		Repository repository = repositoryDAO.getMap().get(repositoryName);
 		if (repository == null) {

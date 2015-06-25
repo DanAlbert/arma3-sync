@@ -476,20 +476,13 @@ public class RepositoryEditPanel extends JDialog implements UIConstants,
 								11));
 						labelConnection.setForeground(Color.RED);
 					}
-				} catch (WritingException e1) {
-					labelConnection.setText("Error");
-					labelConnection
-							.setFont(new Font("Tohama", Font.ITALIC, 11));
-					labelConnection.setForeground(Color.RED);
-					JOptionPane
-							.showMessageDialog(facade.getMainPanel(),
-									e1.getMessage(), "Error",
-									JOptionPane.ERROR_MESSAGE);
-				} catch (Exception e2) {
+				} catch (Exception e) {
 					labelConnection.setText("Url is not reachable!");
 					labelConnection
 							.setFont(new Font("Tohama", Font.ITALIC, 11));
 					labelConnection.setForeground(Color.RED);
+					JOptionPane.showMessageDialog(facade.getMainPanel(),
+							e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
 				}
 			}
 		});

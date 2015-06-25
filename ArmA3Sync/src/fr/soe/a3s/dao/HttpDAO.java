@@ -31,7 +31,6 @@ import fr.soe.a3s.domain.repository.SyncTreeDirectory;
 import fr.soe.a3s.dto.sync.SyncTreeLeafDTO;
 import fr.soe.a3s.dto.sync.SyncTreeNodeDTO;
 import fr.soe.a3s.exception.HttpException;
-import fr.soe.a3s.exception.WritingException;
 import fr.soe.a3s.jazsync.Base64Coder;
 import fr.soe.a3s.jazsync.Jazsync;
 
@@ -97,8 +96,7 @@ public class HttpDAO extends AbstractConnexionDAO {
 	}
 
 	public ServerInfo downloadSeverInfo(String repositoryName,
-			AbstractProtocole protocole) throws HttpException,
-			WritingException, ConnectException {
+			AbstractProtocole protocole) throws HttpException, IOException {
 
 		ServerInfo serverInfo = null;
 		try {
@@ -119,8 +117,8 @@ public class HttpDAO extends AbstractConnexionDAO {
 			throw new ConnectException(message);
 		}
 
+		File directory = new File(TEMP_FOLDER_PATH + "/" + repositoryName);
 		try {
-			File directory = new File(TEMP_FOLDER_PATH + "/" + repositoryName);
 			directory.mkdir();
 			File file = new File(directory + "/"
 					+ DataAccessConstants.SERVERINFO);
@@ -131,22 +129,17 @@ public class HttpDAO extends AbstractConnexionDAO {
 				serverInfo = (ServerInfo) fRo.readObject();
 				fRo.close();
 			}
-			FileAccessMethods.deleteDirectory(directory);
-		} catch (Exception e) {
-			e.printStackTrace();
-			serverInfo = null;
-			throw new WritingException(
-					"Failded to read the downloaded file Serverinfo." + "\n"
-							+ e.getMessage());
+		} catch (ClassNotFoundException e) {
+			new RuntimeException(e);
 		} finally {
+			FileAccessMethods.deleteDirectory(directory);
 			disconnect();
 		}
 		return serverInfo;
 	}
 
 	public Changelogs downloadChangelogs(String repositoryName,
-			AbstractProtocole protocole) throws HttpException,
-			WritingException, ConnectException {
+			AbstractProtocole protocole) throws HttpException, IOException {
 
 		Changelogs changelogs = null;
 		try {
@@ -167,8 +160,8 @@ public class HttpDAO extends AbstractConnexionDAO {
 			throw new ConnectException(message);
 		}
 
+		File directory = new File(TEMP_FOLDER_PATH + "/" + repositoryName);
 		try {
-			File directory = new File(TEMP_FOLDER_PATH + "/" + repositoryName);
 			directory.mkdir();
 			File file = new File(directory + "/"
 					+ DataAccessConstants.CHANGELOGS);
@@ -179,22 +172,17 @@ public class HttpDAO extends AbstractConnexionDAO {
 				changelogs = (Changelogs) fRo.readObject();
 				fRo.close();
 			}
-			FileAccessMethods.deleteDirectory(directory);
-		} catch (Exception e) {
-			e.printStackTrace();
-			changelogs = null;
-			throw new WritingException(
-					"Failded to read the downloaded file Changelogs." + "\n"
-							+ e.getMessage());
+		} catch (ClassNotFoundException e) {
+			new RuntimeException(e);
 		} finally {
+			FileAccessMethods.deleteDirectory(directory);
 			disconnect();
 		}
 		return changelogs;
 	}
 
 	public Events downloadEvent(String repositoryName,
-			AbstractProtocole protocole) throws HttpException,
-			WritingException, ConnectException {
+			AbstractProtocole protocole) throws HttpException, IOException {
 
 		Events events = null;
 		try {
@@ -215,8 +203,8 @@ public class HttpDAO extends AbstractConnexionDAO {
 			throw new ConnectException(message);
 		}
 
+		File directory = new File(TEMP_FOLDER_PATH + "/" + repositoryName);
 		try {
-			File directory = new File(TEMP_FOLDER_PATH + "/" + repositoryName);
 			directory.mkdir();
 			File file = new File(directory + "/" + DataAccessConstants.EVENTS);
 			downloadFile(file);
@@ -226,22 +214,17 @@ public class HttpDAO extends AbstractConnexionDAO {
 				events = (Events) fRo.readObject();
 				fRo.close();
 			}
-			FileAccessMethods.deleteDirectory(directory);
-		} catch (Exception e) {
-			e.printStackTrace();
-			events = null;
-			throw new WritingException(
-					"Failded to read the downloaded file Events." + "\n"
-							+ e.getMessage());
+		} catch (ClassNotFoundException e) {
+			new RuntimeException(e);
 		} finally {
+			FileAccessMethods.deleteDirectory(directory);
 			disconnect();
 		}
 		return events;
 	}
 
 	public SyncTreeDirectory downloadSync(String repositoryName,
-			AbstractProtocole protocole) throws HttpException,
-			WritingException, ConnectException {
+			AbstractProtocole protocole) throws HttpException, IOException {
 
 		SyncTreeDirectory syncTreeDirectory = null;
 		try {
@@ -262,8 +245,8 @@ public class HttpDAO extends AbstractConnexionDAO {
 			throw new ConnectException(message);
 		}
 
+		File directory = new File(TEMP_FOLDER_PATH + "/" + repositoryName);
 		try {
-			File directory = new File(TEMP_FOLDER_PATH + "/" + repositoryName);
 			directory.mkdir();
 			File file = new File(directory + "/" + DataAccessConstants.SYNC);
 			downloadFile(file);
@@ -273,22 +256,17 @@ public class HttpDAO extends AbstractConnexionDAO {
 				syncTreeDirectory = (SyncTreeDirectory) fRo.readObject();
 				fRo.close();
 			}
-			FileAccessMethods.deleteDirectory(directory);
-		} catch (Exception e) {
-			e.printStackTrace();
-			syncTreeDirectory = null;
-			throw new WritingException(
-					"Failded to read the downloaded file Sync." + "\n"
-							+ e.getMessage());
+		} catch (ClassNotFoundException e) {
+			new RuntimeException(e);
 		} finally {
+			FileAccessMethods.deleteDirectory(directory);
 			disconnect();
 		}
 		return syncTreeDirectory;
 	}
 
 	public AutoConfig downloadAutoconfig(String repositoryName,
-			AbstractProtocole protocole) throws HttpException,
-			ConnectException, WritingException {
+			AbstractProtocole protocole) throws HttpException, IOException {
 
 		AutoConfig autoConfig = null;
 		try {
@@ -309,8 +287,8 @@ public class HttpDAO extends AbstractConnexionDAO {
 			throw new ConnectException(message);
 		}
 
+		File directory = new File(TEMP_FOLDER_PATH + "/" + repositoryName);
 		try {
-			File directory = new File(TEMP_FOLDER_PATH + "/" + repositoryName);
 			directory.mkdir();
 			File file = new File(directory + "/"
 					+ DataAccessConstants.AUTOCONFIG);
@@ -321,21 +299,17 @@ public class HttpDAO extends AbstractConnexionDAO {
 				autoConfig = (AutoConfig) fRo.readObject();
 				fRo.close();
 			}
-			FileAccessMethods.deleteDirectory(directory);
-		} catch (Exception e) {
-			e.printStackTrace();
-			autoConfig = null;
-			throw new WritingException(
-					"Failded to read the downloaded file Autoconfig." + "\n"
-							+ e.getMessage());
+		} catch (ClassNotFoundException e) {
+			new RuntimeException(e);
 		} finally {
+			FileAccessMethods.deleteDirectory(directory);
 			disconnect();
 		}
 		return autoConfig;
 	}
 
 	public AutoConfig importAutoConfig(String autoConfigURL)
-			throws WritingException, HttpException, ConnectException {
+			throws HttpException, ConnectException, IOException {
 
 		if (autoConfigURL == null) {
 			return null;
@@ -359,24 +333,21 @@ public class HttpDAO extends AbstractConnexionDAO {
 		}
 
 		AutoConfig autoConfig = null;
+		File file = new File(TEMP_FOLDER_PATH + "/"
+				+ DataAccessConstants.AUTOCONFIG);
+
 		try {
-			File file = new File(TEMP_FOLDER_PATH + "/"
-					+ DataAccessConstants.AUTOCONFIG);
 			downloadFile(file);
 			if (file.exists()) {
 				ObjectInputStream fRo = new ObjectInputStream(
 						new GZIPInputStream(new FileInputStream(file)));
 				autoConfig = (AutoConfig) fRo.readObject();
 				fRo.close();
-				FileAccessMethods.deleteFile(file);
 			}
-		} catch (Exception e) {
-			e.printStackTrace();
-			autoConfig = null;
-			throw new WritingException(
-					"Failded to read the downloaded file Autoconfig." + "\n"
-							+ e.getMessage());
+		} catch (ClassNotFoundException e) {
+			new RuntimeException(e);
 		} finally {
+			FileAccessMethods.deleteFile(file);
 			disconnect();
 		}
 		return autoConfig;
