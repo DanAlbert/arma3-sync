@@ -560,15 +560,6 @@ public class MainPanel extends JFrame implements UIConstants {
 
 		facade.getAddonsPanel().saveAddonGroups();
 
-		try {
-			profileService.writeAll();
-		} catch (WritingException e1) {
-			e1.printStackTrace();
-			JOptionPane.showMessageDialog(this,
-					"An error occured.\n" + e1.getMessage(), "Error",
-					JOptionPane.ERROR_MESSAGE);
-		}
-
 		ProfilePanel profilePanel = new ProfilePanel(facade);
 		profilePanel.toFront();
 		profilePanel.setVisible(true);
@@ -928,15 +919,6 @@ public class MainPanel extends JFrame implements UIConstants {
 	private void menuItemProfilePerformed(ActionEvent e) {
 
 		facade.getAddonsPanel().saveAddonGroups();
-
-		try {
-			profileService.writeAll();
-		} catch (WritingException e1) {
-			e1.printStackTrace();
-			JOptionPane.showMessageDialog(this,
-					"An error occured.\n" + e1.getMessage(), "Error",
-					JOptionPane.ERROR_MESSAGE);
-		}
 
 		int numberMenuItems = menuProfiles.getItemCount();
 
