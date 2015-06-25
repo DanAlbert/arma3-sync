@@ -1,6 +1,7 @@
 package fr.soe.a3s.dao;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -22,17 +23,16 @@ import fr.soe.a3s.domain.repository.SyncTreeLeaf;
 import fr.soe.a3s.domain.repository.SyncTreeNode;
 import fr.soe.a3s.exception.RepositoryCheckException;
 
-public class RepositoryCheckerDAO implements DataAccessConstants,ObservableFilesNumber3{
+public class RepositoryCheckerDAO implements DataAccessConstants,
+		ObservableFilesNumber3 {
 
-	private long totalNbFiles, totalFilesSize;
-	private boolean repositoryContentUpdated;
 	/* Variables for SHA1 computation */
 	private List<Callable<Integer>> callables;
 	private Map<String, FileAttributes> mapFiles;
 	/* Variables for ObservableFilesNumber3 Interface */
 	private ObserverFilesNumber3 observerFilesNumber3;
-	private long nbFiles, cumulativeFileSize;
-	
+	private long nbFiles,totalNbFiles;
+
 	public void checkRepository(Repository repository)
 			throws RepositoryCheckException {
 
@@ -98,8 +98,7 @@ public class RepositoryCheckerDAO implements DataAccessConstants,ObservableFiles
 			}
 
 			/*
-			 * ! order of files (Linux/Windows)
-			 * http://stackoverflow.com
+			 * ! order of files (Linux/Windows) http://stackoverflow.com
 			 * /questions/10783195/java-file-sorting-order-in-
 			 * windows-and-linux-difference
 			 */
@@ -130,11 +129,11 @@ public class RepositoryCheckerDAO implements DataAccessConstants,ObservableFiles
 			}
 		}
 	}
-	
-	public void determineLocalSHA1(SyncTreeNode parent, Repository repository)
-			throws Exception {
 
-		this.totalNbFiles = repository.getServerInfo().getNumberOfFiles();
+	public void determineLocalSHA1(SyncTreeNode parent, Repository repository)
+			throws IOException {
+
+		this.totalNbFiles = 0;
 		this.nbFiles = 0;
 		this.callables = new ArrayList<Callable<Integer>>();
 		this.mapFiles = repository.getMapFilesForSync();
@@ -157,15 +156,20 @@ public class RepositoryCheckerDAO implements DataAccessConstants,ObservableFiles
 		// Compute SHA1 for files on disk
 		generateLocalSHA1(parent);
 
-		ExecutorService executor = Executors.newFixedThreadPool(Runtime
-				.getRuntime().availableProcessors());
-		executor.invokeAll(callables);
-
-		executor.shutdownNow();
-		System.gc();
+		try {
+			ExecutorService executor = Executors.newFixedThreadPool(Runtime
+					.getRuntime().availableProcessors());
+			executor.invokeAll(callables);
+			executor.shutdownNow();
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		} finally {
+			System.gc();
+		}
 	}
-	
-	private void generateLocalSHA1(SyncTreeNode syncTreeNode) throws Exception {
+
+	private void generateLocalSHA1(SyncTreeNode syncTreeNode)
+			throws IOException {
 
 		if (!syncTreeNode.isLeaf()) {
 			SyncTreeDirectory directory = (SyncTreeDirectory) syncTreeNode;
@@ -197,9 +201,10 @@ public class RepositoryCheckerDAO implements DataAccessConstants,ObservableFiles
 					}
 
 					if (compute) {
+						this.totalNbFiles++;
 						Callable<Integer> c = new Callable<Integer>() {
 							@Override
-							public Integer call() throws Exception {
+							public Integer call() throws IOException {
 								String sha1 = FileAccessMethods
 										.computeSHA1(file);
 								leaf.setLocalSHA1(sha1);
@@ -207,7 +212,6 @@ public class RepositoryCheckerDAO implements DataAccessConstants,ObservableFiles
 								updateFilesNumberObserver3();
 								mapFiles.put(path, new FileAttributes(sha1,
 										lastModified));
-								repositoryContentUpdated = true;
 								return 0;
 							}
 						};
@@ -215,15 +219,13 @@ public class RepositoryCheckerDAO implements DataAccessConstants,ObservableFiles
 					} else {
 						String sha1 = currentFileAttributes.getSha1();
 						leaf.setLocalSHA1(sha1);
-						increment();
-						updateFilesNumberObserver3();
 					}
 				}
 			}
 		}
 	}
-	
-	/* */
+
+	/* observerFilesNumber3 Interface */
 
 	public synchronized void increment() {
 		nbFiles++;

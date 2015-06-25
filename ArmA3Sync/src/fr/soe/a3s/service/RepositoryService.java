@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Set;
 
 import javax.crypto.Cipher;
+import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
@@ -107,9 +108,14 @@ public class RepositoryService extends ObjectDTOtransformer implements
 		try {
 			Cipher cipher = getEncryptionCipher();
 			repositoryDAO.write(cipher, repositoryName);
-		} catch (Exception e) {
+		} catch (IOException e) {
 			e.printStackTrace();
-			throw new WritingException("Failed to write repository.");
+			throw new WritingException("Failed to write repository "
+					+ repositoryName + "\n" + e.getMessage());
+		} catch (InvalidKeyException | NoSuchAlgorithmException
+				| NoSuchPaddingException | IllegalBlockSizeException e) {
+			e.printStackTrace();
+			throw new RuntimeException(e);
 		}
 	}
 
@@ -253,7 +259,8 @@ public class RepositoryService extends ObjectDTOtransformer implements
 	}
 
 	public SyncTreeDirectoryDTO getSyncForCheckForAddons(String repositoryName)
-			throws Exception {
+			throws SyncFileNotFoundException, RepositoryException, IOException,
+			WritingException {
 
 		Repository repository = repositoryDAO.getMap().get(repositoryName);
 		if (repository == null) {
@@ -261,21 +268,8 @@ public class RepositoryService extends ObjectDTOtransformer implements
 					+ " not found!");
 		}
 
-		if (repository.getSync() == null || repository.getServerInfo() == null) {
-			String prompt = "";
-			if (repository.getProtocole() instanceof Ftp) {
-				prompt = Protocol.FTP.getPrompt();
-			} else if (repository.getProtocole() instanceof Http) {
-				prompt = Protocol.HTTP.getPrompt();
-			}
-			if (repository.getSync() == null) {
-				throw new SyncFileNotFoundException(prompt
-						+ repository.getProtocole().getUrl());
-			}
-			if (repository.getServerInfo() == null) {
-				throw new ServerInfoNotFoundException(prompt
-						+ repository.getProtocole().getUrl());
-			}
+		if (repository.getSync() == null) {
+			throw new SyncFileNotFoundException(repositoryName);
 		}
 
 		boolean noAutoDiscover = repository.isNoAutoDiscover();
@@ -290,8 +284,9 @@ public class RepositoryService extends ObjectDTOtransformer implements
 
 		// 2. Compute sha1 for local files on disk
 		repositoryCheckerDAO.determineLocalSHA1(parent, repository);
-		Cipher cipher = getEncryptionCipher();
-		repositoryDAO.write(cipher, repositoryName);
+
+		// 3. Save sha1 computation to disk (cache files for this repository)
+		write(repositoryName);
 
 		// 3. Determine new or updated files
 		determineNewAndUpdatedFiles(parent);

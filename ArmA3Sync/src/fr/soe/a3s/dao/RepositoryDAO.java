@@ -17,6 +17,7 @@ import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
 import javax.crypto.Cipher;
+import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.SealedObject;
 
 import fr.soe.a3s.domain.repository.AutoConfig;
@@ -90,24 +91,19 @@ public class RepositoryDAO implements DataAccessConstants {
 	}
 
 	public void write(Cipher cipher, String repositoryName)
-			throws WritingException {
+			throws IllegalBlockSizeException, IOException {
 
 		Repository repository = mapRepositories.get(repositoryName);
-		try {
-			if (repository != null) {
-				String concatName = repository.getName().replaceAll(" ", "");
-				SealedObject sealedObject = new SealedObject(repository, cipher);
-				String filePath = REPOSITORY_FOLDER_PATH + "/" + concatName
-						+ REPOSITORY_EXTENSION;
-				ObjectOutputStream fWo = new ObjectOutputStream(
-						new GZIPOutputStream(new FileOutputStream(filePath)));
-				if (sealedObject != null)
-					fWo.writeObject(sealedObject);
-				fWo.close();
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-			throw new WritingException();
+		if (repository != null) {
+			String concatName = repository.getName().replaceAll(" ", "");
+			SealedObject sealedObject = new SealedObject(repository, cipher);
+			String filePath = REPOSITORY_FOLDER_PATH + "/" + concatName
+					+ REPOSITORY_EXTENSION;
+			ObjectOutputStream fWo = new ObjectOutputStream(
+					new GZIPOutputStream(new FileOutputStream(filePath)));
+			if (sealedObject != null)
+				fWo.writeObject(sealedObject);
+			fWo.close();
 		}
 	}
 

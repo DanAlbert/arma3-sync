@@ -101,16 +101,16 @@ public class AddonsChecker extends Thread {
 				facade.getAddonOptionsPanel().updateAddonPriorities();
 				// 5. Updates download panel tree
 				downloadPanel.updateAddons(parent);
-				// 6. Update event mode
+				// 6. Event download panel
 				if (eventName != null) {
 					setEventAddonSelection();
 				} else if (update) {
 					selectAllDescending(parent);
 				}
-
+				// 7. Update Event panel addons tree
 				downloadPanel.getRepositoryPanel().getEventsPanel()
 						.init(repositoryName);
-
+				// 8. Update status
 				downloadPanel.getLabelCheckForAddonsStatus().setText(
 						"Finished!");
 			}
@@ -118,6 +118,7 @@ public class AddonsChecker extends Thread {
 			downloadPanel.getProgressBarCheckForAddons()
 					.setIndeterminate(false);
 			if (!cancel) {
+				e.printStackTrace();
 				downloadPanel.getLabelCheckForAddonsStatus().setText("Error!");
 				JOptionPane.showMessageDialog(facade.getMainPanel(),
 						e.getMessage(), "Check for Addons",

@@ -2,9 +2,9 @@ package fr.soe.a3s.exception;
 
 public class SyncFileNotFoundException extends ApplicationException {
 
-	private static String message = "File /.a3s/sync not found on repository url:";
+	private static String message = "File 'sync' not found on repository: ";
 
-	public SyncFileNotFoundException(String url) {
-		super(message + "\n" + url);
+	public SyncFileNotFoundException(String repositoryName) {
+		super(message + repositoryName);
 	}
 }
