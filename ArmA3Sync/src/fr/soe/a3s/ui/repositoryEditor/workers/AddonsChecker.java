@@ -88,6 +88,9 @@ public class AddonsChecker extends Thread {
 
 			connexionService.determineCompletion(repositoryName, parent);
 
+			downloadPanel.getProgressBarCheckForAddons()
+					.setIndeterminate(false);
+
 			if (!cancel) {
 				// 4. Updates adddons groups
 				addonService.resetAvailableAddonTree();
@@ -120,44 +123,9 @@ public class AddonsChecker extends Thread {
 						e.getMessage(), "Check for Addons",
 						JOptionPane.ERROR_MESSAGE);
 			}
+		} finally {
 			initDownlaodPanelForEndCheck();
 			terminate();
-		}
-
-		//
-		try {
-
-		} catch (Exception e) {
-			if (!cancel) {
-				downloadPanel.getProgressBarCheckForAddons().setIndeterminate(
-						false);
-				e.printStackTrace();
-				String message = "";
-				if (e.getMessage() == null || "".equals(e.getMessage())) {
-					message = "An unexpected error has occured.";
-					String osName = System.getProperty("os.name");
-					if (osName.contains("Windows")) {
-						message = message + "\n"
-								+ "Try to run ArmA3Sync-DEBUG.exe";
-					}
-				} else {
-					message = e.getMessage();
-				}
-				JOptionPane.showMessageDialog(facade.getMainPanel(), message,
-						"Check for Addons", JOptionPane.ERROR_MESSAGE);
-				downloadPanel.getLabelCheckForAddonsStatus().setText("Error!");
-			}
-		} finally {
-			downloadPanel.getProgressBarCheckForAddons()
-					.setIndeterminate(false);
-			downloadPanel.getComBoxDestinationFolder().setEnabled(true);
-			downloadPanel.getButtonCheckForAddonsStart().setEnabled(true);
-			downloadPanel.getButtonCheckForAddonsCancel().setEnabled(true);
-			downloadPanel.getButtonDownloadStart().setEnabled(true);
-			downloadPanel.getProgressBarCheckForAddons().setMaximum(0);
-			downloadPanel.getArbre().setEnabled(true);
-			this.interrupt();
-			System.gc();
 		}
 	}
 
