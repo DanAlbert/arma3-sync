@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.TreeSet;
 
 import fr.soe.a3s.dao.AddonDAO;
 import fr.soe.a3s.dao.ConfigurationDAO;
@@ -370,5 +371,23 @@ public class ConfigurationService extends ObjectDTOtransformer {
 
 	public int getWidth() {
 		return configurationDAO.getConfiguration().getWidth();
+	}
+	
+	/* DEPRECATED */
+	
+	public Set<String> getAddonSearchDirectoryPaths() {
+		return configurationDAO.getConfiguration().getAddonSearchDirectoryPaths();
+	}
+
+	public void resetAddonSearchDirectoryPaths() {
+		configurationDAO.getConfiguration().resetAddonSearchDirectoryPaths();
+	}
+
+	public LauncherOptions getLauncherOptions() {
+		return configurationDAO.getConfiguration().getLauncherOptions();
+	}
+
+	public void resetLauncherOptions() {
+		configurationDAO.getConfiguration().resetLauncherOptions();
 	}
 }

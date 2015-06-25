@@ -20,8 +20,6 @@ public class Profile implements Serializable {
 	private List<String> addonNamesByPriority = new ArrayList<String>();
 	private LauncherOptions launcherOptions = new LauncherOptions();
 	private List<String> addonSearchDirectories = new ArrayList<String>();
-	@Deprecated
-	private Set<String> addonSearchDirectoryPaths = new TreeSet<String>();
 
 	public Profile(String name) {
 		this.name = name;
@@ -68,13 +66,6 @@ public class Profile implements Serializable {
 	public List<String> getAddonSearchDirectories() {
 		if (addonSearchDirectories == null) {
 			addonSearchDirectories = new ArrayList<String>();
-		}
-		if (addonSearchDirectoryPaths != null) {
-			if (addonSearchDirectories.isEmpty()
-					&& !addonSearchDirectoryPaths.isEmpty()) {
-				addonSearchDirectories.addAll(addonSearchDirectoryPaths);
-				addonSearchDirectoryPaths.clear();
-			}
 		}
 		return addonSearchDirectories;
 	}

@@ -26,6 +26,10 @@ public class Configuration implements Serializable {
 	private TfarOptions tfarOptions = new TfarOptions();
 	private AiAOptions aiaOptions = new AiAOptions();
 	private RptOptions rptOptions = new RptOptions();
+	@Deprecated
+	private Set<String> addonSearchDirectoryPaths = new TreeSet<String>();
+	@Deprecated
+	private LauncherOptions launcherOptions = new LauncherOptions();
 
 	public String getProfileName() {
 		return profileName;
@@ -137,5 +141,23 @@ public class Configuration implements Serializable {
 
 	public void setDefaultModset(String defaultModset) {
 		this.defaultModset = defaultModset;
+	}
+
+	/* DEPRECATED */
+	
+	public Set<String> getAddonSearchDirectoryPaths() {
+		return addonSearchDirectoryPaths;
+	}
+
+	public void resetAddonSearchDirectoryPaths() {
+		addonSearchDirectoryPaths.clear();
+	}
+
+	public LauncherOptions getLauncherOptions() {
+		return launcherOptions;
+	}
+	
+	public void resetLauncherOptions(){
+		launcherOptions = null;
 	}
 }

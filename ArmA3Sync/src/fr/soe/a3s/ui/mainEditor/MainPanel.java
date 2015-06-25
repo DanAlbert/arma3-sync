@@ -49,12 +49,11 @@ import net.jimmc.jshortcut.JShellLink;
 import fr.soe.a3s.constant.DefaultProfileName;
 import fr.soe.a3s.constant.MinimizationType;
 import fr.soe.a3s.constant.RepositoryStatus;
+import fr.soe.a3s.domain.configration.LauncherOptions;
 import fr.soe.a3s.dto.RepositoryDTO;
-import fr.soe.a3s.dto.configuration.LauncherOptionsDTO;
 import fr.soe.a3s.dto.configuration.PreferencesDTO;
 import fr.soe.a3s.exception.FtpException;
 import fr.soe.a3s.exception.LoadingException;
-import fr.soe.a3s.exception.ProfileException;
 import fr.soe.a3s.exception.RepositoryException;
 import fr.soe.a3s.exception.WritingException;
 import fr.soe.a3s.service.AbstractConnexionService;
@@ -487,6 +486,42 @@ public class MainPanel extends JFrame implements UIConstants {
 		this.setLocation(x, y);
 		this.pack();
 
+		/* Copy old addons search directores to profile */
+		Set<String> set = configurationService.getAddonSearchDirectoryPaths();
+		if (!set.isEmpty()) {
+			Iterator iter = set.iterator();
+			while (iter.hasNext()) {
+				profileService
+						.addAddonSearchDirectoryPath((String) iter.next());
+			}
+			configurationService.resetAddonSearchDirectoryPaths();
+		}
+
+		/* Copy old launcher options to profile */
+		LauncherOptions oldLps = configurationService.getLauncherOptions();
+		if (oldLps != null) {
+			profileService.setArmA3ExePath(oldLps.getArma3ExePath());
+			profileService.setCheckBoxAutoRestart(oldLps.isAutoRestart());
+			profileService.setCheckBoxCheckSignatures(oldLps
+					.isCheckSignatures());
+			profileService.setCheckBoxNoFilePatching(oldLps.isNoFilePatching());
+			profileService.setCheckBoxNoPause(oldLps.isNoPause());
+			profileService.setCheckBoxShowScriptErrors(oldLps
+					.isShowScriptErrors());
+			profileService.setCheckBoxWindowMode(oldLps.isWindowMode());
+			profileService.setCpuCount(Integer.toString(oldLps
+					.getCpuCountSelection()));
+			profileService.setDefaultWorld(oldLps.isDefaultWorld());
+			profileService.setEnableHT(oldLps.isEnableHT());
+			profileService.setExThreads(oldLps.getExThreadsSelection());
+			profileService.setGameProfile(oldLps.getGameProfile());
+			profileService.setMalloc(oldLps.getMallocSelection());
+			profileService.setMaxMemory(oldLps.getMaxMemorySelection());
+			profileService.setNoLogs(oldLps.isNologs());
+			profileService.setNoSplashScreen(oldLps.isNoSplashScreen());
+			configurationService.resetLauncherOptions();
+		}
+
 		/* Init active views */
 		this.facade.getInfoPanel().init();
 		this.facade.getAddonsPanel().init();
@@ -524,6 +559,15 @@ public class MainPanel extends JFrame implements UIConstants {
 	private void menuItemEditPerformed() {
 
 		facade.getAddonsPanel().saveAddonGroups();
+
+		try {
+			profileService.writeAll();
+		} catch (WritingException e1) {
+			e1.printStackTrace();
+			JOptionPane.showMessageDialog(this,
+					"An error occured.\n" + e1.getMessage(), "Error",
+					JOptionPane.ERROR_MESSAGE);
+		}
 
 		ProfilePanel profilePanel = new ProfilePanel(facade);
 		profilePanel.toFront();
@@ -885,6 +929,15 @@ public class MainPanel extends JFrame implements UIConstants {
 
 		facade.getAddonsPanel().saveAddonGroups();
 
+		try {
+			profileService.writeAll();
+		} catch (WritingException e1) {
+			e1.printStackTrace();
+			JOptionPane.showMessageDialog(this,
+					"An error occured.\n" + e1.getMessage(), "Error",
+					JOptionPane.ERROR_MESSAGE);
+		}
+
 		int numberMenuItems = menuProfiles.getItemCount();
 
 		for (int i = numberMenuItems - 1; i > 2; i--) {
@@ -897,7 +950,7 @@ public class MainPanel extends JFrame implements UIConstants {
 		menuItemProfile.setSelected(true);
 		String profileName = menuItemProfile.getText();
 		configurationService.setProfileName(profileName);
-		
+
 		facade.getInfoPanel().init();
 		facade.getAddonsPanel().init();
 		facade.getAddonOptionsPanel().init();
