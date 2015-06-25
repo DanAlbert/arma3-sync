@@ -266,33 +266,49 @@ public class FileAccessMethods implements DataAccessConstants {
 
 		if (file.length() == 0) {
 			return "0";
-		} else {
-			// convert the byte to hex format
-			FileInputStream fis = null;
-			char[] chars = null;
-			try {
-				MessageDigest md = MessageDigest.getInstance("SHA1");
-				fis = new FileInputStream(file);
-				int buffsize = (int) Math.min(file.length(), 4 * 1024 * 1024);
-				byte[] dataBytes = new byte[buffsize];
-				int nread = 0;
-				while ((nread = fis.read(dataBytes)) != -1) {
-					md.update(dataBytes, 0, nread);
-				}
-				byte[] mdbytes = md.digest();
-				chars = new char[2 * mdbytes.length];
-				for (int i = 0; i < mdbytes.length; ++i) {
-					chars[2 * i] = HEX_CHARS[(mdbytes[i] & 0xF0) >>> 4];
-					chars[2 * i + 1] = HEX_CHARS[mdbytes[i] & 0x0F];
-				}
-			} catch (NoSuchAlgorithmException e) {
-				throw new RuntimeException(e);
-			} finally {
-				if (fis != null) {
-					fis.close();
-				}
-			}
-			return new String(chars);
 		}
+
+		/*
+		 * char[] chars = null; MessageDigest md =
+		 * MessageDigest.getInstance("SHA1"); FileInputStream fis = new
+		 * FileInputStream(file); FileChannel ch = fis.getChannel();
+		 * MappedByteBuffer mb = ch.map(FileChannel.MapMode.READ_ONLY, 0L,
+		 * ch.size()); int buffsize = (int) Math.min(file.length(), 4 * 1024 *
+		 * 1024); byte[] dataBytes = new byte[buffsize]; long checkSum = 0L; int
+		 * nread; while (mb.hasRemaining()) { nread = Math.min(mb.remaining(),
+		 * buffsize); mb.get(dataBytes, 0, nread); md.update(dataBytes, 0,
+		 * nread); } fis.close(); System.gc(); byte[] mdbytes = md.digest();
+		 * chars = new char[2 * mdbytes.length]; for (int i = 0; i <
+		 * mdbytes.length; ++i) { chars[2 * i] = HEX_CHARS[(mdbytes[i] & 0xF0)
+		 * >>> 4]; chars[2 * i + 1] = HEX_CHARS[mdbytes[i] & 0x0F]; }
+		 */
+
+		// convert the byte to hex format
+		FileInputStream fis = null;
+		char[] chars = null;
+		try {
+			MessageDigest md = MessageDigest.getInstance("SHA1");
+			fis = new FileInputStream(file);
+			int buffsize = (int) Math.min(file.length(), 4 * 1024 * 1024);
+			byte[] dataBytes = new byte[buffsize];
+			int nread = 0;
+			while ((nread = fis.read(dataBytes)) != -1) {
+				md.update(dataBytes, 0, nread);
+			}
+			byte[] mdbytes = md.digest();
+			chars = new char[2 * mdbytes.length];
+			for (int i = 0; i < mdbytes.length; ++i) {
+				chars[2 * i] = HEX_CHARS[(mdbytes[i] & 0xF0) >>> 4];
+				chars[2 * i + 1] = HEX_CHARS[mdbytes[i] & 0x0F];
+			}
+		} catch (NoSuchAlgorithmException e) {
+			e.printStackTrace();
+			throw new RuntimeException(e);
+		} finally {
+			if (fis != null) {
+				fis.close();
+			}
+		}
+		return new String(chars);
 	}
 }
