@@ -162,7 +162,8 @@ public class RepositoryCheckerDAO implements DataAccessConstants,
 			executor.invokeAll(callables);
 			executor.shutdownNow();
 		} catch (InterruptedException e) {
-			e.printStackTrace();
+			new RuntimeException(
+					"SHA1 computation has been anormaly interrupted.");
 		} finally {
 			System.gc();
 		}

@@ -288,7 +288,7 @@ public class RepositoryService extends ObjectDTOtransformer implements
 		// 3. Save sha1 computation to disk (cache files for this repository)
 		write(repositoryName);
 
-		// 3. Determine new or updated files
+		// 4. Determine new or updated files
 		determineNewAndUpdatedFiles(parent);
 
 		// 4. Determine extra local files to hide
