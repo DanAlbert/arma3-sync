@@ -3,7 +3,6 @@ package fr.soe.a3s.ui.repositoryEditor.workers;
 import javax.swing.JOptionPane;
 
 import fr.soe.a3s.constant.RepositoryStatus;
-import fr.soe.a3s.controller.ObserverFileSize2;
 import fr.soe.a3s.controller.ObserverFilesNumber3;
 import fr.soe.a3s.service.RepositoryService;
 import fr.soe.a3s.ui.Facade;
@@ -50,6 +49,7 @@ public class RepositoryBuilder extends Thread {
 			repositoryService.buildRepository(repositoryName, path);
 			repositoryService.setOutOfSync(repositoryName, false);
 			repositoryService.write(repositoryName);
+
 			JOptionPane.showMessageDialog(facade.getMainPanel(),
 					"Repository build finished.", "Build repository",
 					JOptionPane.INFORMATION_MESSAGE);
@@ -60,8 +60,15 @@ public class RepositoryBuilder extends Thread {
 			this.adminPanel.getRepositoryPanel().getEventsPanel()
 					.init(repositoryName);// update addons list
 		} catch (Exception e) {
-			JOptionPane.showMessageDialog(facade.getMainPanel(),
-					e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+			e.printStackTrace();
+			String message = "";
+			if (e instanceof RuntimeException) {
+				message = "An unexpected error has occured.";
+			} else {
+				message = e.getMessage();
+			}
+			JOptionPane.showMessageDialog(facade.getMainPanel(), message,
+					"Error", JOptionPane.ERROR_MESSAGE);
 		} finally {
 			adminPanel.getButtonSelectRepositoryfolderPath().setEnabled(true);
 			adminPanel.getButtonBuild().setEnabled(true);

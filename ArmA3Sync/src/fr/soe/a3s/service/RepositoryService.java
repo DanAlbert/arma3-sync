@@ -242,8 +242,6 @@ public class RepositoryService extends ObjectDTOtransformer implements
 					+ " not found!");
 		}
 		repositoryBuilderDAO.buildRepository(repository);
-		Cipher cipher = getEncryptionCipher();
-		repositoryDAO.write(cipher, repositoryName);
 	}
 
 	public void buildRepository(String repositoryName, String path)

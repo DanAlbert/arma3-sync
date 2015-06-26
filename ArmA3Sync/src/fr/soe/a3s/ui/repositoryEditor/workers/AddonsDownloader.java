@@ -34,28 +34,28 @@ import fr.soe.a3s.ui.tools.tfarEditor.FirstPageTFARInstallerPanel;
 public class AddonsDownloader extends Thread {
 
 	private final Facade facade;
+	private final DownloadPanel downloadPanel;
+	/* Data */
 	private final SyncTreeDirectoryDTO racine;
 	private long incrementedFilesSize;
 	private long totalFilesSize;
 	private final String repositoryName;
 	private final List<SyncTreeNodeDTO> listFilesToUpdate = new ArrayList<SyncTreeNodeDTO>();
 	private final List<SyncTreeNodeDTO> listFilesToDelete = new ArrayList<SyncTreeNodeDTO>();
+	/* Tests */
 	private boolean canceled = false;
 	private boolean tfarIsUpdated = false;
 	private boolean acreIsUpdated = false;
 	private boolean acre2IsUpdated = false;
-	private final DownloadPanel downloadPanel;
-
 	/* Services */
 	private AbstractConnexionService connexionService;
 	private final RepositoryService repositoryService = new RepositoryService();
 
 	public AddonsDownloader(Facade facade, String repositoryName,
-			SyncTreeDirectoryDTO racine,
-			DownloadPanel downloadPanel) {
+			SyncTreeDirectoryDTO racine, DownloadPanel downloadPanel) {
 		this.facade = facade;
 		this.racine = racine;
-		this.repositoryName = repositoryName;;
+		this.repositoryName = repositoryName;
 		this.downloadPanel = downloadPanel;
 	}
 
@@ -94,14 +94,14 @@ public class AddonsDownloader extends Thread {
 		}
 		listFilesToUpdate.clear();
 		listFilesToUpdate.addAll(list);
-		
+
 		if (listFilesToUpdate.isEmpty()) {
 			finish();
 			initDownloadPanelForFinishedDownload();
 			terminate();
 			return;
 		}
-		
+
 		// Download Files
 
 		try {
@@ -114,11 +114,11 @@ public class AddonsDownloader extends Thread {
 			terminate();
 			return;
 		}
-		
+
 		// Set total file size
 		determineTotalFileSize();
-		downloadPanel.getLabelTotalFilesSizeValue().setText(UnitConverter
-				.convertSize(totalFilesSize));
+		downloadPanel.getLabelTotalFilesSizeValue().setText(
+				UnitConverter.convertSize(totalFilesSize));
 
 		try {
 			for (AbstractConnexionDAO connect : connexionService
@@ -140,13 +140,13 @@ public class AddonsDownloader extends Thread {
 						}
 					}
 				});
-				
-				connect.addObserverTotalFileSize(new ObserverTotalFileSize(){
+
+				connect.addObserverTotalFileSize(new ObserverTotalFileSize() {
 					@Override
 					public void update() {
 						determineTotalFileSize();
-						downloadPanel.getLabelTotalFilesSizeValue().setText(UnitConverter
-								.convertSize(totalFilesSize));
+						downloadPanel.getLabelTotalFilesSizeValue().setText(
+								UnitConverter.convertSize(totalFilesSize));
 					}
 				});
 
@@ -259,12 +259,13 @@ public class AddonsDownloader extends Thread {
 	}
 
 	private void determineTotalFileSize() {
-		
-		totalFilesSize =  0;
-		for (SyncTreeNodeDTO node : listFilesToUpdate) {	
-			if (node instanceof SyncTreeLeafDTO){
+
+		totalFilesSize = 0;
+		for (SyncTreeNodeDTO node : listFilesToUpdate) {
+			if (node instanceof SyncTreeLeafDTO) {
 				SyncTreeLeafDTO leaf = (SyncTreeLeafDTO) node;
-				totalFilesSize = totalFilesSize + (long) (leaf.getSize()* (100 - leaf .getComplete()) / 100);
+				totalFilesSize = totalFilesSize
+						+ (long) (leaf.getSize() * (100 - leaf.getComplete()) / 100);
 			}
 		}
 	}
@@ -399,6 +400,8 @@ public class AddonsDownloader extends Thread {
 			if (!messages.contains(e.getMessage())) {
 				if (e instanceof FileNotFoundException) {
 					messages.add(e.getMessage());
+				} else if (e instanceof RuntimeException) {
+					messages.add("An unexpected error has occured.");
 				} else if (e.getCause() != null) {
 					if (!causes.contains(e.getCause().toString())) {
 						causes.add(e.getCause().toString());
@@ -479,7 +482,8 @@ public class AddonsDownloader extends Thread {
 				if (directory.isUpdated() || directory.isChanged()) {
 					acre2IsUpdated = true;
 				}
-			} else if (node.getName().toLowerCase().contains("acre")&&!node.getName().toLowerCase().contains("acre2")) {
+			} else if (node.getName().toLowerCase().contains("acre")
+					&& !node.getName().toLowerCase().contains("acre2")) {
 				if (directory.isUpdated() || directory.isChanged()) {
 					acreIsUpdated = true;
 				}

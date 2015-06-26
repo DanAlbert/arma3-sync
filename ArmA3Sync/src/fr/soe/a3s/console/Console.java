@@ -736,6 +736,7 @@ public class Console {
 		try {
 			System.out.println("Repository build starting.");
 			repositoryService.buildRepository(repositoryName);
+			repositoryService.write(repositoryName);
 			System.out.println("Repository build finished.");
 		} catch (Exception e) {
 			System.out.println("Failed to build repository.");
