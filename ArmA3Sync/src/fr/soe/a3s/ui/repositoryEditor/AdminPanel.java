@@ -11,6 +11,8 @@ import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -57,7 +59,7 @@ public class AdminPanel extends JPanel implements UIConstants {
 	private JButton buttonUploadOptions;
 	private JButton buttonUpload;
 	private JLabel uploadSizeLabelValue;
-	
+
 	// Sarvices
 	private final RepositoryService repositoryService = new RepositoryService();
 
@@ -489,8 +491,6 @@ public class AdminPanel extends JPanel implements UIConstants {
 
 	private void buttonBuildPerformed() {
 
-		// Cancel repository upload
-
 		final String path = textFieldMainSharedFolderLocation.getText().trim();
 
 		if (path.isEmpty()) {
@@ -502,6 +502,13 @@ public class AdminPanel extends JPanel implements UIConstants {
 			JOptionPane.showMessageDialog(facade.getMainPanel(),
 					"Repository main folder does not exists!",
 					"Build repository", JOptionPane.WARNING_MESSAGE);
+			return;
+		} else if (!Files.isWritable(FileSystems.getDefault().getPath(path))) {
+			JOptionPane
+					.showMessageDialog(
+							facade.getMainPanel(),
+							"Repository main folder location is missing write permissions.",
+							"Build repository", JOptionPane.ERROR_MESSAGE);
 			return;
 		}
 

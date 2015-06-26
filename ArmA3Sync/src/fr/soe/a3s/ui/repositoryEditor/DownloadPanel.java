@@ -11,6 +11,9 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.io.File;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -906,6 +909,25 @@ public class DownloadPanel extends JPanel implements UIConstants {
 					.getSelectedItem();
 			repositoryService.setDefaultDownloadLocation(repositoryName,
 					defaultDownloadLocation);
+
+			List<String> list = new ArrayList<String>();
+			if (checkBoxAutoDiscover.isSelected()) {
+				list.addAll(profileService.getAddonSearchDirectoryPaths());
+			} else {
+				list.add(defaultDownloadLocation);
+			}
+
+			for (String path : list) {
+				if (new File(path).exists()
+						&& !Files.isWritable(FileSystems.getDefault().getPath(
+								path))) {
+					JOptionPane.showMessageDialog(facade.getMainPanel(),
+							"Destination folder: " + path + "\n"
+									+ "is missing write permissions.",
+							"Download", JOptionPane.ERROR_MESSAGE);
+					return;
+				}
+			}
 		}
 
 		addonsDownloader = new AddonsDownloader(facade, repositoryName, racine,
