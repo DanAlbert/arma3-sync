@@ -42,7 +42,6 @@ public class RepositoryBuilder extends Thread {
 			// Build repository
 			repositoryService.buildRepository(repositoryName, path);
 			repositoryService.setOutOfSync(repositoryName, false);
-			repositoryService.write(repositoryName);
 
 			JOptionPane.showMessageDialog(facade.getMainPanel(),
 					"Repository build finished.", "Build repository",

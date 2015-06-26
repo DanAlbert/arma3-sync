@@ -242,6 +242,7 @@ public class RepositoryService extends ObjectDTOtransformer implements
 					+ " not found!");
 		}
 		repositoryBuilderDAO.buildRepository(repository);
+		write(repositoryName);
 	}
 
 	public void buildRepository(String repositoryName, String path)
@@ -254,6 +255,7 @@ public class RepositoryService extends ObjectDTOtransformer implements
 		}
 		repository.setPath(path);
 		repositoryBuilderDAO.buildRepository(repository);
+		write(repositoryName);
 	}
 
 	public SyncTreeDirectoryDTO getSyncForCheckForAddons(String repositoryName)
