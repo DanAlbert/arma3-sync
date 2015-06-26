@@ -31,7 +31,7 @@ public class RepositoryCheckerDAO implements DataAccessConstants,
 	private Map<String, FileAttributes> mapFiles;
 	/* Variables for ObservableFilesNumber3 Interface */
 	private ObserverFilesNumber3 observerFilesNumber3;
-	private long nbFiles,totalNbFiles;
+	private long nbFiles, totalNbFiles;
 
 	public void checkRepository(Repository repository)
 			throws RepositoryCheckException {
@@ -239,6 +239,7 @@ public class RepositoryCheckerDAO implements DataAccessConstants,
 
 	@Override
 	public void updateFilesNumberObserver3() {
-		observerFilesNumber3.update((int) (this.nbFiles * 100 / totalNbFiles));
+		observerFilesNumber3
+				.update((int) (this.nbFiles * 100 / this.totalNbFiles));
 	}
 }

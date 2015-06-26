@@ -101,16 +101,16 @@ public class AddonsChecker extends Thread {
 				facade.getAddonOptionsPanel().updateAddonPriorities();
 				// 5. Updates download panel tree
 				downloadPanel.updateAddons(parent);
-				// 6. Event download panel
+				// 6. Update event mode
 				if (eventName != null) {
 					setEventAddonSelection();
 				} else if (update) {
 					selectAllDescending(parent);
 				}
-				// 7. Update Event panel addons tree
+
 				downloadPanel.getRepositoryPanel().getEventsPanel()
 						.init(repositoryName);
-				// 8. Update status
+
 				downloadPanel.getLabelCheckForAddonsStatus().setText(
 						"Finished!");
 			}
@@ -120,9 +120,14 @@ public class AddonsChecker extends Thread {
 			if (!cancel) {
 				e.printStackTrace();
 				downloadPanel.getLabelCheckForAddonsStatus().setText("Error!");
-				JOptionPane.showMessageDialog(facade.getMainPanel(),
-						e.getMessage(), "Check for Addons",
-						JOptionPane.ERROR_MESSAGE);
+				String message = "";
+				if (e instanceof RuntimeException) {
+					message = "An unexpected error has occured.";
+				} else {
+					message = e.getMessage();
+				}
+				JOptionPane.showMessageDialog(facade.getMainPanel(), message,
+						"Check for Addons", JOptionPane.ERROR_MESSAGE);
 			}
 		} finally {
 			initDownlaodPanelForEndCheck();
