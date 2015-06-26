@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.ConnectException;
+import java.net.SocketTimeoutException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -37,7 +38,7 @@ public class HttpService extends AbstractConnexionService implements
 	private final Stack<SyncTreeNodeDTO> downloadFilesStack = new Stack<SyncTreeNodeDTO>();
 	private final List<Exception> errors = new ArrayList<Exception>();
 	private int semaphore = 1;
-	private boolean end = false;
+	private int timeoutErrors = 0;
 	private static final RepositoryDAO repositoryDAO = new RepositoryDAO();
 	private static final ConfigurationDAO configurationDAO = new ConfigurationDAO();
 
@@ -215,9 +216,10 @@ public class HttpService extends AbstractConnexionService implements
 		final String rootDestinationPath = repository
 				.getDefaultDownloadLocation();
 
-		downloadFilesStack.addAll(listFiles);
+		this.downloadFilesStack.clear();
+		this.downloadFilesStack.addAll(listFiles);
 		this.semaphore = 1;
-		this.end = false;
+		this.timeoutErrors = 0;
 
 		for (final HttpDAO httpDAO : httpDAOPool) {
 			httpDAO.addObserverFileDownload(new ObserverFileDownload() {
@@ -231,7 +233,7 @@ public class HttpService extends AbstractConnexionService implements
 								public void run() {
 									try {
 										if (aquireSemaphore()) {
-											httpDAO.setAcquiredSmaphore(true);
+											httpDAO.setAcquiredSemaphore(true);
 										}
 
 										httpDAO.setActiveConnection(true);
@@ -240,53 +242,65 @@ public class HttpService extends AbstractConnexionService implements
 										downloadAddon(httpDAO, node,
 												rootDestinationPath, repository);
 
-									} catch (FileNotFoundException e) {
-										String message = "File not found on repository: "
-												+ node.getRelativePath();
-										addError(new FileNotFoundException(
-												message));
 									} catch (Exception e) {
 										if (!httpDAO.isCanceled()) {
-											addError(e);
+											String message = "";
+											if (e instanceof SocketTimeoutException) {
+												addTimeoutErrors();
+											} else if (e instanceof FileNotFoundException) {
+												message = "File not found on repository: "
+														+ node.getRelativePath();
+											} else {
+												message = "Failed to retrieve file "
+														+ node.getName();
+												if (e.getMessage() != null) {
+													message = message + "\n"
+															+ e.getMessage();
+												}
+											}
+											addError(new Exception(message));
 										}
 									} finally {
 										if (httpDAO.isAcquiredSmaphore()) {
 											releaseSemaphore();
-											httpDAO.setAcquiredSmaphore(false);
+											httpDAO.setAcquiredSemaphore(false);
 										}
 										httpDAO.setActiveConnection(false);
 										httpDAO.updateObserverActiveConnection();
-										httpDAO.updateFileDownloadObserver();
+										if (timeoutErrors >= 3
+												|| (errors.size() >= 10)) {
+											httpDAO.updateObserverError(errors);
+										} else {
+											httpDAO.updateFileDownloadObserver();
+										}
 									}
 								}
 							});
 							t.start();
-						} else {// no more file to download
-							if (httpDAO.isAcquiredSmaphore()) {
-								releaseSemaphore();
-								httpDAO.setAcquiredSmaphore(false);
-							}
-							if (!end) {
-								end = true;
-								for (HttpDAO httpDAO : httpDAOPool) {
-									if (httpDAO.isActiveConnection()) {
-										end = false;
-										break;
-									}
+						} else {// no more file to download for this DAO
+
+							// Check if there is no more active connections
+							boolean downloadFinished = true;
+							for (HttpDAO httpDAO : httpDAOPool) {
+								if (httpDAO.isActiveConnection()) {
+									downloadFinished = false;
+									break;
 								}
-								if (end) {
-									if (errors.isEmpty()) {
-										httpDAO.updateObserverEnd();
-									} else {
-										httpDAO.updateObserverError(errors);
-									}
+							}
+
+							// download is finished
+							if (downloadFinished) {
+								if (errors.isEmpty()) {
+									httpDAO.updateObserverEnd();
 								} else {
-									for (HttpDAO httpDAO : httpDAOPool) {
-										if (httpDAO.isActiveConnection()
-												&& aquireSemaphore()) {
-											httpDAO.setAcquiredSmaphore(true);
-											break;
-										}
+									httpDAO.updateObserverError(errors);
+								}
+							} else {
+								for (HttpDAO httpDAO : httpDAOPool) {
+									if (httpDAO.isActiveConnection()
+											&& aquireSemaphore()) {
+										httpDAO.setAcquiredSemaphore(true);
+										break;
 									}
 								}
 							}
@@ -355,6 +369,10 @@ public class HttpService extends AbstractConnexionService implements
 
 	private synchronized void addError(Exception e) {
 		errors.add(e);
+	}
+
+	private synchronized void addTimeoutErrors() {
+		timeoutErrors++;
 	}
 
 	private synchronized SyncTreeNodeDTO popDownloadFilesStack() {

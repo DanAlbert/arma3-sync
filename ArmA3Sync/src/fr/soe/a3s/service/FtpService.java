@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.ConnectException;
+import java.net.SocketTimeoutException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -42,7 +43,7 @@ public class FtpService extends AbstractConnexionService implements
 	private final Stack<SyncTreeNodeDTO> downloadFilesStack = new Stack<SyncTreeNodeDTO>();
 	private final List<Exception> errors = new ArrayList<Exception>();
 	private int semaphore = 1;
-	boolean end = false;
+	private int timeoutErrors = 0;
 	private static final RepositoryDAO repositoryDAO = new RepositoryDAO();
 	private static final ConfigurationDAO configurationDAO = new ConfigurationDAO();
 
@@ -272,9 +273,10 @@ public class FtpService extends AbstractConnexionService implements
 		final String rootDestinationPath = repository
 				.getDefaultDownloadLocation();
 
-		downloadFilesStack.addAll(listFiles);
+		this.downloadFilesStack.clear();
+		this.downloadFilesStack.addAll(listFiles);
 		this.semaphore = 1;
-		this.end = false;
+		this.timeoutErrors = 0;
 
 		for (final FtpDAO ftpDAO : ftpDAOPool) {
 			ftpDAO.addObserverFileDownload(new ObserverFileDownload() {
@@ -304,9 +306,22 @@ public class FtpService extends AbstractConnexionService implements
 											addError(new FileNotFoundException(
 													message));
 										}
-									} catch (Exception e) {
+									} catch (IOException e) {
 										if (!ftpDAO.isCanceled()) {
-											addError(e);
+											String message = "";
+											if (e instanceof SocketTimeoutException) {
+												addTimeoutErrors();
+											} else if (e instanceof FileNotFoundException) {
+												message = e.getMessage();
+											} else {
+												message = "Failed to retrieve file "
+														+ node.getName();
+												if (e.getMessage() != null) {
+													message = message + "\n"
+															+ e.getMessage();
+												}
+											}
+											addError(new Exception(message));
 										}
 									} finally {
 										if (ftpDAO.isAcquiredSmaphore()) {
@@ -315,37 +330,40 @@ public class FtpService extends AbstractConnexionService implements
 										}
 										ftpDAO.setActiveConnection(false);
 										ftpDAO.updateObserverActiveConnection();
-										ftpDAO.updateFileDownloadObserver();
+										if (timeoutErrors >= 3
+												|| (errors.size() >= 10)) {
+											ftpDAO.updateObserverError(errors);
+										} else {
+											ftpDAO.updateFileDownloadObserver();
+										}
 									}
 								}
 							});
 							t.start();
-						} else {// no more file to download
-							if (ftpDAO.isAcquiredSmaphore()) {
-								releaseSemaphore();
-								ftpDAO.setAcquiredSemaphore(false);
-							}
-							if (!end) {
-								end = true;
-								for (FtpDAO ftpDAO : ftpDAOPool) {
-									if (ftpDAO.isActiveConnection()) {
-										end = false;
-										break;
-									}
+						} else {// no more file to download for this DAO
+
+							// Check if there is no more active connections
+							boolean downloadFinished = true;
+							for (FtpDAO ftpDAO : ftpDAOPool) {
+								if (ftpDAO.isActiveConnection()) {
+									downloadFinished = false;
+									break;
 								}
-								if (end) {
-									if (errors.isEmpty()) {
-										ftpDAO.updateObserverEnd();
-									} else {
-										ftpDAO.updateObserverError(errors);
-									}
+							}
+
+							// download is finished
+							if (downloadFinished) {
+								if (errors.isEmpty()) {
+									ftpDAO.updateObserverEnd();
 								} else {
-									for (FtpDAO ftpDAO : ftpDAOPool) {
-										if (ftpDAO.isActiveConnection()
-												&& aquireSemaphore()) {
-											ftpDAO.setAcquiredSemaphore(true);
-											break;
-										}
+									ftpDAO.updateObserverError(errors);
+								}
+							} else {
+								for (FtpDAO ftpDAO : ftpDAOPool) {
+									if (ftpDAO.isActiveConnection()
+											&& aquireSemaphore()) {
+										ftpDAO.setAcquiredSemaphore(true);
+										break;
 									}
 								}
 							}
@@ -380,7 +398,7 @@ public class FtpService extends AbstractConnexionService implements
 
 	private boolean downloadAddon(final FtpDAO ftpDAO,
 			final SyncTreeNodeDTO node, final String rootDestinationPath,
-			final Repository repository) throws Exception {
+			final Repository repository) throws IOException {
 
 		String destinationPath = null;
 		String remotePath = repository.getProtocole().getRemotePath();
@@ -398,6 +416,10 @@ public class FtpService extends AbstractConnexionService implements
 
 	private synchronized void addError(Exception e) {
 		errors.add(e);
+	}
+
+	private synchronized void addTimeoutErrors() {
+		timeoutErrors++;
 	}
 
 	private synchronized SyncTreeNodeDTO popDownloadFilesStack() {

@@ -555,7 +555,7 @@ public class HttpDAO extends AbstractConnexionDAO {
 		return acquiredSmaphore;
 	}
 
-	public void setAcquiredSmaphore(boolean acquiredSmaphore) {
+	public void setAcquiredSemaphore(boolean acquiredSmaphore) {
 		this.acquiredSmaphore = acquiredSmaphore;
 	}
 }
