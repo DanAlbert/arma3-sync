@@ -853,7 +853,7 @@ public class DownloadPanel extends JPanel implements UIConstants {
 		checkForAddons();
 	}
 
-	public AddonsChecker checkForAddons() {
+	public void checkForAddons() {
 
 		// Lock user action on addons tree
 		arbre.setEnabled(false);
@@ -861,7 +861,6 @@ public class DownloadPanel extends JPanel implements UIConstants {
 		addonsChecker = new AddonsChecker(facade, repositoryName, eventName,
 				update, showPartialFileTransferWarningMessage, this);
 		addonsChecker.start();
-		return addonsChecker;
 	}
 
 	private void buttonCheckForAddonsCancelPerformed() {
