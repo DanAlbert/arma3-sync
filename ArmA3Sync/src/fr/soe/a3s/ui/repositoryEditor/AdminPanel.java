@@ -26,10 +26,12 @@ import javax.swing.JProgressBar;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 
+import org.apache.commons.io.FileUtils;
+
 import fr.soe.a3s.constant.RepositoryStatus;
 import fr.soe.a3s.dto.RepositoryDTO;
 import fr.soe.a3s.dto.ServerInfoDTO;
-import fr.soe.a3s.exception.RepositoryException;
+import fr.soe.a3s.exception.repository.RepositoryException;
 import fr.soe.a3s.service.RepositoryService;
 import fr.soe.a3s.ui.Facade;
 import fr.soe.a3s.ui.UIConstants;
@@ -59,16 +61,21 @@ public class AdminPanel extends JPanel implements UIConstants {
 	private JButton buttonUploadOptions;
 	private JButton buttonUpload;
 	private JLabel uploadSizeLabelValue;
+	private JLabel uploadedLabelValue;
+	private JLabel uploadSpeedLabelValue;
+	private JLabel uploadRemainingTimeValue;
+	private Box uploadInformationBox;
+	private Box checkInformationBox;
+	private JLabel checkErrorLabel;
+	private JLabel checkErrorLabelValue;
 
 	// Sarvices
 	private final RepositoryService repositoryService = new RepositoryService();
 
 	/* Workers */
-	private RepositoryUploader repositoryUploader;
-	private JLabel uploadedLabelValue;
-	private JLabel uploadSpeedLabelValue;
-	private JLabel uploadRemainingTimeValue;
-	private Box uploadInformationBox;
+	private RepositoryUploader repositoryUploader = null;
+	private RepositoryBuilder repositoryBuilder = null;
+	private RepositoryChecker repositoryChecker = null;
 
 	public AdminPanel(Facade facade, RepositoryPanel repositoryPanel) {
 
@@ -278,6 +285,16 @@ public class AdminPanel extends JPanel implements UIConstants {
 			JLabel buildLabelLocation = new JLabel(
 					"Check repository synchronization");
 			checkLabelPanel.add(buildLabelLocation);
+
+			checkInformationBox = Box.createHorizontalBox();
+			checkErrorLabel = new JLabel("Errors: ");
+			checkErrorLabel.setFont(new Font("Tohama", Font.ITALIC, 11));
+			checkInformationBox.add(checkErrorLabel);
+			checkErrorLabelValue = new JLabel();
+			checkErrorLabelValue.setFont(new Font("Tohama", Font.ITALIC, 11));
+			checkInformationBox.add(checkErrorLabelValue);
+			checkInformationBox.setVisible(false);
+			checkLabelPanel.add(checkInformationBox);
 			vBox.add(checkLabelPanel);
 		}
 		{
@@ -364,20 +381,21 @@ public class AdminPanel extends JPanel implements UIConstants {
 		try {
 			RepositoryDTO repositoryDTO = repositoryService
 					.getRepository(repositoryName);
-			ServerInfoDTO serverInfoDTO = repositoryService
-					.getServerInfo(repositoryName);
 
 			textFieldMainSharedFolderLocation.setText(repositoryDTO.getPath());
 
 			if (repositoryDTO.getAutoConfigURL() != null) {
 				textFieldAutoConfigURL.setText(repositoryDTO.getProtocoleDTO()
-						.getProtocole().getPrompt()
+						.getProtocolType().getPrompt()
 						+ repositoryDTO.getAutoConfigURL());
 			}
 
 			RepositoryStatus repositoryStatus = repositoryService
 					.getRepositoryStatus(repositoryName);
 			updateRepositoryStatus(repositoryStatus);
+
+			ServerInfoDTO serverInfoDTO = repositoryService
+					.getServerInfo(repositoryName);
 
 			if (serverInfoDTO != null) {
 				labelRevisionValue.setText(Integer.toString(serverInfoDTO
@@ -390,7 +408,6 @@ public class AdminPanel extends JPanel implements UIConstants {
 				labelTotalSizeValue.setText(UnitConverter.convertSize(size));
 			}
 		} catch (RepositoryException e) {
-			e.printStackTrace();
 			JOptionPane.showMessageDialog(facade.getMainPanel(),
 					e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
 		}
@@ -491,30 +508,63 @@ public class AdminPanel extends JPanel implements UIConstants {
 
 	private void buttonBuildPerformed() {
 
-		final String path = textFieldMainSharedFolderLocation.getText().trim();
+		if (repositoryBuilder == null
+				|| !repositoryService.isBuilding(repositoryName)) {
+			String path = textFieldMainSharedFolderLocation.getText();
+			// Repository main folder location must be set
+			if (path.isEmpty()) {
+				JOptionPane
+						.showMessageDialog(
+								facade.getMainPanel(),
+								"Please set the repository main folder location first.",
+								"Build repository",
+								JOptionPane.INFORMATION_MESSAGE);
+				return;
+			} else if (!new File(path).exists()) {
+				JOptionPane.showMessageDialog(facade.getMainPanel(),
+						"Repository main folder location does not exists.",
+						"Build repository", JOptionPane.ERROR_MESSAGE);
+				return;
+				// Repository main folder must have write permissions
+			} else if (!Files
+					.isWritable(FileSystems.getDefault().getPath(path))) {
+				JOptionPane
+						.showMessageDialog(
+								facade.getMainPanel(),
+								"Repository main folder location is missing write permissions.",
+								"Build repository", JOptionPane.ERROR_MESSAGE);
+				return;
+			}
 
-		if (path.isEmpty()) {
-			JOptionPane.showMessageDialog(facade.getMainPanel(),
-					"Repository main folder location is empty!",
-					"Build repository", JOptionPane.WARNING_MESSAGE);
-			return;
-		} else if (!(new File(path).exists())) {
-			JOptionPane.showMessageDialog(facade.getMainPanel(),
-					"Repository main folder does not exists!",
-					"Build repository", JOptionPane.WARNING_MESSAGE);
-			return;
-		} else if (!Files.isWritable(FileSystems.getDefault().getPath(path))) {
-			JOptionPane
-					.showMessageDialog(
-							facade.getMainPanel(),
-							"Repository main folder location is missing write permissions.",
-							"Build repository", JOptionPane.ERROR_MESSAGE);
-			return;
+			// Check available disk space
+			boolean isCompressed = repositoryService
+					.isCompressed(repositoryName);
+			if (isCompressed) {
+				long diskSpace = new File("/").getFreeSpace();
+				long repositorySize = FileUtils.sizeOfDirectory(new File(path));
+				if (diskSpace < repositorySize) {
+					JOptionPane
+							.showMessageDialog(
+									facade.getMainPanel(),
+									"Not enough free space on disk to add compressed pbo files into the repository."
+											+ "\n"
+											+ "Required space: "
+											+ repositorySize,
+									"Build repository",
+									JOptionPane.INFORMATION_MESSAGE);
+					return;
+				}
+			}
+
+			repositoryBuilder = new RepositoryBuilder(facade, repositoryName,
+					path, this);
+			repositoryBuilder.setDaemon(true);
+			repositoryBuilder.start();
+		} else if (repositoryBuilder != null
+				&& repositoryService.isBuilding(repositoryName)) {
+			repositoryBuilder.cancel();
+			repositoryBuilder = null;
 		}
-
-		RepositoryBuilder repositoryBuilder = new RepositoryBuilder(facade,
-				repositoryName, path, this);
-		repositoryBuilder.start();
 	}
 
 	private void buttonBuildOptionsPerformed() {
@@ -560,7 +610,7 @@ public class AdminPanel extends JPanel implements UIConstants {
 						.showMessageDialog(
 								facade.getMainPanel(),
 								"Please set the repository main folder location first.",
-								"Build repository",
+								"Upload repository",
 								JOptionPane.INFORMATION_MESSAGE);
 				return;
 			}
@@ -571,11 +621,7 @@ public class AdminPanel extends JPanel implements UIConstants {
 		} else if (repositoryUploader != null
 				&& repositoryService.isUploading(repositoryName)) {
 			repositoryUploader.cancel();
-			repositoryUploader.interrupt();
 			repositoryUploader = null;
-			JOptionPane.showMessageDialog(facade.getMainPanel(),
-					"Repository upload stopped.", "Repository upload",
-					JOptionPane.INFORMATION_MESSAGE);
 		}
 	}
 
@@ -589,23 +635,16 @@ public class AdminPanel extends JPanel implements UIConstants {
 
 	private void buttonCheckPerformed() {
 
-		final String path = textFieldMainSharedFolderLocation.getText().trim();
-
-		if (path.isEmpty()) {
-			JOptionPane.showMessageDialog(facade.getMainPanel(),
-					"Repository main folder location is empty!",
-					"Check repository", JOptionPane.WARNING_MESSAGE);
-			return;
-		} else if (!(new File(path).exists())) {
-			JOptionPane.showMessageDialog(facade.getMainPanel(),
-					"Repository main folder does not exists!",
-					"Check repository", JOptionPane.WARNING_MESSAGE);
-			return;
+		if (repositoryChecker == null
+				|| !repositoryService.isChecking(repositoryName)) {
+			repositoryChecker = new RepositoryChecker(facade, repositoryName,
+					this);
+			repositoryChecker.start();
+		} else if (repositoryChecker != null
+				&& repositoryService.isChecking(repositoryName)) {
+			repositoryChecker.cancel();
+			repositoryChecker = null;
 		}
-
-		RepositoryChecker checker = new RepositoryChecker(facade,
-				repositoryName, path, this);
-		checker.start();
 	}
 
 	private void buttonViewPerformed() {
@@ -682,5 +721,17 @@ public class AdminPanel extends JPanel implements UIConstants {
 
 	public Box getUploadInformationBox() {
 		return uploadInformationBox;
+	}
+
+	public JLabel getCheckErrorLabel() {
+		return checkErrorLabel;
+	}
+
+	public JLabel getCheckErrorLabelValue() {
+		return checkErrorLabelValue;
+	}
+
+	public Box getCheckInformationBox() {
+		return checkInformationBox;
 	}
 }

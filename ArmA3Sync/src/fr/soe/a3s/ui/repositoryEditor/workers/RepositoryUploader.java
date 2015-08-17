@@ -1,5 +1,6 @@
 package fr.soe.a3s.ui.repositoryEditor.workers;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -8,10 +9,9 @@ import java.util.Map;
 
 import javax.swing.JOptionPane;
 
-import fr.soe.a3s.constant.Protocol;
-import fr.soe.a3s.controller.ObserverFileSize2;
-import fr.soe.a3s.controller.ObserverFilesNumber2;
-import fr.soe.a3s.controller.ObserverSpeed;
+import fr.soe.a3s.constant.ProtocolType;
+import fr.soe.a3s.controller.ObserverCountWithText;
+import fr.soe.a3s.controller.ObserverUpload;
 import fr.soe.a3s.dao.DataAccessConstants;
 import fr.soe.a3s.dto.ProtocolDTO;
 import fr.soe.a3s.dto.RepositoryDTO;
@@ -19,33 +19,36 @@ import fr.soe.a3s.dto.sync.SyncTreeDirectoryDTO;
 import fr.soe.a3s.dto.sync.SyncTreeLeafDTO;
 import fr.soe.a3s.dto.sync.SyncTreeNodeDTO;
 import fr.soe.a3s.exception.CheckException;
+import fr.soe.a3s.exception.LoadingException;
+import fr.soe.a3s.exception.repository.RepositoryException;
+import fr.soe.a3s.exception.repository.SyncFileNotFoundException;
 import fr.soe.a3s.service.AbstractConnexionService;
-import fr.soe.a3s.service.ConnexionServiceFactory;
+import fr.soe.a3s.service.AbstractConnexionServiceFactory;
 import fr.soe.a3s.service.RepositoryService;
 import fr.soe.a3s.ui.Facade;
 import fr.soe.a3s.ui.repositoryEditor.AdminPanel;
 import fr.soe.a3s.ui.repositoryEditor.UnitConverter;
+import fr.soe.a3s.ui.repositoryEditor.errorDialogs.UnexpectedErrorDialog;
 
 public class RepositoryUploader extends Thread implements DataAccessConstants {
 
 	private final Facade facade;
 	private final AdminPanel adminPanel;
-
-	/* Service */
-	private final RepositoryService repositoryService = new RepositoryService();
-	private AbstractConnexionService connexionService;
-
 	/* Data */
 	private final String repositoryName;
 	private final String path;
+	private final List<SyncTreeNodeDTO> allLocalFiles = new ArrayList<SyncTreeNodeDTO>();
 	private final List<SyncTreeNodeDTO> filesToUpload = new ArrayList<SyncTreeNodeDTO>();
 	private final List<SyncTreeNodeDTO> filesToDelete = new ArrayList<SyncTreeNodeDTO>();
 	private long incrementedFilesSize = 0;
-	private final long offset = 0;
 	private int lastIndexFileUploaded = 0;
 	private long totalFilesSize = 0;
-	private long cumulative = 0;
+	private long currentSize = 0;
+	/* Tests */
 	private boolean canceled = false;
+	/* Service */
+	private final RepositoryService repositoryService = new RepositoryService();
+	private AbstractConnexionService connexionService;
 
 	public RepositoryUploader(Facade facade, String repositoryName,
 			String path, AdminPanel adminPanel) {
@@ -58,22 +61,26 @@ public class RepositoryUploader extends Thread implements DataAccessConstants {
 	@Override
 	public void run() {
 
-		disable();
-		adminPanel.getUploadrogressBar().setIndeterminate(true);
-		adminPanel.getUploadrogressBar().setString("Checking remote files...");
+		System.out.println("Starting uploading repository: " + repositoryName);
 
+		// Init AdminPanel for start uploading
+		intiAdminPanelForStartUpload();
+
+		// Set Uploading state
 		repositoryService.setUploading(repositoryName, true);
 
+		adminPanel.getUploadrogressBar().setIndeterminate(true);
+
 		try {
-			// 1. Check repository upload protocole
+			// 1. Check repository upload protocol
 			RepositoryDTO repositoryDTO = repositoryService
 					.getRepository(repositoryName);
 			ProtocolDTO protocoleDTO = repositoryDTO.getProtocoleDTO();
-			Protocol protocole = protocoleDTO.getProtocole();
+			ProtocolType protocole = protocoleDTO.getProtocolType();
 			ProtocolDTO uploadProtocoleDTO = repositoryDTO
 					.getRepositoryUploadProtocoleDTO();
 			if (uploadProtocoleDTO == null
-					&& protocoleDTO.getProtocole().equals(Protocol.FTP)) {
+					&& protocoleDTO.getProtocolType().equals(ProtocolType.FTP)) {
 				repositoryService.setRepositoryUploadProtocole(repositoryName,
 						protocoleDTO.getUrl(), protocoleDTO.getPort(),
 						protocoleDTO.getLogin(), protocoleDTO.getPassword(),
@@ -84,10 +91,11 @@ public class RepositoryUploader extends Thread implements DataAccessConstants {
 			}
 
 			// 2. Read local sync, autoconfig, serverInfo, changelogs
-			repositoryService.readLocalRepository(repositoryName);
+			repositoryService.readLocalyBuildedRepository(repositoryName);
 
-			// 3. Determine files to upload and remote files to delete
-			connexionService = ConnexionServiceFactory
+			// 3. Determine files to upload and remote files to delete, throw
+			// exception if remote sync file can't be obtained
+			connexionService = AbstractConnexionServiceFactory
 					.getRepositoryUploadServiceFromRepository(repositoryName);
 			connexionService
 					.getSyncWithRepositoryUploadProtocole(repositoryName);
@@ -97,6 +105,10 @@ public class RepositoryUploader extends Thread implements DataAccessConstants {
 			SyncTreeDirectoryDTO localSync = repositoryService
 					.getLocalSync(repositoryName);
 
+			if (localSync == null) {
+				throw new SyncFileNotFoundException(repositoryName);
+			}
+
 			Map<String, SyncTreeNodeDTO> mapLocalSync = new HashMap<String, SyncTreeNodeDTO>();
 			syncToMap(localSync, mapLocalSync);
 
@@ -104,24 +116,13 @@ public class RepositoryUploader extends Thread implements DataAccessConstants {
 				for (Iterator<String> iter = mapLocalSync.keySet().iterator(); iter
 						.hasNext();) {
 					String path = iter.next();
-					filesToUpload.add(mapLocalSync.get(path));
+					SyncTreeNodeDTO localNode = mapLocalSync.get(path);
+					filesToUpload.add(localNode);
+					allLocalFiles.add(localNode);
 				}
 			} else {
 				Map<String, SyncTreeNodeDTO> mapRemoteSync = new HashMap<String, SyncTreeNodeDTO>();
 				syncToMap(remoteSync, mapRemoteSync);
-
-				Map<SyncTreeNodeDTO, Boolean> mapRemoteNodeExists = new HashMap<SyncTreeNodeDTO, Boolean>();
-				for (Iterator<String> iter = mapRemoteSync.keySet().iterator(); iter
-						.hasNext();) {
-					String path = iter.next();
-					SyncTreeNodeDTO remoteNode = mapRemoteSync.get(path);
-					if (remoteNode.isLeaf()) {
-						mapRemoteNodeExists.put(remoteNode, false);
-					}
-				}
-
-				connexionService.remoteFileExists(repositoryName,
-						mapRemoteNodeExists);
 
 				for (Iterator<String> iter = mapLocalSync.keySet().iterator(); iter
 						.hasNext();) {
@@ -131,30 +132,26 @@ public class RepositoryUploader extends Thread implements DataAccessConstants {
 
 					boolean upload = true;
 					if (remoteNode != null) {
-						if (localNode.isLeaf() && remoteNode.isLeaf()) {
-							boolean exists = false;
-							if (!canceled) {
-								// exists = connexionService.remoteFileExists(
-								// repositoryName, remoteNode);
-								exists = mapRemoteNodeExists.get(remoteNode);
-							}
-							if (exists) {
+						if (localNode.getName().equals(remoteNode.getName())) {
+							if (localNode.isLeaf() && remoteNode.isLeaf()) {
 								SyncTreeLeafDTO localLeaf = (SyncTreeLeafDTO) localNode;
 								SyncTreeLeafDTO remoteLeaf = (SyncTreeLeafDTO) remoteNode;
 								if (localLeaf.getSha1().equals(
 										remoteLeaf.getSha1())) {
 									upload = false;
 								}
+							} else if (!localNode.isLeaf()
+									&& !remoteNode.isLeaf()) {// 2 same
+																// directories
+								upload = false;
 							}
-						} else if (!localNode.isLeaf() && !remoteNode.isLeaf()) {
-							upload = false;
 						}
 					}
 
 					if (upload) {
 						filesToUpload.add(mapLocalSync.get(path));
-						filesToDelete.add(mapLocalSync.get(path));
 					}
+					allLocalFiles.add(localNode);
 				}
 
 				for (Iterator<String> iter = mapRemoteSync.keySet().iterator(); iter
@@ -165,108 +162,78 @@ public class RepositoryUploader extends Thread implements DataAccessConstants {
 					}
 				}
 			}
-		} catch (Exception e) {
-			enable();
-			adminPanel.getUploadrogressBar().setIndeterminate(false);
-			repositoryService.setUploading(repositoryName, false);
-			if (e instanceof CheckException) {
-				JOptionPane.showMessageDialog(facade.getMainPanel(),
-						e.getMessage(), "Information",
-						JOptionPane.INFORMATION_MESSAGE);
-			} else if (!canceled) {
-				JOptionPane.showMessageDialog(facade.getMainPanel(),
-						e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-			}
-			return;
-		}
 
-		try {
-			// 4. Determine total file size
-			for (SyncTreeNodeDTO node : filesToUpload) {
-				if (node.isLeaf()) {
-					SyncTreeLeafDTO leaf = (SyncTreeLeafDTO) node;
-					totalFilesSize = totalFilesSize + leaf.getSize();
-				}
-			}
-
-			// 5. Upload
-			adminPanel.getUploadrogressBar().setMaximum(100);
-			adminPanel.getUploadrogressBar().setString("Uploading files...");
-			adminPanel.getUploadrogressBar().setIndeterminate(true);
-
-			// Resume Upload
+			// 5. Resume Upload
 			lastIndexFileUploaded = repositoryService
 					.getLastIndexFileTransfered(repositoryName);
-			incrementedFilesSize = repositoryService
-					.getIncrementedFilesSize(repositoryName);
-			boolean resume = repositoryService.isResume(repositoryName);
 
-			for (int i = 0; i < lastIndexFileUploaded; i++) {
-				SyncTreeNodeDTO node = filesToUpload.get(i);
-				if (node.isLeaf()) {
-					SyncTreeLeafDTO leaf = (SyncTreeLeafDTO) node;
-					cumulative = cumulative + leaf.getSize();
-				}
+			List<SyncTreeNodeDTO> newAllLocalFiles = new ArrayList<SyncTreeNodeDTO>();
+			for (int i = lastIndexFileUploaded; i < allLocalFiles.size(); i++) {
+				newAllLocalFiles.add(allLocalFiles.get(i));
 			}
 
-			int nbFiles = filesToUpload.size();
-			List<SyncTreeNodeDTO> newFilesToUpload = new ArrayList<SyncTreeNodeDTO>();
-			for (int i = lastIndexFileUploaded; i < nbFiles; i++) {
-				newFilesToUpload.add(filesToUpload.get(i));
-			}
-
-			adminPanel.getUploadSizeLabelValue().setText(
-					UnitConverter.convertSize(totalFilesSize));
-			adminPanel.getUploadedLabelValue().setText(
-					UnitConverter.convertSize(incrementedFilesSize));
-			adminPanel.getUploadedLabelValue().setText("0.0");
-			adminPanel.getUploadSpeedLabelValue().setText("");
-			adminPanel.getUploadRemainingTimeValue().setText("");
-			adminPanel.getUploadInformationBox().setVisible(true);
-
-			connexionService.getConnexionDAO().addObserverFilesNumber2(
-					new ObserverFilesNumber2() {
+			connexionService.getConnexionDAO().addObserverCountWithText(
+					new ObserverCountWithText() {
 						@Override
-						public void update() {
+						public void update(int value) {
 							adminPanel.getUploadrogressBar().setIndeterminate(
 									false);
-							lastIndexFileUploaded++;
-							SyncTreeNodeDTO node = filesToUpload
-									.get(lastIndexFileUploaded - 1);
-							if (node.isLeaf()) {
-								SyncTreeLeafDTO leaf = (SyncTreeLeafDTO) node;
-								long size = leaf.getSize();
-								cumulative = cumulative + size;
-							}
+							adminPanel.getUploadrogressBar().setValue(value);
+						}
+
+						@Override
+						public void update(String text) {
+							adminPanel.getUploadrogressBar().setString(text);
 						}
 					});
-			connexionService.getConnexionDAO().addObserverFileSize2(
-					new ObserverFileSize2() {
+
+			connexionService.getConnexionDAO().addObserverUpload(
+					new ObserverUpload() {
+
 						@Override
-						public synchronized void update(long value) {
-							incrementedFilesSize = value + cumulative;
+						public void updateTotalSize(long value) {
+							totalFilesSize = value;
+							adminPanel.getUploadSizeLabelValue().setText(
+									UnitConverter.convertSize(totalFilesSize));
 							adminPanel.getUploadedLabelValue().setText(
 									UnitConverter
 											.convertSize(incrementedFilesSize));
-							if (totalFilesSize != 0) {
-								adminPanel
-										.getUploadrogressBar()
-										.setValue(
-												(int) (incrementedFilesSize * 100 / totalFilesSize));
-							}
+							adminPanel.getUploadedLabelValue().setText("0.0");
+							adminPanel.getUploadSpeedLabelValue().setText("");
+							adminPanel.getUploadRemainingTimeValue()
+									.setText("");
+							adminPanel.getUploadInformationBox().setVisible(
+									true);
+							adminPanel.getUploadrogressBar().setValue(0);
 						}
-					});
-			connexionService.getConnexionDAO().addObserverSpeed(
-					new ObserverSpeed() {
+
 						@Override
-						public void update() {
+						public void updateTotalSizeProgress(long value) {
+							incrementedFilesSize = incrementedFilesSize + value;
+							adminPanel.getUploadedLabelValue().setText(
+									UnitConverter
+											.convertSize(incrementedFilesSize));
+						}
+
+						@Override
+						public void updateSingleSizeProgress(int pourcentage,
+								long value) {
+							adminPanel.getUploadrogressBar().setIndeterminate(
+									false);
+							adminPanel.getUploadrogressBar().setValue(
+									pourcentage);
+							currentSize = value;
+						}
+
+						@Override
+						public void updateSpeed() {
 							long value = connexionService.getConnexionDAO()
 									.getSpeed();
 							if (value != 0) {// division by 0
 								adminPanel.getUploadSpeedLabelValue().setText(
 										UnitConverter.convertSpeed(value));
 								long remainingFileSize = totalFilesSize
-										- incrementedFilesSize;
+										- incrementedFilesSize - currentSize;
 								long time = remainingFileSize / value;
 								adminPanel
 										.getUploadRemainingTimeValue()
@@ -274,31 +241,58 @@ public class RepositoryUploader extends Thread implements DataAccessConstants {
 												UnitConverter.convertTime(time));
 							}
 						}
+
+						@Override
+						public void updateLastIndexFileUploaded() {
+							lastIndexFileUploaded++;
+						}
 					});
 
-			connexionService.uploadRepository(repositoryName, newFilesToUpload,
-					filesToDelete, resume);
+			connexionService.uploadRepository(repositoryName, newAllLocalFiles,
+					filesToUpload, filesToDelete);
 
-			adminPanel.getUploadrogressBar().setString("100%");
-			adminPanel.getUploadrogressBar().setValue(100);
-			adminPanel.getUploadrogressBar().setIndeterminate(
-					false);
-			
+			adminPanel.getUploadrogressBar().setIndeterminate(false);
+
 			if (!canceled) {
+				adminPanel.getUploadrogressBar().setString("100%");
+				adminPanel.getUploadrogressBar().setValue(100);
+
 				JOptionPane.showMessageDialog(facade.getMainPanel(),
 						"Repository upload finished.", "Repository upload",
 						JOptionPane.INFORMATION_MESSAGE);
 			}
 		} catch (Exception e) {
 			adminPanel.getUploadrogressBar().setIndeterminate(false);
-			e.printStackTrace();
-			JOptionPane.showMessageDialog(facade.getMainPanel(),
-					e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+			if (!canceled) {
+				e.printStackTrace();
+				if (e instanceof RepositoryException
+						|| e instanceof LoadingException) {
+					JOptionPane.showMessageDialog(facade.getMainPanel(),
+							e.getMessage(), "Upload repository",
+							JOptionPane.ERROR_MESSAGE);
+				} else if (e instanceof IOException) {
+					JOptionPane.showMessageDialog(facade.getMainPanel(),
+							e.getMessage(), "Upload repository",
+							JOptionPane.ERROR_MESSAGE);
+				} else {
+					UnexpectedErrorDialog dialog = new UnexpectedErrorDialog(
+							facade, "Upload repository", e, repositoryName);
+					dialog.show();
+				}
+			}
 		} finally {
-			enable();
-			adminPanel.getUploadInformationBox().setVisible(false);
-			repositoryService.setUploading(repositoryName, false);
-			System.gc();// Required for unlocking files!
+			if (canceled) {
+				repositoryService.saveTransfertParameters(repositoryName,
+						incrementedFilesSize, lastIndexFileUploaded, true);
+			} else {
+				repositoryService.saveTransfertParameters(repositoryName, 0, 0,
+						false);
+			}
+			if (connexionService != null) {
+				connexionService.cancel();
+			}
+			initAdminPanelForEndUpload();
+			terminate();
 		}
 	}
 
@@ -316,12 +310,8 @@ public class RepositoryUploader extends Thread implements DataAccessConstants {
 		}
 	}
 
-	private void disable() {
+	private void intiAdminPanelForStartUpload() {
 
-		adminPanel.getButtonUpload().setText("Stop");
-		adminPanel.getUploadrogressBar().setStringPainted(true);
-		adminPanel.getUploadrogressBar().setMaximum(0);
-		adminPanel.getUploadrogressBar().setMinimum(0);
 		adminPanel.getButtonSelectRepositoryfolderPath().setEnabled(false);
 		adminPanel.getButtonBuild().setEnabled(false);
 		adminPanel.getButtonCopyAutoConfigURL().setEnabled(false);
@@ -333,14 +323,15 @@ public class RepositoryUploader extends Thread implements DataAccessConstants {
 				.getButtonCheckForAddonsStart().setEnabled(false);
 		adminPanel.getRepositoryPanel().getDownloadPanel()
 				.getButtonDownloadStart().setEnabled(false);
+		adminPanel.getButtonUpload().setText("Stop");
+		adminPanel.getUploadrogressBar().setString("");
+		adminPanel.getUploadrogressBar().setStringPainted(true);
+		adminPanel.getUploadrogressBar().setMaximum(100);
+		adminPanel.getUploadrogressBar().setMinimum(0);
 	}
 
-	private void enable() {
+	private void initAdminPanelForEndUpload() {
 
-		adminPanel.getButtonUpload().setText("Upload");
-		adminPanel.getUploadrogressBar().setStringPainted(false);
-		adminPanel.getUploadrogressBar().setMaximum(0);
-		adminPanel.getUploadrogressBar().setMinimum(0);
 		adminPanel.getButtonSelectRepositoryfolderPath().setEnabled(true);
 		adminPanel.getButtonBuild().setEnabled(true);
 		adminPanel.getButtonCopyAutoConfigURL().setEnabled(true);
@@ -352,15 +343,29 @@ public class RepositoryUploader extends Thread implements DataAccessConstants {
 				.getButtonCheckForAddonsStart().setEnabled(true);
 		adminPanel.getRepositoryPanel().getDownloadPanel()
 				.getButtonDownloadStart().setEnabled(true);
+		adminPanel.getUploadInformationBox().setVisible(false);
+		adminPanel.getButtonUpload().setText("Upload");
+		adminPanel.getUploadrogressBar().setString("");
+		adminPanel.getUploadrogressBar().setStringPainted(false);
+		adminPanel.getUploadrogressBar().setMaximum(0);
+		adminPanel.getUploadrogressBar().setMinimum(0);
+	}
+
+	private void terminate() {
+
+		repositoryService.setUploading(repositoryName, false);
+		this.interrupt();
+		System.gc();
 	}
 
 	public void cancel() {
 
 		this.canceled = true;
 		adminPanel.getUploadrogressBar().setString("Canceling...");
-		repositoryService.saveTransfertParameters(repositoryName,
-				incrementedFilesSize, lastIndexFileUploaded, true);
-		connexionService.cancel(true);
-		repositoryService.setUploading(repositoryName, false);
+		if (connexionService != null) {
+			connexionService.cancel();
+		}
+		initAdminPanelForEndUpload();
+		terminate();
 	}
 }

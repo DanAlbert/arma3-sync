@@ -7,7 +7,7 @@ import java.util.List;
 import javax.swing.JOptionPane;
 
 import fr.soe.a3s.dto.EventDTO;
-import fr.soe.a3s.exception.RepositoryException;
+import fr.soe.a3s.exception.repository.RepositoryException;
 import fr.soe.a3s.ui.Facade;
 import fr.soe.a3s.ui.repositoryEditor.EventsPanel;
 

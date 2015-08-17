@@ -3,6 +3,7 @@ package fr.soe.a3s.domain;
 import java.io.Serializable;
 
 import fr.soe.a3s.constant.EncryptionMode;
+import fr.soe.a3s.constant.ProtocolType;
 import fr.soe.a3s.constant.TimeOutValues;
 import fr.soe.a3s.exception.CheckException;
 
@@ -16,6 +17,7 @@ public abstract class AbstractProtocole implements Serializable {
 	protected String password;
 	protected String url;
 	protected String port;
+	protected ProtocolType protocolType;
 	protected EncryptionMode encryptionMode;
 	protected String connectionTimeOut;
 	protected String readTimeOut;
@@ -35,6 +37,8 @@ public abstract class AbstractProtocole implements Serializable {
 	public String getPort() {
 		return port;
 	}
+
+	public abstract ProtocolType getProtocolType();
 
 	public EncryptionMode getEncryptionMode() {
 		return encryptionMode;

@@ -44,7 +44,7 @@ import fr.soe.a3s.dto.EventDTO;
 import fr.soe.a3s.dto.TreeDirectoryDTO;
 import fr.soe.a3s.dto.TreeNodeDTO;
 import fr.soe.a3s.exception.CheckException;
-import fr.soe.a3s.exception.RepositoryException;
+import fr.soe.a3s.exception.repository.RepositoryException;
 import fr.soe.a3s.service.RepositoryService;
 import fr.soe.a3s.ui.Facade;
 import fr.soe.a3s.ui.UIConstants;

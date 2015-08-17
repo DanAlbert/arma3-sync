@@ -4,17 +4,16 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.io.IOException;
 
 import javax.swing.JOptionPane;
 
-import fr.soe.a3s.exception.CheckException;
-import fr.soe.a3s.exception.FtpException;
-import fr.soe.a3s.exception.HttpException;
-import fr.soe.a3s.exception.RepositoryException;
+import fr.soe.a3s.exception.repository.RepositoryException;
 import fr.soe.a3s.service.AbstractConnexionService;
-import fr.soe.a3s.service.ConnexionServiceFactory;
-import fr.soe.a3s.service.FtpService;
+import fr.soe.a3s.service.AbstractConnexionServiceFactory;
+import fr.soe.a3s.service.RepositoryService;
 import fr.soe.a3s.ui.Facade;
+import fr.soe.a3s.ui.repositoryEditor.errorDialogs.UnexpectedErrorDialog;
 
 /**
  * This code was edited or generated using CloudGarden's Jigloo SWT/Swing GUI
@@ -29,9 +28,10 @@ import fr.soe.a3s.ui.Facade;
 public class ConnectionPanel extends ProgressPanel {
 
 	private AbstractConnexionService connexion;
-	private String repositoryName;
-	private String eventName;
-	private Thread t;
+	private final String repositoryName;
+	private final String eventName;
+	/* Services */
+	private final RepositoryService repositoryService = new RepositoryService();
 
 	public ConnectionPanel(Facade facade, String repositoryName,
 			String eventName) {
@@ -48,6 +48,7 @@ public class ConnectionPanel extends ProgressPanel {
 		});
 		// Add Listeners
 		addWindowListener(new WindowAdapter() {
+			@Override
 			public void windowClosing(WindowEvent e) {
 				menuExitPerformed();
 			}
@@ -56,23 +57,47 @@ public class ConnectionPanel extends ProgressPanel {
 
 	public void init() {
 
+		facade.getSyncPanel().disableAllButtons();
 		progressBar.setIndeterminate(true);
-		t = new Thread(new Runnable() {
+		Thread t = new Thread(new Runnable() {
 			@Override
 			public void run() {
 				try {
-					connexion = ConnexionServiceFactory
+					System.out.println("Connecting to repository: "
+							+ repositoryName);
+					connexion = AbstractConnexionServiceFactory
 							.getServiceFromRepository(repositoryName);
 					connexion.checkRepository(repositoryName);
+
+					if (repositoryService.getServerInfo(repositoryName) == null) {
+						System.out.println("ServerInfo not found.");
+					}
+					if (repositoryService.getChangelogs(repositoryName) == null) {
+						System.out.println("Changelogs not found.");
+					}
+					if (repositoryService.getAutoconfig(repositoryName) == null) {
+						System.out.println("Autoconfig not found.");
+					}
+					if (repositoryService.getEvents(repositoryName) == null) {
+						System.out.println("Events not found.");
+					}
 				} catch (Exception e) {
-					e.printStackTrace();
-					if (!canceled && e.getMessage()!=null) {
-						setVisible(false);
+					if (e instanceof RepositoryException) {
 						JOptionPane.showMessageDialog(facade.getMainPanel(),
-								e.getMessage(), "Error",
+								e.getMessage(), "Repository",
 								JOptionPane.ERROR_MESSAGE);
+					} else if (!canceled && e instanceof IOException) {
+						System.out.println(e.getMessage());
+					} else {
+						e.printStackTrace();
+						if (!canceled) {
+							UnexpectedErrorDialog dialog = new UnexpectedErrorDialog(
+									facade, "Repository", e, repositoryName);
+							dialog.show();
+						}
 					}
 				} finally {
+					facade.getSyncPanel().enableAllButtons();
 					if (!canceled) {
 						facade.getSyncPanel().init();
 						facade.getOnlinePanel().init();
@@ -83,7 +108,6 @@ public class ConnectionPanel extends ProgressPanel {
 					}
 					setVisible(false);
 					dispose();
-					t.interrupt();
 				}
 			}
 		});
@@ -94,9 +118,8 @@ public class ConnectionPanel extends ProgressPanel {
 		this.setVisible(false);
 		canceled = true;
 		if (connexion != null) {
-			connexion.disconnect();
+			connexion.cancel();
 		}
 		this.dispose();
-		t.interrupt();
 	}
 }

@@ -6,7 +6,7 @@ import fr.soe.a3s.dao.CommonDAO;
 import fr.soe.a3s.dao.ConfigurationDAO;
 import fr.soe.a3s.dao.PreferencesDAO;
 import fr.soe.a3s.dao.ProfileDAO;
-import fr.soe.a3s.dao.RepositoryDAO;
+import fr.soe.a3s.dao.repository.RepositoryDAO;
 import fr.soe.a3s.domain.AutoConfig;
 import fr.soe.a3s.domain.Profile;
 import fr.soe.a3s.domain.configration.FavoriteServer;
@@ -64,7 +64,7 @@ public class CommonService {
 			Repository repository = repositoryDAO.getMap().get(repositoryName);
 			if (repository != null) {
 				Repository clonedRepository = new Repository(
-						repository.getName(), repository.getProtocole());
+						repository.getName(), repository.getProtocol());
 				autoConfig.getRepositories().add(clonedRepository);
 			}
 		}

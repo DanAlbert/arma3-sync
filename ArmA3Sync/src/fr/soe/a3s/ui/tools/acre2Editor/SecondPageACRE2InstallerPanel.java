@@ -9,12 +9,15 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.border.BevelBorder;
 
@@ -106,16 +109,32 @@ public class SecondPageACRE2InstallerPanel extends WizardPanel {
 		boolean copyPlugin = false;
 		this.ts3Directory = ts3Directory;
 
-		/* Copy plugin to TS3 */
-		File sourceLocation = new File(acrePuginPath);
-		File targetLocation = new File(ts3Directory + "/plugins/"
-				+ sourceLocation.getName());
-		try {
-			FileAccessMethods.copyFile(sourceLocation, targetLocation);
-			copyPlugin = true;
-		} catch (IOException e) {
-			e.printStackTrace();
+		/* Check write permissions on TS3 directory */
+		boolean writeOK = Files.isWritable(FileSystems.getDefault().getPath(
+				ts3Directory));
+		if (!writeOK) {
+			JOptionPane.showMessageDialog(facade.getMainPanel(),
+					"Can't to write on: " + ts3Directory + "\n"
+							+ "Check files permissions.", "Error",
+					JOptionPane.ERROR_MESSAGE);
 			copyPlugin = false;
+		} else {
+			/* Copy plugin to TS3 */
+			File sourceLocation = new File(acrePuginPath);
+			File targetLocation = new File(ts3Directory + "/plugins/"
+					+ sourceLocation.getName());
+			try {
+				FileAccessMethods.copyDirectory(sourceLocation, targetLocation);
+				copyPlugin = true;
+			} catch (IOException e) {
+				e.printStackTrace();
+				copyPlugin = false;
+				JOptionPane.showMessageDialog(
+						facade.getMainPanel(),
+						"Failed to write on: " + ts3Directory + "\n"
+								+ e.getMessage(), "Error",
+						JOptionPane.ERROR_MESSAGE);
+			}
 		}
 
 		labelCopyPluginValue.setFont(new Font("Tohama", Font.BOLD, 12));

@@ -7,6 +7,7 @@ public interface SyncTreeNodeDTO extends java.lang.Comparable {
 	public String RACINE = "racine";
 	public String getName();
 	public void setName(String name);
+	@Override
 	public String toString();
 	public SyncTreeDirectoryDTO getParent();
 	public void setParent(SyncTreeDirectoryDTO parent);

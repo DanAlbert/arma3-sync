@@ -15,7 +15,9 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -35,16 +37,20 @@ import javax.swing.JPopupMenu;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 
-import fr.soe.a3s.constant.Protocol;
+import fr.soe.a3s.constant.ProtocolType;
 import fr.soe.a3s.dao.DataAccessConstants;
+import fr.soe.a3s.dao.connection.AutoConfigURLAccessMethods;
+import fr.soe.a3s.domain.AbstractProtocole;
 import fr.soe.a3s.dto.AutoConfigDTO;
 import fr.soe.a3s.dto.ProtocolDTO;
 import fr.soe.a3s.dto.RepositoryDTO;
 import fr.soe.a3s.exception.CheckException;
-import fr.soe.a3s.exception.RepositoryException;
 import fr.soe.a3s.exception.WritingException;
+import fr.soe.a3s.exception.remote.RemoteAutoconfigFileNotFoundException;
+import fr.soe.a3s.exception.repository.RepositoryException;
+import fr.soe.a3s.exception.repository.RepositoryNotFoundException;
 import fr.soe.a3s.service.AbstractConnexionService;
-import fr.soe.a3s.service.ConnexionServiceFactory;
+import fr.soe.a3s.service.AbstractConnexionServiceFactory;
 import fr.soe.a3s.service.RepositoryService;
 import fr.soe.a3s.ui.Facade;
 import fr.soe.a3s.ui.UIConstants;
@@ -83,7 +89,7 @@ public class RepositoryEditPanel extends JDialog implements UIConstants,
 	private JPanel repositoryPanel, connectionPanel, protocolPanel;
 	private JPasswordField passwordField;
 	private char[] password;
-	private String initialRepositoryName = "";
+	private String initialRepositoryName = null;
 	private JComboBox comboBoxProtocol;
 	private final JPopupMenu popup;
 	private final JMenuItem menuItemPaste;
@@ -93,7 +99,7 @@ public class RepositoryEditPanel extends JDialog implements UIConstants,
 	private final RepositoryService repositoryService = new RepositoryService();
 
 	public RepositoryEditPanel(Facade facade) {
-		super(facade.getMainPanel(), "New repository", true);
+		super(facade.getMainPanel(), "Repository", true);
 		this.facade = facade;
 		this.setResizable(false);
 		this.setSize(405, 400);
@@ -185,8 +191,9 @@ public class RepositoryEditPanel extends JDialog implements UIConstants,
 					comboBoxProtocol.setFocusable(false);
 					protocolPanel.add(comboBoxProtocol);
 					ComboBoxModel comboBoxProtocolModel = new DefaultComboBoxModel(
-							new String[] { Protocol.FTP.getDescription(),
-									Protocol.HTTP.getDescription() });
+							new String[] { ProtocolType.FTP.getDescription(),
+									ProtocolType.HTTP.getDescription(),
+									ProtocolType.HTTPS.getDescription() });
 					comboBoxProtocol.setModel(comboBoxProtocolModel);
 					comboBoxProtocol.setBounds(141, 24, 77, 23);
 				}
@@ -206,7 +213,6 @@ public class RepositoryEditPanel extends JDialog implements UIConstants,
 					textFieldHost = new JTextField();
 					connectionPanel.add(textFieldHost);
 					textFieldHost.setBounds(18, 38, 250, 24);
-					textFieldHost.setText("ftp://");
 				}
 				{
 					labelPort = new JLabel();
@@ -218,7 +224,6 @@ public class RepositoryEditPanel extends JDialog implements UIConstants,
 					textFieldPort = new JTextField();
 					connectionPanel.add(textFieldPort);
 					textFieldPort.setBounds(280, 38, 80, 24);
-					textFieldPort.setText("21");
 				}
 				{
 					labelLogin = new JLabel();
@@ -356,16 +361,26 @@ public class RepositoryEditPanel extends JDialog implements UIConstants,
 		});
 	}
 
+	public void init() {
+
+		this.setTitle("New repository");
+		this.textFieldHost.setText(ProtocolType.FTP.getPrompt());
+		this.textFieldPort.setText(ProtocolType.FTP.getDefaultPort());
+	}
+
 	public void init(String repositoryName) {
 
+		this.setTitle("Edit repository");
+		this.textFieldHost.setText(ProtocolType.FTP.getPrompt());
+		this.textFieldPort.setText(ProtocolType.FTP.getDefaultPort());
+
 		try {
-			this.setTitle("Edit repository");
 			RepositoryDTO repositoryDTO = repositoryService
 					.getRepository(repositoryName);
 			initialRepositoryName = repositoryName;
 			textFieldRepositoryName.setText(repositoryDTO.getName());
 			ProtocolDTO protocoleDTO = repositoryDTO.getProtocoleDTO();
-			Protocol protocole = protocoleDTO.getProtocole();
+			ProtocolType protocole = protocoleDTO.getProtocolType();
 			comboBoxProtocol.setSelectedItem(protocole.getDescription());
 			textFieldHost.setText(protocole.getDescription().toLowerCase()
 					+ "://" + protocoleDTO.getUrl());
@@ -422,10 +437,23 @@ public class RepositoryEditPanel extends JDialog implements UIConstants,
 					return;
 				}
 
+				// Determine protocol
+				AbstractProtocole protocol = null;
+				try {
+					protocol = AutoConfigURLAccessMethods.parse(url);
+				} catch (CheckException e) {
+					JOptionPane.showMessageDialog(facade.getMainPanel(),
+							e.getMessage(), "Warning",
+							JOptionPane.WARNING_MESSAGE);
+					return;
+				}
+
+				assert (protocol != null);
+
 				AbstractConnexionService connexion = null;
 				try {
-					connexion = ConnexionServiceFactory.getServiceFromUrl(url);
-					assert (connexion != null);
+					connexion = AbstractConnexionServiceFactory
+							.getServiceFromProtocol(protocol);
 				} catch (CheckException e) {
 					JOptionPane.showMessageDialog(facade.getMainPanel(),
 							e.getMessage(), "Error",
@@ -433,13 +461,15 @@ public class RepositoryEditPanel extends JDialog implements UIConstants,
 					return;
 				}
 
+				assert (connexion != null);
+
 				labelConnection.setText("Connecting to repository...");
 				labelConnection.setFont(new Font("Tohama", Font.ITALIC, 11));
 				labelConnection.setForeground(Color.BLACK);
 
 				try {
 					AutoConfigDTO autoConfigDTO = connexion
-							.importAutoConfig(url);
+							.importAutoConfig(protocol);
 					if (autoConfigDTO != null) {
 						// Init UI fields
 						labelConnection.setText("Connection success!");
@@ -448,11 +478,11 @@ public class RepositoryEditPanel extends JDialog implements UIConstants,
 						labelConnection.setForeground(new Color(45, 125, 45));
 						textFieldRepositoryName.setText(autoConfigDTO
 								.getRepositoryName());
-						Protocol protocole = autoConfigDTO.getProtocoleDTO()
-								.getProtocole();
-						comboBoxProtocol.setSelectedItem(protocole
+						ProtocolType protocolType = autoConfigDTO
+								.getProtocoleDTO().getProtocolType();
+						comboBoxProtocol.setSelectedItem(protocolType
 								.getDescription());
-						textFieldHost.setText(protocole.getPrompt()
+						textFieldHost.setText(protocolType.getPrompt()
 								+ autoConfigDTO.getProtocoleDTO().getUrl());
 						textFieldLogin.setText(autoConfigDTO.getProtocoleDTO()
 								.getLogin());
@@ -475,6 +505,7 @@ public class RepositoryEditPanel extends JDialog implements UIConstants,
 						labelConnection.setFont(new Font("Tohama", Font.ITALIC,
 								11));
 						labelConnection.setForeground(Color.RED);
+						throw new RemoteAutoconfigFileNotFoundException();
 					}
 				} catch (Exception e) {
 					labelConnection.setText("Url is not reachable!");
@@ -498,25 +529,41 @@ public class RepositoryEditPanel extends JDialog implements UIConstants,
 
 		String name = textFieldRepositoryName.getText().trim();
 
-		// Pattern p = Pattern.compile("[^ \\w]");
-		// Matcher m = p.matcher(name);
-		// if (m.find()) {
-		// JOptionPane.showMessageDialog(this,
-		// "Repository must not contains special characters.",
-		// "Warning", JOptionPane.WARNING_MESSAGE);
-		// return;
-		// }
-
-		if (name.contains("/") || name.contains("\\")) {
-			JOptionPane.showMessageDialog(this,
-					"Repository must not contains characters / or \\",
-					"Warning", JOptionPane.WARNING_MESSAGE);
-			return;
+		List<String> forbiddenCharactersList = new ArrayList<String>();
+		forbiddenCharactersList.add("/");
+		forbiddenCharactersList.add("\\");
+		forbiddenCharactersList.add("*");
+		forbiddenCharactersList.add("?");
+		forbiddenCharactersList.add("\"");
+		forbiddenCharactersList.add("<");
+		forbiddenCharactersList.add(">");
+		forbiddenCharactersList.add("|");
+		String forbiddenCharactersLine = "";
+		for (String stg : forbiddenCharactersList) {
+			forbiddenCharactersLine = forbiddenCharactersLine + " " + stg;
 		}
 
-		String url = textFieldHost.getText()
-				.replace(Protocol.FTP.getPrompt(), "")
-				.replace(Protocol.HTTP.getPrompt(), "").trim();
+		for (String stg : forbiddenCharactersList) {
+			if (name.contains(stg)) {
+				String message = "Repository name must not contains special characters like:"
+						+ forbiddenCharactersLine;
+				JOptionPane.showMessageDialog(this, message, "Warning",
+						JOptionPane.WARNING_MESSAGE);
+				return;
+			}
+		}
+
+		String url = textFieldHost.getText().trim();
+
+		String test = url.toLowerCase()
+				.replaceAll(ProtocolType.FTP.getPrompt(), "")
+				.replaceAll(ProtocolType.HTTP.getPrompt(), "")
+				.replaceAll(ProtocolType.HTTPS.getPrompt(), "");
+		if (url.length() > test.length()) {
+			int index = url.length() - test.length();
+			url = url.substring(index);
+		}
+
 		String port = textFieldPort.getText().trim();
 		String login = textFieldLogin.getText().trim();
 		password = passwordField.getPassword();
@@ -524,7 +571,7 @@ public class RepositoryEditPanel extends JDialog implements UIConstants,
 		for (int i = 0; i < password.length; i++) {
 			pass = pass + password[i];
 		}
-		Protocol protocole = Protocol.getEnum((String) comboBoxProtocol
+		ProtocolType protocole = ProtocolType.getEnum((String) comboBoxProtocol
 				.getSelectedItem());
 
 		assert (protocole != null);
@@ -538,19 +585,16 @@ public class RepositoryEditPanel extends JDialog implements UIConstants,
 			repositoryService.createRepository(name, url, port, login, pass,
 					protocole, connectionTimeOut, readTimeOut);
 
-			if (!initialRepositoryName.equals(name)) {
-				repositoryService.removeRepository(initialRepositoryName);
+			if (initialRepositoryName != null) {
+				if (!initialRepositoryName.equals(name)) {
+					repositoryService.removeRepository(initialRepositoryName);
+				}
 			}
-
 			repositoryService.write(name);
-		} catch (CheckException e) {
+		} catch (RepositoryNotFoundException | CheckException
+				| WritingException e) {
 			JOptionPane.showMessageDialog(this, e.getMessage(), "Error",
-					JOptionPane.WARNING_MESSAGE);
-			return;
-		} catch (WritingException e) {
-			JOptionPane.showMessageDialog(this,
-					"An error occured. \n Failded to write repository.",
-					"Error", JOptionPane.ERROR_MESSAGE);
+					JOptionPane.ERROR_MESSAGE);
 			return;
 		}
 
@@ -575,13 +619,12 @@ public class RepositoryEditPanel extends JDialog implements UIConstants,
 	}
 
 	private void comboBoxProtocolPerformed() {
-		if (comboBoxProtocol.getSelectedItem().equals(
-				Protocol.HTTP.getDescription())) {
-			textFieldHost.setText("http://");
-			textFieldPort.setText("80");
-		} else {
-			textFieldHost.setText("ftp://");
-			textFieldPort.setText("21");
+
+		String description = (String) comboBoxProtocol.getSelectedItem();
+		ProtocolType protocolType = ProtocolType.getEnum(description);
+		if (protocolType != null) {
+			textFieldHost.setText(protocolType.getPrompt());
+			textFieldPort.setText(protocolType.getDefaultPort());
 		}
 	}
 

@@ -15,12 +15,16 @@ public class ServerInfo implements Serializable {
 	private Date buildDate;
 	private long numberOfFiles;
 	private long totalFilesSize;
-	/* Server data: Hide extra local folder content */
+	/** Server data: Hide extra local folder content */
 	private Set<String> hiddenFolderPaths = new HashSet<String>();
-	/* Number of client connections */
-	private int numberOfConnections;
-	/* Repository content have changed since last Build */
-	public boolean repositoryContentUpdated;
+	/** Number of client connections */
+	private int numberOfConnections = 1;
+	/** Perform partial file transfer */
+	private boolean noPartialFileTransfer = false;
+	/** Repository content have changed since last Build */
+	public boolean repositoryContentUpdated = false;
+	/** Repository contents only compressed pbo files */
+	public boolean compressedPboFilesOnly = false;
 
 	public int getRevision() {
 		return revision;
@@ -75,5 +79,21 @@ public class ServerInfo implements Serializable {
 
 	public void setRepositoryContentUpdated(boolean repositoryContentUpdated) {
 		this.repositoryContentUpdated = repositoryContentUpdated;
+	}
+
+	public boolean isNoPartialFileTransfer() {
+		return noPartialFileTransfer;
+	}
+
+	public void setNoPartialFileTransfer(boolean performPartialFileTransfer) {
+		this.noPartialFileTransfer = performPartialFileTransfer;
+	}
+
+	public boolean isCompressedPboFilesOnly() {
+		return compressedPboFilesOnly;
+	}
+
+	public void setCompressedPboFilesOnly(boolean compressedPboFilesOnly) {
+		this.compressedPboFilesOnly = compressedPboFilesOnly;
 	}
 }

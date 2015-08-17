@@ -7,13 +7,13 @@ import java.awt.event.WindowEvent;
 
 import javax.swing.JOptionPane;
 
-import fr.soe.a3s.constant.Protocol;
+import fr.soe.a3s.constant.ProtocolType;
 import fr.soe.a3s.dto.ProtocolDTO;
 import fr.soe.a3s.dto.RepositoryDTO;
 import fr.soe.a3s.exception.CheckException;
-import fr.soe.a3s.exception.RepositoryException;
+import fr.soe.a3s.exception.repository.RepositoryException;
 import fr.soe.a3s.service.AbstractConnexionService;
-import fr.soe.a3s.service.ConnexionServiceFactory;
+import fr.soe.a3s.service.AbstractConnexionServiceFactory;
 import fr.soe.a3s.service.RepositoryService;
 import fr.soe.a3s.ui.Facade;
 
@@ -51,10 +51,11 @@ public class UploadEventsPanel extends ProgressPanel {
 			RepositoryDTO repositoryDTO = repositoryService
 					.getRepository(repositoryName);
 			ProtocolDTO protocoleDTO = repositoryDTO.getProtocoleDTO();
-			Protocol protocole = protocoleDTO.getProtocole();
+			ProtocolType protocole = protocoleDTO.getProtocolType();
 			ProtocolDTO uploadProtocoleDTO = repositoryDTO
 					.getRepositoryUploadProtocoleDTO();
-			if (uploadProtocoleDTO == null && protocole.equals(Protocol.FTP)) {
+			if (uploadProtocoleDTO == null
+					&& protocole.equals(ProtocolType.FTP)) {
 				repositoryService.setRepositoryUploadProtocole(repositoryName,
 						protocoleDTO.getUrl(), protocoleDTO.getPort(),
 						protocoleDTO.getLogin(), protocoleDTO.getPassword(),
@@ -79,7 +80,7 @@ public class UploadEventsPanel extends ProgressPanel {
 			@Override
 			public void run() {
 				try {
-					connexion = ConnexionServiceFactory
+					connexion = AbstractConnexionServiceFactory
 							.getRepositoryUploadServiceFromRepository(repositoryName);
 					boolean response = connexion.upLoadEvents(repositoryName);
 					setVisible(false);
@@ -120,13 +121,12 @@ public class UploadEventsPanel extends ProgressPanel {
 	}
 
 	private void menuExitPerformed() {
+
 		this.setVisible(false);
 		canceled = true;
 		if (connexion != null) {
-			connexion.disconnect();
+			connexion.cancel();
 		}
 		this.dispose();
-		t.interrupt();
 	}
-
 }

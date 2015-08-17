@@ -1,18 +1,14 @@
 package fr.soe.a3s.dao;
 
-import java.io.BufferedReader;
 import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.FileReader;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.StringTokenizer;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
-
-import javax.swing.JOptionPane;
 
 import fr.soe.a3s.domain.configration.Configuration;
 import fr.soe.a3s.exception.LoadingException;
@@ -373,4 +369,5 @@ public class ConfigurationDAO implements DataAccessConstants {
 		}
 		return arma3RPTfolderPath;
 	}
+
 }

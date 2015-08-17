@@ -31,7 +31,7 @@ import javax.swing.table.TableColumn;
 import fr.soe.a3s.dto.EventDTO;
 import fr.soe.a3s.dto.RepositoryDTO;
 import fr.soe.a3s.dto.configuration.FavoriteServerDTO;
-import fr.soe.a3s.exception.RepositoryException;
+import fr.soe.a3s.exception.repository.RepositoryException;
 import fr.soe.a3s.service.ConfigurationService;
 import fr.soe.a3s.service.RepositoryService;
 import fr.soe.a3s.ui.Facade;

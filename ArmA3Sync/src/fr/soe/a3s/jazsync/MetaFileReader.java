@@ -33,7 +33,9 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
-import java.net.MalformedURLException;
+
+import fr.soe.a3s.dao.connection.MyHttpConnection;
+import fr.soe.a3s.exception.HttpException;
 
 /**
  * Class used to read metafile
@@ -45,7 +47,7 @@ public class MetaFileReader {
 	private File metafile;;
 	private ChainingHash hashtable;
 	private int fileOffset;
-	private int blockNum;
+	private final int blockNum;
 
 	/** Authentication variables */
 	private String username;
@@ -80,30 +82,20 @@ public class MetaFileReader {
 	 * 
 	 * @param args
 	 *            Arguments
+	 * @throws HttpException
 	 * @throws Exception
 	 */
-	public MetaFileReader(String relativeZsyncFileUrl, HttpConnection http)
-			throws Exception {
+	public MetaFileReader(String relativeZsyncFileUrl, MyHttpConnection http)
+			throws IOException, HttpException {
 
-		try {
-			http.openConnection(relativeZsyncFileUrl);
-			http.sendRequest();
-			http.getResponseHeader();
-			byte[] mfBytes = http.getResponseBodyForZsyncFile();
-			downloadedMetafile = mfBytes.length;
-			http.closeConnection();
-			readMetaFile(convertBytesToString(mfBytes));
-			blockNum = (int) Math.ceil((double) mf_length
-					/ (double) mf_blocksize);
-			fillHashTable(mfBytes);
-		} catch (MalformedURLException e) {
-			String message = "Wrong .zsync file URL: " + e.getMessage();
-			throw new Exception(message, e);
-		} catch (Exception e) {
-			String message = "Failed to retrieve .zsync file for URL: "
-					+ e.getMessage();
-			throw new Exception(message, e);
-		}
+		http.openConnection(relativeZsyncFileUrl);
+		http.getResponseHeader();
+		byte[] mfBytes = http.getResponseBody();
+		http.closeConnection();
+		downloadedMetafile = mfBytes.length;
+		readMetaFile(convertBytesToString(mfBytes));
+		blockNum = (int) Math.ceil((double) mf_length / (double) mf_blocksize);
+		fillHashTable(mfBytes);
 	}
 
 	/**

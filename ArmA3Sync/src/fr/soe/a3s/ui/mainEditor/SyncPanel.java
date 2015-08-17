@@ -37,7 +37,8 @@ import javax.swing.table.TableColumn;
 import fr.soe.a3s.constant.RepositoryStatus;
 import fr.soe.a3s.dto.EventDTO;
 import fr.soe.a3s.dto.RepositoryDTO;
-import fr.soe.a3s.exception.RepositoryException;
+import fr.soe.a3s.exception.repository.RepositoryException;
+import fr.soe.a3s.exception.repository.RepositoryNotFoundException;
 import fr.soe.a3s.service.RepositoryService;
 import fr.soe.a3s.ui.Facade;
 import fr.soe.a3s.ui.UIConstants;
@@ -348,6 +349,7 @@ public class SyncPanel extends JPanel implements UIConstants {
 	private void buttonNewPerformed() {
 		RepositoryEditPanel repositoryEditPanel = new RepositoryEditPanel(
 				facade);
+		repositoryEditPanel.init();
 		repositoryEditPanel.setVisible(true);
 	}
 
@@ -390,8 +392,12 @@ public class SyncPanel extends JPanel implements UIConstants {
 			return;
 		}
 		String name = (String) model.getValueAt(index, 0);
-		repositoryService.removeRepository(name);
-		refresh();
+		try {
+			repositoryService.removeRepository(name);
+			refresh();
+		} catch (RepositoryNotFoundException e) {
+			e.printStackTrace();
+		}
 	}
 
 	private void buttonSyncPerformed() {
@@ -457,12 +463,26 @@ public class SyncPanel extends JPanel implements UIConstants {
 		}
 	}
 
-	public JButton getButtonSync1() {
-		return buttonSync1;
+	public void enableAllButtons() {
+
+		buttonNew.setEnabled(true);
+		buttonEdit.setEnabled(true);
+		buttonRemove.setEnabled(true);
+		buttonSync1.setEnabled(true);
+		buttonConnectToRepository.setEnabled(true);
+		buttonSync2.setEnabled(true);
+		buttonCheckEvent.setEnabled(true);
 	}
 
-	public JButton getButtonSync2() {
-		return buttonSync2;
+	public void disableAllButtons() {
+
+		buttonNew.setEnabled(false);
+		buttonEdit.setEnabled(false);
+		buttonRemove.setEnabled(false);
+		buttonSync1.setEnabled(false);
+		buttonConnectToRepository.setEnabled(false);
+		buttonSync2.setEnabled(false);
+		buttonCheckEvent.setEnabled(false);
 	}
 
 	class MyTableModel extends AbstractTableModel {

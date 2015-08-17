@@ -278,7 +278,7 @@ public class ProfileService extends ObjectDTOtransformer {
 		if (profile != null) {
 			TreeDirectory treeDirectory = profile.getTree();
 			treeDirectory.getList().clear();
-			transform2TreeDirectory(treeDirectoryDTO, treeDirectory);
+			transformDTO2TreeDirectory(treeDirectoryDTO, treeDirectory);
 		}
 	}
 

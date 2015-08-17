@@ -4,7 +4,6 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 
 import fr.soe.a3s.constant.GameSystemFolders;
 import fr.soe.a3s.dao.AddonDAO;
@@ -38,10 +37,11 @@ public class AddonService {
 		if (availableAddonsTreeInstance == null) {
 
 			List<String> list = new ArrayList<String>();
-			
-			String profileName = configurationDAO.getConfiguration().getProfileName();
+
+			String profileName = configurationDAO.getConfiguration()
+					.getProfileName();
 			Profile profile = profileDAO.getMap().get(profileName);
-			if (profile!=null){
+			if (profile != null) {
 				Iterator iter = profile.getAddonSearchDirectories().iterator();
 				while (iter.hasNext()) {
 					list.add((String) iter.next());
@@ -53,34 +53,47 @@ public class AddonService {
 			for (int i = 0; i < list.size(); i++) {
 				String ipath = list.get(i);
 				String ipathForCompare = ipath;
-				
-				if (!new File(ipath).exists()){
+
+				if (!new File(ipath).exists()) {
 					continue;
 				}
-				
+
 				String osName = System.getProperty("os.name");
 				if (osName.contains("Windows")) {
 					ipathForCompare = ipath.toLowerCase();
 				}
 				String pathToKeep = ipath;
-				
+
 				File iparentFile = new File(ipath).getParentFile();
-				
+
+				if (iparentFile == null) {
+					continue;
+				} else if (!iparentFile.exists()) {
+					continue;
+				}
+
 				for (int j = 0; j < list.size(); j++) {
 					String jpath = list.get(j);
-					
-					if (!new File(jpath).exists()){
+
+					if (!new File(jpath).exists()) {
 						continue;
 					}
-					
+
 					String jpathForCompare = jpath;
 					if (osName.contains("Windows")) {
 						jpathForCompare = jpath.toLowerCase();
 					}
-					
+
 					File jparentFile = new File(jpath).getParentFile();
-					
-					if (!iparentFile.equals(jparentFile)){
+
+					if (jparentFile == null) {
+						continue;
+					} else if (!jparentFile.exists()) {
+						continue;
+					}
+
+					if (!iparentFile.getAbsolutePath().equals(
+							jparentFile.getAbsolutePath())) {
 						if (ipathForCompare.contains(jpathForCompare)
 								|| jpathForCompare.contains(ipathForCompare)) {
 							if (jpath.length() < pathToKeep.length()) {
@@ -89,12 +102,12 @@ public class AddonService {
 						}
 					}
 				}
-				
-				if (!newList.contains(pathToKeep)){
+
+				if (!newList.contains(pathToKeep)) {
 					newList.add(pathToKeep);
 				}
 			}
-			
+
 			addonDAO.getMap().clear();
 			TreeDirectory racine = new TreeDirectory("racine1", null);
 

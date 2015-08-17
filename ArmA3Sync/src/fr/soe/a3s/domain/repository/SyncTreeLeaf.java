@@ -12,11 +12,13 @@ public class SyncTreeLeaf implements SyncTreeNode, Serializable {
 	private SyncTreeDirectory parent;
 	private String sha1;
 	private long size;
+	private long compressedSize;
 	private transient long complete;// file completion in %
 	private transient String destinationPath;
 	private transient String localSHA1;
 	private boolean updated = false;
 	private boolean deleted = false;
+	private boolean compressed = false;
 
 	public SyncTreeLeaf(String name, SyncTreeDirectory parent) {
 		super();
@@ -118,5 +120,21 @@ public class SyncTreeLeaf implements SyncTreeNode, Serializable {
 	@Override
 	public boolean isUpdated() {
 		return this.updated;
+	}
+
+	public boolean isCompressed() {
+		return this.compressed;
+	}
+
+	public void setCompressed(boolean compressed) {
+		this.compressed = compressed;
+	}
+
+	public long getCompressedSize() {
+		return compressedSize;
+	}
+
+	public void setCompressedSize(long compressedSize) {
+		this.compressedSize = compressedSize;
 	}
 }

@@ -5,7 +5,6 @@ public interface DataAccessConstants {
 	/** Resources */
 	// String INSTALLATION_PATH = System.getProperty("user.dir");
 	String INSTALLATION_PATH = ".";
-
 	String HOME_PATH = System.getProperty("user.home");
 	String CONFIGURATION_FILE_PATH = INSTALLATION_PATH
 			+ "/resources/configuration/a3s.cfg";
@@ -24,6 +23,7 @@ public interface DataAccessConstants {
 	String AUTOCONFIG_EXTENSION = ".a3s.autoconfig";
 	String ZSYNC_EXTENSION = ".zsync";
 	String PART_EXTENSION = ".part";
+	String ZIP_EXTENSION = ".zip";
 	String PBO_EXTENSION = ".pbo";
 	String PBO_ZIP_EXTENSION = ".pbo.zip";
 
@@ -48,5 +48,4 @@ public interface DataAccessConstants {
 	String SYNC = "sync";
 	String CHANGELOGS = "changelogs";
 	String EVENTS = "events";
-
 }

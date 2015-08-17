@@ -28,7 +28,8 @@ public class Repository implements Serializable {
 	private boolean outOfSynk = false;
 	private boolean noAutoDiscover = true;
 	private boolean exactMatch = false;
-	/* Local set for Hide extra local folder content */
+
+	/** Local set for Hide extra local folder content */
 	private Set<String> hidddenFolderPaths = new HashSet<String>();
 
 	/** Check for Addons */
@@ -37,14 +38,19 @@ public class Repository implements Serializable {
 	private transient Changelogs changelogs;// Gets from remote location
 	private transient Events events;// Gets from remote location
 	private transient AutoConfig autoConfig;// Gets from remote location
-	/* Local data: SHA1 computation for Client synchronization */
+
+	/** Local data: SHA1 computation for Client synchronization */
 	private Map<String, FileAttributes> mapFilesForSync = new HashMap<String, FileAttributes>();// <Path,FileAttrbutes>
 
 	/** Repository download */
+	private int numberOfClientConnections = 1;
+	private double maximumClientDownloadSpeed = 0;
+	private transient String downloadReport;
 	private transient boolean downloading;
 
 	/** Repository upload */
 	private AbstractProtocole repositoryUploadProtocole;
+	private boolean uploadCompressedPboFilesOnly = false;
 	private transient ServerInfo localServerInfo;
 	private transient SyncTreeDirectory localSync;
 	private transient Changelogs localChangelogs;
@@ -55,12 +61,19 @@ public class Repository implements Serializable {
 	private transient int lastIndexFileTransfered;
 	private transient long incrementedFilesSize;
 
-	/** Repository build options */
+	/** Repository build */
+	private int numberOfConnections = 1;
+	private boolean compressed = false;
+	private boolean noPartialFileTransfer = false;
 	private List<FavoriteServer> favoriteServersSetToAutoconfig = new ArrayList<FavoriteServer>();
 	private Set<String> excludedFilesFromBuild = new HashSet<String>();
 	private Set<String> excludedFoldersFromSync = new HashSet<String>();
-	private int numberOfConnections;
-	/* Local data: SHA1 computation for Build repository */
+	private transient boolean building;
+
+	/** Repository check */
+	private transient boolean checking;
+
+	/** Local data: SHA1 computation for Build repository */
 	private Map<String, FileAttributes> mapFilesForBuild = new HashMap<String, FileAttributes>();// <Path,FileAttrbutes>
 
 	public Repository(String name, AbstractProtocole protocole) {
@@ -76,12 +89,12 @@ public class Repository implements Serializable {
 		this.name = name;
 	}
 
-	public AbstractProtocole getProtocole() {
+	public AbstractProtocole getProtocol() {
 		return protocole;
 	}
 
-	public void setProtocole(AbstractProtocole protocole) {
-		this.protocole = protocole;
+	public void setProtocol(AbstractProtocole protocol) {
+		this.protocole = protocol;
 	}
 
 	public boolean isNotify() {
@@ -335,5 +348,77 @@ public class Repository implements Serializable {
 
 	public void setNumberOfConnections(int numberOfConnections) {
 		this.numberOfConnections = numberOfConnections;
+	}
+
+	public boolean isCompressed() {
+		return this.compressed;
+	}
+
+	public void setCompressed(boolean compressed) {
+		this.compressed = compressed;
+	}
+
+	public boolean isBuilding() {
+		return this.building;
+	}
+
+	public void setBuilding(boolean value) {
+		this.building = value;
+	}
+
+	public boolean isUsePartialFileTransfer() {
+		if (this.noPartialFileTransfer) {
+			return false;
+		} else {
+			return true;
+		}
+	}
+
+	public void setUsePartialFileTransfer(boolean usePartialFileTransfer) {
+		if (usePartialFileTransfer) {
+			this.noPartialFileTransfer = false;
+		} else {
+			this.noPartialFileTransfer = true;
+		}
+	}
+
+	public boolean isChecking() {
+		return this.checking;
+	}
+
+	public void setChecking(boolean value) {
+		this.checking = value;
+	}
+
+	public boolean isUploadCompressedPboFilesOnly() {
+		return uploadCompressedPboFilesOnly;
+	}
+
+	public void setUploadCompressedPboFilesOnly(boolean value) {
+		this.uploadCompressedPboFilesOnly = value;
+	}
+
+	public String getDownloadReport() {
+		return this.downloadReport;
+	}
+
+	public void setDownloadReport(String downloadReport) {
+		this.downloadReport = downloadReport;
+	}
+
+	public int getNumberOfClientConnections() {
+		return numberOfClientConnections;
+	}
+
+	public void setNumberOfClientConnections(int numberOfClientConnections) {
+		this.numberOfClientConnections = numberOfClientConnections;
+	}
+
+	public double getMaximumClientDownloadSpeed() {
+		return maximumClientDownloadSpeed;
+	}
+
+	public void setMaximumClientDownloadSpeed(double maximumClientDownloadSpeed) {
+		this.maximumClientDownloadSpeed = maximumClientDownloadSpeed;
 	}
 }

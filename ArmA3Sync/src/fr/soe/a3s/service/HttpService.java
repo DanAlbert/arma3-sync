@@ -3,19 +3,19 @@ package fr.soe.a3s.service;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.net.ConnectException;
 import java.net.SocketTimeoutException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Stack;
 
-import fr.soe.a3s.controller.ObserverFileDownload;
-import fr.soe.a3s.dao.AbstractConnexionDAO;
+import fr.soe.a3s.controller.ObserverProceed;
 import fr.soe.a3s.dao.ConfigurationDAO;
 import fr.soe.a3s.dao.DataAccessConstants;
-import fr.soe.a3s.dao.HttpDAO;
-import fr.soe.a3s.dao.RepositoryDAO;
+import fr.soe.a3s.dao.connection.AbstractConnexionDAO;
+import fr.soe.a3s.dao.connection.HttpDAO;
+import fr.soe.a3s.dao.repository.RepositoryDAO;
+import fr.soe.a3s.dao.zip.UnZipFlowProcessor;
+import fr.soe.a3s.domain.AbstractProtocole;
 import fr.soe.a3s.domain.configration.FavoriteServer;
 import fr.soe.a3s.domain.repository.AutoConfig;
 import fr.soe.a3s.domain.repository.Changelogs;
@@ -23,24 +23,31 @@ import fr.soe.a3s.domain.repository.Events;
 import fr.soe.a3s.domain.repository.Repository;
 import fr.soe.a3s.domain.repository.ServerInfo;
 import fr.soe.a3s.domain.repository.SyncTreeDirectory;
+import fr.soe.a3s.domain.repository.SyncTreeLeaf;
+import fr.soe.a3s.domain.repository.SyncTreeNode;
 import fr.soe.a3s.dto.AutoConfigDTO;
 import fr.soe.a3s.dto.sync.SyncTreeDirectoryDTO;
 import fr.soe.a3s.dto.sync.SyncTreeLeafDTO;
 import fr.soe.a3s.dto.sync.SyncTreeNodeDTO;
-import fr.soe.a3s.exception.FtpException;
-import fr.soe.a3s.exception.HttpException;
-import fr.soe.a3s.exception.RepositoryException;
+import fr.soe.a3s.exception.repository.RepositoryException;
+import fr.soe.a3s.exception.repository.RepositoryNotFoundException;
+import fr.soe.a3s.exception.repository.ServerInfoNotFoundException;
+import fr.soe.a3s.exception.repository.SyncFileNotFoundException;
 
 public class HttpService extends AbstractConnexionService implements
 		DataAccessConstants {
 
 	private final List<HttpDAO> httpDAOPool = new ArrayList<HttpDAO>();
-	private final Stack<SyncTreeNodeDTO> downloadFilesStack = new Stack<SyncTreeNodeDTO>();
-	private final List<Exception> errors = new ArrayList<Exception>();
-	private int semaphore = 1;
-	private int timeoutErrors = 0;
+	private Stack<SyncTreeNodeDTO> downloadFilesStack = null;
+	private List<Exception> downloadErrors = null;
+	private List<Exception> downloadTimeouterrors = null;
+	private int semaphore;
+	private List<SyncTreeLeaf> checkRepositoryFilesList = null;
+	private final UnZipFlowProcessor unZipFlowProcessor = new UnZipFlowProcessor();
 	private static final RepositoryDAO repositoryDAO = new RepositoryDAO();
 	private static final ConfigurationDAO configurationDAO = new ConfigurationDAO();
+
+	/* Initialize Service */
 
 	public HttpService(int nbConnections) {
 		assert (nbConnections != 0);
@@ -55,71 +62,149 @@ public class HttpService extends AbstractConnexionService implements
 		httpDAOPool.add(httpDAO);
 	}
 
-	@Override
-	public AutoConfigDTO importAutoConfig(String autoconfigURL)
-			throws HttpException, ConnectException, IOException {
+	/* Get A3S Files */
 
-		AutoConfig autoConfig = httpDAOPool.get(0).importAutoConfig(
-				autoconfigURL);
-		if (autoConfig != null) {
-			updateFavoriteServersFromAutoconfig(autoConfig);
-			return transformAutoConfig2DTO(autoConfig);
-		} else {
-			return null;
+	@Override
+	public void getSync(String repositoryName) throws RepositoryException,
+			IOException {
+
+		Repository repository = repositoryDAO.getMap().get(repositoryName);
+		if (repository == null) {
+			throw new RepositoryNotFoundException(repositoryName);
+		}
+
+		SyncTreeDirectory syncTreeDirectory = null;
+		try {
+			httpDAOPool.get(0).connectToRepository(repositoryName,
+					repository.getProtocol(), SYNC_FILE_PATH);
+			syncTreeDirectory = httpDAOPool.get(0).downloadSync(repositoryName,
+					repository.getProtocol());
+		} finally {
+			repository.setSync(syncTreeDirectory);
+			httpDAOPool.get(0).disconnect();
+		}
+	}
+
+	@Override
+	public void getServerInfo(String repositoryName)
+			throws RepositoryException, IOException {
+
+		Repository repository = repositoryDAO.getMap().get(repositoryName);
+		if (repository == null) {
+			throw new RepositoryNotFoundException(repositoryName);
+		}
+
+		ServerInfo serverInfo = null;
+		try {
+			httpDAOPool.get(0).connectToRepository(repositoryName,
+					repository.getProtocol(), SERVERINFO_FILE_PATH);
+			serverInfo = httpDAOPool.get(0).downloadSeverInfo(
+					repository.getName(), repository.getProtocol());
+		} finally {
+			repository.setServerInfo(serverInfo);
+			httpDAOPool.get(0).disconnect();
+		}
+	}
+
+	@Override
+	public void getChangelogs(String repositoryName)
+			throws RepositoryException, IOException {
+
+		Repository repository = repositoryDAO.getMap().get(repositoryName);
+		if (repository == null) {
+			throw new RepositoryNotFoundException(repositoryName);
+		}
+
+		Changelogs changelogs = null;
+		try {
+			httpDAOPool.get(0).connectToRepository(repositoryName,
+					repository.getProtocol(), CHANGELOGS_FILE_PATH);
+			changelogs = httpDAOPool.get(0).downloadChangelogs(
+					repository.getName(), repository.getProtocol());
+		} finally {
+			repository.setChangelogs(changelogs);
+			httpDAOPool.get(0).disconnect();
+		}
+	}
+
+	@Override
+	public void getAutoconfig(String repositoryName)
+			throws RepositoryException, IOException {
+
+		Repository repository = repositoryDAO.getMap().get(repositoryName);
+		if (repository == null) {
+			throw new RepositoryNotFoundException(repositoryName);
+		}
+
+		AutoConfig autoConfig = null;
+		try {
+			httpDAOPool.get(0).connectToRepository(repositoryName,
+					repository.getProtocol(), AUTOCONFIG_FILE_PATH);
+			autoConfig = httpDAOPool.get(0).downloadAutoconfig(
+					repository.getName(), repository.getProtocol());
+		} finally {
+			repository.setAutoConfig(autoConfig);
+			httpDAOPool.get(0).disconnect();
+		}
+	}
+
+	@Override
+	public void getEvents(String repositoryName) throws RepositoryException,
+			IOException {
+
+		Repository repository = repositoryDAO.getMap().get(repositoryName);
+		if (repository == null) {
+			throw new RepositoryNotFoundException(repositoryName);
+		}
+
+		Events events = null;
+		try {
+			httpDAOPool.get(0).connectToRepository(repositoryName,
+					repository.getProtocol(), EVENTS_FILE_PATH);
+			events = httpDAOPool.get(0).downloadEvents(repository.getName(),
+					repository.getProtocol());
+		} finally {
+			repository.setEvents(events);
+			httpDAOPool.get(0).disconnect();
 		}
 	}
 
 	@Override
 	public void checkRepository(String repositoryName)
-			throws RepositoryException, ConnectException, IOException {
+			throws RepositoryException, IOException {
 
 		Repository repository = repositoryDAO.getMap().get(repositoryName);
 		if (repository == null) {
-			throw new RepositoryException("Repository " + repositoryName
-					+ " not found!");
+			throw new RepositoryNotFoundException(repositoryName);
 		}
 
-		try {
-			ServerInfo serverInfo = httpDAOPool.get(0).downloadSeverInfo(
-					repository.getName(), repository.getProtocole());
-			repository.setServerInfo(serverInfo);// null if not found
-			if (serverInfo != null) {
+		/* Sync */
+		if (!httpDAOPool.get(0).isCanceled()) {
+			getSync(repositoryName);
+		}
+
+		/* Serverinfo */
+		if (!httpDAOPool.get(0).isCanceled()) {
+			getServerInfo(repositoryName);
+			if (repository.getServerInfo() != null) {
 				repository.getHiddenFolderPath().addAll(
-						serverInfo.getHiddenFolderPaths());
+						repository.getServerInfo().getHiddenFolderPaths());
 			}
-		} catch (HttpException e) {
-			// error http 404 may happen if repository has not been built so far
-			repository.setServerInfo(null);
 		}
-
-		try {
-			Changelogs changelogs = httpDAOPool.get(0).downloadChangelogs(
-					repository.getName(), repository.getProtocole());
-			repository.setChangelogs(changelogs);// null if not found
-		} catch (HttpException e) {
-			// error http 404 may happen if repository has not been built so far
-			repository.setChangelogs(null);
+		/* Changelogs */
+		if (!httpDAOPool.get(0).isCanceled()) {
+			getChangelogs(repositoryName);
 		}
-
-		try {
-			Events events = httpDAOPool.get(0).downloadEvent(
-					repository.getName(), repository.getProtocole());
-			repository.setEvents(events);// null if not found
-		} catch (HttpException e) {
-			// error http 404 may happen if repository has not been built so far
-			repository.setEvents(null);
+		/* Events */
+		if (!httpDAOPool.get(0).isCanceled()) {
+			getEvents(repositoryName);
 		}
-
-		try {
-			AutoConfig autoConfig = httpDAOPool.get(0).downloadAutoconfig(
-					repositoryName, repository.getProtocole());
-			repository.setAutoConfig(autoConfig);// null if not found
-			if (autoConfig != null) {
-				updateFavoriteServersFromAutoconfig(autoConfig);
+		/* Autoconfig */
+		if (!httpDAOPool.get(0).isCanceled()) {
+			getAutoconfig(repositoryName);
+			if (repository.getAutoConfig() != null) {
+				updateFavoriteServersFromAutoconfig(repository.getAutoConfig());
 			}
-		} catch (HttpException e) {
-			// error http 404 may happen if repository has not been built so far
-			repository.setAutoConfig(null);
 		}
 	}
 
@@ -153,61 +238,104 @@ public class HttpService extends AbstractConnexionService implements
 				.addAll(newList);
 	}
 
+	/* Import autoconfig */
+
 	@Override
-	public void getSync(String repositoryName) throws RepositoryException,
-			HttpException, ConnectException, IOException {
+	public AutoConfigDTO importAutoConfig(AbstractProtocole protocol)
+			throws IOException {
 
-		Repository repository = repositoryDAO.getMap().get(repositoryName);
-		if (repository == null) {
-			throw new RepositoryException("Repository " + repositoryName
-					+ " not found!");
+		AutoConfigDTO autoConfigDTO = null;
+		try {
+			AutoConfig autoConfig = httpDAOPool.get(0).importAutoConfig(
+					protocol);
+			if (autoConfig != null) {
+				updateFavoriteServersFromAutoconfig(autoConfig);
+				autoConfigDTO = transformAutoConfig2DTO(autoConfig);
+			}
+		} finally {
+			httpDAOPool.get(0).disconnect();
 		}
-
-		SyncTreeDirectory syncTreeDirectory = httpDAOPool.get(0).downloadSync(
-				repository.getName(), repository.getProtocole());
-		repository.setSync(syncTreeDirectory);// null if not found
+		return autoConfigDTO;
 	}
 
+	/* Determine file completion */
+
 	@Override
-	public void getServerInfo(String repositoryName)
-			throws RepositoryException, ConnectException, HttpException,
+	public String determineCompletion(String repositoryName,
+			SyncTreeDirectoryDTO parent) throws RepositoryException,
 			IOException {
 
 		Repository repository = repositoryDAO.getMap().get(repositoryName);
 		if (repository == null) {
-			throw new RepositoryException("Repository " + repositoryName
-					+ " not found!");
+			throw new RepositoryNotFoundException(repositoryName);
 		}
 
-		ServerInfo serverInfo = httpDAOPool.get(0).downloadSeverInfo(
-				repository.getName(), repository.getProtocole());
-		repository.setServerInfo(serverInfo);// null if not found
-	}
+		assert (repository.getSync() != null);
+		assert (repository.getServerInfo() != null);
 
-	@Override
-	public void getChangelogs(String repositoryName) throws ConnectException,
-			RepositoryException, HttpException, IOException {
-
-		Repository repository = repositoryDAO.getMap().get(repositoryName);
-		if (repository == null) {
-			throw new RepositoryException("Repository " + repositoryName
-					+ " not found!");
+		if (repository.getSync() == null) {
+			throw new SyncFileNotFoundException(repositoryName);
+		}
+		if (repository.getServerInfo() == null) {
+			throw new ServerInfoNotFoundException(repositoryName);
 		}
 
-		Changelogs changelogs = httpDAOPool.get(0).downloadChangelogs(
-				repository.getName(), repository.getProtocole());
-		repository.setChangelogs(changelogs);// null if not found
+		String rootDestinationPath = repository.getDefaultDownloadLocation();
+		String remotePath = repository.getProtocol().getRemotePath();
+
+		List<SyncTreeLeafDTO> list = new ArrayList<SyncTreeLeafDTO>();
+
+		determineFileForComputingCompletion(remotePath, rootDestinationPath,
+				parent, list);
+
+		httpDAOPool.get(0).setTotalCount(list.size());
+
+		boolean isCompressedPboFilesOnly = repository.getServerInfo()
+				.isCompressedPboFilesOnly();
+		boolean noPartialFileTransfer = repository.getServerInfo()
+				.isNoPartialFileTransfer();
+
+		String header = null;
+		if (!noPartialFileTransfer) {
+			header = httpDAOPool.get(0).checkPartialFileTransfer(
+					repository.getName(), repository.getProtocol());
+		}
+
+		if (header != null) {
+			noPartialFileTransfer = true;
+		}
+
+		for (SyncTreeLeafDTO leaf : list) {
+			if (httpDAOPool.get(0).isCanceled()) {
+				break;
+			} else {
+				if (isCompressedPboFilesOnly) {
+					leaf.setComplete(0);
+				} else if (noPartialFileTransfer) {
+					leaf.setComplete(0);
+				} else if (leaf.isCompressed()) {
+					leaf.setComplete(0);
+				} else {
+					double complete = httpDAOPool.get(0).getFileCompletion(
+							leaf.getRemotePath(), leaf.getDestinationPath(),
+							leaf, repository.getProtocol());
+					leaf.setComplete(complete);
+				}
+			}
+		}
+
+		return header;
 	}
 
 	@Override
 	public void downloadAddons(String repositoryName,
-			List<SyncTreeNodeDTO> listFiles) throws Exception {
+			List<SyncTreeNodeDTO> listFiles) throws RepositoryException,
+			IOException {
 
 		final Repository repository = repositoryDAO.getMap()
 				.get(repositoryName);
 		if (repository == null) {
-			throw new RepositoryException("Repository " + repositoryName
-					+ " not found!");
+			throw new RepositoryNotFoundException(repositoryName);
 		}
 
 		assert (repository.getSync() != null);
@@ -216,13 +344,15 @@ public class HttpService extends AbstractConnexionService implements
 		final String rootDestinationPath = repository
 				.getDefaultDownloadLocation();
 
-		this.downloadFilesStack.clear();
+		this.downloadFilesStack = new Stack<SyncTreeNodeDTO>();
 		this.downloadFilesStack.addAll(listFiles);
+		this.downloadErrors = new ArrayList<Exception>();
+		this.downloadTimeouterrors = new ArrayList<Exception>();
 		this.semaphore = 1;
-		this.timeoutErrors = 0;
+		this.unZipFlowProcessor.init();
 
 		for (final HttpDAO httpDAO : httpDAOPool) {
-			httpDAO.addObserverFileDownload(new ObserverFileDownload() {
+			httpDAO.addObserverProceed(new ObserverProceed() {
 				@Override
 				public void proceed() {
 					if (!httpDAO.isCanceled()) {
@@ -237,47 +367,60 @@ public class HttpService extends AbstractConnexionService implements
 										}
 
 										httpDAO.setActiveConnection(true);
-										httpDAO.updateObserverActiveConnection();
+										httpDAO.updateObserverDownloadActiveConnections();
 
-										downloadAddon(httpDAO, node,
+										File downloadedFile = downloadAddon(
+												httpDAO, node,
 												rootDestinationPath, repository);
 
-									} catch (Exception e) {
-										if (!httpDAO.isCanceled()) {
-											String message = "";
-											if (e instanceof SocketTimeoutException) {
-												addTimeoutErrors();
-											} else if (e instanceof FileNotFoundException) {
-												message = "File not found on repository: "
-														+ node.getRelativePath();
-											} else {
-												message = "Failed to retrieve file "
-														+ node.getName();
-												if (e.getMessage() != null) {
-													message = message + "\n"
-															+ e.getMessage();
+										if (downloadedFile != null) {
+											if (downloadedFile.isFile()) {
+												if (downloadedFile
+														.getName()
+														.toLowerCase()
+														.contains(
+																DataAccessConstants.PBO_ZIP_EXTENSION)) {
+													unZipFlowProcessor
+															.unZipAsynchronously(downloadedFile);
 												}
 											}
-											addError(new Exception(message));
+										}
+									} catch (Exception e) {
+										e.printStackTrace();
+										if (!httpDAO.isCanceled()) {
+											if (e instanceof SocketTimeoutException) {
+												addTimeoutError(e);
+												addError(e);
+											} else if (e instanceof IOException) {
+												// reset count
+												downloadTimeouterrors.clear();
+												addError(e);
+											}
 										}
 									} finally {
-										if (httpDAO.isAcquiredSmaphore()) {
+										if (httpDAO.isAcquiredSemaphore()) {
 											releaseSemaphore();
 											httpDAO.setAcquiredSemaphore(false);
 										}
 										httpDAO.setActiveConnection(false);
-										httpDAO.updateObserverActiveConnection();
-										if (timeoutErrors >= 3
-												|| (errors.size() >= 10)) {
-											httpDAO.updateObserverError(errors);
+										httpDAO.updateObserverDownloadActiveConnections();
+
+										if (downloadTimeouterrors.size() > httpDAOPool
+												.size()) {
+											httpDAO.updateObserverDownloadTooManyTimeoutErrors(
+													httpDAOPool.size(),
+													downloadTimeouterrors);
+										} else if (downloadErrors.size() > 10) {
+											httpDAO.updateObserverDownloadTooManyErrors(
+													10, downloadErrors);
 										} else {
-											httpDAO.updateFileDownloadObserver();
+											httpDAO.updateObserverProceed();
 										}
 									}
 								}
 							});
 							t.start();
-						} else {// no more file to download for this DAO
+						} else {// no more file to download
 
 							// Check if there is no more active connections
 							boolean downloadFinished = true;
@@ -290,12 +433,21 @@ public class HttpService extends AbstractConnexionService implements
 
 							// download is finished
 							if (downloadFinished) {
-								if (errors.isEmpty()) {
-									httpDAO.updateObserverEnd();
+								// display uncompressing progress
+								if (!unZipFlowProcessor
+										.uncompressionIsFinished()) {
+									unZipFlowProcessor.start(downloadErrors);
 								} else {
-									httpDAO.updateObserverError(errors);
+									downloadErrors.addAll(unZipFlowProcessor
+											.getErrors());
+									if (downloadErrors.isEmpty()) {
+										httpDAO.updateObserverDownloadEnd();
+									} else {
+										httpDAO.updateObserverDownloadEndWithErrors(downloadErrors);
+									}
 								}
 							} else {
+								// Give semaphore to the other DAOs
 								for (HttpDAO httpDAO : httpDAOPool) {
 									if (httpDAO.isActiveConnection()
 											&& aquireSemaphore()) {
@@ -313,8 +465,12 @@ public class HttpService extends AbstractConnexionService implements
 		for (HttpDAO httpDAO : httpDAOPool) {
 			if (!downloadFilesStack.isEmpty()) {// nb files < nb connections
 				try {
-					httpDAO.updateFileDownloadObserver();
-				} catch (Exception e) {
+					// Test connection to the Repository
+					httpDAO.connectToRepository(repositoryName,
+							repository.getProtocol(), SYNC_FILE_PATH);
+					httpDAO.disconnect();
+					httpDAO.updateObserverProceed();
+				} catch (IOException e) {
 					boolean isDowloading = false;
 					httpDAO.setActiveConnection(false);
 					for (HttpDAO hDAO : httpDAOPool) {
@@ -331,25 +487,12 @@ public class HttpService extends AbstractConnexionService implements
 		}
 	}
 
-	private void downloadAddon(final HttpDAO httpDAO,
+	private File downloadAddon(final HttpDAO httpDAO,
 			final SyncTreeNodeDTO node, final String rootDestinationPath,
-			final Repository repository) throws Exception,
-			FileNotFoundException {
-
-		String url = repository.getProtocole().getUrl();
-		String hostname = url;
-		String rootRemotePath = "";
-		int index = url.indexOf("/");
-		if (index != -1) {
-			hostname = url.substring(0, index);
-			rootRemotePath = url.substring(index);
-		}
-		String port = repository.getProtocole().getPort();
-		String login = repository.getProtocole().getLogin();
-		String password = repository.getProtocole().getPassword();
+			final Repository repository) throws IOException {
 
 		String destinationPath = null;
-		String remotePath = rootRemotePath;
+		String remotePath = repository.getProtocol().getRemotePath();
 		String path = determinePath(node);
 		if (node.getDestinationPath() != null) {
 			destinationPath = node.getDestinationPath();
@@ -359,20 +502,16 @@ public class HttpService extends AbstractConnexionService implements
 			remotePath = remotePath + "/" + path;
 		}
 
-		String connectionTimeOut = repository.getProtocole()
-				.getConnectionTimeOut();
-		String readTimeOut = repository.getProtocole().getReadTimeOut();
-
-		httpDAO.downloadFile(hostname, login, password, port, remotePath,
-				destinationPath, node, connectionTimeOut, readTimeOut);
+		return httpDAO.downloadFile(repository.getName(),
+				repository.getProtocol(), remotePath, destinationPath, node);
 	}
 
 	private synchronized void addError(Exception e) {
-		errors.add(e);
+		downloadErrors.add(e);
 	}
 
-	private synchronized void addTimeoutErrors() {
-		timeoutErrors++;
+	private synchronized void addTimeoutError(Exception e) {
+		downloadTimeouterrors.add(e);
 	}
 
 	private synchronized SyncTreeNodeDTO popDownloadFilesStack() {
@@ -396,54 +535,6 @@ public class HttpService extends AbstractConnexionService implements
 
 	private synchronized void releaseSemaphore() {
 		semaphore = 1;
-	}
-
-	@Override
-	public void determineCompletion(String repositoryName,
-			SyncTreeDirectoryDTO parent) throws Exception {
-
-		Repository repository = repositoryDAO.getMap().get(repositoryName);
-		if (repository == null) {
-			throw new RepositoryException("Repository " + repositoryName
-					+ " not found!");
-		}
-
-		assert (repository.getSync() != null);
-		assert (repository.getServerInfo() != null);
-		String url = repository.getProtocole().getUrl();
-		String hostname = url;
-		String rootRemotePath = "";
-		int index = url.indexOf("/");
-		if (index != -1) {
-			hostname = url.substring(0, index);
-			rootRemotePath = url.substring(index);
-		}
-		String port = repository.getProtocole().getPort();
-		String login = repository.getProtocole().getLogin();
-		String password = repository.getProtocole().getPassword();
-		String connectionTimeOut = repository.getProtocole()
-				.getConnectionTimeOut();
-		String readTimeOut = repository.getProtocole().getReadTimeOut();
-
-		String rootDestinationPath = repository.getDefaultDownloadLocation();
-
-		List<SyncTreeLeafDTO> list = new ArrayList<SyncTreeLeafDTO>();
-
-		determineFileForComputingCompletion(rootRemotePath,
-				rootDestinationPath, parent, list);
-
-		httpDAOPool.get(0).setTotalNbFiles(list.size());
-
-		for (SyncTreeLeafDTO leaf : list) {
-			if (httpDAOPool.get(0).isCanceled()) {
-				break;
-			}
-			double complete = httpDAOPool.get(0).getFileCompletion(hostname,
-					login, password, port, leaf.getRemotePath(),
-					leaf.getDestinationPath(), leaf, connectionTimeOut,
-					readTimeOut);
-			leaf.setComplete(complete);
-		}
 	}
 
 	private void determineFileForComputingCompletion(String rootRemotePath,
@@ -487,12 +578,11 @@ public class HttpService extends AbstractConnexionService implements
 
 	@Override
 	public boolean upLoadEvents(String repositoryName)
-			throws RepositoryException, HttpException {
+			throws RepositoryException, IOException {
 
 		Repository repository = repositoryDAO.getMap().get(repositoryName);
 		if (repository == null) {
-			throw new RepositoryException("Repository " + repositoryName
-					+ " not found!");
+			throw new RepositoryNotFoundException(repositoryName);
 		}
 
 		boolean response = httpDAOPool.get(0).uploadEvents(
@@ -514,13 +604,11 @@ public class HttpService extends AbstractConnexionService implements
 
 	@Override
 	public void getSyncWithRepositoryUploadProtocole(String repositoryName)
-			throws RepositoryException, ConnectException, HttpException,
-			IOException {
+			throws RepositoryException, IOException {
 
 		Repository repository = repositoryDAO.getMap().get(repositoryName);
 		if (repository == null) {
-			throw new RepositoryException("Repository " + repositoryName
-					+ " not found!");
+			throw new RepositoryNotFoundException(repositoryName);
 		}
 
 		SyncTreeDirectory syncTreeDirectory = httpDAOPool.get(0)
@@ -531,36 +619,123 @@ public class HttpService extends AbstractConnexionService implements
 
 	@Override
 	public void uploadRepository(String repositoryName,
+			List<SyncTreeNodeDTO> allLocalFiles,
 			List<SyncTreeNodeDTO> filesToUpload,
-			List<SyncTreeNodeDTO> filesToDelete, boolean resume)
-			throws RepositoryException, ConnectException, FtpException {
+			List<SyncTreeNodeDTO> filesToDelete) {
 		// unimplemented
 	}
 
 	@Override
-	public boolean remoteFileExists(String repositoryName,
-			SyncTreeNodeDTO remoteNode) throws RepositoryException,
-			ConnectException, FtpException {
-		// unimplemented
-		return false;
+	public List<Exception> checkRepositoryContent(String repositoryName)
+			throws RepositoryException, IOException {
+
+		Repository repository = repositoryDAO.getMap().get(repositoryName);
+		if (repository == null) {
+			throw new RepositoryNotFoundException(repositoryName);
+		}
+
+		SyncTreeDirectory sync = repository.getSync();
+		if (sync == null) {
+			throw new SyncFileNotFoundException(repositoryName);
+		}
+
+		ServerInfo serverInfo = repository.getServerInfo();
+		if (serverInfo == null) {
+			throw new ServerInfoNotFoundException(repositoryName);
+		}
+
+		/* Get Files */
+		this.checkRepositoryFilesList = new ArrayList<SyncTreeLeaf>();
+		getFiles(sync);
+
+		/* Errors */
+		List<Exception> errorsCheckRepository = new ArrayList<Exception>();
+
+		httpDAOPool.get(0).setTotalCount(this.checkRepositoryFilesList.size());
+		httpDAOPool.get(0).setCount(0);
+
+		int count = 0;
+		for (SyncTreeLeaf leaf : this.checkRepositoryFilesList) {
+			if (httpDAOPool.get(0).isCanceled()) {
+				break;
+			} else {
+				String relativePath = determinePath(leaf);
+				List<String> listFilesName = new ArrayList<String>();
+				if (leaf.isCompressed()) {
+					if (serverInfo.isCompressedPboFilesOnly()) {
+						String fileName = leaf.getName() + ZIP_EXTENSION;// *.pbo.zip
+						listFilesName.add(fileName);
+					} else {
+						String fileName = leaf.getName();
+						listFilesName.add(fileName);
+						fileName = leaf.getName() + ZSYNC_EXTENSION;
+						listFilesName.add(fileName);
+						fileName = leaf.getName() + ZIP_EXTENSION;
+						listFilesName.add(fileName);
+					}
+				} else {
+					String fileName = leaf.getName();
+					listFilesName.add(fileName);
+					fileName = leaf.getName() + ZSYNC_EXTENSION;
+					listFilesName.add(fileName);
+				}
+
+				for (String fileName : listFilesName) {
+					boolean found = fileExists(repository.getName(),
+							relativePath, fileName, repository.getProtocol());
+					if (!found) {
+						errorsCheckRepository.add(new FileNotFoundException(
+								"File not found on repository: " + relativePath
+										+ "/" + fileName));
+						httpDAOPool.get(0).updateObserverCheckCountError(
+								errorsCheckRepository.size());
+					}
+				}
+				count++;
+				httpDAOPool.get(0).setCount(count);
+			}
+			httpDAOPool.get(0).updateObserverCheckProgress();
+		}
+		return errorsCheckRepository;
 	}
 
-	@Override
-	public void remoteFileExists(String repositoryName,
-			Map<SyncTreeNodeDTO, Boolean> mapRemoteNodeExists)
-			throws RepositoryException, ConnectException, FtpException {
-		// unimplemented
-	}
+	private void getFiles(SyncTreeNode node) {
 
-	@Override
-	public void cancel(boolean resumable) {
-		for (HttpDAO httpDAO : httpDAOPool) {
-			httpDAO.cancel(resumable);
+		if (!node.isLeaf()) {
+			SyncTreeDirectory syncTreeDirectory = (SyncTreeDirectory) node;
+			for (SyncTreeNode n : syncTreeDirectory.getList()) {
+				getFiles(n);
+			}
+		} else {
+			SyncTreeLeaf syncTreeLeaf = (SyncTreeLeaf) node;
+			checkRepositoryFilesList.add(syncTreeLeaf);
 		}
 	}
 
+	private String determinePath(SyncTreeNode syncTreeNode) {
+		assert (syncTreeNode.getParent() != null);
+		String path = "";
+		while (!syncTreeNode.getParent().getName().equals("racine")) {
+			path = syncTreeNode.getParent().getName() + "/" + path;
+			syncTreeNode = syncTreeNode.getParent();
+		}
+		return path;
+	}
+
+	private boolean fileExists(String repositoryName, String relativePath,
+			String fileName, AbstractProtocole protocole) throws IOException {
+
+		return httpDAOPool.get(0).fileExists(repositoryName, relativePath,
+				fileName, protocole);
+	}
+
+	/* Cancel */
+
 	@Override
-	public void disconnect() {
+	public void cancel() {
+		for (HttpDAO httpDAO : httpDAOPool) {
+			httpDAO.cancel();
+		}
 		for (HttpDAO httpDAO : httpDAOPool) {
 			httpDAO.disconnect();
 		}
@@ -583,5 +758,18 @@ public class HttpService extends AbstractConnexionService implements
 	@Override
 	public int getNumberConnections() {
 		return httpDAOPool.size();
+	}
+
+	@Override
+	public UnZipFlowProcessor getUnZipFlowProcessor() {
+		return this.unZipFlowProcessor;
+	}
+
+	@Override
+	public void setMaximumClientDownloadSpeed(double value) {
+
+		for (HttpDAO httpDAO : httpDAOPool) {
+			httpDAO.setMaximumClientDownloadSpeed(value);
+		}
 	}
 }

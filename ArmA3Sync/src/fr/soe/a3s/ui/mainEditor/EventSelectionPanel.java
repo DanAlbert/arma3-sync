@@ -21,7 +21,7 @@ import javax.swing.border.BevelBorder;
 
 import fr.soe.a3s.dto.EventDTO;
 import fr.soe.a3s.dto.RepositoryDTO;
-import fr.soe.a3s.exception.RepositoryException;
+import fr.soe.a3s.exception.repository.RepositoryException;
 import fr.soe.a3s.service.RepositoryService;
 import fr.soe.a3s.ui.CheckBoxList;
 import fr.soe.a3s.ui.Facade;

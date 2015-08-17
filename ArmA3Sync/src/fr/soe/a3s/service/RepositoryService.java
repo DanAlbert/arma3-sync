@@ -14,24 +14,20 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
-import javax.crypto.SecretKey;
-import javax.crypto.spec.SecretKeySpec;
 
 import net.jimmc.jshortcut.JShellLink;
-import fr.soe.a3s.constant.Protocol;
+import fr.soe.a3s.constant.ProtocolType;
 import fr.soe.a3s.constant.RepositoryStatus;
 import fr.soe.a3s.dao.AddonDAO;
 import fr.soe.a3s.dao.DataAccessConstants;
-import fr.soe.a3s.dao.RepositoryBuilderDAO;
-import fr.soe.a3s.dao.RepositoryCheckerDAO;
-import fr.soe.a3s.dao.RepositoryDAO;
+import fr.soe.a3s.dao.repository.RepositoryBuilderDAO;
+import fr.soe.a3s.dao.repository.RepositoryAddonsCheckerDAO;
+import fr.soe.a3s.dao.repository.RepositoryDAO;
 import fr.soe.a3s.domain.AbstractProtocole;
+import fr.soe.a3s.domain.AbstractProtocoleFactory;
 import fr.soe.a3s.domain.Addon;
-import fr.soe.a3s.domain.Ftp;
-import fr.soe.a3s.domain.Http;
 import fr.soe.a3s.domain.TreeDirectory;
 import fr.soe.a3s.domain.TreeLeaf;
 import fr.soe.a3s.domain.TreeNode;
@@ -46,6 +42,7 @@ import fr.soe.a3s.domain.repository.ServerInfo;
 import fr.soe.a3s.domain.repository.SyncTreeDirectory;
 import fr.soe.a3s.domain.repository.SyncTreeLeaf;
 import fr.soe.a3s.domain.repository.SyncTreeNode;
+import fr.soe.a3s.dto.AutoConfigDTO;
 import fr.soe.a3s.dto.ChangelogDTO;
 import fr.soe.a3s.dto.EventDTO;
 import fr.soe.a3s.dto.RepositoryDTO;
@@ -55,11 +52,10 @@ import fr.soe.a3s.dto.configuration.FavoriteServerDTO;
 import fr.soe.a3s.dto.sync.SyncTreeDirectoryDTO;
 import fr.soe.a3s.exception.CheckException;
 import fr.soe.a3s.exception.LoadingException;
-import fr.soe.a3s.exception.RepositoryCheckException;
-import fr.soe.a3s.exception.RepositoryException;
-import fr.soe.a3s.exception.ServerInfoNotFoundException;
-import fr.soe.a3s.exception.SyncFileNotFoundException;
 import fr.soe.a3s.exception.WritingException;
+import fr.soe.a3s.exception.repository.RepositoryException;
+import fr.soe.a3s.exception.repository.RepositoryNotFoundException;
+import fr.soe.a3s.exception.repository.SyncFileNotFoundException;
 import fr.soe.a3s.main.Version;
 
 public class RepositoryService extends ObjectDTOtransformer implements
@@ -67,20 +63,13 @@ public class RepositoryService extends ObjectDTOtransformer implements
 
 	private static final RepositoryDAO repositoryDAO = new RepositoryDAO();
 	private final RepositoryBuilderDAO repositoryBuilderDAO = new RepositoryBuilderDAO();
-	private final RepositoryCheckerDAO repositoryCheckerDAO = new RepositoryCheckerDAO();
+	private final RepositoryAddonsCheckerDAO repositoryAddonsCheckerDAO = new RepositoryAddonsCheckerDAO();
 	private static final AddonDAO addonDAO = new AddonDAO();
-
-	private static final byte[] secreteKey = new byte[] { 0x01, 0x72, 0x43,
-			0x3E, 0x1C, 0x7A, 0x55, 0, 0x01, 0x72, 0x43, 0x3E, 0x1C, 0x7A,
-			0x55, 0x4F };
 
 	public void readAll() throws LoadingException {
 
-		Cipher cipher;
 		try {
-			cipher = getDecryptionCipher();
-			List<String> repositoriesFailedToLoad = repositoryDAO
-					.readAll(cipher);
+			List<String> repositoriesFailedToLoad = repositoryDAO.readAll();
 
 			if (!repositoriesFailedToLoad.isEmpty()) {
 				String message = "Failded to load repository:";
@@ -106,8 +95,7 @@ public class RepositoryService extends ObjectDTOtransformer implements
 	public void write(String repositoryName) throws WritingException {
 
 		try {
-			Cipher cipher = getEncryptionCipher();
-			repositoryDAO.write(cipher, repositoryName);
+			repositoryDAO.write(repositoryName);
 		} catch (IOException e) {
 			e.printStackTrace();
 			throw new WritingException("Failed to write repository "
@@ -120,30 +108,33 @@ public class RepositoryService extends ObjectDTOtransformer implements
 	}
 
 	public void createRepository(String name, String url, String port,
-			String login, String password, Protocol protocole,
+			String login, String password, ProtocolType protocolType,
 			String connectionTimeOut, String readTimeOut) throws CheckException {
 
 		if (name == null || "".equals(name)) {
 			throw new CheckException("Repository name can't be empty.");
 		}
 
-		AbstractProtocole abstractProtocole = null;
-		if (protocole.equals(Protocol.FTP)) {
-			abstractProtocole = new Ftp(url, port, login, password,
-					connectionTimeOut, readTimeOut);
-		} else if (protocole.equals(Protocol.HTTP)) {
-			abstractProtocole = new Http(url, port, login, password,
-					connectionTimeOut, readTimeOut);
-		} else {
+		AbstractProtocole abstractProtocole = AbstractProtocoleFactory
+				.getProtocol(url, port, login, password, connectionTimeOut,
+						readTimeOut, protocolType);
+		if (abstractProtocole == null) {
 			throw new CheckException("Protocol not supported yet.");
 		}
+
 		abstractProtocole.checkData();
 
 		Repository repository = new Repository(name, abstractProtocole);
 		repositoryDAO.getMap().put(repository.getName(), repository);
 	}
 
-	public boolean removeRepository(String repositoryName) {
+	public boolean removeRepository(String repositoryName)
+			throws RepositoryNotFoundException {
+
+		Repository repository = repositoryDAO.getMap().get(repositoryName);
+		if (repository == null) {
+			throw new RepositoryNotFoundException(repositoryName);
+		}
 		return repositoryDAO.remove(repositoryName);
 	}
 
@@ -167,8 +158,7 @@ public class RepositoryService extends ObjectDTOtransformer implements
 			RepositoryDTO repositoryDTO = transformRepository2DTO(repository);
 			return repositoryDTO;
 		} else {
-			throw new RepositoryException("Repository " + repositoryName
-					+ " not found!");
+			throw new RepositoryNotFoundException(repositoryName);
 		}
 	}
 
@@ -178,8 +168,7 @@ public class RepositoryService extends ObjectDTOtransformer implements
 		if (repository != null) {
 			repository.setPath(repositoryPath);
 		} else {
-			throw new RepositoryException("Repository " + repositoryName
-					+ " not found!");
+			throw new RepositoryNotFoundException(repositoryName);
 		}
 	}
 
@@ -206,8 +195,7 @@ public class RepositoryService extends ObjectDTOtransformer implements
 				return null;
 			}
 		} else {
-			throw new RepositoryException("Repository " + repositoryName
-					+ " not found!");
+			throw new RepositoryNotFoundException(repositoryName);
 		}
 	}
 
@@ -229,43 +217,54 @@ public class RepositoryService extends ObjectDTOtransformer implements
 				return null;
 			}
 		} else {
-			throw new RepositoryException("Repository " + repositoryName
-					+ " not found!");
+			throw new RepositoryNotFoundException(repositoryName);
 		}
 	}
 
-	public void buildRepository(String repositoryName) throws Exception {
+	public AutoConfigDTO getAutoconfig(String repositoryName)
+			throws RepositoryException {
+
+		Repository repository = repositoryDAO.getMap().get(repositoryName);
+		if (repository != null) {
+			AutoConfig autoConfig = repository.getAutoConfig();
+			if (autoConfig != null) {
+				AutoConfigDTO autoConfigDTO = transformAutoConfig2DTO(autoConfig);
+				return autoConfigDTO;
+			} else {
+				return null;
+			}
+		} else {
+			throw new RepositoryNotFoundException(repositoryName);
+		}
+	}
+
+	public void buildRepository(String repositoryName)
+			throws RepositoryException, IOException, WritingException {
 
 		Repository repository = repositoryDAO.getMap().get(repositoryName);
 		if (repository == null) {
-			throw new RepositoryException("Repository " + repositoryName
-					+ " not found!");
+			throw new RepositoryNotFoundException(repositoryName);
 		}
 		repositoryBuilderDAO.buildRepository(repository);
-		write(repositoryName);
 	}
 
 	public void buildRepository(String repositoryName, String path)
-			throws Exception {
+			throws RepositoryException, IOException, WritingException {
 
 		Repository repository = repositoryDAO.getMap().get(repositoryName);
 		if (repository == null) {
-			throw new RepositoryException("Repository " + repositoryName
-					+ " not found!");
+			throw new RepositoryNotFoundException(repositoryName);
 		}
 		repository.setPath(path);
 		repositoryBuilderDAO.buildRepository(repository);
-		write(repositoryName);
 	}
 
-	public SyncTreeDirectoryDTO getSyncForCheckForAddons(String repositoryName)
-			throws SyncFileNotFoundException, RepositoryException, IOException,
-			WritingException {
+	public SyncTreeDirectoryDTO checkForAddons(String repositoryName)
+			throws RepositoryException, IOException {
 
 		Repository repository = repositoryDAO.getMap().get(repositoryName);
 		if (repository == null) {
-			throw new RepositoryException("Repository " + repositoryName
-					+ " not found!");
+			throw new RepositoryNotFoundException(repositoryName);
 		}
 
 		if (repository.getSync() == null) {
@@ -283,18 +282,15 @@ public class RepositoryService extends ObjectDTOtransformer implements
 				repository.getDefaultDownloadLocation(), noAutoDiscover);
 
 		// 2. Compute sha1 for local files on disk
-		repositoryCheckerDAO.determineLocalSHA1(parent, repository);
-
-		// 3. Save sha1 computation to disk (cache files for this repository)
-		write(repositoryName);
+		repositoryAddonsCheckerDAO.determineLocalSHA1(parent, repository);
 
 		// 4. Determine new or updated files
 		determineNewAndUpdatedFiles(parent);
 
-		// 4. Determine extra local files to hide
+		// 5. Determine extra local files to hide
 		determineHiddenFiles(parent, hiddenFolderPaths);
 
-		// 5. Determine extra local files to delete
+		// 6. Determine extra local files to delete
 		determineExtraLocalFilesToDelete(parent,
 				repository.getDefaultDownloadLocation(), exactMatch);
 
@@ -542,8 +538,7 @@ public class RepositoryService extends ObjectDTOtransformer implements
 			SyncTreeDirectory syncTreeDirectory = repository.getSync();
 			setDestinationPaths(repositoryName, syncTreeDirectoryDTO);
 		} else {
-			throw new RepositoryException("Repository " + repositoryName
-					+ " not found!");
+			throw new RepositoryNotFoundException(repositoryName);
 		}
 	}
 
@@ -634,48 +629,48 @@ public class RepositoryService extends ObjectDTOtransformer implements
 		}
 	}
 
-	public void checkRepository(String repositoryName, String path)
-			throws RepositoryException, ServerInfoNotFoundException,
-			SyncFileNotFoundException, RepositoryCheckException {
-
-		Repository repository = repositoryDAO.getMap().get(repositoryName);
-		if (repository == null) {
-			throw new RepositoryException("Repository " + repositoryName
-					+ " not found!");
-		}
-
-		SyncTreeDirectory sync = null;
-		try {
-			sync = repositoryDAO.readSync(repositoryName);
-			repository.setSync(sync);
-		} catch (Exception e) {
-			e.printStackTrace();
-			throw new RepositoryException(e.getMessage());
-		}
-
-		ServerInfo serverInfo = null;
-		try {
-			serverInfo = repositoryDAO.readServerInfo(repositoryName);
-			repository.setServerInfo(serverInfo);
-		} catch (Exception e) {
-			e.printStackTrace();
-			throw new RepositoryException(e.getMessage());
-		}
-
-		if (sync == null) {
-			throw new SyncFileNotFoundException(repository.getProtocole()
-					.getUrl());
-		} else if (serverInfo == null) {
-			throw new ServerInfoNotFoundException(repository.getProtocole()
-					.getUrl());
-		}
-
-		if (!repository.getPath().equals(path) || path.isEmpty()) {
-			throw new RepositoryException("Repository path does not match "
-					+ path + "!");
-		}
-		repositoryCheckerDAO.checkRepository(repository);
-	}
+	// public void checkRepository(String repositoryName, String path)
+	// throws RepositoryException, ServerInfoNotFoundException,
+	// SyncFileNotFoundException, RepositoryCheckException {
+	//
+	// Repository repository = repositoryDAO.getMap().get(repositoryName);
+	// if (repository == null) {
+	// throw new RepositoryException("Repository " + repositoryName
+	// + " not found!");
+	// }
+	//
+	// SyncTreeDirectory sync = null;
+	// try {
+	// sync = repositoryDAO.readSync(repositoryName);
+	// repository.setSync(sync);
+	// } catch (Exception e) {
+	// e.printStackTrace();
+	// throw new RepositoryException(e.getMessage());
+	// }
+	//
+	// ServerInfo serverInfo = null;
+	// try {
+	// serverInfo = repositoryDAO.readServerInfo(repositoryName);
+	// repository.setServerInfo(serverInfo);
+	// } catch (Exception e) {
+	// e.printStackTrace();
+	// throw new RepositoryException(e.getMessage());
+	// }
+	//
+	// if (sync == null) {
+	// throw new SyncFileNotFoundException(repository.getProtocole()
+	// .getUrl());
+	// } else if (serverInfo == null) {
+	// throw new ServerInfoNotFoundException(repository.getProtocole()
+	// .getUrl());
+	// }
+	//
+	// if (!repository.getPath().equals(path) || path.isEmpty()) {
+	// throw new RepositoryException("Repository path does not match "
+	// + path + "!");
+	// }
+	// repositoryCheckerDAO.checkRepository(repository);
+	// }
 
 	public String getDefaultDownloadLocation(String repositoryName) {
 
@@ -712,6 +707,7 @@ public class RepositoryService extends ObjectDTOtransformer implements
 			try {
 				write(repositoryName);
 			} catch (WritingException e) {
+				e.printStackTrace();
 			}
 		}
 	}
@@ -855,8 +851,8 @@ public class RepositoryService extends ObjectDTOtransformer implements
 		return repositoryBuilderDAO;
 	}
 
-	public RepositoryCheckerDAO getRepositoryCheckerDAO() {
-		return repositoryCheckerDAO;
+	public RepositoryAddonsCheckerDAO getRepositoryAddonsCheckerDAO() {
+		return repositoryAddonsCheckerDAO;
 	}
 
 	public List<EventDTO> getEvents(String repositoryName)
@@ -886,8 +882,7 @@ public class RepositoryService extends ObjectDTOtransformer implements
 				return null;
 			}
 		} else {
-			throw new RepositoryException("Repository " + repositoryName
-					+ " not found!");
+			throw new RepositoryNotFoundException(repositoryName);
 		}
 	}
 
@@ -904,8 +899,7 @@ public class RepositoryService extends ObjectDTOtransformer implements
 			Event event = transformDTO2Event(eventDTO);
 			events.getList().add(event);
 		} else {
-			throw new RepositoryException("Repository " + repositoryName
-					+ " not found!");
+			throw new RepositoryNotFoundException(repositoryName);
 		}
 	}
 
@@ -924,8 +918,7 @@ public class RepositoryService extends ObjectDTOtransformer implements
 				}
 			}
 		} else {
-			throw new RepositoryException("Repository " + repositoryName
-					+ " not found!");
+			throw new RepositoryNotFoundException(repositoryName);
 		}
 	}
 
@@ -948,8 +941,7 @@ public class RepositoryService extends ObjectDTOtransformer implements
 				}
 			}
 		} else {
-			throw new RepositoryException("Repository " + repositoryName
-					+ " not found!");
+			throw new RepositoryNotFoundException(repositoryName);
 		}
 	}
 
@@ -964,13 +956,12 @@ public class RepositoryService extends ObjectDTOtransformer implements
 				if ("".equals(repositoryPath) || repositoryPath == null) {
 					throw new CheckException(
 							"Repository folder location is missing.\n"
-									+ "Please check out Repository panel informations.");
+									+ "Please check out repository main folder location from Repository panel .");
 				}
 				repositoryDAO.saveToDiskEvents(events, repositoryPath);
 			}
 		} else {
-			throw new RepositoryException("Repository " + repositoryName
-					+ " not found!");
+			throw new RepositoryNotFoundException(repositoryName);
 		}
 	}
 
@@ -1019,8 +1010,7 @@ public class RepositoryService extends ObjectDTOtransformer implements
 				return treeDirectoryDTO;
 			}
 		} else {
-			throw new RepositoryException("Repository " + repositoryName
-					+ " not found!");
+			throw new RepositoryNotFoundException(repositoryName);
 		}
 	}
 
@@ -1224,6 +1214,58 @@ public class RepositoryService extends ObjectDTOtransformer implements
 		}
 	}
 
+	public boolean isCompressed(String repositoryName) {
+
+		Repository repository = repositoryDAO.getMap().get(repositoryName);
+		if (repository != null) {
+			return repository.isCompressed();
+		}
+		return false;
+	}
+
+	public void setCompressed(String repositoryName, boolean value) {
+
+		Repository repository = repositoryDAO.getMap().get(repositoryName);
+		if (repository != null) {
+			repository.setCompressed(value);
+		}
+	}
+
+	public boolean isUploadCompressedPboFilesOnly(String repositoryName) {
+
+		Repository repository = repositoryDAO.getMap().get(repositoryName);
+		if (repository != null) {
+			return repository.isUploadCompressedPboFilesOnly();
+		}
+		return false;
+	}
+
+	public void setUploadCompressedPboFilesOnly(String repositoryName,
+			boolean value) {
+
+		Repository repository = repositoryDAO.getMap().get(repositoryName);
+		if (repository != null) {
+			repository.setUploadCompressedPboFilesOnly(value);
+		}
+	}
+
+	public boolean isUsePartialFileTransfer(String repositoryName) {
+
+		Repository repository = repositoryDAO.getMap().get(repositoryName);
+		if (repository != null) {
+			return repository.isUsePartialFileTransfer();
+		}
+		return false;
+	}
+
+	public void setUsePartialFileTransfer(String repositoryName, boolean value) {
+
+		Repository repository = repositoryDAO.getMap().get(repositoryName);
+		if (repository != null) {
+			repository.setUsePartialFileTransfer(value);
+		}
+	}
+
 	public void setUploading(String repositoryName, boolean value) {
 
 		Repository repository = repositoryDAO.getMap().get(repositoryName);
@@ -1241,74 +1283,91 @@ public class RepositoryService extends ObjectDTOtransformer implements
 		return false;
 	}
 
-	public void setRepositoryUploadProtocole(String repositoryName, String url,
-			String port, String login, String password, Protocol protocole)
-			throws CheckException, RepositoryException {
+	public void setBuilding(String repositoryName, boolean value) {
 
 		Repository repository = repositoryDAO.getMap().get(repositoryName);
 		if (repository != null) {
-			AbstractProtocole abstractProtocole = null;
-			if (protocole.equals(Protocol.FTP)) {
-				abstractProtocole = new Ftp(url, port, login, password);
-			} else if (protocole.equals(Protocol.HTTP)) {
-				abstractProtocole = new Http(url, port, login, password);
-			} else {
-				throw new CheckException("Protocole not supported yet.");
-			}
-			abstractProtocole.checkData();
-			repository.setRepositoryUploadProtocole(abstractProtocole);
-
-		} else {
-			throw new RepositoryException("Repository " + repositoryName
-					+ " not found!");
+			repository.setBuilding(value);
 		}
 	}
 
-	public void readLocalRepository(String repositoryName)
-			throws RepositoryException, LoadingException {
+	public boolean isBuilding(String repositoryName) {
+
+		Repository repository = repositoryDAO.getMap().get(repositoryName);
+		if (repository != null) {
+			return repository.isBuilding();
+		}
+		return false;
+	}
+
+	public boolean isChecking(String repositoryName) {
+
+		Repository repository = repositoryDAO.getMap().get(repositoryName);
+		if (repository != null) {
+			return repository.isChecking();
+		}
+		return false;
+	}
+
+	public void setChecking(String repositoryName, boolean value) {
+
+		Repository repository = repositoryDAO.getMap().get(repositoryName);
+		if (repository != null) {
+			repository.setChecking(value);
+		}
+	}
+
+	public void setRepositoryUploadProtocole(String repositoryName, String url,
+			String port, String login, String password,
+			ProtocolType protocolType) throws CheckException,
+			RepositoryException {
 
 		Repository repository = repositoryDAO.getMap().get(repositoryName);
 		if (repository == null) {
-			throw new RepositoryException("Repository " + repositoryName
-					+ " not found!");
+			throw new RepositoryNotFoundException(repositoryName);
 		}
 
-		SyncTreeDirectory sync = null;
-		ServerInfo serverInfo = null;
-		Changelogs changelogs = null;
-		AutoConfig autoConfig = null;
-		Events events = null;
+		AbstractProtocole abstractProtocole = AbstractProtocoleFactory
+				.getProtocol(url, port, login, password, protocolType);
 
-		try {
-			sync = repositoryDAO.readSync(repositoryName);
-			serverInfo = repositoryDAO.readServerInfo(repositoryName);
-			changelogs = repositoryDAO.readChangelogs(repositoryName);
-			autoConfig = repositoryDAO.readAutoConfig(repositoryName);
-			events = repositoryDAO.readEvents(repositoryName);
-		} catch (Exception e) {
-			e.printStackTrace();
-			throw new RepositoryException(e.getMessage());
+		if (abstractProtocole == null) {
+			throw new CheckException("Upload protocol not supported.");
 		}
+
+		abstractProtocole.checkData();
+		repository.setRepositoryUploadProtocole(abstractProtocole);
+	}
+
+	public void readLocalyBuildedRepository(String repositoryName)
+			throws RepositoryException, IOException, LoadingException {
+
+		Repository repository = repositoryDAO.getMap().get(repositoryName);
+		if (repository == null) {
+			throw new RepositoryNotFoundException(repositoryName);
+		}
+
+		SyncTreeDirectory sync = repositoryDAO.readSync(repositoryName);
+		ServerInfo serverInfo = repositoryDAO.readServerInfo(repositoryName);
+		Changelogs changelogs = repositoryDAO.readChangelogs(repositoryName);
+		AutoConfig autoConfig = repositoryDAO.readAutoConfig(repositoryName);
 
 		if (sync == null) {
-			throw new LoadingException("Can't read file sync on disk.");
+			throw new LoadingException("Failed to read sync file from disk.");
 		} else if (serverInfo == null) {
-			throw new LoadingException("Can't read file serverinfo on disk.");
+			throw new LoadingException(
+					"Failed to read serverinfo file from disk.");
 		} else if (changelogs == null) {
-			throw new LoadingException("Can't read file changelogs on disk.");
+			throw new LoadingException(
+					"Failed to read changelogs file from disk.");
 		} else if (autoConfig == null) {
-			throw new LoadingException("Can't read file autoconfig on disk.");
-		} else if (autoConfig == null) {
-			throw new LoadingException("Can't read file autoconfig on disk.");
-		} else if (events == null) {
-			throw new LoadingException("Can't read file events on disk.");
+			throw new LoadingException(
+					"Failed to read autoconfig file from disk.");
 		}
 
 		repository.setLocalSync(sync);
 		repository.setLocalServerInfo(serverInfo);
 		repository.setLocalChangelogs(changelogs);
 		repository.setLocalAutoConfig(autoConfig);
-		repository.setLocalEvents(events);
 	}
 
 	public SyncTreeDirectoryDTO getSync(String repositoryName)
@@ -1316,8 +1375,7 @@ public class RepositoryService extends ObjectDTOtransformer implements
 
 		Repository repository = repositoryDAO.getMap().get(repositoryName);
 		if (repository == null) {
-			throw new RepositoryException("Repository " + repositoryName
-					+ " not found!");
+			throw new RepositoryNotFoundException(repositoryName);
 		}
 
 		if (repository.getSync() == null) {
@@ -1336,8 +1394,7 @@ public class RepositoryService extends ObjectDTOtransformer implements
 
 		Repository repository = repositoryDAO.getMap().get(repositoryName);
 		if (repository == null) {
-			throw new RepositoryException("Repository " + repositoryName
-					+ " not found!");
+			throw new RepositoryNotFoundException(repositoryName);
 		}
 
 		if (repository.getLocalSync() == null) {
@@ -1356,12 +1413,10 @@ public class RepositoryService extends ObjectDTOtransformer implements
 
 		Repository repository = repositoryDAO.getMap().get(repositoryName);
 		if (repository == null) {
-			throw new RepositoryException("Repository " + repositoryName
-					+ " not found!");
+			throw new RepositoryNotFoundException(repositoryName);
 		}
 
 		ServerInfo serverInfo = repository.getServerInfo();
-		Changelogs changelogs = repository.getChangelogs();
 
 		if (repository.isOutOfSynk()) {
 			return RepositoryStatus.OUTOFSYNC;
@@ -1374,55 +1429,89 @@ public class RepositoryService extends ObjectDTOtransformer implements
 				} else {
 					return RepositoryStatus.OK;
 				}
-				/*
-				 * if (changelogs != null) {
-				 * 
-				 * if (changelogs.getList().size() != 0) { Changelog changelog =
-				 * changelogs.getList().get( changelogs.getList().size() - 1);
-				 * if (changelog.getNewAddons().size() != 0 ||
-				 * changelog.getDeletedAddons().size() != 0 ||
-				 * changelog.getUpdatedAddons().size() != 0) { return
-				 * RepositoryStatus.UPDATED; } else { return
-				 * RepositoryStatus.OK; } }
-				 * 
-				 * }
-				 */
 			}
 		}
 		return RepositoryStatus.INDETERMINATED;
 	}
 
-	public void exportErrorsToDesktop(String title, List<String> messages,
-			String fileName) throws IOException {
+	public void exportToDesktop(String message, String fileName)
+			throws IOException {
 
 		String header = "Generated by ArmA3Sync " + Version.getVersion();
 		String date = new Date().toLocaleString();
 
-		String message = "";
-		for (String m : messages) {
-			message = message + "\n" + " - " + m;
-		}
-
-		String print = header + "\n" + date + "\n\n" + title + message;
+		String print = header + "\n" + date + "\n\n" + message;
 
 		JShellLink link = new JShellLink();
 		String path = JShellLink.getDirectory("desktop") + "/" + fileName;
 		repositoryDAO.writeLog(print, path);
 	}
 
-	private Cipher getEncryptionCipher() throws NoSuchAlgorithmException,
-			NoSuchPaddingException, InvalidKeyException {
-		Cipher cipher = Cipher.getInstance("AES");
-		SecretKey key = new SecretKeySpec(secreteKey, "AES");
-		cipher.init(Cipher.ENCRYPT_MODE, key);
-		return cipher;
+	public String getReport(String repositoryName) {
+
+		Repository repository = repositoryDAO.getMap().get(repositoryName);
+		if (repository != null) {
+			return repository.getDownloadReport();
+		} else {
+			return null;
+		}
 	}
 
-	private Cipher getDecryptionCipher() throws NoSuchAlgorithmException,
-			NoSuchPaddingException, InvalidKeyException {
-		Cipher cipher = Cipher.getInstance("AES");
-		SecretKey key = new SecretKeySpec(secreteKey, "AES");
-		cipher.init(Cipher.DECRYPT_MODE, key);
-		return cipher;
+	public void setReport(String repositoryName, String message) {
+
+		Repository repository = repositoryDAO.getMap().get(repositoryName);
+		if (repository != null) {
+			repository.setDownloadReport(message);
+		}
 	}
+
+	public int getServerInfoNumberOfConnections(String repositoryName) {
+
+		Repository repository = repositoryDAO.getMap().get(repositoryName);
+		if (repository != null) {
+			ServerInfo serverInfo = repository.getServerInfo();
+			return serverInfo.getNumberOfConnections();
+		}
+		return 0;
+	}
+
+	public int getNumberOfClientConnections(String repositoryName) {
+
+		Repository repository = repositoryDAO.getMap().get(repositoryName);
+		if (repository != null) {
+			return repository.getNumberOfClientConnections();
+		}
+		return 0;
+	}
+
+	public void setNumberOfClientConnections(String repositoryName, int value) {
+
+		Repository repository = repositoryDAO.getMap().get(repositoryName);
+		if (repository != null) {
+			repository.setNumberOfClientConnections(value);
+		}
+	}
+
+	public double getMaximumClientDownloadSpeed(String repositoryName) {
+
+		Repository repository = repositoryDAO.getMap().get(repositoryName);
+		if (repository != null) {
+			return repository.getMaximumClientDownloadSpeed();
+		}
+		return 0;
+	}
+
+	public void setMaximumClientDownloadSpeed(String repositoryName,
+			double value) {
+
+		Repository repository = repositoryDAO.getMap().get(repositoryName);
+		if (repository != null) {
+			repository.setMaximumClientDownloadSpeed(value);
+		}
+	}
+
+	public void cancel() {
+		this.repositoryBuilderDAO.cancel();
+	}
+
 }

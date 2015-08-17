@@ -8,7 +8,10 @@ public class SyncTreeLeafDTO implements SyncTreeNodeDTO {
 	private SyncTreeDirectoryDTO parent;
 	private boolean updated;
 	private boolean selected;
+	private boolean compressed;
+	private boolean deflated;
 	private long size;
+	private long compressedSize;
 	private double complete;
 	private String localSHA1;
 	private String destinationPath;
@@ -173,5 +176,29 @@ public class SyncTreeLeafDTO implements SyncTreeNodeDTO {
 	@Override
 	public void setDownloadStatus(DownloadStatus downloadStatus) {
 		this.downloadStatus = downloadStatus;
+	}
+
+	public boolean isCompressed() {
+		return compressed;
+	}
+
+	public void setCompressed(boolean compressed) {
+		this.compressed = compressed;
+	}
+
+	public long getCompressedSize() {
+		return compressedSize;
+	}
+
+	public void setCompressedSize(long compressedSize) {
+		this.compressedSize = compressedSize;
+	}
+
+	public boolean isDeflated() {
+		return deflated;
+	}
+
+	public void setDeflated(boolean deflated) {
+		this.deflated = deflated;
 	}
 }

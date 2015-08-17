@@ -3,8 +3,6 @@ package fr.soe.a3s.service;
 import java.util.Iterator;
 import java.util.List;
 
-import fr.soe.a3s.constant.Protocol;
-import fr.soe.a3s.domain.Http;
 import fr.soe.a3s.domain.TreeDirectory;
 import fr.soe.a3s.domain.TreeLeaf;
 import fr.soe.a3s.domain.TreeNode;
@@ -173,15 +171,15 @@ public class ObjectDTOtransformer {
 		return treeLeafDTO;
 	}
 
-	protected void transform2TreeDirectory(TreeDirectoryDTO treeDirectoryDTO,
-			TreeDirectory treeDirectory) {
+	protected void transformDTO2TreeDirectory(
+			TreeDirectoryDTO treeDirectoryDTO, TreeDirectory treeDirectory) {
 
 		List<TreeNodeDTO> list = treeDirectoryDTO.getList();
 
 		for (TreeNodeDTO treeNodeDTO : list) {
 			if (treeNodeDTO.isLeaf()) {
 				TreeLeafDTO treeLeafDTO = (TreeLeafDTO) treeNodeDTO;
-				TreeLeaf treeLeaf = transform2TreeLeaf(treeLeafDTO);
+				TreeLeaf treeLeaf = transformDTO2TreeLeaf(treeLeafDTO);
 				treeLeaf.setParent(treeDirectory);
 				treeDirectory.addTreeNode(treeLeaf);
 			} else {
@@ -192,12 +190,12 @@ public class ObjectDTOtransformer {
 						.setModsetType(treeDirectoryDTO2.getModsetType());
 				treedDirectory2.setSelected(treeDirectoryDTO2.isSelected());
 				treeDirectory.addTreeNode(treedDirectory2);
-				transform2TreeDirectory(treeDirectoryDTO2, treedDirectory2);
+				transformDTO2TreeDirectory(treeDirectoryDTO2, treedDirectory2);
 			}
 		}
 	}
 
-	protected TreeLeaf transform2TreeLeaf(TreeLeafDTO treeLeafDTO) {
+	protected TreeLeaf transformDTO2TreeLeaf(TreeLeafDTO treeLeafDTO) {
 
 		TreeLeaf treeLeaf = new TreeLeaf();
 		treeLeaf.setName(treeLeafDTO.getName());
@@ -214,20 +212,17 @@ public class ObjectDTOtransformer {
 		repositoryDTO.setNotify(repository.isNotify());
 		// Protocole
 		ProtocolDTO protocoleDTO = new ProtocolDTO();
-		protocoleDTO.setUrl(repository.getProtocole().getUrl());
-		protocoleDTO.setLogin(repository.getProtocole().getLogin());
-		protocoleDTO.setPassword(repository.getProtocole().getPassword());
-		protocoleDTO.setPort(repository.getProtocole().getPort());
-		protocoleDTO.setEncryptionMode(repository.getProtocole()
+		protocoleDTO.setUrl(repository.getProtocol().getUrl());
+		protocoleDTO.setLogin(repository.getProtocol().getLogin());
+		protocoleDTO.setPassword(repository.getProtocol().getPassword());
+		protocoleDTO.setPort(repository.getProtocol().getPort());
+		protocoleDTO.setEncryptionMode(repository.getProtocol()
 				.getEncryptionMode());
-		if (repository.getProtocole() instanceof Http) {
-			protocoleDTO.setProtocole(Protocol.HTTP);
-		} else {
-			protocoleDTO.setProtocole(Protocol.FTP);
-		}
-		protocoleDTO.setConnectionTimeOut(repository.getProtocole()
+		protocoleDTO
+				.setProtocolType(repository.getProtocol().getProtocolType());
+		protocoleDTO.setConnectionTimeOut(repository.getProtocol()
 				.getConnectionTimeOut());
-		protocoleDTO.setReadTimeOut(repository.getProtocole().getReadTimeOut());
+		protocoleDTO.setReadTimeOut(repository.getProtocol().getReadTimeOut());
 		repositoryDTO.setProtocoleDTO(protocoleDTO);
 		// Repository upload protocole
 		ProtocolDTO repositoryUploadProtocoleDTO = new ProtocolDTO();
@@ -242,11 +237,8 @@ public class ObjectDTOtransformer {
 					.getRepositoryUploadProtocole().getPort());
 			repositoryUploadProtocoleDTO.setEncryptionMode(repository
 					.getRepositoryUploadProtocole().getEncryptionMode());
-			if (repository.getRepositoryUploadProtocole() instanceof Http) {
-				repositoryUploadProtocoleDTO.setProtocole(Protocol.HTTP);
-			} else {
-				repositoryUploadProtocoleDTO.setProtocole(Protocol.FTP);
-			}
+			repositoryUploadProtocoleDTO.setProtocolType(repository
+					.getRepositoryUploadProtocole().getProtocolType());
 			repositoryUploadProtocoleDTO.setConnectionTimeOut(repository
 					.getRepositoryUploadProtocole().getConnectionTimeOut());
 			repositoryUploadProtocoleDTO.setReadTimeOut(repository
@@ -274,11 +266,8 @@ public class ObjectDTOtransformer {
 		protocoleDTO.setLogin(autoConfig.getProtocole().getLogin());
 		protocoleDTO.setEncryptionMode(autoConfig.getProtocole()
 				.getEncryptionMode());
-		if (autoConfig.getProtocole() instanceof Http) {
-			protocoleDTO.setProtocole(Protocol.HTTP);
-		} else {
-			protocoleDTO.setProtocole(Protocol.FTP);
-		}
+		protocoleDTO.setProtocolType(autoConfig.getProtocole()
+				.getProtocolType());
 		protocoleDTO.setConnectionTimeOut(autoConfig.getProtocole()
 				.getConnectionTimeOut());
 		protocoleDTO.setReadTimeOut(autoConfig.getProtocole().getReadTimeOut());
@@ -352,9 +341,11 @@ public class ObjectDTOtransformer {
 		SyncTreeLeafDTO syncTreeLeafDTO = new SyncTreeLeafDTO();
 		syncTreeLeafDTO.setName(syncTreeLeaf.getName());
 		syncTreeLeafDTO.setSize(syncTreeLeaf.getSize());
+		syncTreeLeafDTO.setCompressedSize(syncTreeLeaf.getCompressedSize());
 		syncTreeLeafDTO.setSelected(false);
 		syncTreeLeafDTO.setUpdated(syncTreeLeaf.isUpdated());
 		syncTreeLeafDTO.setDeleted(syncTreeLeaf.isDeleted());
+		syncTreeLeafDTO.setCompressed(syncTreeLeaf.isCompressed());
 		String remoteSHA1 = syncTreeLeaf.getSha1();
 		String localSHA1 = syncTreeLeaf.getLocalSHA1();
 		syncTreeLeafDTO.setLocalSHA1(localSHA1);
@@ -432,5 +423,4 @@ public class ObjectDTOtransformer {
 		}
 		return eventDTO;
 	}
-
 }

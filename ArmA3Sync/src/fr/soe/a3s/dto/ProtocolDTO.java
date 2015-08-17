@@ -1,7 +1,7 @@
 package fr.soe.a3s.dto;
 
 import fr.soe.a3s.constant.EncryptionMode;
-import fr.soe.a3s.constant.Protocol;
+import fr.soe.a3s.constant.ProtocolType;
 
 public class ProtocolDTO {
 
@@ -10,7 +10,7 @@ public class ProtocolDTO {
 	private String url;
 	private String port;
 	private EncryptionMode encryptionMode;
-	private Protocol protocole;
+	private ProtocolType protocolType;
 	private String connectionTimeOut;
 	private String readTimeOut;
 
@@ -54,12 +54,12 @@ public class ProtocolDTO {
 		this.encryptionMode = encryptionMode;
 	}
 
-	public Protocol getProtocole() {
-		return protocole;
+	public ProtocolType getProtocolType() {
+		return protocolType;
 	}
 
-	public void setProtocole(Protocol protocole) {
-		this.protocole = protocole;
+	public void setProtocolType(ProtocolType protocolType) {
+		this.protocolType = protocolType;
 	}
 
 	public String getConnectionTimeOut() {

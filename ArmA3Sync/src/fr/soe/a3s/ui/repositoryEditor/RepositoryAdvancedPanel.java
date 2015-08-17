@@ -18,20 +18,17 @@ import fr.soe.a3s.constant.TimeOutValues;
 import fr.soe.a3s.ui.Facade;
 import fr.soe.a3s.ui.UIConstants;
 
-
 /**
-* This code was edited or generated using CloudGarden's Jigloo
-* SWT/Swing GUI Builder, which is free for non-commercial
-* use. If Jigloo is being used commercially (ie, by a corporation,
-* company or business for any purpose whatever) then you
-* should purchase a license for each developer using Jigloo.
-* Please visit www.cloudgarden.com for details.
-* Use of Jigloo implies acceptance of these licensing terms.
-* A COMMERCIAL LICENSE HAS NOT BEEN PURCHASED FOR
-* THIS MACHINE, SO JIGLOO OR THIS CODE CANNOT BE USED
-* LEGALLY FOR ANY CORPORATE OR COMMERCIAL PURPOSE.
-*/
-public class RepositoryAdvancedPanel extends JDialog implements UIConstants{
+ * This code was edited or generated using CloudGarden's Jigloo SWT/Swing GUI
+ * Builder, which is free for non-commercial use. If Jigloo is being used
+ * commercially (ie, by a corporation, company or business for any purpose
+ * whatever) then you should purchase a license for each developer using Jigloo.
+ * Please visit www.cloudgarden.com for details. Use of Jigloo implies
+ * acceptance of these licensing terms. A COMMERCIAL LICENSE HAS NOT BEEN
+ * PURCHASED FOR THIS MACHINE, SO JIGLOO OR THIS CODE CANNOT BE USED LEGALLY FOR
+ * ANY CORPORATE OR COMMERCIAL PURPOSE.
+ */
+public class RepositoryAdvancedPanel extends JDialog implements UIConstants {
 
 	private final Facade facade;
 	private JButton buttonOK, buttonCancel;
@@ -40,8 +37,8 @@ public class RepositoryAdvancedPanel extends JDialog implements UIConstants{
 	private JLabel labelReadTimeout;
 	private JLabel labelConnectionTimeout;
 	private JPanel advancedPanel;
-	
-	public RepositoryAdvancedPanel(Facade facade){
+
+	public RepositoryAdvancedPanel(Facade facade) {
 		super(facade.getMainPanel(), "Advanced configuration", true);
 		this.facade = facade;
 		this.setResizable(false);
@@ -58,6 +55,7 @@ public class RepositoryAdvancedPanel extends JDialog implements UIConstants{
 		{
 			JPanel controlPanel = new JPanel();
 			buttonOK = new JButton("OK");
+			getRootPane().setDefaultButton(buttonOK);
 			buttonCancel = new JButton("Cancel");
 			buttonOK.setPreferredSize(buttonCancel.getPreferredSize());
 			FlowLayout flowLayout = new FlowLayout(FlowLayout.RIGHT);
@@ -87,7 +85,8 @@ public class RepositoryAdvancedPanel extends JDialog implements UIConstants{
 			{
 				labelConnectionTimeout = new JLabel();
 				advancedPanel.add(labelConnectionTimeout);
-				labelConnectionTimeout.setText("Connection timeout (milliseconds):");
+				labelConnectionTimeout
+						.setText("Connection timeout (milliseconds):");
 				labelConnectionTimeout.setBounds(18, 23, 202, 22);
 			}
 			{
@@ -108,7 +107,7 @@ public class RepositoryAdvancedPanel extends JDialog implements UIConstants{
 			}
 			centerPanel.add(vertBox);
 		}
-		
+
 		buttonOK.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
@@ -122,25 +121,27 @@ public class RepositoryAdvancedPanel extends JDialog implements UIConstants{
 			}
 		});
 	}
-	
-	public void init(){
-		textFieldConnectionTimeout.setText(Integer.toString(TimeOutValues.CONNECTION_TIME_OUT.getValue()));
-		textFiledReadTimeout.setText(Integer.toString(TimeOutValues.READ_TIME_OUT.getValue()));
+
+	public void init() {
+		textFieldConnectionTimeout.setText(Integer
+				.toString(TimeOutValues.CONNECTION_TIME_OUT.getValue()));
+		textFiledReadTimeout.setText(Integer
+				.toString(TimeOutValues.READ_TIME_OUT.getValue()));
 	}
-	
+
 	private void buttonOKPerformed() {
 		this.setVisible(false);
 	}
-	
+
 	private void menuExitPerformed() {
 		this.setVisible(false);
 	}
-	
-	public JTextField getTextFiledConnectionTimeout(){
+
+	public JTextField getTextFiledConnectionTimeout() {
 		return textFieldConnectionTimeout;
 	}
-	
-	public JTextField getTextFiledReadTimeout(){
+
+	public JTextField getTextFiledReadTimeout() {
 		return textFiledReadTimeout;
 	}
 }

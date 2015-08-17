@@ -1,19 +1,27 @@
 package fr.soe.a3s.ui.repositoryEditor.workers;
 
+import java.io.IOException;
+
 import javax.swing.JOptionPane;
 
 import fr.soe.a3s.constant.RepositoryStatus;
-import fr.soe.a3s.controller.ObserverFilesNumber3;
+import fr.soe.a3s.controller.ObserverCountWithText;
+import fr.soe.a3s.exception.WritingException;
+import fr.soe.a3s.exception.repository.RepositoryException;
 import fr.soe.a3s.service.RepositoryService;
 import fr.soe.a3s.ui.Facade;
 import fr.soe.a3s.ui.repositoryEditor.AdminPanel;
+import fr.soe.a3s.ui.repositoryEditor.errorDialogs.UnexpectedErrorDialog;
 
 public class RepositoryBuilder extends Thread {
 
 	private final Facade facade;
+	private final AdminPanel adminPanel;
+	/* Data */
 	private final String path;
 	private final String repositoryName;
-	private final AdminPanel adminPanel;
+	/* Tests */
+	private boolean canceled = false;
 	/* Services */
 	private final RepositoryService repositoryService = new RepositoryService();
 
@@ -28,43 +36,81 @@ public class RepositoryBuilder extends Thread {
 	@Override
 	public void run() {
 
-		// Initialize Admin panel for start building
+		System.out.println("Starting building repository: " + repositoryName);
+
+		// Init AdminPanel for start building
 		initAdminPanelForStartBuild();
 
-		repositoryService.getRepositoryBuilderDAO().addObserverFilesNumber3(
-				new ObserverFilesNumber3() {
+		// Set building state
+		repositoryService.setBuilding(repositoryName, true);
+
+		// Reset upload repository state
+		repositoryService.saveTransfertParameters(repositoryName, 0, 0, false);
+
+		repositoryService.getRepositoryBuilderDAO().addObserverCountWithText(
+				new ObserverCountWithText() {
 					@Override
 					public synchronized void update(int value) {
+						adminPanel.getBuildProgressBar()
+								.setIndeterminate(false);
 						adminPanel.getBuildProgressBar().setValue(value);
 					}
+
+					@Override
+					public synchronized void update(String text) {
+						adminPanel.getBuildProgressBar()
+								.setIndeterminate(false);
+						adminPanel.getBuildProgressBar().setString(text);
+					}
 				});
+
 		try {
 			// Build repository
 			repositoryService.buildRepository(repositoryName, path);
-			repositoryService.setOutOfSync(repositoryName, false);
 
-			JOptionPane.showMessageDialog(facade.getMainPanel(),
-					"Repository build finished.", "Build repository",
-					JOptionPane.INFORMATION_MESSAGE);
+			adminPanel.getBuildProgressBar().setIndeterminate(false);
 
-			// Init views
-			this.adminPanel.init(repositoryName);
-			this.facade.getSyncPanel().init();
-			this.adminPanel.updateRepositoryStatus(RepositoryStatus.UPDATED);
-			this.adminPanel.getRepositoryPanel().getEventsPanel()
-					.init(repositoryName);// update addons list
+			if (!canceled) {
+				adminPanel.getBuildProgressBar().setValue(100);
+				adminPanel.getBuildProgressBar().setString("100%");
+
+				JOptionPane.showMessageDialog(facade.getMainPanel(),
+						"Repository build finished.", "Build repository",
+						JOptionPane.INFORMATION_MESSAGE);
+
+				// Init views
+				this.adminPanel.init(repositoryName);
+				this.facade.getSyncPanel().init();
+				this.adminPanel
+						.updateRepositoryStatus(RepositoryStatus.UPDATED);
+				this.adminPanel.getRepositoryPanel().getEventsPanel()
+						.init(repositoryName);// update addons list
+			}
+
+			// Write repository
+			repositoryService.write(repositoryName);
 
 		} catch (Exception e) {
-			e.printStackTrace();
-			String message = "";
-			if (e instanceof RuntimeException) {
-				message = "An unexpected error has occured.";
-			} else {
-				message = e.getMessage();
+			adminPanel.getBuildProgressBar().setIndeterminate(false);
+			if (!canceled) {
+				e.printStackTrace();
+				if (e instanceof RepositoryException) {
+					JOptionPane.showMessageDialog(facade.getMainPanel(),
+							e.getMessage(), "Build repository",
+							JOptionPane.ERROR_MESSAGE);
+				} else if (e instanceof IOException
+						| e instanceof WritingException) {
+					JOptionPane.showMessageDialog(facade.getMainPanel(),
+							e.getMessage(), "Build repository",
+							JOptionPane.ERROR_MESSAGE);
+				} else {
+					UnexpectedErrorDialog dialog = new UnexpectedErrorDialog(
+							facade, "Build repository", e, repositoryName);
+					dialog.show();
+				}
 			}
-			JOptionPane.showMessageDialog(facade.getMainPanel(), message,
-					"Error", JOptionPane.ERROR_MESSAGE);
 		} finally {
+			repositoryService.cancel();
 			initAdminPanelForEndBuild();
 			terminate();
 		}
@@ -73,13 +119,15 @@ public class RepositoryBuilder extends Thread {
 	private void initAdminPanelForStartBuild() {
 
 		adminPanel.getButtonSelectRepositoryfolderPath().setEnabled(false);
-		adminPanel.getButtonBuild().setEnabled(false);
+		adminPanel.getButtonBuild().setText("Stop");
 		adminPanel.getButtonCopyAutoConfigURL().setEnabled(false);
 		adminPanel.getButtonCheck().setEnabled(false);
 		adminPanel.getButtonBuildOptions().setEnabled(false);
 		adminPanel.getButtonUpload().setEnabled(false);
 		adminPanel.getButtonUploadOptions().setEnabled(false);
 		adminPanel.getButtonView().setEnabled(false);
+		adminPanel.getBuildProgressBar().setString("");
+		adminPanel.getBuildProgressBar().setStringPainted(true);
 		adminPanel.getBuildProgressBar().setMinimum(0);
 		adminPanel.getBuildProgressBar().setMaximum(100);
 	}
@@ -87,20 +135,32 @@ public class RepositoryBuilder extends Thread {
 	private void initAdminPanelForEndBuild() {
 
 		adminPanel.getButtonSelectRepositoryfolderPath().setEnabled(true);
-		adminPanel.getButtonBuild().setEnabled(true);
+		adminPanel.getButtonBuild().setText("Build");
 		adminPanel.getButtonCopyAutoConfigURL().setEnabled(true);
 		adminPanel.getButtonCheck().setEnabled(true);
 		adminPanel.getButtonBuildOptions().setEnabled(true);
 		adminPanel.getButtonUpload().setEnabled(true);
 		adminPanel.getButtonUploadOptions().setEnabled(true);
 		adminPanel.getButtonView().setEnabled(true);
+		adminPanel.getBuildProgressBar().setString("");
+		adminPanel.getBuildProgressBar().setStringPainted(false);
+		adminPanel.getBuildProgressBar().setMinimum(0);
 		adminPanel.getBuildProgressBar().setMaximum(0);
 	}
 
 	private void terminate() {
 
+		repositoryService.setBuilding(repositoryName, false);
 		this.interrupt();
 		System.gc();
 	}
 
+	public void cancel() {
+
+		this.canceled = true;
+		adminPanel.getBuildProgressBar().setString("Canceling...");
+		repositoryService.cancel();
+		initAdminPanelForEndBuild();
+		terminate();
+	}
 }

@@ -22,7 +22,7 @@ import javax.swing.JTextArea;
 import javax.swing.border.BevelBorder;
 
 import fr.soe.a3s.dto.ChangelogDTO;
-import fr.soe.a3s.exception.RepositoryException;
+import fr.soe.a3s.exception.repository.RepositoryException;
 import fr.soe.a3s.service.RepositoryService;
 import fr.soe.a3s.ui.Facade;
 import fr.soe.a3s.ui.UIConstants;
@@ -33,7 +33,7 @@ public class ChangelogPanel extends JFrame implements UIConstants {
 	private final AdminPanel adminPanel;
 	private JButton buttonSwitch;
 	private JButton buttonCopy;
-	private JButton buttonClose;
+	private JButton buttonOK;
 	private static final String LAST_BUILD = "Last build";
 	private static final String TEN_LAST_BUILD = "10 last builds";
 	private JTextArea textArea;
@@ -65,10 +65,10 @@ public class ChangelogPanel extends JFrame implements UIConstants {
 			controlPanel.setLayout(flowLayout);
 			buttonSwitch = new JButton(TEN_LAST_BUILD);
 			buttonCopy = new JButton("Copy");
-			buttonClose = new JButton("Close");
+			buttonOK = new JButton("OK");
 			controlPanel.add(buttonSwitch);
 			controlPanel.add(buttonCopy);
-			controlPanel.add(buttonClose);
+			controlPanel.add(buttonOK);
 			this.add(controlPanel, BorderLayout.SOUTH);
 		}
 		{
@@ -102,10 +102,10 @@ public class ChangelogPanel extends JFrame implements UIConstants {
 				buttonCopyPerformed();
 			}
 		});
-		buttonClose.addActionListener(new ActionListener() {
+		buttonOK.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				buttonClosePerformed();
+				buttonOKPerformed();
 			}
 		});
 		// Add Listeners
@@ -116,7 +116,7 @@ public class ChangelogPanel extends JFrame implements UIConstants {
 			}
 		});
 
-		getRootPane().setDefaultButton(buttonClose);
+		getRootPane().setDefaultButton(buttonOK);
 	}
 
 	public void init() {
@@ -218,7 +218,7 @@ public class ChangelogPanel extends JFrame implements UIConstants {
 		}
 	}
 
-	private void buttonClosePerformed() {
+	private void buttonOKPerformed() {
 		menuExitPerformed();
 	}
 

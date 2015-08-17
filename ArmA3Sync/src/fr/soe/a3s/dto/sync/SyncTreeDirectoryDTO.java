@@ -10,7 +10,7 @@ public class SyncTreeDirectoryDTO implements SyncTreeNodeDTO {
 
 	private String name;
 	private SyncTreeDirectoryDTO parent;
-	private List<SyncTreeNodeDTO> list = new ArrayList<SyncTreeNodeDTO>();
+	private final List<SyncTreeNodeDTO> list = new ArrayList<SyncTreeNodeDTO>();
 	private boolean updated;
 	private boolean selected;
 	private String destinationPath;
@@ -66,14 +66,17 @@ public class SyncTreeDirectoryDTO implements SyncTreeNodeDTO {
 		this.selected = value;
 	}
 
+	@Override
 	public String getDestinationPath() {
 		return destinationPath;
 	}
 
+	@Override
 	public void setDestinationPath(String destinationPath) {
 		this.destinationPath = destinationPath;
 	}
 
+	@Override
 	public String toString() {
 		if (optional) {
 			return name + " (optional)";
@@ -179,10 +182,12 @@ public class SyncTreeDirectoryDTO implements SyncTreeNodeDTO {
 		return path;
 	}
 
+	@Override
 	public DownloadStatus getDownloadStatus() {
 		return downloadStatus;
 	}
 
+	@Override
 	public void setDownloadStatus(DownloadStatus downloadStatus) {
 		this.downloadStatus = downloadStatus;
 	}

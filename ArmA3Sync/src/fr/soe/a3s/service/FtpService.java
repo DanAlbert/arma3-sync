@@ -3,21 +3,25 @@ package fr.soe.a3s.service;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.net.ConnectException;
 import java.net.SocketTimeoutException;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 import java.util.StringTokenizer;
 
-import fr.soe.a3s.controller.ObserverFileDownload;
-import fr.soe.a3s.dao.AbstractConnexionDAO;
+import org.apache.commons.net.ftp.FTPFile;
+
+import fr.soe.a3s.controller.ObserverProceed;
 import fr.soe.a3s.dao.ConfigurationDAO;
 import fr.soe.a3s.dao.DataAccessConstants;
-import fr.soe.a3s.dao.FtpDAO;
-import fr.soe.a3s.dao.RepositoryDAO;
+import fr.soe.a3s.dao.connection.AbstractConnexionDAO;
+import fr.soe.a3s.dao.connection.FtpDAO;
+import fr.soe.a3s.dao.repository.RepositoryDAO;
+import fr.soe.a3s.dao.zip.UnZipFlowProcessor;
+import fr.soe.a3s.domain.AbstractProtocole;
 import fr.soe.a3s.domain.Http;
 import fr.soe.a3s.domain.configration.FavoriteServer;
 import fr.soe.a3s.domain.repository.AutoConfig;
@@ -26,26 +30,35 @@ import fr.soe.a3s.domain.repository.Events;
 import fr.soe.a3s.domain.repository.Repository;
 import fr.soe.a3s.domain.repository.ServerInfo;
 import fr.soe.a3s.domain.repository.SyncTreeDirectory;
+import fr.soe.a3s.domain.repository.SyncTreeLeaf;
+import fr.soe.a3s.domain.repository.SyncTreeNode;
 import fr.soe.a3s.dto.AutoConfigDTO;
 import fr.soe.a3s.dto.sync.SyncTreeDirectoryDTO;
 import fr.soe.a3s.dto.sync.SyncTreeLeafDTO;
 import fr.soe.a3s.dto.sync.SyncTreeNodeDTO;
 import fr.soe.a3s.exception.FtpException;
-import fr.soe.a3s.exception.HttpException;
-import fr.soe.a3s.exception.RepositoryException;
-import fr.soe.a3s.exception.WritingException;
+import fr.soe.a3s.exception.repository.AutoConfigFileNotFoundException;
+import fr.soe.a3s.exception.repository.ChangelogsFileNotFoundExeption;
+import fr.soe.a3s.exception.repository.RepositoryException;
+import fr.soe.a3s.exception.repository.RepositoryNotFoundException;
+import fr.soe.a3s.exception.repository.ServerInfoNotFoundException;
+import fr.soe.a3s.exception.repository.SyncFileNotFoundException;
 import fr.soe.a3s.main.Version;
 
 public class FtpService extends AbstractConnexionService implements
 		DataAccessConstants {
 
 	private final List<FtpDAO> ftpDAOPool = new ArrayList<FtpDAO>();
-	private final Stack<SyncTreeNodeDTO> downloadFilesStack = new Stack<SyncTreeNodeDTO>();
-	private final List<Exception> errors = new ArrayList<Exception>();
-	private int semaphore = 1;
-	private int timeoutErrors = 0;
+	private Stack<SyncTreeNodeDTO> downloadFilesStack = null;
+	private List<Exception> downloadErrors = null;
+	private List<Exception> downloadTimeouterrors = null;
+	private int semaphore;
+	private List<SyncTreeLeaf> checkRepositoryFilesList = null;
+	private final UnZipFlowProcessor unZipFlowProcessor = new UnZipFlowProcessor();
 	private static final RepositoryDAO repositoryDAO = new RepositoryDAO();
 	private static final ConfigurationDAO configurationDAO = new ConfigurationDAO();
+
+	/* Initialize Service */
 
 	public FtpService(int nbConnections) {
 		assert (nbConnections != 0);
@@ -60,83 +73,142 @@ public class FtpService extends AbstractConnexionService implements
 		ftpDAOPool.add(ftpDAO);
 	}
 
-	@Override
-	public AutoConfigDTO importAutoConfig(String autoconfigURL)
-			throws FtpException, ConnectException, IOException {
+	/* Get A3S Files */
 
-		AutoConfig autoConfig = ftpDAOPool.get(0).importAutoConfig(
-				autoconfigURL);
-		if (autoConfig != null) {
-			updateFavoriteServersFromAutoconfig(autoConfig);
-			return transformAutoConfig2DTO(autoConfig);
-		} else {
-			return null;
-		}
-	}
-
-	/**
-	 * Retrieves serverInfo, changelogs, useerconfig and Events
-	 * 
-	 * @throws FtpException
-	 */
 	@Override
-	public void checkRepository(String repositoryName)
-			throws RepositoryException, ConnectException, IOException,
-			FtpException {
+	public void getSync(String repositoryName) throws RepositoryException,
+			IOException {
 
 		Repository repository = repositoryDAO.getMap().get(repositoryName);
 		if (repository == null) {
-			throw new RepositoryException("Repository " + repositoryName
-					+ " not found!");
+			throw new RepositoryNotFoundException(repositoryName);
+		}
+		try {
+			ftpDAOPool.get(0).connectToRepository(repository.getName(),
+					repository.getProtocol());
+			SyncTreeDirectory syncTreeDirectory = ftpDAOPool.get(0)
+					.downloadSync(repositoryName, repository.getProtocol());
+			repository.setSync(syncTreeDirectory);
+		} finally {
+			ftpDAOPool.get(0).disconnect();
+		}
+	}
+
+	@Override
+	public void getServerInfo(String repositoryName)
+			throws RepositoryException, IOException {
+
+		Repository repository = repositoryDAO.getMap().get(repositoryName);
+		if (repository == null) {
+			throw new RepositoryNotFoundException(repositoryName);
+		}
+		try {
+			ftpDAOPool.get(0).connectToRepository(repository.getName(),
+					repository.getProtocol());
+			ServerInfo serverInfo = ftpDAOPool.get(0).downloadSeverInfo(
+					repositoryName, repository.getProtocol());
+			repository.setServerInfo(serverInfo);
+		} finally {
+			ftpDAOPool.get(0).disconnect();
+		}
+	}
+
+	@Override
+	public void getChangelogs(String repositoryName)
+			throws RepositoryException, IOException {
+
+		Repository repository = repositoryDAO.getMap().get(repositoryName);
+		if (repository == null) {
+			throw new RepositoryNotFoundException(repositoryName);
+		}
+		try {
+			ftpDAOPool.get(0).connectToRepository(repository.getName(),
+					repository.getProtocol());
+			Changelogs changelogs = ftpDAOPool.get(0).downloadChangelogs(
+					repositoryName, repository.getProtocol());
+			repository.setChangelogs(changelogs);
+		} finally {
+			ftpDAOPool.get(0).disconnect();
+		}
+	}
+
+	@Override
+	public void getAutoconfig(String repositoryName)
+			throws RepositoryException, IOException {
+
+		Repository repository = repositoryDAO.getMap().get(repositoryName);
+		if (repository == null) {
+			throw new RepositoryNotFoundException(repositoryName);
+		}
+		try {
+			ftpDAOPool.get(0).connectToRepository(repository.getName(),
+					repository.getProtocol());
+			AutoConfig autoConfig = ftpDAOPool.get(0).downloadAutoconfig(
+					repositoryName, repository.getProtocol());
+			repository.setAutoConfig(autoConfig);
+		} finally {
+			ftpDAOPool.get(0).disconnect();
+		}
+	}
+
+	@Override
+	public void getEvents(String repositoryName) throws RepositoryException,
+			IOException {
+
+		Repository repository = repositoryDAO.getMap().get(repositoryName);
+		if (repository == null) {
+			throw new RepositoryNotFoundException(repositoryName);
+		}
+		try {
+			ftpDAOPool.get(0).connectToRepository(repository.getName(),
+					repository.getProtocol());
+			Events events = ftpDAOPool.get(0).downloadEvents(repositoryName,
+					repository.getProtocol());
+			repository.setEvents(events);
+		} finally {
+			ftpDAOPool.get(0).disconnect();
+		}
+	}
+
+	/* Check Repository */
+
+	@Override
+	public void checkRepository(String repositoryName)
+			throws RepositoryException, IOException {
+
+		Repository repository = repositoryDAO.getMap().get(repositoryName);
+		if (repository == null) {
+			throw new RepositoryNotFoundException(repositoryName);
 		}
 
-		ftpDAOPool.get(0).connectToRepository(repository.getName(),
-				repository.getProtocole());
+		/* Sync */
+		if (!ftpDAOPool.get(0).isCanceled()) {
+			getSync(repositoryName);
+		}
 
 		/* Serverinfo */
-		try {
-			ServerInfo serverInfo = ftpDAOPool.get(0).downloadSeverInfo(
-					repositoryName, repository.getProtocole());
-			repository.setServerInfo(serverInfo);
-			if (serverInfo != null) {
+		if (!ftpDAOPool.get(0).isCanceled()) {
+			getServerInfo(repositoryName);
+			if (repository.getServerInfo() != null) {
 				repository.getHiddenFolderPath().addAll(
-						serverInfo.getHiddenFolderPaths());
+						repository.getServerInfo().getHiddenFolderPaths());
 			}
-		} catch (FtpException e) {// null if not found
-			repository.setServerInfo(null);
 		}
-
 		/* Changelogs */
-		try {
-			Changelogs changelogs = ftpDAOPool.get(0).downloadChangelogs(
-					repositoryName, repository.getProtocole());
-			repository.setChangelogs(changelogs);
-		} catch (FtpException e) {// null if not found
-			repository.setChangelogs(null);
+		if (!ftpDAOPool.get(0).isCanceled()) {
+			getChangelogs(repositoryName);
 		}
-
 		/* Events */
-		try {
-			Events events = ftpDAOPool.get(0).downloadEvent(repositoryName,
-					repository.getProtocole());
-			repository.setEvents(events);
-		} catch (FtpException e) {// null if not found
-			repository.setEvents(null);
+		if (!ftpDAOPool.get(0).isCanceled()) {
+			getEvents(repositoryName);
 		}
-
 		/* Autoconfig */
-		try {
-			AutoConfig autoConfig = ftpDAOPool.get(0).downloadAutoconfig(
-					repositoryName, repository.getProtocole());
-			repository.setAutoConfig(autoConfig);
-			if (autoConfig != null) {
-				updateFavoriteServersFromAutoconfig(autoConfig);
+		if (!ftpDAOPool.get(0).isCanceled()) {
+			getAutoconfig(repositoryName);
+			if (repository.getAutoConfig() != null) {
+				updateFavoriteServersFromAutoconfig(repository.getAutoConfig());
 			}
-		} catch (FtpException e) {// null if not found
-			repository.setAutoConfig(null);
 		}
-
-		disconnect();
 	}
 
 	private void updateFavoriteServersFromAutoconfig(AutoConfig autoConfig) {
@@ -169,117 +241,77 @@ public class FtpService extends AbstractConnexionService implements
 				.addAll(newList);
 	}
 
-	@Override
-	public void getSync(String repositoryName) throws RepositoryException,
-			FtpException, ConnectException, IOException {
-
-		Repository repository = repositoryDAO.getMap().get(repositoryName);
-		if (repository == null) {
-			throw new RepositoryException("Repository " + repositoryName
-					+ " not found!");
-		}
-
-		ftpDAOPool.get(0).connectToRepository(repository.getName(),
-				repository.getProtocole());
-
-		SyncTreeDirectory syncTreeDirectory = ftpDAOPool.get(0).downloadSync(
-				repositoryName, repository.getProtocole());
-		repository.setSync(syncTreeDirectory);
-
-		disconnect();
-	}
+	/* Import autoconfig */
 
 	@Override
-	public void getServerInfo(String repositoryName)
-			throws RepositoryException, ConnectException, FtpException,
-			IOException {
+	public AutoConfigDTO importAutoConfig(AbstractProtocole protocol)
+			throws IOException {
 
-		Repository repository = repositoryDAO.getMap().get(repositoryName);
-		if (repository == null) {
-			throw new RepositoryException("Repository " + repositoryName
-					+ " not found!");
-		}
-
-		ftpDAOPool.get(0).connectToRepository(repository.getName(),
-				repository.getProtocole());
-
-		ServerInfo serverInfo = ftpDAOPool.get(0).downloadSeverInfo(
-				repositoryName, repository.getProtocole());
-		repository.setServerInfo(serverInfo);
-
-		disconnect();
-	}
-
-	@Override
-	public void getChangelogs(String repositoryName) throws ConnectException,
-			FtpException, RepositoryException, WritingException, IOException {
-
-		Repository repository = repositoryDAO.getMap().get(repositoryName);
-		if (repository == null) {
-			throw new RepositoryException("Repository " + repositoryName
-					+ " not found!");
-		}
-
-		ftpDAOPool.get(0).connectToRepository(repository.getName(),
-				repository.getProtocole());
-
-		Changelogs changelogs = ftpDAOPool.get(0).downloadChangelogs(
-				repositoryName, repository.getProtocole());
-		repository.setChangelogs(changelogs);
-
-		disconnect();
-	}
-
-	@Override
-	public boolean upLoadEvents(String repositoryName)
-			throws RepositoryException, FtpException, ConnectException {
-
-		Repository repository = repositoryDAO.getMap().get(repositoryName);
-		if (repository == null) {
-			throw new RepositoryException("Repository " + repositoryName
-					+ " not found!");
-		}
-
-		ftpDAOPool.get(0).connectToRepository(repository.getName(),
-				repository.getRepositoryUploadProtocole());
-
-		boolean response = false;
+		AutoConfigDTO autoConfigDTO = null;
 		try {
-			response = ftpDAOPool.get(0).uploadEvents(repository.getEvents(),
-					repository.getProtocole());
-		} catch (Exception e) {
-			e.printStackTrace();
-			throw new FtpException(e.getMessage());
+			AutoConfig autoConfig = ftpDAOPool.get(0)
+					.importAutoConfig(protocol);
+			if (autoConfig != null) {
+				updateFavoriteServersFromAutoconfig(autoConfig);
+				autoConfigDTO = transformAutoConfig2DTO(autoConfig);
+			}
 		} finally {
-			disconnect();
+			ftpDAOPool.get(0).disconnect();
 		}
-		return response;
+		return autoConfigDTO;
 	}
+
+	/* Determine file completion */
+
+	@Override
+	public String determineCompletion(String repositoryName,
+			SyncTreeDirectoryDTO parent) {
+
+		for (SyncTreeNodeDTO node : parent.getList()) {
+			if (node.isLeaf()) {
+				SyncTreeLeafDTO leaf = (SyncTreeLeafDTO) node;
+				if (leaf.isUpdated()) {
+					leaf.setComplete(0);
+				} else {
+					leaf.setComplete(100);
+				}
+			} else {
+				SyncTreeDirectoryDTO directory = (SyncTreeDirectoryDTO) node;
+				determineCompletion(repositoryName, directory);
+			}
+		}
+		return null;
+	}
+
+	/* Download Addons */
 
 	@Override
 	public void downloadAddons(String repositoryName,
-			List<SyncTreeNodeDTO> listFiles) throws Exception {
+			List<SyncTreeNodeDTO> listFiles) throws RepositoryException,
+			IOException {
 
 		final Repository repository = repositoryDAO.getMap()
 				.get(repositoryName);
 		if (repository == null) {
-			throw new RepositoryException("Repository " + repositoryName
-					+ " not found!");
+			throw new RepositoryNotFoundException(repositoryName);
 		}
-
-		assert (repository.getSync() != null);
-		assert (repository.getServerInfo() != null);
 
 		final String rootDestinationPath = repository
 				.getDefaultDownloadLocation();
 
-		this.downloadFilesStack.clear();
+		assert (repository.getSync() != null);
+		assert (repository.getServerInfo() != null);
+		assert (rootDestinationPath != null);
+
+		this.downloadFilesStack = new Stack<SyncTreeNodeDTO>();
 		this.downloadFilesStack.addAll(listFiles);
+		this.downloadErrors = new ArrayList<Exception>();
+		this.downloadTimeouterrors = new ArrayList<Exception>();
 		this.semaphore = 1;
-		this.timeoutErrors = 0;
+		this.unZipFlowProcessor.init();
 
 		for (final FtpDAO ftpDAO : ftpDAOPool) {
-			ftpDAO.addObserverFileDownload(new ObserverFileDownload() {
+			ftpDAO.addObserverProceed(new ObserverProceed() {
 				@Override
 				public void proceed() {
 					if (!ftpDAO.isCanceled()) {
@@ -294,47 +326,54 @@ public class FtpService extends AbstractConnexionService implements
 										}
 
 										ftpDAO.setActiveConnection(true);
-										ftpDAO.updateObserverActiveConnection();
+										ftpDAO.updateObserverDownloadActiveConnections();
 
-										boolean found = downloadAddon(ftpDAO,
-												node, rootDestinationPath,
-												repository);
+										File downloadedFile = downloadAddon(
+												ftpDAO, node,
+												rootDestinationPath, repository);
 
-										if (!found) {
-											String message = "File not found on repository: "
-													+ node.getRelativePath();
-											addError(new FileNotFoundException(
-													message));
-										}
-									} catch (IOException e) {
-										if (!ftpDAO.isCanceled()) {
-											String message = "";
-											if (e instanceof SocketTimeoutException) {
-												addTimeoutErrors();
-											} else if (e instanceof FileNotFoundException) {
-												message = e.getMessage();
-											} else {
-												message = "Failed to retrieve file "
-														+ node.getName();
-												if (e.getMessage() != null) {
-													message = message + "\n"
-															+ e.getMessage();
+										if (downloadedFile != null) {
+											if (downloadedFile.isFile()) {
+												if (downloadedFile
+														.getName()
+														.toLowerCase()
+														.contains(
+																DataAccessConstants.PBO_ZIP_EXTENSION)) {
+													unZipFlowProcessor
+															.unZipAsynchronously(downloadedFile);
 												}
 											}
-											addError(new Exception(message));
+										}
+									} catch (Exception e) {
+										e.printStackTrace();
+										if (!ftpDAO.isCanceled()) {
+											if (e instanceof SocketTimeoutException) {
+												addTimeoutError(e);
+												addError(e);
+											} else if (e instanceof IOException) {
+												// reset count
+												downloadTimeouterrors.clear();
+												addError(e);
+											}
 										}
 									} finally {
-										if (ftpDAO.isAcquiredSmaphore()) {
+										if (ftpDAO.isAcquiredSemaphore()) {
 											releaseSemaphore();
 											ftpDAO.setAcquiredSemaphore(false);
 										}
 										ftpDAO.setActiveConnection(false);
-										ftpDAO.updateObserverActiveConnection();
-										if (timeoutErrors >= 3
-												|| (errors.size() >= 10)) {
-											ftpDAO.updateObserverError(errors);
+										ftpDAO.updateObserverDownloadActiveConnections();
+
+										if (downloadTimeouterrors.size() > ftpDAOPool
+												.size()) {
+											ftpDAO.updateObserverDownloadTooManyTimeoutErrors(
+													ftpDAOPool.size(),
+													downloadTimeouterrors);
+										} else if (downloadErrors.size() > 10) {
+											ftpDAO.updateObserverDownloadTooManyErrors(
+													10, downloadErrors);
 										} else {
-											ftpDAO.updateFileDownloadObserver();
+											ftpDAO.updateObserverProceed();
 										}
 									}
 								}
@@ -353,12 +392,21 @@ public class FtpService extends AbstractConnexionService implements
 
 							// download is finished
 							if (downloadFinished) {
-								if (errors.isEmpty()) {
-									ftpDAO.updateObserverEnd();
+								// display uncompressing progress
+								if (!unZipFlowProcessor
+										.uncompressionIsFinished()) {
+									unZipFlowProcessor.start(downloadErrors);
 								} else {
-									ftpDAO.updateObserverError(errors);
+									downloadErrors.addAll(unZipFlowProcessor
+											.getErrors());
+									if (downloadErrors.isEmpty()) {
+										ftpDAO.updateObserverDownloadEnd();
+									} else {
+										ftpDAO.updateObserverDownloadEndWithErrors(downloadErrors);
+									}
 								}
 							} else {
+								// Give semaphore to the other DAOs
 								for (FtpDAO ftpDAO : ftpDAOPool) {
 									if (ftpDAO.isActiveConnection()
 											&& aquireSemaphore()) {
@@ -377,9 +425,9 @@ public class FtpService extends AbstractConnexionService implements
 			if (!downloadFilesStack.isEmpty()) {// nb files < nb connections
 				try {
 					ftpDAO.connectToRepository(repository.getName(),
-							repository.getProtocole());
-					ftpDAO.updateFileDownloadObserver();
-				} catch (FtpException | ConnectException e) {
+							repository.getProtocol());
+					ftpDAO.updateObserverProceed();
+				} catch (IOException e) {
 					boolean isDowloading = false;
 					ftpDAO.setActiveConnection(false);
 					for (FtpDAO fDAO : ftpDAOPool) {
@@ -396,12 +444,12 @@ public class FtpService extends AbstractConnexionService implements
 		}
 	}
 
-	private boolean downloadAddon(final FtpDAO ftpDAO,
-			final SyncTreeNodeDTO node, final String rootDestinationPath,
-			final Repository repository) throws IOException {
+	private File downloadAddon(final FtpDAO ftpDAO, final SyncTreeNodeDTO node,
+			final String rootDestinationPath, final Repository repository)
+			throws IOException {
 
 		String destinationPath = null;
-		String remotePath = repository.getProtocole().getRemotePath();
+		String remotePath = repository.getProtocol().getRemotePath();
 		String path = determinePath(node);
 		if (node.getDestinationPath() != null) {
 			destinationPath = node.getDestinationPath();
@@ -410,16 +458,16 @@ public class FtpService extends AbstractConnexionService implements
 			destinationPath = rootDestinationPath + "/" + path;
 			remotePath = remotePath + "/" + path;
 		}
-		boolean found = ftpDAO.downloadFile(remotePath, destinationPath, node);
-		return found;
+
+		return ftpDAO.downloadFile(remotePath, destinationPath, node);
 	}
 
 	private synchronized void addError(Exception e) {
-		errors.add(e);
+		downloadErrors.add(e);
 	}
 
-	private synchronized void addTimeoutErrors() {
-		timeoutErrors++;
+	private synchronized void addTimeoutError(Exception e) {
+		downloadTimeouterrors.add(e);
 	}
 
 	private synchronized SyncTreeNodeDTO popDownloadFilesStack() {
@@ -429,6 +477,10 @@ public class FtpService extends AbstractConnexionService implements
 		} else {
 			return downloadFilesStack.pop();
 		}
+	}
+
+	private synchronized void clearDownloadFilesStack() {
+		downloadFilesStack.clear();
 	}
 
 	private synchronized boolean aquireSemaphore() {
@@ -445,26 +497,6 @@ public class FtpService extends AbstractConnexionService implements
 		semaphore = 1;
 	}
 
-	@Override
-	public void determineCompletion(String repositoryName,
-			SyncTreeDirectoryDTO parent) throws RepositoryException,
-			HttpException, WritingException {
-
-		for (SyncTreeNodeDTO node : parent.getList()) {
-			if (node.isLeaf()) {
-				SyncTreeLeafDTO leaf = (SyncTreeLeafDTO) node;
-				if (leaf.isUpdated()) {
-					leaf.setComplete(0);
-				} else {
-					leaf.setComplete(100);
-				}
-			} else {
-				SyncTreeDirectoryDTO directory = (SyncTreeDirectoryDTO) node;
-				determineCompletion(repositoryName, directory);
-			}
-		}
-	}
-
 	private String determinePath(SyncTreeNodeDTO syncTreeNodeDTO) {
 
 		assert (syncTreeNodeDTO.getParent() != null);
@@ -476,13 +508,411 @@ public class FtpService extends AbstractConnexionService implements
 		return path;
 	}
 
-	public String checkForUpdate(boolean devMode) throws FtpException {
+	/* Upload Events */
+
+	@Override
+	public boolean upLoadEvents(String repositoryName)
+			throws RepositoryException, IOException {
+
+		Repository repository = repositoryDAO.getMap().get(repositoryName);
+		if (repository == null) {
+			throw new RepositoryNotFoundException(repositoryName);
+		}
+		boolean response = false;
+		try {
+			ftpDAOPool.get(0).connectToRepository(repository.getName(),
+					repository.getRepositoryUploadProtocole());
+			response = ftpDAOPool.get(0).uploadEvents(repository.getEvents(),
+					repository.getRepositoryUploadProtocole());
+		} finally {
+			ftpDAOPool.get(0).disconnect();
+		}
+		return response;
+	}
+
+	/* Upload Repository */
+
+	@Override
+	public void getSyncWithRepositoryUploadProtocole(String repositoryName)
+			throws RepositoryException, IOException {
+
+		Repository repository = repositoryDAO.getMap().get(repositoryName);
+		if (repository == null) {
+			throw new RepositoryNotFoundException(repositoryName);
+		}
+		try {
+			ftpDAOPool.get(0).connectToRepository(repository.getName(),
+					repository.getRepositoryUploadProtocole());
+
+			SyncTreeDirectory syncTreeDirectory = ftpDAOPool.get(0)
+					.downloadSync(repositoryName,
+							repository.getRepositoryUploadProtocole());
+			repository.setSync(syncTreeDirectory);
+		} finally {
+			ftpDAOPool.get(0).disconnect();
+		}
+	}
+
+	@Override
+	public void uploadRepository(String repositoryName,
+			List<SyncTreeNodeDTO> allLocalFiles,
+			List<SyncTreeNodeDTO> filesToUpload,
+			List<SyncTreeNodeDTO> filesToDelete) throws RepositoryException,
+			IOException {
+
+		Repository repository = repositoryDAO.getMap().get(repositoryName);
+		if (repository == null) {
+			throw new RepositoryNotFoundException(repositoryName);
+		}
+
+		SyncTreeDirectory sync = repository.getLocalSync();
+		if (sync == null) {
+			throw new SyncFileNotFoundException(repositoryName);
+		}
+
+		ServerInfo serverInfo = repository.getLocalServerInfo();
+		if (serverInfo == null) {
+			throw new ServerInfoNotFoundException(repositoryName);
+		}
+
+		Changelogs changelogs = repository.getLocalChangelogs();
+		if (changelogs == null) {
+			throw new ChangelogsFileNotFoundExeption(repositoryName);
+		}
+
+		AutoConfig autoConfig = repository.getLocalAutoConfig();
+		if (autoConfig == null) {
+			throw new AutoConfigFileNotFoundException(repositoryName);
+		}
+
+		ftpDAOPool.get(0).updateObserverCountWithText(
+				"Checking remote files...");
+
+		Map<SyncTreeNodeDTO, List<FTPFile>> mapFtpFilesToUpload = new LinkedHashMap<SyncTreeNodeDTO, List<FTPFile>>();
+
+		ftpDAOPool.get(0).setTotalCount(allLocalFiles.size());
+		int count = 0;
+		int nbFilesToUpload = 0;
+
+		for (SyncTreeNodeDTO node : allLocalFiles) {
+			List<FTPFile> ftpFilesToUpload = new ArrayList<FTPFile>();
+			if (ftpDAOPool.get(0).isCanceled()) {
+				return;
+			} else {
+				String relativePath = determinePath(node);
+				if (node.isLeaf()) {
+					SyncTreeLeafDTO leaf = (SyncTreeLeafDTO) node;
+					List<String> listFilesName = new ArrayList<String>();
+
+					if (leaf.isCompressed()) {
+						if (repository.isUploadCompressedPboFilesOnly()) {
+							String fileName = leaf.getName() + ZIP_EXTENSION;// *.pbo.zip
+							listFilesName.add(fileName);
+						} else {
+							String fileName = leaf.getName();// *.*/*.pbo
+							listFilesName.add(fileName);
+							fileName = leaf.getName() + ZIP_EXTENSION;// *.pbo.zip
+							listFilesName.add(fileName);
+							if (repository.getProtocol() instanceof Http) {
+								fileName = leaf.getName() + ZSYNC_EXTENSION;// *.pbo.zsync
+								listFilesName.add(fileName);
+							}
+						}
+					} else {
+						String fileName = leaf.getName();// *.*/*.pbo
+						listFilesName.add(fileName);
+						if (repository.getProtocol() instanceof Http) {
+							fileName = leaf.getName() + ZSYNC_EXTENSION;// *.pbo.zsync
+							listFilesName.add(fileName);
+						}
+					}
+					for (String fileName : listFilesName) {
+						FTPFile ftpFile = createFTPFile(fileName, relativePath,
+								FTPFile.FILE_TYPE);
+
+						boolean exists = remoteFileExists(repository.getName(),
+								relativePath, fileName,
+								repository.getProtocol());
+
+						if (!exists || filesToUpload.contains(leaf)) {
+							ftpFilesToUpload.add(ftpFile);
+						}
+					}
+				} else {
+					String fileName = node.getName();
+					FTPFile ftpFile = createFTPFile(fileName, relativePath,
+							FTPFile.DIRECTORY_TYPE);
+
+					boolean exists = remoteFileExists(repository.getName(),
+							relativePath, fileName, repository.getProtocol());
+
+					if (!exists || filesToUpload.contains(node)) {
+						ftpFilesToUpload.add(ftpFile);
+					}
+				}
+			}
+
+			mapFtpFilesToUpload.put(node, ftpFilesToUpload);
+			nbFilesToUpload = nbFilesToUpload + ftpFilesToUpload.size();
+			count++;
+			ftpDAOPool.get(0).setCount(count);
+			ftpDAOPool.get(0).updateObserverCountWithText();
+		}
+
+		String repositoryPath = repository.getPath();
+		long totalFilesSize = 0;
+
+		// Determine total files size
+		for (Iterator<List<FTPFile>> iter = mapFtpFilesToUpload.values()
+				.iterator(); iter.hasNext();) {
+			List<FTPFile> list = iter.next();
+			for (FTPFile ftpFile : list) {
+				String relativePath = ftpFile.getLink();
+				String fileName = ftpFile.getName();
+				boolean isFile = (ftpFile.getType() == FTPFile.FILE_TYPE) ? true
+						: false;
+				if (isFile) {
+					File file = new File(repositoryPath + "/" + relativePath
+							+ "/" + fileName);
+					if (!file.exists()) {
+						throw new FileNotFoundException("File not found: "
+								+ file.getAbsolutePath());
+					} else {
+						totalFilesSize = totalFilesSize + file.length();
+					}
+				}
+			}
+		}
+
+		// Set upload total size
+		ftpDAOPool.get(0).updateObserverUploadTotalSize(totalFilesSize);
+
+		// Upload file
+		ftpDAOPool.get(0).updateObserverCountWithText("Uploading files...");
+
+		try {
+			String repositoryRemotePath = repository
+					.getRepositoryUploadProtocole().getRemotePath();
+
+			// Reconnect
+			ftpDAOPool.get(0).connectToRepository(repository.getName(),
+					repository.getRepositoryUploadProtocole());
+
+			for (Iterator<List<FTPFile>> iter = mapFtpFilesToUpload.values()
+					.iterator(); iter.hasNext();) {
+				List<FTPFile> list = iter.next();
+				for (FTPFile ftpFile : list) {
+					if (ftpDAOPool.get(0).isCanceled()) {
+						return;
+					} else {
+						// ftpDAOPool.get(0).deleteFile(ftpFile,
+						// repositoryRemotePath);
+						boolean ok = ftpDAOPool.get(0).uploadFile(ftpFile,
+								repositoryPath, repositoryRemotePath);
+						if (!ok) {
+							throw new IOException("Failed to upload file: "
+									+ ftpFile.getLink() + "/"
+									+ ftpFile.getName());
+						}
+					}
+				}
+				ftpDAOPool.get(0).updateObserverUploadLastIndexFileUploaded();
+			}
+
+			// Delete files extra remote files
+			ftpDAOPool.get(0).updateObserverCountWithText(
+					"Deleting extra remote files...");
+
+			ftpDAOPool.get(0).setTotalCount(filesToDelete.size());
+			count = 0;
+
+			for (SyncTreeNodeDTO node : filesToDelete) {
+				if (ftpDAOPool.get(0).isCanceled()) {
+					return;
+				} else {
+					String relativePath = determinePath(node);
+					if (node.isLeaf()) {
+						SyncTreeLeafDTO leaf = (SyncTreeLeafDTO) node;
+						String fileName = leaf.getName();
+						FTPFile ftpFile = createFTPFile(fileName, relativePath,
+								FTPFile.FILE_TYPE);
+						ftpDAOPool.get(0).deleteFile(ftpFile,
+								repositoryRemotePath);
+					} else {
+						String fileName = node.getName();
+						FTPFile ftpFile = createFTPFile(fileName, relativePath,
+								FTPFile.DIRECTORY_TYPE);
+						ftpDAOPool.get(0).deleteFile(ftpFile,
+								repositoryRemotePath);
+					}
+				}
+				count++;
+				ftpDAOPool.get(0).setCount(count);
+				ftpDAOPool.get(0).updateObserverCountWithText();
+			}
+
+			// Upload sync files
+			ftpDAOPool.get(0).updateObserverCountWithText(
+					"Uploading synchronization files...");
+
+			// Set serverInfo with upload options
+			repository.getLocalServerInfo().setCompressedPboFilesOnly(
+					repository.isUploadCompressedPboFilesOnly());
+
+			ftpDAOPool.get(0).uploadSync(repository.getLocalSync(),
+					repositoryRemotePath);
+			ftpDAOPool.get(0).uploadServerInfo(repository.getLocalServerInfo(),
+					repositoryRemotePath);
+			ftpDAOPool.get(0).uploadChangelogs(repository.getLocalChangelogs(),
+					repositoryRemotePath);
+			ftpDAOPool.get(0).uploadAutoconfig(repository.getLocalAutoConfig(),
+					repositoryRemotePath);
+		} finally {
+			ftpDAOPool.get(0).disconnect();
+		}
+	}
+
+	private FTPFile createFTPFile(String fileName, String remotePath,
+			int fileType) {
+
+		FTPFile ftpFile = new FTPFile();
+		ftpFile.setName(fileName);
+		ftpFile.setLink(remotePath);
+		ftpFile.setType(fileType);
+		return ftpFile;
+	}
+
+	/* Check Repository synchronization */
+
+	@Override
+	public List<Exception> checkRepositoryContent(String repositoryName)
+			throws RepositoryException, IOException {
+
+		Repository repository = repositoryDAO.getMap().get(repositoryName);
+		if (repository == null) {
+			throw new RepositoryNotFoundException(repositoryName);
+		}
+
+		SyncTreeDirectory sync = repository.getSync();
+		if (sync == null) {
+			throw new SyncFileNotFoundException(repositoryName);
+		}
+
+		ServerInfo serverInfo = repository.getServerInfo();
+		if (serverInfo == null) {
+			throw new ServerInfoNotFoundException(repositoryName);
+		}
+
+		/* Get Files */
+		this.checkRepositoryFilesList = new ArrayList<SyncTreeLeaf>();
+		getFiles(sync);
+
+		/* Errors */
+		List<Exception> errorsCheckRepository = new ArrayList<Exception>();
+
+		ftpDAOPool.get(0).setTotalCount(this.checkRepositoryFilesList.size());
+		ftpDAOPool.get(0).setCount(0);
+
+		int count = 0;
+		for (SyncTreeLeaf leaf : this.checkRepositoryFilesList) {
+			if (ftpDAOPool.get(0).isCanceled()) {
+				break;
+			} else {
+				String relativePath = determinePath(leaf);
+				List<String> listFilesName = new ArrayList<String>();
+				if (leaf.isCompressed()) {
+					if (serverInfo.isCompressedPboFilesOnly()) {
+						String fileName = leaf.getName() + ZIP_EXTENSION;// *.pbo.zip
+						listFilesName.add(fileName);
+					} else {
+						String fileName = leaf.getName();// *.*
+						listFilesName.add(fileName);
+						fileName = leaf.getName() + ZIP_EXTENSION;// *.pbo.zip
+						listFilesName.add(fileName);
+						if (repository.getProtocol() instanceof Http) {
+							fileName = leaf.getName() + ZSYNC_EXTENSION;// *.pbo.zsync
+							listFilesName.add(fileName);
+						}
+					}
+				} else {
+					String fileName = leaf.getName();// *.*
+					listFilesName.add(fileName);
+					if (repository.getProtocol() instanceof Http) {
+						fileName = leaf.getName() + ZSYNC_EXTENSION;// *.pbo.zsync
+						listFilesName.add(fileName);
+					}
+				}
+				for (String fileName : listFilesName) {
+					boolean found = remoteFileExists(repository.getName(),
+							relativePath, fileName, repository.getProtocol());
+					if (!found) {
+						errorsCheckRepository.add(new FileNotFoundException(
+								"File not found on repository: " + relativePath
+										+ "/" + fileName));
+						ftpDAOPool.get(0).updateObserverCheckCountError(
+								errorsCheckRepository.size());
+					}
+				}
+				count++;
+				ftpDAOPool.get(0).setCount(count);
+			}
+			ftpDAOPool.get(0).updateObserverCheckProgress();
+		}
+		return errorsCheckRepository;
+	}
+
+	private void getFiles(SyncTreeNode node) {
+
+		if (!node.isLeaf()) {
+			SyncTreeDirectory syncTreeDirectory = (SyncTreeDirectory) node;
+			for (SyncTreeNode n : syncTreeDirectory.getList()) {
+				getFiles(n);
+			}
+		} else {
+			SyncTreeLeaf syncTreeLeaf = (SyncTreeLeaf) node;
+			checkRepositoryFilesList.add(syncTreeLeaf);
+		}
+	}
+
+	private String determinePath(SyncTreeNode syncTreeNode) {
+		assert (syncTreeNode.getParent() != null);
+		String path = "";
+		while (!syncTreeNode.getParent().getName().equals("racine")) {
+			path = syncTreeNode.getParent().getName() + "/" + path;
+			syncTreeNode = syncTreeNode.getParent();
+		}
+		return path;
+	}
+
+	private boolean remoteFileExists(String repositoryName,
+			String relativePath, String fileName, AbstractProtocole protocole)
+			throws IOException {
+
+		try {
+			ftpDAOPool.get(0).connectToRepository(repositoryName, protocole);
+			return ftpDAOPool.get(0).fileExists(repositoryName, relativePath,
+					fileName, protocole);
+		} finally {
+			ftpDAOPool.get(0).disconnect();
+		}
+	}
+
+	private boolean remoteDirectoryExists(String repositoryRemotePath,
+			String relativePath, String fileName) throws IOException {
+
+		String remotePath = repositoryRemotePath + "/" + relativePath;
+		return ftpDAOPool.get(0).directoryExists(remotePath, fileName);
+	}
+
+	/* Check for Updates */
+
+	public String checkForUpdates(boolean devMode) throws FtpException {
 
 		String response = null;
 		try {
 			String updateVersionName = ftpDAOPool.get(0).downloadXMLupdateFile(
 					devMode);
-			disconnect();
+			ftpDAOPool.get(0).disconnect();
 			if (updateVersionName != null) {
 				System.out.println("ArmA3Sync Available update version = "
 						+ updateVersionName);
@@ -506,251 +936,28 @@ public class FtpService extends AbstractConnexionService implements
 				response = null;
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
-			throw new FtpException("Failed to connect to updates repository.");
+			// e.printStackTrace();
+			throw new FtpException("Failed to connect to updates repository");
 		} finally {
-			disconnect();
+			ftpDAOPool.get(0).disconnect();
 		}
 		return response;
 	}
 
-	@Override
-	public boolean remoteFileExists(String repositoryName, SyncTreeNodeDTO node)
-			throws RepositoryException, ConnectException, FtpException {
-
-		Repository repository = repositoryDAO.getMap().get(repositoryName);
-		if (repository == null) {
-			throw new RepositoryException("Repository " + repositoryName
-					+ " not found!");
-		}
-
-		ftpDAOPool.get(0).connectToRepository(repository.getName(),
-				repository.getRepositoryUploadProtocole());
-		String remotePath = repository.getRepositoryUploadProtocole()
-				.getRemotePath();
-
-		try {
-			return ftpDAOPool.get(0).fileExists(remotePath, node);
-		} catch (IOException e) {
-			if (!ftpDAOPool.get(0).isCanceled()) {
-				e.printStackTrace();
-				throw new FtpException(e.getMessage());
-			}
-		} finally {
-			disconnect();
-		}
-		return false;
-	}
+	/* Cancel */
 
 	@Override
-	public void remoteFileExists(String repositoryName,
-			Map<SyncTreeNodeDTO, Boolean> mapRemoteNodeExists)
-			throws RepositoryException, ConnectException, FtpException {
-
-		Repository repository = repositoryDAO.getMap().get(repositoryName);
-		if (repository == null) {
-			throw new RepositoryException("Repository " + repositoryName
-					+ " not found!");
-		}
-
-		ftpDAOPool.get(0).connectToRepository(repository.getName(),
-				repository.getRepositoryUploadProtocole());
-		String remotePath = repository.getRepositoryUploadProtocole()
-				.getRemotePath();
-
-		try {
-			for (Iterator<SyncTreeNodeDTO> iter = mapRemoteNodeExists.keySet()
-					.iterator(); iter.hasNext();) {
-				SyncTreeNodeDTO node = iter.next();
-				boolean exists = ftpDAOPool.get(0).fileExists(remotePath, node);
-				mapRemoteNodeExists.put(node, exists);
-			}
-		} catch (IOException e) {
-			if (!ftpDAOPool.get(0).isCanceled()) {
-				e.printStackTrace();
-				throw new FtpException(e.getMessage());
-			}
-		} finally {
-			disconnect();
-		}
-	}
-
-	// public List<String> fileExists(String repositoryName,
-	// Collection<SyncTreeNodeDTO> nodes) throws RepositoryException,
-	// ConnectException, FtpException {
-	//
-	// List<String> list = new ArrayList<String>();
-	//
-	// Repository repository = repositoryDAO.getMap().get(repositoryName);
-	// if (repository == null) {
-	// throw new RepositoryException("Repository " + repositoryName
-	// + " not found!");
-	// }
-	//
-	// String baseRemotePath = ftpDAO.connectToRepository(repository);
-	//
-	// try {
-	// for (SyncTreeNodeDTO node : nodes) {
-	// String remotePath = baseRemotePath + "/"
-	// + node.getParent().getRelativePath();
-	// boolean found = ftpDAO.fileExists(node.getName(),
-	// node.isLeaf(), remotePath);
-	// if (found) {
-	// list.add(node.getRelativePath());
-	// }
-	// }
-	// } catch (Exception e) {
-	// e.printStackTrace();
-	// throw new FtpException(e.getMessage());
-	// }
-	// return list;
-	// }
-
-	// public List<FTPFile> getFiles(String repositoryName)
-	// throws RepositoryException, ConnectException, FtpException {
-	//
-	// List<FTPFile> list = new ArrayList<FTPFile>();
-	//
-	// Repository repository = repositoryDAO.getMap().get(repositoryName);
-	// if (repository == null) {
-	// throw new RepositoryException("Repository " + repositoryName
-	// + " not found!");
-	// }
-	//
-	// String remotePath = ftpDAO.connectToRepository(repository);
-	//
-	// try {
-	// list.addAll(ftpDAO.getFiles(remotePath));
-	// } catch (IOException e) {
-	// e.printStackTrace();
-	// throw new FtpException(e.getMessage());
-	// }
-	// return list;
-	// }
-
-	@Override
-	public void getSyncWithRepositoryUploadProtocole(String repositoryName)
-			throws RepositoryException, ConnectException, FtpException,
-			IOException {
-
-		Repository repository = repositoryDAO.getMap().get(repositoryName);
-		if (repository == null) {
-			throw new RepositoryException("Repository " + repositoryName
-					+ " not found!");
-		}
-
-		ftpDAOPool.get(0).connectToRepository(repository.getName(),
-				repository.getRepositoryUploadProtocole());
-
-		SyncTreeDirectory syncTreeDirectory = ftpDAOPool.get(0).downloadSync(
-				repositoryName, repository.getRepositoryUploadProtocole());
-		repository.setSync(syncTreeDirectory);
-
-		disconnect();
-	}
-
-	@Override
-	public void uploadRepository(String repositoryName,
-			List<SyncTreeNodeDTO> filesToUpload,
-			List<SyncTreeNodeDTO> filesToDelete, boolean resume)
-			throws RepositoryException, ConnectException, FtpException {
-
-		Repository repository = repositoryDAO.getMap().get(repositoryName);
-		if (repository == null) {
-			throw new RepositoryException("Repository " + repositoryName
-					+ " not found!");
-		}
-
-		ftpDAOPool.get(0).connectToRepository(repository.getName(),
-				repository.getRepositoryUploadProtocole());
-		String remotePath = repository.getRepositoryUploadProtocole()
-				.getRemotePath();
-
-		try {
-			for (SyncTreeNodeDTO node : filesToDelete) {
-				if (ftpDAOPool.get(0).isCanceled()) {
-					return;
-				}
-				String parentPath = remotePath + "/"
-						+ node.getParent().getRelativePath();
-				ftpDAOPool.get(0).deleteFile(node.getName(), node.isLeaf(),
-						parentPath);
-
-				// Remove ZSync file
-				if (repository.getProtocole() instanceof Http && node.isLeaf()) {
-					ftpDAOPool.get(0).deleteFile(
-							node.getName() + ZSYNC_EXTENSION, node.isLeaf(),
-							parentPath);
-				}
-			}
-
-			for (SyncTreeNodeDTO node : filesToUpload) {
-				if (ftpDAOPool.get(0).isCanceled()) {
-					return;
-				}
-
-				String sourceFilePath = repository.getPath() + "/"
-						+ node.getRelativePath();
-				File sourceFile = new File(sourceFilePath);
-				if (!sourceFile.exists()) {
-					throw new RepositoryException(
-							"Can't find file on local repository "
-									+ sourceFile.getAbsolutePath());
-				}
-
-				ftpDAOPool.get(0).uploadFile(sourceFile, remotePath, node,
-						resume);
-
-				resume = false;
-
-				// Add ZSync file
-				if (repository.getProtocole() instanceof Http && node.isLeaf()) {
-					String zsyncFilePath = repository.getPath() + "/"
-							+ node.getRelativePath() + ZSYNC_EXTENSION;
-					File zsyncFile = new File(zsyncFilePath);
-					if (!zsyncFile.exists()) {
-						throw new RepositoryException(
-								"Can't find file on local repository "
-										+ zsyncFile.getAbsolutePath());
-					}
-					ftpDAOPool.get(0).uploadSingleFile(zsyncFile, remotePath,
-							node, resume);
-				}
-			}
-
-			ftpDAOPool.get(0).uploadSync(repository.getLocalSync(), remotePath);
-			ftpDAOPool.get(0).uploadServerInfo(repository.getLocalServerInfo(),
-					remotePath);
-			ftpDAOPool.get(0).uploadChangelogs(repository.getLocalChangelogs(),
-					remotePath);
-			ftpDAOPool.get(0).uploadAutoconfig(repository.getLocalAutoConfig(),
-					remotePath);
-			ftpDAOPool.get(0).uploadEvents(repository.getLocalEvents(),
-					remotePath);
-
-		} catch (IOException e) {
-			if (!ftpDAOPool.get(0).isCanceled()) {
-				e.printStackTrace();
-				throw new FtpException(e.getMessage());
-			}
-		} finally {
-			ftpDAOPool.get(0).disconnect();
-		}
-	}
-
-	@Override
-	public void cancel(boolean resumable) {
+	public void cancel() {
+		unZipFlowProcessor.cancel();
 		for (FtpDAO ftpDAO : ftpDAOPool) {
-			ftpDAO.cancel(resumable);
+			ftpDAO.cancel();
 		}
-	}
-
-	@Override
-	public void disconnect() {
 		for (FtpDAO ftpDAO : ftpDAOPool) {
 			ftpDAO.disconnect();
 		}
 	}
+
+	/* Getters */
 
 	@Override
 	public AbstractConnexionDAO getConnexionDAO() {
@@ -771,4 +978,16 @@ public class FtpService extends AbstractConnexionService implements
 		return ftpDAOPool.size();
 	}
 
+	@Override
+	public UnZipFlowProcessor getUnZipFlowProcessor() {
+		return unZipFlowProcessor;
+	}
+
+	@Override
+	public void setMaximumClientDownloadSpeed(double value) {
+
+		for (FtpDAO ftpDAO : ftpDAOPool) {
+			ftpDAO.setMaximumClientDownloadSpeed(value);
+		}
+	}
 }

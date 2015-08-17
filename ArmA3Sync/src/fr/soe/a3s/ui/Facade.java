@@ -20,6 +20,8 @@ import fr.soe.a3s.ui.tools.tfarEditor.FirstPageTFARInstallerPanel;
 
 public class Facade {
 
+	/** Dev mode */
+	private boolean devMode = false;
 	/** Views single instance */
 	private MainPanel mainPanel;
 	private InfoPanel infoPanel;
@@ -39,10 +41,14 @@ public class Facade {
 	private FirstPageTFARInstallerPanel firstPageTFARInstallerPanel;
 	private InfoUpdatedRepositoryPanel infoUpdatedRepositoryPanel;
 
-	/** Dev mode */
-	private boolean devMode = false;
+	public boolean isDevMode() {
+		return devMode;
+	}
 
-	/* Getters and setters on the Views */
+	public void setDevMode(boolean value) {
+		this.devMode = value;
+	}
+
 	public void setMainPanel(MainPanel mainPanel) {
 		this.mainPanel = mainPanel;
 	}
@@ -131,14 +137,6 @@ public class Facade {
 
 	public ExternalApplicationsEditionPanel getExternalApplicationsEditionPanel() {
 		return externalApplicationsEditionPanel;
-	}
-
-	public boolean isDevMode() {
-		return devMode;
-	}
-
-	public void setDevMode(boolean value) {
-		this.devMode = value;
 	}
 
 	public PreferencesPanel getPreferencesPanel() {

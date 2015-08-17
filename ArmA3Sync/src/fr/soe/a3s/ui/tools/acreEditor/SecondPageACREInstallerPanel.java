@@ -9,12 +9,15 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.border.BevelBorder;
 
@@ -143,28 +146,60 @@ public class SecondPageACREInstallerPanel extends WizardPanel {
 		this.armA3Directory = armA3Directory;
 		this.ts3Directory = ts3Directory;
 
-		/* Copy userconfig to ArmA 3 */
-		File sourceLocation = new File(acreUserconfigDirectory);
-		File targetLocation = new File(armA3Directory + "/userconfig");
-		targetLocation.mkdirs();
-		try {
-			FileAccessMethods.copyDirectory(sourceLocation, targetLocation);
-			copyUserconfig = true;
-		} catch (IOException e) {
-			e.printStackTrace();
+		/* Check write permissions on ArmA 3 directory */
+		boolean writeOK = Files.isWritable(FileSystems.getDefault().getPath(
+				armA3Directory));
+		if (!writeOK) {
+			JOptionPane.showMessageDialog(facade.getMainPanel(),
+					"Can't to write on: " + armA3Directory + "\n"
+							+ "Check files permissions.", "Error",
+					JOptionPane.ERROR_MESSAGE);
 			copyUserconfig = false;
+		} else {
+			/* Copy userconfig to ArmA 3 */
+			File sourceLocation = new File(acreUserconfigDirectory);
+			File targetLocation = new File(armA3Directory + "/userconfig");
+			targetLocation.mkdirs();
+			try {
+				FileAccessMethods.copyDirectory(sourceLocation, targetLocation);
+				copyUserconfig = true;
+			} catch (IOException e) {
+				e.printStackTrace();
+				copyUserconfig = false;
+				JOptionPane.showMessageDialog(
+						facade.getMainPanel(),
+						"Failed to write on: " + armA3Directory + "\n"
+								+ e.getMessage(), "Error",
+						JOptionPane.ERROR_MESSAGE);
+			}
 		}
 
-		/* Copy plugin to TS3 */
-		sourceLocation = new File(acrePuginPath);
-		targetLocation = new File(ts3Directory + "/plugins/"
-				+ sourceLocation.getName());
-		try {
-			FileAccessMethods.copyFile(sourceLocation, targetLocation);
-			copyPlugin = true;
-		} catch (IOException e) {
-			e.printStackTrace();
+		/* Check write permissions on TS3 directory */
+		writeOK = Files.isWritable(FileSystems.getDefault().getPath(
+				ts3Directory));
+		if (!writeOK) {
+			JOptionPane.showMessageDialog(facade.getMainPanel(),
+					"Can't to write on: " + ts3Directory + "\n"
+							+ "Check files permissions.", "Error",
+					JOptionPane.ERROR_MESSAGE);
 			copyPlugin = false;
+		} else {
+			/* Copy plugin to TS3 */
+			File sourceLocation = new File(acrePuginPath);
+			File targetLocation = new File(ts3Directory + "/plugins/"
+					+ sourceLocation.getName());
+			try {
+				FileAccessMethods.copyDirectory(sourceLocation, targetLocation);
+				copyPlugin = true;
+			} catch (IOException e) {
+				e.printStackTrace();
+				copyPlugin = false;
+				JOptionPane.showMessageDialog(
+						facade.getMainPanel(),
+						"Failed to write on: " + ts3Directory + "\n"
+								+ e.getMessage(), "Error",
+						JOptionPane.ERROR_MESSAGE);
+			}
 		}
 
 		labelCopyUserconfigValue.setFont(new Font("Tohama", Font.BOLD, 12));

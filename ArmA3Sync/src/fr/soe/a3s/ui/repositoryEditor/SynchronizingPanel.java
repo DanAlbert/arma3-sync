@@ -8,7 +8,7 @@ import java.util.List;
 
 import fr.soe.a3s.dto.RepositoryDTO;
 import fr.soe.a3s.service.AbstractConnexionService;
-import fr.soe.a3s.service.ConnexionServiceFactory;
+import fr.soe.a3s.service.AbstractConnexionServiceFactory;
 import fr.soe.a3s.service.RepositoryService;
 import fr.soe.a3s.ui.Facade;
 
@@ -38,8 +38,7 @@ public class SynchronizingPanel extends ProgressPanel {
 
 	public void init(final String repositoryName) {
 
-		facade.getSyncPanel().getButtonSync1().setEnabled(false);
-		facade.getSyncPanel().getButtonSync2().setEnabled(false);
+		facade.getSyncPanel().disableAllButtons();
 		progressBar.setIndeterminate(true);
 		Thread t = new Thread(new Runnable() {
 			@Override
@@ -48,29 +47,27 @@ public class SynchronizingPanel extends ProgressPanel {
 					List<RepositoryDTO> list = repositoryService
 							.getRepositories();
 					for (final RepositoryDTO repositoryDTO : list) {
-						if (canceled) {
-							break;
-						}
-						try {
-							connexion = ConnexionServiceFactory
-									.getServiceFromRepository(repositoryDTO
-											.getName());
-							connexion.checkRepository(repositoryDTO.getName());
-							facade.getAddonsPanel().updateModsetSelection(
-									repositoryDTO.getName());
-						} catch (Exception e) {
-							System.out.println(e.getMessage());
+						if (!canceled) {
+							try {
+								connexion = AbstractConnexionServiceFactory
+										.getServiceFromRepository(repositoryDTO
+												.getName());
+								connexion.checkRepository(repositoryDTO
+										.getName());
+								facade.getAddonsPanel().updateModsetSelection(
+										repositoryDTO.getName());
+							} catch (Exception e) {
+							}
 						}
 					}
 				} else {
 					try {
-						connexion = ConnexionServiceFactory
+						connexion = AbstractConnexionServiceFactory
 								.getServiceFromRepository(repositoryName);
 						connexion.checkRepository(repositoryName);
 						facade.getAddonsPanel().updateModsetSelection(
 								repositoryName);
 					} catch (Exception e) {
-						System.out.println(e.getMessage());
 					}
 				}
 
@@ -79,8 +76,7 @@ public class SynchronizingPanel extends ProgressPanel {
 				facade.getLaunchPanel().init();
 				progressBar.setIndeterminate(false);
 				dispose();
-				facade.getSyncPanel().getButtonSync1().setEnabled(true);
-				facade.getSyncPanel().getButtonSync2().setEnabled(true);
+				facade.getSyncPanel().enableAllButtons();
 			}
 		});
 		t.start();
@@ -90,7 +86,7 @@ public class SynchronizingPanel extends ProgressPanel {
 		this.setVisible(false);
 		canceled = true;
 		if (connexion != null) {
-			connexion.disconnect();
+			connexion.cancel();
 		}
 		this.dispose();
 	}

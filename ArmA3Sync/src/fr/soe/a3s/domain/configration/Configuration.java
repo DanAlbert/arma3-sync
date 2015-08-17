@@ -55,10 +55,6 @@ public class Configuration implements Serializable {
 		this.serverName = serverName;
 	}
 
-	// public LauncherOptions getLauncherOptions() {
-	// return launcherOptions;
-	// }
-
 	public List<FavoriteServer> getFavoriteServers() {
 		return favoriteServers;
 	}
@@ -144,20 +140,20 @@ public class Configuration implements Serializable {
 	}
 
 	/* DEPRECATED */
-	
+
 	public Set<String> getAddonSearchDirectoryPaths() {
 		return addonSearchDirectoryPaths;
 	}
 
 	public void resetAddonSearchDirectoryPaths() {
-		addonSearchDirectoryPaths.clear();
+		addonSearchDirectoryPaths = null;
 	}
 
 	public LauncherOptions getLauncherOptions() {
 		return launcherOptions;
 	}
-	
-	public void resetLauncherOptions(){
+
+	public void resetLauncherOptions() {
 		launcherOptions = null;
 	}
 }

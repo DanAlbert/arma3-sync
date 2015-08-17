@@ -61,7 +61,7 @@ public class MetaFileMaker {
 	 * index 0 - seq_matches index 1 - weakSum length index 2 - strongSum length
 	 */
 	public MetaFileMaker(File sourceFile, File targetFile, String url,
-			String sha1) throws Exception {
+			String sha1) throws IOException {
 
 		Security.addProvider(new JarsyncProvider());
 		hashLengths[2] = STRONG_SUM_LENGTH;
@@ -86,7 +86,7 @@ public class MetaFileMaker {
 			String message = "Can't create .zsync metafile "
 					+ targetFile.getName() + "\n"
 					+ "Check your file access permissions.";
-			throw new Exception(message, e);
+			throw new IOException(message, e);
 		}
 
 		// appending block checksums into the metafile
@@ -106,16 +106,17 @@ public class MetaFileMaker {
 				fos.write(intToBytes(p.getWeak(), hashLengths[1]));
 				fos.write(p.getStrong());
 			}
+			fos.close();
 		} catch (IOException ioe) {
 			ioe.printStackTrace();
 			String message = "Can't write into the metafile "
 					+ targetFile.getName() + "\n"
 					+ "Check your file acceess permissions.";
-			throw new Exception(message, ioe);
+			throw new IOException(message, ioe);
 		} catch (NoSuchAlgorithmException nae) {
 			nae.printStackTrace();
 			String message = "Problem with MD4 checksum.";
-			throw new Exception(message, nae);
+			throw new RuntimeException(message);
 		}
 	}
 

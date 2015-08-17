@@ -5,6 +5,8 @@ import java.awt.GraphicsEnvironment;
 import java.io.File;
 import java.io.RandomAccessFile;
 import java.nio.channels.FileLock;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
 import java.util.Properties;
 
 import javax.swing.JFrame;
@@ -17,7 +19,8 @@ import com.jtattoo.plaf.graphite.GraphiteLookAndFeel;
 import com.jtattoo.plaf.hifi.HiFiLookAndFeel;
 import com.jtattoo.plaf.noire.NoireLookAndFeel;
 
-import fr.soe.a3s.console.Console;
+import fr.soe.a3s.console.CommandConsole;
+import fr.soe.a3s.console.CommandLine;
 import fr.soe.a3s.constant.LookAndFeel;
 import fr.soe.a3s.dao.DataAccessConstants;
 import fr.soe.a3s.service.PreferencesService;
@@ -39,69 +42,26 @@ public class ArmA3Sync implements DataAccessConstants {
 
 	public static void main(String[] args) {
 
+		checkArmA3SyncVersion();
+
 		checkJRE();
 
 		setFoldersAndPermissions();
 
-		// Installed Version
+		runArmA3Sync(args);
+	}
+
+	private static void checkArmA3SyncVersion() {
+
 		System.out.println("ArmA3Sync Installed version = "
 				+ Version.getVersion());
-
-		Facade facade = new Facade();
-
-		if (args.length == 0) {
-			facade.setDevMode(false);
-			System.out.println("DevMode = false");
-			start(facade);
-		} else if (args.length == 1 && args[0].equalsIgnoreCase("-dev")) {
-			facade.setDevMode(true);
-			System.out.println("DevMode = true");
-			start(facade);
-		} else if (args.length == 1 && args[0].equalsIgnoreCase("-console")) {
-			Console console = new Console(false);
-			console.displayCommands();
-			console.execute();
-		} else if (args.length == 1 && args[0].equalsIgnoreCase("-update")) {
-			Console console = new Console(false);
-			console.checkForUpdates();
-		} else if (args.length == 2 && args[0].equalsIgnoreCase("-dev")
-				&& args[1].equalsIgnoreCase("-console")) {
-			Console console = new Console(true);
-			console.displayCommands();
-			console.execute();
-		} else if (args.length == 2 && args[0].equalsIgnoreCase("-build")) {
-			Console console = new Console(false);
-			String repositoryName = args[1];
-			console.build(repositoryName);
-		} else if (args.length == 2 && args[0].equalsIgnoreCase("-check")) {
-			Console console = new Console(false);
-			String repositoryName = args[1];
-			console.checkRepository(repositoryName);
-		} else if (args.length == 4 && args[0].equalsIgnoreCase("-sync")) {
-			Console console = new Console(false);
-			String repositoryName = args[1];
-			String destinationFolderPath = args[2];
-			String withExactMath = args[3];
-			console.syncRepository(repositoryName, destinationFolderPath,
-					withExactMath);
-		} else {
-			System.out.println("ArmA3Sync - bad command.");
-			System.out.println("-BUILD " + "\"" + "Name of the Repository"
-					+ "\"" + ": build repository.");
-			System.out.println("-CHECK " + "\"" + "Name of the Repository"
-					+ "\"" + ": check repository.");
-			System.out.println("-CONSOLE: run ArmASync console management.");
-			System.out.println("-SYNC " + "\"" + "Name of the Repository"
-					+ "\"" + " " + "\"" + "Destination folder path " + "\""
-					+ "true/false (with/without exact content matching)"
-					+ ": synchronize with repository.");
-			System.out.println("-UPDATE: check for ArmA3Sync updates.");
-		}
 	}
 
 	private static void checkJRE() {
 
 		String version = System.getProperty("java.version");
+		System.out.println("JRE installed version = " + version);
+
 		String specification = System.getProperty("java.specification.version");
 
 		if (!(Double.parseDouble(specification) >= 1.7)) {
@@ -122,29 +82,48 @@ public class ArmA3Sync implements DataAccessConstants {
 		File profilesFolder = new File(PROFILES_FOLDER_PATH);
 		profilesFolder.mkdir();
 		profilesFolder.setWritable(true);
-		boolean profilesOK = profilesFolder.canWrite();
+		boolean profilesOK = Files.isWritable(FileSystems.getDefault().getPath(
+				profilesFolder.getAbsolutePath()));
 		//
 		File configurationFolder = new File(CONFIGURATION_FOLDER_PATH);
 		configurationFolder.mkdirs();
 		configurationFolder.setWritable(true);
-		boolean configurationOK = configurationFolder.canWrite();
+		boolean configurationOK = Files.isWritable(FileSystems.getDefault()
+				.getPath(configurationFolder.getAbsolutePath()));
 		//
 		File ftpFolder = new File(REPOSITORY_FOLDER_PATH);
 		ftpFolder.mkdirs();
 		ftpFolder.setWritable(true);
-		boolean ftpOK = ftpFolder.canWrite();
+		boolean ftpOK = Files.isWritable(FileSystems.getDefault().getPath(
+				ftpFolder.getAbsolutePath()));
 		//
 		File tempFolder = new File(TEMP_FOLDER_PATH);
 		tempFolder.mkdirs();
 		tempFolder.setWritable(true);
-		boolean tempOK = tempFolder.canWrite();
+		boolean tempOK = Files.isWritable(FileSystems.getDefault().getPath(
+				tempFolder.getAbsolutePath()));
 
-		if (!(profilesOK && configurationOK && ftpOK && tempOK)) {
-			String message = "Cannot write into installation directory."
+		String message = "";
+		if (!profilesOK) {
+			message = "Cannot write into directory: profiles.";
+		} else if (!configurationOK) {
+			message = "Cannot write into directory: resources" + File.separator
+					+ "configuration.";
+		} else if (!ftpOK) {
+			message = "Cannot write into directory: resources" + File.separator
+					+ "ftp.";
+		} else if (!tempOK) {
+			message = "Cannot write into directory: resources" + File.separator
+					+ "temp.";
+		}
+
+		if (!message.isEmpty()) {
+			message = message
 					+ "\n"
 					+ "ArmA3Sync requires full write permissions on its whole installation directory."
 					+ "\n"
-					+ "Try to run with administator priviledges. Checkout file permissions.";
+					+ "Try to run with administator priviledges and checkout file access permissions.";
+
 			System.out.println(message);
 			if (!GraphicsEnvironment.isHeadless()) {
 				JFrame frame = new JFrame();
@@ -155,15 +134,62 @@ public class ArmA3Sync implements DataAccessConstants {
 		}
 	}
 
-	private static void start(Facade facade) {
+	private static void runArmA3Sync(String[] args) {
+
+		if (args.length == 0) {
+			System.out.println("DevMode = false");
+			start(false);
+		} else if (args.length == 1 && args[0].equalsIgnoreCase("-dev")) {
+			System.out.println("DevMode = true");
+			start(true);
+		} else if (args.length == 1 && args[0].equalsIgnoreCase("-console")) {
+			CommandConsole console = new CommandConsole(false);
+			console.displayCommands();
+			console.execute();
+		} else if (args.length == 2 && args[0].equalsIgnoreCase("-dev")
+				&& args[1].equalsIgnoreCase("-console")) {
+			CommandConsole console = new CommandConsole(true);
+			console.displayCommands();
+			console.execute();
+		} else if (args.length == 2 && args[0].equalsIgnoreCase("-build")) {
+			CommandLine commandLine = new CommandLine();
+			String repositoryName = args[1];
+			commandLine.build(repositoryName);
+		} else if (args.length == 2 && args[0].equalsIgnoreCase("-check")) {
+			CommandLine commandLine = new CommandLine();
+			String repositoryName = args[1];
+			commandLine.check(repositoryName);
+		} else if (args.length == 4 && args[0].equalsIgnoreCase("-sync")) {
+			CommandLine commandLine = new CommandLine();
+			String repositoryName = args[1];
+			String destinationFolderPath = args[2];
+			String withExactMath = args[3];
+			commandLine.sync(repositoryName, destinationFolderPath,
+					withExactMath);
+		} else if (args.length == 1 && args[0].equalsIgnoreCase("-update")) {
+			CommandLine commandLine = new CommandLine();
+			commandLine.checkForUpdates();
+		} else {
+			System.out.println("ArmA3Sync - bad command.");
+			System.out.println("-BUILD " + "\"" + "Name of the Repository"
+					+ "\"" + ": build repository.");
+			System.out.println("-CHECK " + "\"" + "Name of the Repository"
+					+ "\"" + ": check repository.");
+			System.out.println("-CONSOLE: run ArmASync console management.");
+			System.out.println("-SYNC " + "\"" + "Name of the Repository"
+					+ "\"" + " " + "\"" + "Destination folder path " + "\""
+					+ "true/false (with/without exact content matching)"
+					+ ": synchronize with repository.");
+			System.out.println("-UPDATE: check for ArmA3Sync updates.");
+		}
+	}
+
+	private static void start(boolean devMode) {
 
 		if (GraphicsEnvironment.isHeadless()) {
 			System.out.println("Can't start ArmA3Sync. GUI is missing.");
 			System.exit(1);
 		}
-
-		String version = System.getProperty("java.version");
-		System.out.println("JRE installed version = " + version);
 
 		/* Look an Feel */
 		applyLookAndFeel();
@@ -179,6 +205,8 @@ public class ArmA3Sync implements DataAccessConstants {
 		}
 
 		/* Start */
+		Facade facade = new Facade();
+		facade.setDevMode(true);
 		final MainPanel mainPanel = new MainPanel(facade);
 		mainPanel.drawGUI();
 		mainPanel.init();
@@ -188,7 +216,7 @@ public class ArmA3Sync implements DataAccessConstants {
 		mainPanel.checkWellcomeDialog();
 
 		// Check for updates
-		mainPanel.checkForUpdate(false);
+		mainPanel.checkForUpdates(false);
 	}
 
 	private static String lockInstance() {

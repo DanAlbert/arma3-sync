@@ -1,23 +1,37 @@
 package fr.soe.a3s.domain;
 
+import fr.soe.a3s.constant.ProtocolType;
+
 public class Http extends AbstractProtocole {
 
 	private static final long serialVersionUID = -20L;
 
 	public Http(String url, String port, String login, String password,
-			String connectionTimeOut, String readTimeOut) {
+			String connectionTimeOut, String readTimeOut,
+			ProtocolType protocolType) {
 		this.login = login;
 		this.password = password;
 		this.url = url;
 		this.port = port;
 		this.connectionTimeOut = connectionTimeOut;
 		this.readTimeOut = readTimeOut;
+		this.protocolType = protocolType;
 	}
 
-	public Http(String url, String port, String login, String password) {
+	public Http(String url, String port, String login, String password,
+			ProtocolType protocolType) {
 		this.login = login;
 		this.password = password;
 		this.url = url;
 		this.port = port;
+		this.protocolType = protocolType;
+	}
+
+	@Override
+	public ProtocolType getProtocolType() {
+		if (this.protocolType == null) {
+			return this.protocolType = ProtocolType.HTTP;
+		}
+		return this.protocolType;
 	}
 }

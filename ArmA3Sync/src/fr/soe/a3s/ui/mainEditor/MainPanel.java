@@ -54,12 +54,12 @@ import fr.soe.a3s.dto.RepositoryDTO;
 import fr.soe.a3s.dto.configuration.PreferencesDTO;
 import fr.soe.a3s.exception.FtpException;
 import fr.soe.a3s.exception.LoadingException;
-import fr.soe.a3s.exception.RepositoryException;
 import fr.soe.a3s.exception.WritingException;
+import fr.soe.a3s.exception.repository.RepositoryException;
 import fr.soe.a3s.service.AbstractConnexionService;
+import fr.soe.a3s.service.AbstractConnexionServiceFactory;
 import fr.soe.a3s.service.CommonService;
 import fr.soe.a3s.service.ConfigurationService;
-import fr.soe.a3s.service.ConnexionServiceFactory;
 import fr.soe.a3s.service.FtpService;
 import fr.soe.a3s.service.LaunchService;
 import fr.soe.a3s.service.PreferencesService;
@@ -227,8 +227,8 @@ public class MainPanel extends JFrame implements UIConstants {
 		launchPanel = new LaunchPanel(facade);
 		contenu.add(launchPanel, BorderLayout.SOUTH);
 
+		/* Tray Icon */
 		if (SystemTray.isSupported()) {
-			/* Tray Icon */
 			trayIcon = new TrayIcon(TRAYICON, "ArmA3Sync");
 			tray = SystemTray.getSystemTray();
 			popup = new PopupMenu();
@@ -241,6 +241,7 @@ public class MainPanel extends JFrame implements UIConstants {
 		} else {
 			System.out.println("System Tray is not supported by your system.");
 		}
+
 		menuItemEdit.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
@@ -488,7 +489,7 @@ public class MainPanel extends JFrame implements UIConstants {
 
 		/* Copy old addons search directores to profile */
 		Set<String> set = configurationService.getAddonSearchDirectoryPaths();
-		if (!set.isEmpty()) {
+		if (set != null) {
 			Iterator iter = set.iterator();
 			while (iter.hasNext()) {
 				profileService
@@ -719,7 +720,7 @@ public class MainPanel extends JFrame implements UIConstants {
 	}
 
 	private void menuItemuUpdatesPerformed() {
-		checkForUpdate(true);
+		checkForUpdates(true);
 	}
 
 	private void menuItemAboutPerformed() {
@@ -829,7 +830,7 @@ public class MainPanel extends JFrame implements UIConstants {
 	 */
 	/**/
 
-	public void checkForUpdate(final boolean withInfoMessage) {
+	public void checkForUpdates(final boolean withInfoMessage) {
 
 		Thread t = new Thread(new Runnable() {
 			@Override
@@ -838,9 +839,10 @@ public class MainPanel extends JFrame implements UIConstants {
 				String availableVersion = null;
 
 				try {
-					availableVersion = ftpService.checkForUpdate(facade
+					availableVersion = ftpService.checkForUpdates(facade
 							.isDevMode());
 				} catch (FtpException e) {
+					System.out.println(e.getMessage());
 					if (withInfoMessage) {
 						JOptionPane.showMessageDialog(facade.getMainPanel(),
 								e.getMessage(), "Update",
@@ -862,7 +864,7 @@ public class MainPanel extends JFrame implements UIConstants {
 						} catch (WritingException e) {
 							e.printStackTrace();
 						}
-						// Proceed update
+						// Proceed with update
 						String command = "java -jar -Djava.net.preferIPv4Stack=true ArmA3Sync-Updater.jar";
 						if (facade.isDevMode()) {
 							command = command + " -dev";
@@ -961,7 +963,7 @@ public class MainPanel extends JFrame implements UIConstants {
 				List<RepositoryDTO> list = repositoryService.getRepositories();
 				for (final RepositoryDTO repositoryDTO : list) {
 					try {
-						AbstractConnexionService connexion = ConnexionServiceFactory
+						AbstractConnexionService connexion = AbstractConnexionServiceFactory
 								.getServiceFromRepository(repositoryDTO
 										.getName());
 						connexion.checkRepository(repositoryDTO.getName());
@@ -1123,8 +1125,11 @@ public class MainPanel extends JFrame implements UIConstants {
 					boolean isDownloading = repositoryService
 							.isDownloading(title);
 					boolean isUploading = repositoryService.isUploading(title);
+					boolean isBuilding = repositoryService.isBuilding(title);
+					boolean isChecking = repositoryService.isChecking(title);
 
-					if (contains && !isDownloading && !isUploading) {
+					if (contains && !isDownloading && !isUploading
+							&& !isBuilding && !isChecking) {
 						int count = 0;
 						for (Iterator<String> i = mapTabIndexes.keySet()
 								.iterator(); i.hasNext();) {
@@ -1137,9 +1142,6 @@ public class MainPanel extends JFrame implements UIConstants {
 						}
 						mapTabIndexes.remove(title);
 						tabbedPane.remove(tabbedPane.getSelectedComponent());
-						// repositoryService.saveTransfertParameters(title, 0,
-						// 0,
-						// false);
 					}
 				}
 			};

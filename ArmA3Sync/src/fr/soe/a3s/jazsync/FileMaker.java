@@ -25,15 +25,14 @@
  */
 package fr.soe.a3s.jazsync;
 
+import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.RoundingMode;
 import java.net.MalformedURLException;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
@@ -47,9 +46,13 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 
 import fr.soe.a3s.dao.FileAccessMethods;
+import fr.soe.a3s.dao.connection.DataRange;
+import fr.soe.a3s.dao.connection.MyHttpConnection;
+import fr.soe.a3s.exception.HttpException;
 
 /**
  * Target file making class
@@ -59,31 +62,21 @@ import fr.soe.a3s.dao.FileAccessMethods;
 public class FileMaker {
 
 	private final MetaFileReader mfr;
-
-	private final HttpConnection http;
-
+	private final MyHttpConnection http;
 	private final ChainingHash hashtable;
-
 	private Configuration config;
-
 	private int bufferOffset;
-
 	private long fileOffset;
-
 	private final long[] fileMap;
-
 	private int missing;
-
 	private boolean rangeQueue;
-
-	private double complete;
 
 	private final DecimalFormat df = new DecimalFormat("#.##");
 
 	/** File existency and completion flag */
 	public int FILE_FLAG = 0;
 
-	public FileMaker(MetaFileReader mfr, HttpConnection http) {
+	public FileMaker(MetaFileReader mfr, MyHttpConnection http) {
 
 		this.mfr = mfr;
 		this.http = http;
@@ -96,7 +89,7 @@ public class FileMaker {
 	}
 
 	public void sync(File targetFile, String targetFileSha1,
-			String relativeFileUrl) throws Exception, FileNotFoundException {
+			String targetRelativeFileUrl) throws IOException, HttpException {
 
 		System.out.println("");
 		System.out.println("Processing file: " + targetFile.getAbsolutePath());
@@ -109,22 +102,22 @@ public class FileMaker {
 
 		if (FILE_FLAG == 1) {
 			if (targetFile.length() == 0) {
-				getWholeFile(targetFile, relativeFileUrl);
+				getWholeFile(targetFile, targetRelativeFileUrl);
 			} else {
-				mapMatcher(targetFile);
+				double complete = mapMatcher(targetFile);
 				if (complete > 0) {
-					fileMaker(targetFile, relativeFileUrl, targetFileSha1);
+					fileMaker(targetFile, targetRelativeFileUrl);
 				} else {
-					getWholeFile(targetFile, relativeFileUrl);
+					getWholeFile(targetFile, targetRelativeFileUrl);
 				}
 			}
-		} else if (FILE_FLAG == -1) {
-			getWholeFile(targetFile, relativeFileUrl);
+		} else {
+			getWholeFile(targetFile, targetRelativeFileUrl);
 		}
 	}
 
 	public double getCompletion(File targetFile, String targetFileSha1)
-			throws Exception {
+			throws IOException {
 
 		if (targetFile.exists() && targetFileSha1 == null) {
 			targetFileSha1 = FileAccessMethods.computeSHA1(targetFile);
@@ -132,13 +125,13 @@ public class FileMaker {
 
 		SHA1check(targetFile, targetFileSha1);
 
-		complete = 0;
+		double complete = 0;
 
 		if (FILE_FLAG == 0) {
 			complete = 100;
 		} else if (FILE_FLAG == 1) {
 			if (targetFile.length() != 0) {
-				mapMatcher(targetFile);
+				complete = mapMatcher(targetFile);
 			}
 		}
 
@@ -167,69 +160,26 @@ public class FileMaker {
 	}
 
 	/**
-	 * Downloads a whole file in case that there were no relevant data found
+	 * Downloads a whole file
 	 * 
-	 * @param httpURLConnection
-	 * @throws FileNotFoundException
-	 * @throws Exception
+	 * @throws IOException
+	 * @throws HttpException
 	 */
-	private void getWholeFile(File targetFile, String relativeFileUrl)
-			throws Exception, FileNotFoundException {
+	private void getWholeFile(File targetFile, String targetRelativeFileUrl)
+			throws IOException, HttpException {
 
-		try {
-			http.openConnection(relativeFileUrl);
-			System.out
-					.println("No relevant data found, downloading whole file: "
-							+ targetFile.getAbsolutePath());
-			if (targetFile.exists()) {
-				targetFile.delete();
-			}
-			boolean finished = http.getFile(mfr.getLength(), targetFile);
-			http.closeConnection();
-			if (!finished) {
-				System.out.println("Download is not finished: "
-						+ targetFile.getAbsolutePath());
-				getResumedFile(targetFile, relativeFileUrl);
-			} else {
-				System.out.println("Target is 100.0% complete: "
-						+ targetFile.getAbsolutePath());
-			}
-		} catch (FileNotFoundException e) {
-			throw e;
-		} catch (Exception e) {
-			if (!http.getHttpDAO().isCanceled()) {
-				e.printStackTrace();
-				String message = "Failed to retrieve file "
-						+ targetFile.getName() + "\n" + e.getMessage();
-				throw new Exception(message, e);
-			}
+		// Unexpected error from partial file transfer
+		http.getHttpDAO().setOffset(0);
+		http.getHttpDAO().setExpectedFullSize(mfr.getLength());
+		http.getHttpDAO().getDownloadingLeaf().setComplete(0);
+		http.getHttpDAO().updateObserverDownloadTotalSize();
+		if (targetFile.exists()) {
+			FileAccessMethods.deleteFile(targetFile);
 		}
-	}
-
-	private void getResumedFile(File targetFile, String relativeFileUrl)
-			throws Exception, FileNotFoundException {
-
-		try {
-			http.openConnection(relativeFileUrl);
-			System.out.println("Resuming download: "
-					+ targetFile.getAbsolutePath());
-			boolean finished = http.getResumedFile(mfr.getLength(), targetFile);
-			http.closeConnection();
-			if (!finished) {
-				System.out.println("Download is not finished.");
-				getResumedFile(targetFile, relativeFileUrl);
-			}
-			System.out.println("Target is 100.0% complete: "
-					+ targetFile.getAbsolutePath());
-			http.closeConnection();
-		} catch (FileNotFoundException e) {
-			throw e;
-		} catch (Exception e) {
-			if (!http.getHttpDAO().isCanceled()) {
-				e.printStackTrace();
-				throw new Exception(e.getMessage(), e);
-			}
-		}
+		// Download whole file
+		http.openConnection(targetRelativeFileUrl);
+		http.downloadFileWithRecordProgress(targetFile);
+		http.closeConnection();
 	}
 
 	/**
@@ -240,13 +190,14 @@ public class FileMaker {
 	 * @return Absolute URL
 	 */
 	private String urlParser(String link) {
+
 		String newUrl = null;
 		try {
 			URL url = new URL(link);
 			String host = url.getHost().toString();
 			String pathToFile = url.getPath().toString();
 			pathToFile = pathToFile.substring(0, pathToFile.lastIndexOf("/"));
-			newUrl = "http://" + host + pathToFile + "/" + mfr.getUrl();
+			newUrl = "http://" + host + pathToFile + "/" + mfr.getUrl();// WARNING:!https://
 		} catch (MalformedURLException ex) {
 			System.out.println("URL in malformed format, make sure that"
 					+ " metafile contains absolute URL or pass URL of metafile"
@@ -259,80 +210,62 @@ public class FileMaker {
 	/**
 	 * Method for completing file
 	 * 
+	 * @param targetFile
 	 * @param targetFileSha1
-	 * @param httpURLConnection
-	 * @param targetFileSha1
-	 * @throws IOException
-	 * @throws URISyntaxException
+	 * @throws HttpException
 	 * @throws Exception
-	 * @throws NoSuchAlgorithmException
 	 */
-	private void fileMaker(File targetFile, String relativeFileUrl,
-			String targetFileSha1) throws Exception, FileNotFoundException {
+	public void fileMaker(File targetFile, String targetRelativeFileUrl)
+			throws IOException, HttpException {
 
-		// try {
-		boolean error = false;
-		boolean resume = false;
-		long allData = 0;
-		double a = 10;
-		int range = 0;
-		int blockLength = 0;
+		FileInputStream fis = null;
+		FileOutputStream fos = null;
+
 		File partFile = new File(targetFile.getParentFile() + "/"
 				+ targetFile.getName() + ".part");
-		if (partFile.exists()) {
-			partFile.delete();
-		}
 
-		ArrayList<DataRange> rangeList = null;
-		byte[] data = null;
-		partFile.createNewFile();
-		ByteBuffer buffer = ByteBuffer.allocate(mfr.getBlocksize());
-		FileChannel rChannel = new FileInputStream(targetFile).getChannel();
-		FileOutputStream fos = new FileOutputStream(partFile, true);
-		FileChannel wChannel = fos.getChannel();
+		try {
+			double a = 10;
+			int range = 0;
+			int blockLength = 0;
+			List<DataRange> rangeList = new ArrayList<DataRange>();
+			byte[] data = null;
+			FileChannel wChannel = null;
 
-		// http.getHttpDAO().setSize(mfr.getLength());
+			ByteBuffer buffer = ByteBuffer.allocate(mfr.getBlocksize());
+			fis = new FileInputStream(targetFile);
+			FileChannel rChannel = fis.getChannel();
+			fos = new FileOutputStream(partFile);
+			wChannel = fos.getChannel();
 
-		System.out.println();
-		System.out.print("File completion: ");
-		System.out.print("|----------|");
+			int cumulatedBytesDownloaded = 0;
 
-		http.openConnection(relativeFileUrl);
-		http.getResponseHeader();
-		for (int i = 0; i < fileMap.length; i++) {
-			if (http.getHttpDAO().isCanceled()) {
-				break;
-			}
-			fileOffset = fileMap[i];
-			if (fileOffset != -1) {
-				rChannel.read(buffer, fileOffset);
-				buffer.flip();
-				wChannel.write(buffer);
-				buffer.clear();
-			} else {
-				if (!rangeQueue) {
-					rangeList = rangeLookUp(i);
-					range = rangeList.size();
-					http.openConnection(relativeFileUrl);
-					http.setRangesRequest(rangeList);
-					http.sendRequest();
-					http.getResponseHeader();
-					data = http.getResponseBody(mfr.getBlocksize(),
-							mfr.getRangesNumber(), targetFile, partFile);
-					if (data == null) {
-						System.out.println("RESUME");
-						resume = true;
-						break;
-					} else {
-						allData += http.getAllTransferedDataLength();
+			for (int i = 0; i < fileMap.length; i++) {
+				if (http.getHttpDAO().isCanceled()) {
+					break;
+				}
+				fileOffset = fileMap[i];
+				if (fileOffset != -1) {
+					rChannel.read(buffer, fileOffset);
+					buffer.flip();
+					wChannel.write(buffer);
+					buffer.clear();
+				} else {
+					if (!rangeQueue) {
+						rangeList = rangeLookUp(i);
+						range = rangeList.size();
+						http.openConnection(targetRelativeFileUrl);
+						data = http.getResponseBody(rangeList, partFile,
+								cumulatedBytesDownloaded);
+						cumulatedBytesDownloaded = cumulatedBytesDownloaded
+								+ data.length;
+						http.closeConnection();
 					}
 
 					if (http.getHttpDAO().isCanceled()) {
 						break;
 					}
-				}
 
-				try {
 					blockLength = calcBlockLength(i, mfr.getBlocksize(),
 							(int) mfr.getLength());
 					int offset = (range - rangeList.size())
@@ -345,77 +278,42 @@ public class FileMaker {
 					if (rangeList.isEmpty()) {
 						rangeQueue = false;
 					}
-				} catch (Exception e) {
+				}
+			}
+
+			rChannel.close();
+			wChannel.close();
+			fis.close();
+			fos.close();
+
+			if (!http.getHttpDAO().isCanceled()) {
+				String actual = FileAccessMethods.computeSHA1(partFile);
+				String expected = mfr.getSha1();// targetFile SHA1
+
+				if (actual.equals(expected)) {
 					System.out
-							.println("ERROR: .zsync file metadata don't match for target file "
+							.println("\nverifying download...checksum matches OK for file: "
 									+ targetFile.getAbsolutePath());
-					error = true;
-					break;
-				}
-			}
-
-			double value = (i / ((double) fileMap.length - 1)) * 100;
-
-			if (value >= a) {
-				progressBar(value);
-				a += 10;
-			}
-
-			// int nbBytes = (int) (value * mfr.getLength() / 100);
-		}
-		rChannel.close();
-		wChannel.close();
-		fos.flush();
-		fos.close();
-		partFile.setLastModified(getMTime());
-
-		if (error) {
-			System.out.println("Deleting temporary file");
-			partFile.delete();
-			getWholeFile(targetFile, relativeFileUrl);
-		}
-
-		else {
-
-			System.out.println("used "
-					+ (mfr.getLength() - (mfr.getBlocksize() * missing)) + " "
-					+ "local, fetched " + (mfr.getBlocksize() * missing));
-			String name = targetFile.getName();
-			File oldFile = new File(targetFile.getParentFile()
-					.getAbsolutePath() + "/" + name + ".zs-old");
-			File finalFile = new File(targetFile.getParentFile()
-					.getAbsolutePath() + "/" + name);
-			targetFile.renameTo(oldFile);
-			partFile.renameTo(finalFile);
-			oldFile.delete();
-
-			allData += mfr.getLengthOfMetafile();
-			System.out.println("really downloaded " + allData);
-			double overhead = ((double) (allData - (mfr.getBlocksize() * missing)) / ((double) (mfr
-					.getBlocksize() * missing))) * 100;
-			System.out.println("overhead: " + df.format(overhead) + "%");
-
-			if (resume) {
-				try {
-					getResumedFile(targetFile, relativeFileUrl);
-				} catch (FileNotFoundException e) {
-					throw e;
-				} catch (Exception e) {
-					String message = "Failed to retrieve file "
-							+ targetFile.getName() + "\n" + e.getMessage();
-					throw new Exception(message, e);
-				}
-			} else {
-				targetFileSha1 = FileAccessMethods.computeSHA1(targetFile);
-				if (targetFileSha1.equals(mfr.getSha1())) {
-					System.out
-							.println("\nverifying download...checksum matches OK");
+					FileAccessMethods.deleteFile(targetFile);
+					partFile.renameTo(targetFile);
+					FileAccessMethods.deleteFile(partFile);
 				} else {
 					System.out
-							.println("\nverifying download...checksum don't match");
-					getWholeFile(targetFile, relativeFileUrl);
+							.println("\nverifying download...checksum don't match for file: "
+									+ targetFile.getAbsolutePath());
+					FileAccessMethods.deleteFile(targetFile);
+					FileAccessMethods.deleteFile(partFile);
+					getWholeFile(targetFile, targetRelativeFileUrl);
 				}
 			}
+		} finally {
+			if (fis != null) {
+				fis.close();
+			}
+			if (fos != null) {
+				fos.close();
+			}
+			FileAccessMethods.deleteFile(partFile);
 		}
 	}
 
@@ -440,8 +338,8 @@ public class FileMaker {
 	 *            Offset in fileMap where to start looking
 	 * @return ArrayList with ranges for requesting
 	 */
-	private ArrayList<DataRange> rangeLookUp(int i) {
-		ArrayList<DataRange> ranges = new ArrayList<DataRange>();
+	private List<DataRange> rangeLookUp(int i) {
+		List<DataRange> ranges = new ArrayList<DataRange>();
 		for (; i < fileMap.length; i++) {
 			if (ranges.size() >= mfr.getRangesNumber()) {
 				break;
@@ -464,6 +362,7 @@ public class FileMaker {
 	 * @return Time as long value in milliseconds passed since 1.1.1970
 	 */
 	private long getMTime() {
+
 		long mtime = 0;
 		try {
 			SimpleDateFormat sdf = new SimpleDateFormat(
@@ -481,14 +380,18 @@ public class FileMaker {
 
 	/**
 	 * Reads file and map it's data into the fileMap.
-	 * 
-	 * @throws Exception
 	 */
-	private void mapMatcher(File targetFile) throws Exception {
+	public double mapMatcher(File targetFile) throws IOException {
+
+		int bufferOffset = 0;
 		InputStream is = null;
+		long fileLength = targetFile.length();
+
 		try {
+			is = new FileInputStream(targetFile);
+			InputStream inBuf = new BufferedInputStream(is);
 			Security.addProvider(new JarsyncProvider());
-			config = new Configuration();
+			Configuration config = new Configuration();
 			config.strongSum = MessageDigest.getInstance("MD4");
 			config.weakSum = new Rsum();
 			config.blockLength = mfr.getBlocksize();
@@ -509,96 +412,109 @@ public class FileMaker {
 			} else {
 				fileBuffer = new byte[mebiByte];
 			}
-			is = new FileInputStream(targetFile);
-			long fileLength = targetFile.length();
-			int n;
+			int n; // number of bytes read from input stream
 			byte newByte;
 			boolean firstBlock = true;
 			int len = fileBuffer.length;
 			boolean end = false;
-			System.out.print("Reading " + targetFile.getName() + ": ");
-			System.out.print("|----------|");
-			double a = 10;
-			boolean found = false;
-			int skip = 0;
-			while (true) {
-				n = is.read(fileBuffer, 0, len);
+			int blocksize = mfr.getBlocksize();
+
+			//
+			long lastMatch = 0;
+			//
+
+			while (fileOffset != fileLength) {
+				// System.out.println("Outer loop: " + mc.fileOffset);
+				n = inBuf.read(fileBuffer, 0, len);
 				if (firstBlock) {
 					weakSum = gen.generateWeakSum(fileBuffer, 0);
 					bufferOffset = mfr.getBlocksize();
-					if (hashLookUp(updateWeakSum(weakSum), null)) {
+					int weak = updateWeakSum(weakSum);
+					if (hashLookUp(weak, null)) {
 						strongSum = gen.generateStrongSum(fileBuffer, 0,
-								mfr.getBlocksize());
-						found = hashLookUp(updateWeakSum(weakSum), strongSum);
-						if (found) {
-							skip = mfr.getBlocksize() - 1;
-							found = false;
+								blocksize);
+						boolean match = hashLookUp(updateWeakSum(weakSum),
+								strongSum);
+						if (match) {
+							lastMatch = fileOffset;
+							// System.out.println("Last match: " + lastMatch);
 						}
 					}
 					fileOffset++;
 					firstBlock = false;
 				}
+
 				for (; bufferOffset < fileBuffer.length; bufferOffset++) {
 					newByte = fileBuffer[bufferOffset];
 					if (fileOffset + mfr.getBlocksize() > fileLength) {
 						newByte = 0;
 					}
 					weakSum = gen.generateRollSum(newByte);
-					if (skip == 0) {
-						if (hashLookUp(updateWeakSum(weakSum), null)) {
-							if (fileOffset + mfr.getBlocksize() > fileLength) {
-								if (n > 0) {
-									Arrays.fill(fileBuffer, n,
-											fileBuffer.length, (byte) 0);
-								} else {
-									int offset = fileBuffer.length
-											- mfr.getBlocksize() + bufferOffset
-											+ 1;
-									System.arraycopy(fileBuffer, offset,
-											blockBuffer, 0, fileBuffer.length
-													- offset);
-									Arrays.fill(blockBuffer, fileBuffer.length
-											- offset, blockBuffer.length,
-											(byte) 0);
-								}
-							}
-							if ((bufferOffset - mfr.getBlocksize() + 1) < 0) {
-								if (n > 0) {
-									System.arraycopy(backBuffer,
-											backBuffer.length + bufferOffset
-													- mfr.getBlocksize() + 1,
-											blockBuffer, 0, mfr.getBlocksize()
-													- bufferOffset - 1);
-									System.arraycopy(fileBuffer, 0,
-											blockBuffer, mfr.getBlocksize()
-													- bufferOffset - 1,
-											bufferOffset + 1);
-								}
-								strongSum = gen.generateStrongSum(blockBuffer,
-										0, mfr.getBlocksize());
-								found = hashLookUp(updateWeakSum(weakSum),
-										strongSum);
-							} else {
-								strongSum = gen.generateStrongSum(fileBuffer,
-										bufferOffset - mfr.getBlocksize() + 1,
-										mfr.getBlocksize());
-								found = hashLookUp(updateWeakSum(weakSum),
-										strongSum);
-							}
-
-							if (found) {
-								skip = mfr.getBlocksize() - 1;
-								found = false;
-							}
+					// System.out.println("Innner Loop: bufferOffset: " +
+					// bufferOffset + " - fileBuffer.length: " +
+					// fileBuffer.length + " weakSum: " + weakSum +
+					// " mc.fileOffset: " + mc.fileOffset + " - lastMatch: " +
+					// lastMatch);
+					boolean found = false;
+					if (fileOffset >= lastMatch + blocksize) {
+						int wSum = updateWeakSum(weakSum);
+						if (hashLookUp(wSum, null)) {
+							found = true;
+						} else {
+							// System.out.println("Not found, weaksum: " +
+							// wSum);
 						}
 					} else {
-						skip--;
+						// System.out.println("Not looking for match because fileOffset not far enough: "
+						// + mc.fileOffset + " lastMatch: " + lastMatch +
+						// " blockSize: " + blocksize);
 					}
+					if (found) {
+						if (fileOffset + mfr.getBlocksize() > fileLength) {
+							if (n > 0) {
+								Arrays.fill(fileBuffer, n, fileBuffer.length,
+										(byte) 0);
+							} else {
+								int offset = fileBuffer.length
+										- mfr.getBlocksize() + bufferOffset + 1;
+								System.arraycopy(fileBuffer, offset,
+										blockBuffer, 0, fileBuffer.length
+												- offset);
+								Arrays.fill(blockBuffer, fileBuffer.length
+										- offset, blockBuffer.length, (byte) 0);
+							}
+						}
+						if ((bufferOffset - mfr.getBlocksize() + 1) < 0) {
+							if (n > 0) {
+								System.arraycopy(
+										backBuffer,
+										backBuffer.length + bufferOffset
+												- mfr.getBlocksize() + 1,
+										blockBuffer, 0, mfr.getBlocksize()
+												- bufferOffset - 1);
+								System.arraycopy(fileBuffer, 0, blockBuffer,
+										mfr.getBlocksize() - bufferOffset - 1,
+										bufferOffset + 1);
+							}
+							strongSum = gen.generateStrongSum(blockBuffer, 0,
+									blocksize);
+							// System.out.println("Look for match: " + new
+							// String(blockBuffer));
+							boolean match = hashLookUp(updateWeakSum(weakSum),
+									strongSum);
+							if (match)
+								lastMatch = fileOffset;
+						} else {
+							strongSum = gen.generateStrongSum(fileBuffer,
+									bufferOffset - blocksize + 1, blocksize);
+							boolean match = hashLookUp(updateWeakSum(weakSum),
+									strongSum);
+							if (match)
+								lastMatch = fileOffset;
+						}
+					}
+
 					fileOffset++;
-					if ((((double) fileOffset / (double) fileLength) * 100) >= a) {
-						progressBar(((double) fileOffset / (double) fileLength) * 100);
-						a += 10;
-					}
 					if (fileOffset == fileLength) {
 						end = true;
 						break;
@@ -613,17 +529,16 @@ public class FileMaker {
 				}
 			}
 
-			complete = matchControl();
-			System.out.println("Target " + df.format(complete) + "% complete.");
-			fileMap[fileMap.length - 1] = -1;
+			double complete = matchControl();
+			fileMap[(fileMap.length - 1)] = -1;
+			return complete;
+		} catch (NoSuchAlgorithmException ex) {
+			throw new RuntimeException(ex);
+		} finally {
+			if (is != null) {
+				is.close();
+			}
 			is.close();
-		} catch (IOException e1) {
-			e1.printStackTrace();
-			String message = "Can't read seed file, check your file access permissions.";
-			throw new Exception(message, e1);
-		} catch (Exception e2) {
-			e2.printStackTrace();
-			throw new Exception("Internal error.", e2);
 		}
 	}
 
@@ -712,7 +627,7 @@ public class FileMaker {
 		missing = 0;
 		for (int i = 0; i < fileMap.length; i++) {
 			if (mfr.getSeqNum() == 2) { // pouze pokud kontrolujeme matching
-										// continuation
+				// continuation
 				if (i > 0 && i < fileMap.length - 1) {
 					if (fileMap[i - 1] == -1 && fileMap[i] != -1
 							&& fileMap[i + 1] == -1) {
@@ -771,5 +686,4 @@ public class FileMaker {
 		}
 		return false;
 	}
-
 }

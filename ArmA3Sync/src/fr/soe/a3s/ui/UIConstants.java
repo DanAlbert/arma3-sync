@@ -47,6 +47,12 @@ public interface UIConstants {
 					java.lang.ClassLoader
 							.getSystemResource("resources/pictures/system/delete16x16.png"));
 
+	Image REPORT = Toolkit
+			.getDefaultToolkit()
+			.getImage(
+					java.lang.ClassLoader
+							.getSystemResource("resources/pictures/system/report16x16.png"));
+
 	Image CONNECT = Toolkit
 			.getDefaultToolkit()
 			.getImage(
@@ -290,8 +296,8 @@ public interface UIConstants {
 			.getImage(
 					java.lang.ClassLoader
 							.getSystemResource("resources/pictures/system/brick_16x16.png"));
-	
-	Image  SHORTCUT = Toolkit
+
+	Image SHORTCUT = Toolkit
 			.getDefaultToolkit()
 			.getImage(
 					java.lang.ClassLoader
