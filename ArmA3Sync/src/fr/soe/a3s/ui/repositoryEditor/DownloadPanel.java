@@ -629,7 +629,7 @@ public class DownloadPanel extends JPanel implements UIConstants {
 	}
 
 	private void setContextualHelp() {
-		
+
 		buttonCheckForAddonsStart.setToolTipText("Check for Addons");
 		buttonCheckForAddonsCancel.setToolTipText("Cancel");
 		buttonDownloadStart.setToolTipText("Start/Resume");
@@ -853,7 +853,7 @@ public class DownloadPanel extends JPanel implements UIConstants {
 		checkForAddons();
 	}
 
-	public void checkForAddons() {
+	public AddonsChecker checkForAddons() {
 
 		// Lock user action on addons tree
 		arbre.setEnabled(false);
@@ -861,6 +861,7 @@ public class DownloadPanel extends JPanel implements UIConstants {
 		addonsChecker = new AddonsChecker(facade, repositoryName, eventName,
 				update, showPartialFileTransferWarningMessage, this);
 		addonsChecker.start();
+		return addonsChecker;
 	}
 
 	private void buttonCheckForAddonsCancelPerformed() {

@@ -182,16 +182,12 @@ public class AddonsDownloader extends Thread implements DataAccessConstants {
 					@Override
 					public void updateEnd() {
 						finish();
-						initDownloadPanelForEndDownload();
-						terminate();
 					}
 
 					@Override
 					public void updateEndWithErrors(List<Exception> errors) {
 						finishWithErrors("Download finished with errors:",
 								errors);
-						initDownloadPanelForEndDownload();
-						terminate();
 					}
 
 					@Override
@@ -224,16 +220,12 @@ public class AddonsDownloader extends Thread implements DataAccessConstants {
 						@Override
 						public void end() {
 							finish();
-							initDownloadPanelForEndDownload();
-							terminate();
 						}
 
 						@Override
 						public void endWithError(List<Exception> errors) {
 							finishWithErrors("Download finished with errors:",
 									errors);
-							initDownloadPanelForEndDownload();
-							terminate();
 						}
 					});
 
@@ -465,9 +457,6 @@ public class AddonsDownloader extends Thread implements DataAccessConstants {
 				"Download is finished.", "Download",
 				JOptionPane.INFORMATION_MESSAGE);
 
-		/* Check for Addons */
-		downloadPanel.checkForAddons();
-
 		/* Check for TFAR Update */
 		if (tfarIsUpdated) {
 			int response = JOptionPane.showConfirmDialog(facade.getMainPanel(),
@@ -495,6 +484,13 @@ public class AddonsDownloader extends Thread implements DataAccessConstants {
 				firstPage.setVisible(true);
 			}
 		}
+
+		initDownloadPanelForEndDownload();
+
+		/* Check for Addons */
+		downloadPanel.checkForAddons();
+
+		terminate();
 	}
 
 	private void finishWithErrors(String message, List<Exception> errors) {
@@ -532,8 +528,12 @@ public class AddonsDownloader extends Thread implements DataAccessConstants {
 						+ "See download report for information.", "Download",
 				JOptionPane.ERROR_MESSAGE);
 
+		initDownloadPanelForEndDownload();
+
 		/* Check for Addons */
 		downloadPanel.checkForAddons();
+
+		terminate();
 	}
 
 	private synchronized void executeCancelTooManyErrors(int value,
@@ -549,9 +549,8 @@ public class AddonsDownloader extends Thread implements DataAccessConstants {
 			if (connexionService != null) {
 				connexionService.cancel();
 			}
+
 			finishWithErrors(message, errors);
-			initDownloadPanelForEndDownload();
-			terminate();
 		}
 	}
 
@@ -568,9 +567,8 @@ public class AddonsDownloader extends Thread implements DataAccessConstants {
 			if (connexionService != null) {
 				connexionService.cancel();
 			}
+
 			finishWithErrors(message, errors);
-			initDownloadPanelForEndDownload();
-			terminate();
 		}
 	}
 

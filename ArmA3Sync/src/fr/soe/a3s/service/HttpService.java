@@ -313,8 +313,6 @@ public class HttpService extends AbstractConnexionService implements
 					leaf.setComplete(0);
 				} else if (noPartialFileTransfer) {
 					leaf.setComplete(0);
-				} else if (leaf.isCompressed()) {
-					leaf.setComplete(0);
 				} else {
 					double complete = httpDAOPool.get(0).getFileCompletion(
 							leaf.getRemotePath(), leaf.getDestinationPath(),
