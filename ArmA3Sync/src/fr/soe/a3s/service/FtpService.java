@@ -585,6 +585,8 @@ public class FtpService extends AbstractConnexionService implements
 			throw new AutoConfigFileNotFoundException(repositoryName);
 		}
 
+		Events events = repository.getLocalEvents();// could be null
+
 		ftpDAOPool.get(0).updateObserverCountWithText(
 				"Checking remote files...");
 
@@ -632,7 +634,7 @@ public class FtpService extends AbstractConnexionService implements
 
 						boolean exists = remoteFileExists(repository.getName(),
 								relativePath, fileName,
-								repository.getProtocol());
+								repository.getRepositoryUploadProtocole());
 
 						if (!exists || filesToUpload.contains(leaf)) {
 							ftpFilesToUpload.add(ftpFile);
@@ -644,7 +646,7 @@ public class FtpService extends AbstractConnexionService implements
 							FTPFile.DIRECTORY_TYPE);
 
 					boolean exists = remoteFileExists(repository.getName(),
-							relativePath, fileName, repository.getProtocol());
+							relativePath, fileName, repository.getRepositoryUploadProtocole());
 
 					if (!exists || filesToUpload.contains(node)) {
 						ftpFilesToUpload.add(ftpFile);
@@ -767,6 +769,10 @@ public class FtpService extends AbstractConnexionService implements
 					repositoryRemotePath);
 			ftpDAOPool.get(0).uploadAutoconfig(repository.getLocalAutoConfig(),
 					repositoryRemotePath);
+			if (repository.getLocalEvents() != null) {
+				ftpDAOPool.get(0).uploadEvents(repository.getLocalEvents(),
+						repositoryRemotePath);
+			}
 		} finally {
 			ftpDAOPool.get(0).disconnect();
 		}

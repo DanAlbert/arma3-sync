@@ -852,6 +852,39 @@ public class FtpDAO extends AbstractConnexionDAO {
 		}
 	}
 
+	public void uploadEvents(Events events, String remotePath)
+			throws IOException {
+
+		makeDir(remotePath, A3S_FOlDER_PATH);
+
+		ByteArrayOutputStream baos = null;
+		ObjectOutputStream oos = null;
+		InputStream uis = null;
+		try {
+			baos = new ByteArrayOutputStream();
+			oos = new ObjectOutputStream(new GZIPOutputStream(baos));
+			oos.writeObject(events);
+			oos.flush();
+			oos.close();
+			uis = new ByteArrayInputStream(baos.toByteArray());
+			boolean ok = ftpClient.storeFile(EVENTS, uis);
+			if (!ok) {
+				throw new IOException("Failed to upload /.a3s/events file.");
+			}
+			ftpClient.noop();
+		} finally {
+			if (baos != null) {
+				baos.close();
+			}
+			if (oos != null) {
+				oos.close();
+			}
+			if (uis != null) {
+				uis.close();
+			}
+		}
+	}
+
 	public void disconnect() {
 
 		if (ftpClient != null) {
