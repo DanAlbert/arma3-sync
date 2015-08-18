@@ -487,24 +487,39 @@ public class CommandConsole extends CommandGeneral {
 
 		repositoryService.setCompressed(name, addCompressedPbo);
 
-		// Set partial file transfer
-		boolean partialFileTransferIsWrong = false;
-		boolean partialFileTransfer = false;
-		do {
-			System.out.print("Perform partial file transfer (yes/no): ");
-			String line = c.nextLine();
-			if (line.equalsIgnoreCase("YES")) {
-				partialFileTransfer = true;
-				partialFileTransferIsWrong = false;
-			} else if (line.equalsIgnoreCase("NO")) {
-				partialFileTransfer = false;
-				partialFileTransferIsWrong = false;
+		try {
+			// Set partial file transfer for HTTP
+			RepositoryDTO repositoryDTO = repositoryService.getRepository(name);
+			if (repositoryDTO.getProtocoleDTO().getProtocolType()
+					.equals(ProtocolType.FTP)) {
+				repositoryService.setUsePartialFileTransfer(name, true);
 			} else {
-				partialFileTransferIsWrong = true;
-			}
-		} while (partialFileTransferIsWrong);
+				boolean partialFileTransferIsWrong = false;
+				boolean partialFileTransfer = false;
+				do {
+					System.out
+							.print("Perform partial file transfer (yes/no): ");
+					String line = c.nextLine();
+					if (line.equalsIgnoreCase("YES")) {
+						partialFileTransfer = true;
+						partialFileTransferIsWrong = false;
+					} else if (line.equalsIgnoreCase("NO")) {
+						partialFileTransfer = false;
+						partialFileTransferIsWrong = false;
+					} else {
+						partialFileTransferIsWrong = true;
+					}
+				} while (partialFileTransferIsWrong);
 
-		repositoryService.setUsePartialFileTransfer(name, partialFileTransfer);
+				repositoryService.setUsePartialFileTransfer(name,
+						partialFileTransfer);
+			}
+		} catch (RepositoryException e) {
+			System.out.println(e.getMessage());
+			System.out.println("");
+			execute();
+			return;
+		}
 
 		// Set excluded files from build
 		repositoryService.clearExcludedFilesPathFromBuild(name);
