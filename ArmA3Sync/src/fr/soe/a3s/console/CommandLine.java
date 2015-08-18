@@ -69,11 +69,13 @@ public class CommandLine extends CommandGeneral {
 				|| !new File(destinationFolderPath).isDirectory()) {
 			String message = "Error: destination folder path "
 					+ destinationFolderPath + " does not exist!";
+			System.out.println(message);
 			System.exit(0);
 		}
 		if (!(withExactMath.equalsIgnoreCase("true") || withExactMath
 				.equalsIgnoreCase("false"))) {
 			String message = "Unrecognized exact math parameter (true/false).";
+			System.out.println(message);
 			System.exit(0);
 		}
 
