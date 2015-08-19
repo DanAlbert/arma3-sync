@@ -173,7 +173,7 @@ public class FtpDAO extends AbstractConnexionDAO {
 
 					if (acquiredSemaphore) {
 						updateObserverDownloadSingleSizeProgress();
-						if (deltaTime > Math.pow(10, 9) / 2) {
+						if (deltaTime > Math.pow(10, 9) / 4) {
 							updateObserverDownloadSpeed();
 							elapsedTime = totalTime;
 						}
