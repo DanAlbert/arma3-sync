@@ -31,6 +31,7 @@ import org.apache.commons.io.FileUtils;
 import fr.soe.a3s.constant.RepositoryStatus;
 import fr.soe.a3s.dto.RepositoryDTO;
 import fr.soe.a3s.dto.ServerInfoDTO;
+import fr.soe.a3s.exception.WritingException;
 import fr.soe.a3s.exception.repository.RepositoryException;
 import fr.soe.a3s.service.RepositoryService;
 import fr.soe.a3s.ui.Facade;
@@ -464,7 +465,8 @@ public class AdminPanel extends JPanel implements UIConstants {
 		try {
 			repositoryService.setRepositoryPath(repositoryName,
 					textFieldMainSharedFolderLocation.getText());
-		} catch (RepositoryException e) {
+			repositoryService.write(repositoryName);
+		} catch (RepositoryException | WritingException e) {
 			JOptionPane.showMessageDialog(facade.getMainPanel(),
 					e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
 			textFieldAutoConfigURL.setText("");
