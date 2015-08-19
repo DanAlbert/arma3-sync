@@ -304,7 +304,7 @@ public class MyHttpConnection {
 
 					if (httpDAO.isAcquiredSemaphore()) {
 						httpDAO.updateObserverDownloadSingleSizeProgress();
-						if (deltaTime >= Math.pow(10, 9) / 2) {
+						if (deltaTime > Math.pow(10, 9) / 2) {
 							httpDAO.updateObserverDownloadSpeed();
 							elapsedTime = totalTime;
 						}
@@ -319,9 +319,6 @@ public class MyHttpConnection {
 				dos.write(buffer, 0, bytesRead);
 				buffer = new byte[bufferSize];
 			}
-			// if (httpDAO.isAcquiredSemaphore()) {
-			// httpDAO.updateObserverDownloadSpeed();
-			// }
 		} finally {
 			if (fos != null) {
 				fos.close();
@@ -332,6 +329,7 @@ public class MyHttpConnection {
 			if (inputStream != null) {
 				inputStream.close();
 			}
+			httpDAO.setSpeed(0);
 		}
 	}
 
@@ -457,7 +455,7 @@ public class MyHttpConnection {
 
 					if (httpDAO.isAcquiredSemaphore()) {
 						httpDAO.updateObserverDownloadSingleSizeProgress();
-						if (deltaTime >= Math.pow(10, 9) / 2) {
+						if (deltaTime > Math.pow(10, 9) / 2) {
 							httpDAO.updateObserverDownloadSpeed();
 							elapsedTime = totalTime;
 						}
@@ -471,9 +469,6 @@ public class MyHttpConnection {
 					&& !httpDAO.isCanceled()) {
 				dos.write(temp, 0, bytesRead);
 				temp = new byte[bufferSize];
-			}
-			if (httpDAO.isAcquiredSemaphore()) {
-				httpDAO.updateObserverDownloadSpeed();
 			}
 			byte[] bytes = byteArrayBuffer.toByteArray();
 			contLen = bytes.length;
