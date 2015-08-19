@@ -276,6 +276,7 @@ public class MyHttpConnection {
 
 			final long startTime = System.nanoTime();
 			this.elapsedTime = 0;
+			this.httpDAO.setSpeed(0);
 			dos = new CountingOutputStream(fos) {
 				@Override
 				protected void afterWrite(int n) throws IOException {
@@ -304,7 +305,7 @@ public class MyHttpConnection {
 
 					if (httpDAO.isAcquiredSemaphore()) {
 						httpDAO.updateObserverDownloadSingleSizeProgress();
-						if (deltaTime > Math.pow(10, 9) / 2) {
+						if (deltaTime > Math.pow(10, 9) / 4) {
 							httpDAO.updateObserverDownloadSpeed();
 							elapsedTime = totalTime;
 						}
@@ -426,6 +427,7 @@ public class MyHttpConnection {
 
 			final long startTime = System.nanoTime();
 			this.elapsedTime = 0;
+			httpDAO.setSpeed(0);
 			ByteArrayOutputStream byteArrayBuffer = new ByteArrayOutputStream();
 			dos = new CountingOutputStream(byteArrayBuffer) {
 				@Override
@@ -455,7 +457,7 @@ public class MyHttpConnection {
 
 					if (httpDAO.isAcquiredSemaphore()) {
 						httpDAO.updateObserverDownloadSingleSizeProgress();
-						if (deltaTime > Math.pow(10, 9) / 2) {
+						if (deltaTime > Math.pow(10, 9) / 4) {
 							httpDAO.updateObserverDownloadSpeed();
 							elapsedTime = totalTime;
 						}
@@ -475,6 +477,7 @@ public class MyHttpConnection {
 			allData += contLen;
 			return bytes;
 		} finally {
+			httpDAO.setSpeed(0);
 			if (inputStream != null) {
 				inputStream.close();
 			}
