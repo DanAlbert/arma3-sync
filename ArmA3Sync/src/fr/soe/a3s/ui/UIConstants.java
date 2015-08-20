@@ -89,12 +89,6 @@ public interface UIConstants {
 					java.lang.ClassLoader
 							.getSystemResource("resources/pictures/system/events24x24.png"));
 
-	Image DOWNLOAD2 = Toolkit
-			.getDefaultToolkit()
-			.getImage(
-					java.lang.ClassLoader
-							.getSystemResource("resources/pictures/system/download_2_16x16.png"));
-
 	Image BUILD = Toolkit
 			.getDefaultToolkit()
 			.getImage(
@@ -238,10 +232,6 @@ public interface UIConstants {
 			.getImage(
 					java.lang.ClassLoader
 							.getSystemResource("resources/pictures/system/transmission16x16.png"));
-
-	Image AIA = Toolkit.getDefaultToolkit().getImage(
-			java.lang.ClassLoader
-					.getSystemResource("resources/pictures/system/aia.png"));
 
 	Image UPLOAD = Toolkit
 			.getDefaultToolkit()
