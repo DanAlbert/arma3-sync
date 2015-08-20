@@ -60,7 +60,8 @@ public class RepositoryBuilderDAO implements DataAccessConstants,
 	private int totalCount;
 
 	/** pbo files compression */
-	private final ZipBatchProcessor zipBatchProcessor = new ZipBatchProcessor();
+	private ZipBatchProcessor zipBatchProcessor = null;
+	private double compressionRatio;
 
 	/** Cancel build */
 	private boolean canceled = false;
@@ -232,8 +233,10 @@ public class RepositoryBuilderDAO implements DataAccessConstants,
 		/* Determine .zip files */
 		if (repository.isCompressed()) {
 			determineZipPboFilesToAdd(sync);
+			
 		} else {
 			determineZipFilesToDelete(sync);
+			
 		}
 
 		/* Write files */
@@ -565,10 +568,29 @@ public class RepositoryBuilderDAO implements DataAccessConstants,
 		List<SyncTreeLeaf> list = new ArrayList<SyncTreeLeaf>();
 		getPboFiles(sync, list);
 
+		zipBatchProcessor = new ZipBatchProcessor();
 		zipBatchProcessor.init(list);
 		zipBatchProcessor.addObserverCountWithText(observerCountWithText);
 		zipBatchProcessor.zipBatch();
+		zipBatchProcessor = null;
 		System.gc();
+		//determineCompressionRatio(sync);
+		//System.out.println(compressionRatio);
+
+	}
+
+	private void determineCompressionRatio(SyncTreeNode node) {
+
+		if (node.isLeaf()) {
+			SyncTreeLeaf leaf = (SyncTreeLeaf) node;
+			double ratio = (leaf.getSize()- leaf.getCompressedSize()) / leaf.getSize();
+			compressionRatio = (compressionRatio + ratio) / 2;
+		} else {
+			SyncTreeDirectory directory = (SyncTreeDirectory) node;
+			for (SyncTreeNode n : directory.getList()) {
+				determineCompressionRatio(n);
+			}
+		}
 	}
 
 	private void getPboFiles(SyncTreeNode syncTreeNode, List<SyncTreeLeaf> list) {
@@ -773,7 +795,9 @@ public class RepositoryBuilderDAO implements DataAccessConstants,
 
 	public void cancel() {
 		this.canceled = true;
-		zipBatchProcessor.cancel();
+		if (zipBatchProcessor != null) {
+			zipBatchProcessor.cancel();
+		}
 	}
 
 	/* Interface observableFilesNumber3 */

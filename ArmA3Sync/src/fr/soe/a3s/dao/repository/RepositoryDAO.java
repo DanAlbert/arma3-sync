@@ -90,7 +90,7 @@ public class RepositoryDAO implements DataAccessConstants {
 									repository);
 						}
 					} catch (Exception e) {
-						e.printStackTrace();
+						// e.printStackTrace();
 						repositoriesFailedToLoad.add(file.getName());
 					}
 				}
