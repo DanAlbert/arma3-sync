@@ -65,6 +65,7 @@ public class RepositoryBuilderDAO implements DataAccessConstants,
 
 	/** Cancel build */
 	private boolean canceled = false;
+	private IOException ex = null;
 
 	@SuppressWarnings("unchecked")
 	public void buildRepository(Repository repository) throws IOException {
@@ -79,10 +80,16 @@ public class RepositoryBuilderDAO implements DataAccessConstants,
 		 * Read sync, serverInfo, changelogs and events file before .a3s folder
 		 * deletion
 		 */
-		Changelogs oldChangelogs = readChangelogs(repositoryMainDirectory);
-		Events oldEvents = readEvents(repositoryMainDirectory);
-		SyncTreeDirectory oldSync = readSync(repositoryMainDirectory);
-		ServerInfo oldServerInfo = readServerInfo(repositoryMainDirectory);
+		Changelogs oldChangelogs = A3SFilesAccessor
+				.readChangelogsFile(new File(repositoryMainDirectory
+						.getAbsolutePath() + CHANGELOGS_FILE_PATH));
+		Events oldEvents = A3SFilesAccessor.readEventsFile(new File(
+				repositoryMainDirectory.getAbsolutePath() + EVENTS_FILE_PATH));
+		SyncTreeDirectory oldSync = A3SFilesAccessor.readSyncFile(new File(
+				repositoryMainDirectory.getAbsolutePath() + SYNC_FILE_PATH));
+		ServerInfo oldServerInfo = A3SFilesAccessor
+				.readServerInfoFile(new File(repositoryMainDirectory
+						.getAbsolutePath() + SERVERINFO_FILE_PATH));
 
 		/* Remove .a3s folder */
 		File folderA3S = new File(repositoryMainDirectory.getAbsolutePath()
@@ -233,10 +240,10 @@ public class RepositoryBuilderDAO implements DataAccessConstants,
 		/* Determine .zip files */
 		if (repository.isCompressed()) {
 			determineZipPboFilesToAdd(sync);
-			
+
 		} else {
 			determineZipFilesToDelete(sync);
-			
+
 		}
 
 		/* Write files */
@@ -384,8 +391,7 @@ public class RepositoryBuilderDAO implements DataAccessConstants,
 		}
 	}
 
-	private void determineRemoteSHA1(SyncTreeNode parent, Repository repository)
-			throws IOException {
+	private void determineRemoteSHA1(SyncTreeNode parent, Repository repository) throws IOException {
 
 		this.callables = new ArrayList<Callable<Integer>>();
 		this.mapFiles = repository.getMapFilesForBuild();
@@ -425,6 +431,10 @@ public class RepositoryBuilderDAO implements DataAccessConstants,
 
 		executor.shutdownNow();
 		System.gc();
+
+		if (ex != null) {
+			throw ex;
+		}
 	}
 
 	private void generateRemoteSHA1(SyncTreeNode syncTreeNode) {
@@ -463,17 +473,22 @@ public class RepositoryBuilderDAO implements DataAccessConstants,
 						totalCount++;
 						Callable<Integer> c = new Callable<Integer>() {
 							@Override
-							public Integer call() throws IOException {
+							public Integer call() {
 								if (!canceled) {
-									String sha1 = FileAccessMethods
-											.computeSHA1(file);
-									leaf.setSha1(sha1);
-									updatedFiles.add(leaf);
-									increment();
-									updateObserverCountWithText();
-									mapFiles.put(path, new FileAttributes(sha1,
-											lastModified));
-									repositoryContentUpdated = true;
+									try {
+										String sha1 = FileAccessMethods
+												.computeSHA1(file);
+										leaf.setSha1(sha1);
+										updatedFiles.add(leaf);
+										increment();
+										updateObserverCountWithText();
+										mapFiles.put(path, new FileAttributes(
+												sha1, lastModified));
+										repositoryContentUpdated = true;
+									} catch (IOException e) {
+										canceled = true;
+										ex = e;
+									}
 								}
 								return 0;
 							}
@@ -510,10 +525,14 @@ public class RepositoryBuilderDAO implements DataAccessConstants,
 
 		executor.shutdownNow();
 		System.gc();
+
+		if (ex != null) {
+			throw ex;
+		}
 	}
 
 	private void generateZsyncFiles(SyncTreeNode syncTreeNode,
-			AbstractProtocole protocol) throws IOException {
+			AbstractProtocole protocol) {
 
 		if (!syncTreeNode.isLeaf()) {
 			SyncTreeDirectory directory = (SyncTreeDirectory) syncTreeNode;
@@ -543,12 +562,17 @@ public class RepositoryBuilderDAO implements DataAccessConstants,
 						totalCount++;
 						Callable<Integer> c = new Callable<Integer>() {
 							@Override
-							public Integer call() throws IOException {
+							public Integer call() {
 								if (!canceled) {
-									Jazsync.make(file, zsyncFile, url,
-											leaf.getSha1());
-									increment();
-									updateObserverCountWithText();
+									try {
+										Jazsync.make(file, zsyncFile, url,
+												leaf.getSha1());
+										increment();
+										updateObserverCountWithText();
+									} catch (IOException e) {
+										canceled = true;
+										ex = e;
+									}
 								}
 								return 0;
 							}
@@ -574,8 +598,8 @@ public class RepositoryBuilderDAO implements DataAccessConstants,
 		zipBatchProcessor.zipBatch();
 		zipBatchProcessor = null;
 		System.gc();
-		//determineCompressionRatio(sync);
-		//System.out.println(compressionRatio);
+		// determineCompressionRatio(sync);
+		// System.out.println(compressionRatio);
 
 	}
 
@@ -583,7 +607,8 @@ public class RepositoryBuilderDAO implements DataAccessConstants,
 
 		if (node.isLeaf()) {
 			SyncTreeLeaf leaf = (SyncTreeLeaf) node;
-			double ratio = (leaf.getSize()- leaf.getCompressedSize()) / leaf.getSize();
+			double ratio = (leaf.getSize() - leaf.getCompressedSize())
+					/ leaf.getSize();
 			compressionRatio = (compressionRatio + ratio) / 2;
 		} else {
 			SyncTreeDirectory directory = (SyncTreeDirectory) node;
@@ -710,87 +735,6 @@ public class RepositoryBuilderDAO implements DataAccessConstants,
 			syncTreeNode = syncTreeNode.getParent();
 		}
 		return path;
-	}
-
-	private Changelogs readChangelogs(File file) {
-
-		Changelogs changelogs = null;
-		try {
-			File changelogsFile = new File(file.getAbsolutePath()
-					+ CHANGELOGS_FILE_PATH);
-			if (changelogsFile.exists()) {
-				ObjectInputStream fRo = new ObjectInputStream(
-						new GZIPInputStream(new FileInputStream(changelogsFile)));
-				if (fRo != null) {
-					changelogs = (Changelogs) fRo.readObject();
-					fRo.close();
-				}
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		return changelogs;
-	}
-
-	private Events readEvents(File file) {
-
-		Events events = null;
-		try {
-			File eventsFile = new File(file.getAbsolutePath()
-					+ EVENTS_FILE_PATH);
-			if (eventsFile.exists()) {
-				ObjectInputStream fRo = new ObjectInputStream(
-						new GZIPInputStream(new FileInputStream(eventsFile)));
-				if (fRo != null) {
-					events = (Events) fRo.readObject();
-					fRo.close();
-				}
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		return events;
-	}
-
-	private SyncTreeDirectory readSync(File file) {
-
-		SyncTreeDirectory sync = null;
-		try {
-			File syncFile = new File(file.getAbsolutePath() + SYNC_FILE_PATH);
-			if (syncFile.exists()) {
-				ObjectInputStream fRo = new ObjectInputStream(
-						new GZIPInputStream(new FileInputStream(syncFile)));
-
-				if (fRo != null) {
-					sync = (SyncTreeDirectory) fRo.readObject();
-					fRo.close();
-				}
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		return sync;
-	}
-
-	private ServerInfo readServerInfo(File file) {
-
-		ServerInfo serverInfo = null;
-		try {
-			File serverInfoFile = new File(file.getAbsolutePath()
-					+ SERVERINFO_FILE_PATH);
-			if (serverInfoFile.exists()) {
-				ObjectInputStream fRo = new ObjectInputStream(
-						new GZIPInputStream(new FileInputStream(serverInfoFile)));
-
-				if (fRo != null) {
-					serverInfo = (ServerInfo) fRo.readObject();
-					fRo.close();
-				}
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		return serverInfo;
 	}
 
 	public void cancel() {
