@@ -91,9 +91,9 @@ public class MainPanel extends JFrame implements UIConstants {
 	private JMenu menuProfiles, menuGroups, menuHelp, menuTools,
 			menuItemAutoConfig;
 	private JMenuItem menuItemEdit, menuItemHelp, menuItemuUpdates,
-			menuItemAbout, menuItemPreferences, menuItemACREwizard,
-			menuItemACRE2wizard, menuItemRPTviewer, menuItemeExportAsShortcut,
-			menuItemAiAwizard, menuItemBISforum, menuItemAutoConfigImport,
+			menuItemAbout, menuItemPreferences, menuItemACRE2wizard,
+			menuItemRPTviewer, menuItemeExportAsShortcut, menuItemAiAwizard,
+			menuItemBISforum, menuItemAutoConfigImport,
 			menuItemAutoConfigExport;
 	private JTabbedPane tabbedPane;
 	private JPanel infoPanel, launchPanel;
@@ -155,9 +155,6 @@ public class MainPanel extends JFrame implements UIConstants {
 
 		menuTools = new JMenu("Tools");
 		menuBar.add(menuTools);
-		menuItemACREwizard = new JMenuItem("ACRE installer", new ImageIcon(
-				ACRE_SMALL));
-		menuTools.add(menuItemACREwizard);
 		menuItemACRE2wizard = new JMenuItem("ACRE 2 installer", new ImageIcon(
 				ACRE2_SMALL));
 		menuTools.add(menuItemACRE2wizard);
@@ -255,17 +252,6 @@ public class MainPanel extends JFrame implements UIConstants {
 					@Override
 					public void run() {
 						menuItemExportAsShortcutPerformed();
-					}
-				});
-			}
-		});
-		menuItemACREwizard.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent arg0) {
-				SwingUtilities.invokeLater(new Runnable() {
-					@Override
-					public void run() {
-						menuItemACREwizardPerformed();
 					}
 				});
 			}
