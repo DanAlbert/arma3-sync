@@ -11,6 +11,8 @@ import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.AccessMode;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 
@@ -528,15 +530,7 @@ public class AdminPanel extends JPanel implements UIConstants {
 						"Build repository", JOptionPane.ERROR_MESSAGE);
 				return;
 				// Repository main folder must have write permissions
-			} else if (!Files
-					.isWritable(FileSystems.getDefault().getPath(path))) {
-				JOptionPane
-						.showMessageDialog(
-								facade.getMainPanel(),
-								"Repository main folder location is missing write permissions.",
-								"Build repository", JOptionPane.ERROR_MESSAGE);
-				return;
-			}
+			} 
 
 			// Check available disk space
 			boolean isCompressed = repositoryService

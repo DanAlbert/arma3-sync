@@ -910,25 +910,6 @@ public class DownloadPanel extends JPanel implements UIConstants {
 					.getSelectedItem();
 			repositoryService.setDefaultDownloadLocation(repositoryName,
 					defaultDownloadLocation);
-
-			List<String> list = new ArrayList<String>();
-			if (checkBoxAutoDiscover.isSelected()) {
-				list.addAll(profileService.getAddonSearchDirectoryPaths());
-			} else {
-				list.add(defaultDownloadLocation);
-			}
-
-			for (String path : list) {
-				if (new File(path).exists()
-						&& !Files.isWritable(FileSystems.getDefault().getPath(
-								path))) {
-					JOptionPane.showMessageDialog(facade.getMainPanel(),
-							"Destination folder: " + path + "\n"
-									+ "is missing write permissions.",
-							"Download", JOptionPane.ERROR_MESSAGE);
-					return;
-				}
-			}
 		}
 
 		addonsDownloader = new AddonsDownloader(facade, repositoryName, racine,

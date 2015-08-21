@@ -702,11 +702,6 @@ public class CommandConsole extends CommandGeneral {
 			} else if (!new File(destinationFolderPath).exists()) {
 				System.out.println("Destination folder does not exists!");
 				destinationFolderIsWrong = true;
-			} else if (!Files.isWritable(FileSystems.getDefault().getPath(
-					destinationFolderPath))) {
-				System.out.println("Can't write on " + destinationFolderPath
-						+ "\n" + "Please check write permission.");
-				destinationFolderIsWrong = true;
 			} else {
 				destinationFolderIsWrong = false;
 			}
