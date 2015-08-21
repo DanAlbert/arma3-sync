@@ -183,6 +183,7 @@ public class A3SFilesAccessor implements DataAccessConstants {
 				} else if (e.getMessage() != null) {
 					message = message + "\n" + e.getMessage();
 				}
+				throw new IOException(message);
 			} finally {
 				if (fWo != null) {
 					fWo.close();
@@ -208,6 +209,7 @@ public class A3SFilesAccessor implements DataAccessConstants {
 				} else if (e.getMessage() != null) {
 					message = message + "\n" + e.getMessage();
 				}
+				throw new IOException(message);
 			} finally {
 				if (fWo != null) {
 					fWo.close();
@@ -228,9 +230,12 @@ public class A3SFilesAccessor implements DataAccessConstants {
 			} catch (IOException e) {
 				String message = "Failed to write file on disk "
 						+ CHANGELOGS_FILE_PATH;
-				if (e.getMessage() != null) {
+				if (e instanceof ZipException) {
+					message = message + "\n" + FILE_CORRUPTED;
+				} else if (e.getMessage() != null) {
 					message = message + "\n" + e.getMessage();
 				}
+				throw new IOException(message);
 			} finally {
 				if (fWo != null) {
 					fWo.close();
@@ -251,9 +256,12 @@ public class A3SFilesAccessor implements DataAccessConstants {
 			} catch (IOException e) {
 				String message = "Failed to write file on disk "
 						+ AUTOCONFIG_FILE_PATH;
-				if (e.getMessage() != null) {
+				if (e instanceof ZipException) {
+					message = message + "\n" + FILE_CORRUPTED;
+				} else if (e.getMessage() != null) {
 					message = message + "\n" + e.getMessage();
 				}
+				throw new IOException(message);
 			} finally {
 				if (fWo != null) {
 					fWo.close();
@@ -274,9 +282,12 @@ public class A3SFilesAccessor implements DataAccessConstants {
 			} catch (IOException e) {
 				String message = "Failed to write file on disk "
 						+ EVENTS_FILE_PATH;
-				if (e.getMessage() != null) {
+				if (e instanceof ZipException) {
+					message = message + "\n" + FILE_CORRUPTED;
+				} else if (e.getMessage() != null) {
 					message = message + "\n" + e.getMessage();
 				}
+				throw new IOException(message);
 			} finally {
 				if (fWo != null) {
 					fWo.close();
