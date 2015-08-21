@@ -97,7 +97,7 @@ public class ZipDAO implements DataAccessConstants {
 			if (e.getMessage() == null) {
 				throw new IOException(message);
 			} else {
-				throw (new IOException(message + "\n" + e.getMessage()));
+				throw new IOException(message + "\n" + e.getMessage());
 			}
 		} finally {
 			if (zis != null) {
@@ -182,6 +182,7 @@ public class ZipDAO implements DataAccessConstants {
 					compressedFileSize = zipFile.length();
 				}
 			}
+			return compressedFileSize;
 		} catch (IOException e) {
 			e.printStackTrace();
 			String message = "Failed to zip file: "
@@ -189,7 +190,7 @@ public class ZipDAO implements DataAccessConstants {
 			if (e.getMessage() == null) {
 				throw new IOException(message);
 			} else {
-				throw (new IOException(message + "\n" + e.getMessage()));
+				throw new IOException(message + "\n" + e.getMessage());
 			}
 		} finally {
 			if (zos != null) {
@@ -199,7 +200,6 @@ public class ZipDAO implements DataAccessConstants {
 				fos.close();
 			}
 			this.active = false;
-			return compressedFileSize;
 		}
 	}
 

@@ -19,8 +19,8 @@ public class ZipBatchProcessor implements ObservableCountWithText {
 	private ObserverCountWithText observerCountWithText;
 	private int count, numberOfFiles;
 	private boolean canceled = false;
-	private final Exception ex = null;
 	private final List<Callable<Integer>> callables = new ArrayList<Callable<Integer>>();
+	private IOException ex = null;
 
 	public void init(List<SyncTreeLeaf> list) {
 		filesList.clear();
@@ -45,27 +45,36 @@ public class ZipBatchProcessor implements ObservableCountWithText {
 		}
 
 		executor.shutdownNow();
+
+		if (ex != null) {
+			throw ex;
+		}
 	}
 
-	private void zip(final SyncTreeLeaf leaf) throws IOException {
+	private void zip(final SyncTreeLeaf leaf) {
 
 		Callable<Integer> c = new Callable<Integer>() {
 			@Override
-			public Integer call() throws Exception {
+			public Integer call() {
 				if (!canceled) {
-					leaf.setCompressedSize(0);
-					leaf.setCompressed(false);
-					ZipDAO zipDAO = new ZipDAO();
-					addZipDAO(zipDAO);
-					final File file = new File(leaf.getDestinationPath() + "/"
-							+ leaf.getName());
-					long compressedSize = zipDAO.zip(file);
-					removeZipDAO(zipDAO);
-					if (!canceled) {
-						leaf.setCompressedSize(compressedSize);
-						leaf.setCompressed(true);
-						count++;
-						updateObserverCountWithText();
+					try {
+						leaf.setCompressedSize(0);
+						leaf.setCompressed(false);
+						ZipDAO zipDAO = new ZipDAO();
+						addZipDAO(zipDAO);
+						final File file = new File(leaf.getDestinationPath()
+								+ "/" + leaf.getName());
+						long compressedSize = zipDAO.zip(file);
+						removeZipDAO(zipDAO);
+						if (!canceled) {
+							leaf.setCompressedSize(compressedSize);
+							leaf.setCompressed(true);
+							count++;
+							updateObserverCountWithText();
+						}
+					} catch (IOException e) {
+						canceled = true;
+						ex = e;
 					}
 				}
 				return 0;
