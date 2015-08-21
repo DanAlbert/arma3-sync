@@ -130,26 +130,25 @@ public class AddonsChecker extends Thread {
 					repositoryName, parent);
 
 			if (!canceled) {
-				// 4. Update adddons groups
+				// 4. Reset adddons groups
 				addonService.resetAvailableAddonTree();
 				facade.getAddonsPanel().updateAvailableAddons();
 				facade.getAddonsPanel().updateAddonGroups();
 				facade.getAddonsPanel().expandAddonGroups();
 				facade.getAddonOptionsPanel().updateAddonPriorities();
-				// 5. Update modset selection
-				facade.getAddonsPanel().updateModsetSelection(repositoryName);
-				// 6. Update download panel tree
-				downloadPanel.updateAddons(parent);
-				// 7. Check for event/check for update mode
+				// 5. Update download panel tree
 				if (eventName != null) {
 					setEventAddonSelection();
 				} else if (update) {
 					selectAllDescending(parent);
 				}
-				// 8. Update Events panel content
+				downloadPanel.updateAddons(parent);
+				// 6. Update Events panel content
 				downloadPanel.getRepositoryPanel().getEventsPanel()
 						.init(repositoryName);
-				// 9. Update repository status, save repository status to disk
+				// 7. Update modset selection
+				facade.getAddonsPanel().updateModsetSelection(repositoryName);
+				// 8. Update repository status, save repository status to disk
 				repositoryService.updateRepositoryRevision(repositoryName);
 				repositoryService.setOutOfSync(repositoryName, false);
 				facade.getSyncPanel().init();
