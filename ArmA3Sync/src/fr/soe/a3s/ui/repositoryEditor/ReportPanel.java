@@ -19,11 +19,13 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.border.BevelBorder;
 
-import fr.soe.a3s.service.RepositoryService;
+import fr.soe.a3s.dao.DataAccessConstants;
+import fr.soe.a3s.service.CommonService;
 import fr.soe.a3s.ui.Facade;
 import fr.soe.a3s.ui.UIConstants;
 
-public class ReportPanel extends JFrame implements UIConstants {
+public class ReportPanel extends JFrame implements UIConstants,
+		DataAccessConstants {
 
 	private final Facade facade;
 	private final DownloadPanel downloadPanel;
@@ -125,9 +127,8 @@ public class ReportPanel extends JFrame implements UIConstants {
 	private void buttonExportPerformed() {
 
 		try {
-			RepositoryService repositoryService = new RepositoryService();
-			repositoryService.exportToDesktop(downloadReport,
-					"ArmA3Sync-log.txt");
+			CommonService commonService = new CommonService();
+			commonService.exportToDesktop(downloadReport, LOG_FILE_NAME);
 			JOptionPane.showMessageDialog(facade.getMainPanel(),
 					"Log file has been exported to desktop", "Download",
 					JOptionPane.INFORMATION_MESSAGE);

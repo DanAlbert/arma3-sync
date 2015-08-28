@@ -12,7 +12,6 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 
 import javax.swing.Box;
 import javax.swing.JButton;
@@ -21,8 +20,8 @@ import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
 
-import fr.soe.a3s.domain.Profile;
 import fr.soe.a3s.service.AddonService;
 import fr.soe.a3s.service.ConfigurationService;
 import fr.soe.a3s.service.ProfileService;
@@ -112,13 +111,23 @@ public class WellcomePanel extends JDialog implements UIConstants {
 		buttonSelect.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				buttonSelectPerformed();
+				SwingUtilities.invokeLater(new Runnable() {
+					@Override
+					public void run() {
+						buttonSelectPerformed();
+					}
+				});
 			}
 		});
 		buttonOK.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				buttonOKPerformed();
+				SwingUtilities.invokeLater(new Runnable() {
+					@Override
+					public void run() {
+						buttonOKPerformed();
+					}
+				});
 			}
 		});
 	}
@@ -157,7 +166,8 @@ public class WellcomePanel extends JDialog implements UIConstants {
 			profileService.setArmA3ExePath(path);
 			if (file.getParent() != null) {
 				String parentPath = file.getParentFile().getAbsolutePath();
-				List<String> set = profileService.getAddonSearchDirectoryPaths();
+				List<String> set = profileService
+						.getAddonSearchDirectoryPaths();
 				Iterator iter = set.iterator();
 				List<String> list = new ArrayList<String>();
 				while (iter.hasNext()) {

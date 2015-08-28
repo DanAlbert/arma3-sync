@@ -18,6 +18,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
+import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
@@ -522,8 +523,25 @@ public class MainPanel extends JFrame implements UIConstants {
 		/* Init Profiles menu */
 		updateProfilesMenu();
 
-		/* Check repositories for update */
-		checkRepositories();
+		/* Show GUI */
+		setVisible(true);
+	}
+
+	public void initBackGround() {
+
+		SwingUtilities.invokeLater(new Runnable() {
+			@Override
+			public void run() {
+				/* Check for updates */
+				checkForUpdates(false);
+
+				/* Check ArmA3 Executable location */
+				showWellcomeDialog();
+
+				/* Check repositories for update */
+				checkRepositories();
+			}
+		});
 	}
 
 	/* Menu Actions */
@@ -706,7 +724,18 @@ public class MainPanel extends JFrame implements UIConstants {
 	}
 
 	private void menuItemuUpdatesPerformed() {
-		checkForUpdates(true);
+
+		SwingUtilities.invokeLater(new Runnable() {
+			@Override
+			public void run() {
+				try {
+					/* Check for updates */
+					checkForUpdates(true);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		});
 	}
 
 	private void menuItemAboutPerformed() {
@@ -818,61 +847,51 @@ public class MainPanel extends JFrame implements UIConstants {
 
 	public void checkForUpdates(final boolean withInfoMessage) {
 
-		Thread t = new Thread(new Runnable() {
-			@Override
-			public void run() {
-				FtpService ftpService = new FtpService(1);
-				String availableVersion = null;
+		FtpService ftpService = new FtpService(1);
+		String availableVersion = null;
 
+		try {
+			availableVersion = ftpService.checkForUpdates(facade.isDevMode());
+		} catch (FtpException e) {
+			System.out.println(e.getMessage());
+			if (withInfoMessage) {
+				JOptionPane.showMessageDialog(facade.getMainPanel(),
+						e.getMessage(), "Update", JOptionPane.ERROR_MESSAGE);
+			}
+			return;
+		}
+
+		if (availableVersion != null) {
+			int response = JOptionPane.showConfirmDialog(facade.getMainPanel(),
+					"A new update is available. Proceed update?", "Update",
+					JOptionPane.OK_CANCEL_OPTION);
+
+			if (response == 0) {
 				try {
-					availableVersion = ftpService.checkForUpdates(facade
-							.isDevMode());
-				} catch (FtpException e) {
-					System.out.println(e.getMessage());
-					if (withInfoMessage) {
-						JOptionPane.showMessageDialog(facade.getMainPanel(),
-								e.getMessage(), "Update",
-								JOptionPane.ERROR_MESSAGE);
-					}
-					return;
+					commonService.saveAllParameters(getHeight(), getWidth());
+				} catch (WritingException e) {
+					e.printStackTrace();
 				}
-
-				if (availableVersion != null) {
-					int response = JOptionPane.showConfirmDialog(
-							facade.getMainPanel(),
-							"A new update is available. Proceed update?",
-							"Update", JOptionPane.OK_CANCEL_OPTION);
-
-					if (response == 0) {
-						try {
-							commonService.saveAllParameters(getHeight(),
-									getWidth());
-						} catch (WritingException e) {
-							e.printStackTrace();
-						}
-						// Proceed with update
-						String command = "java -jar -Djava.net.preferIPv4Stack=true ArmA3Sync-Updater.jar";
-						if (facade.isDevMode()) {
-							command = command + " -dev";
-						}
-						try {
-							Runtime.getRuntime().exec(command);
-							System.exit(0);
-						} catch (IOException ex) {
-							ex.printStackTrace();
-							JOptionPane.showMessageDialog(
-									facade.getMainPanel(), ex.getMessage(),
-									"Update", JOptionPane.ERROR_MESSAGE);
-						}
-					}
-				} else if (withInfoMessage) {
+				// Proceed with update
+				String command = "java -jar -Djava.net.preferIPv4Stack=true ArmA3Sync-Updater.jar";
+				if (facade.isDevMode()) {
+					command = command + " -dev";
+				}
+				try {
+					Runtime.getRuntime().exec(command);
+					System.exit(0);
+				} catch (IOException ex) {
+					ex.printStackTrace();
 					JOptionPane.showMessageDialog(facade.getMainPanel(),
-							"No new update available.", "Update",
-							JOptionPane.INFORMATION_MESSAGE);
+							ex.getMessage(), "Update",
+							JOptionPane.ERROR_MESSAGE);
 				}
 			}
-		});
-		t.start();
+		} else if (withInfoMessage) {
+			JOptionPane.showMessageDialog(facade.getMainPanel(),
+					"No new update available.", "Update",
+					JOptionPane.INFORMATION_MESSAGE);
+		}
 	}
 
 	public void updateProfilesMenu() {
@@ -927,10 +946,20 @@ public class MainPanel extends JFrame implements UIConstants {
 		facade.getLaunchOptionsPanel().init();
 	}
 
-	public void checkWellcomeDialog() {
+	public void showWellcomeDialog() {
 
 		String path = profileService.getArma3ExePath();
-		if (path == null || "".equals(path)) {
+
+		boolean show = false;
+		if (path == null) {
+			show = true;
+		} else if ("".equals(path)) {
+			show = true;
+		} else if (!(new File(path)).exists()) {
+			show = true;
+		}
+
+		if (show) {
 			try {
 				Thread.sleep(500);
 			} catch (InterruptedException e) {
@@ -941,7 +970,7 @@ public class MainPanel extends JFrame implements UIConstants {
 		}
 	}
 
-	private void checkRepositories() {
+	public void checkRepositories() {
 
 		Thread t = new Thread(new Runnable() {
 			@Override
