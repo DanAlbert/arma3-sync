@@ -8,10 +8,11 @@ import java.util.List;
 
 import javax.swing.JOptionPane;
 
-import fr.soe.a3s.service.RepositoryService;
+import fr.soe.a3s.dao.DataAccessConstants;
+import fr.soe.a3s.service.CommonService;
 import fr.soe.a3s.ui.Facade;
 
-public class ErrorsListDialog {
+public class ErrorsListDialog implements DataAccessConstants {
 
 	private final Facade facade;
 	private final String dialogTitle;
@@ -19,8 +20,6 @@ public class ErrorsListDialog {
 	private final String mainMessage;
 	private final String repositoryName;
 	private String reportMessage;
-	/* Services */
-	private final RepositoryService repositoryService = new RepositoryService();
 
 	public ErrorsListDialog(Facade facade, String dialogTitle,
 			String mainMessage, List<Exception> errors, String repositoryName) {
@@ -66,10 +65,9 @@ public class ErrorsListDialog {
 			}
 		}
 
-		String fileName = "ArmA3Sync-log.txt";
 		message = message + "\n\n"
 				+ "Do you want export the errors log file to desktop ("
-				+ fileName + ")?" + "\n\n";
+				+ LOG_FILE_NAME + ")?" + "\n\n";
 
 		int value = JOptionPane.showConfirmDialog(facade.getMainPanel(),
 				message, dialogTitle, 0, JOptionPane.ERROR_MESSAGE);
@@ -87,7 +85,9 @@ public class ErrorsListDialog {
 
 		if (value == 0) {
 			try {
-				repositoryService.exportToDesktop(this.reportMessage, fileName);
+				CommonService commonService = new CommonService();
+				commonService
+						.exportToDesktop(this.reportMessage, LOG_FILE_NAME);
 				JOptionPane.showMessageDialog(facade.getMainPanel(),
 						"Log file has been exported to desktop", dialogTitle,
 						JOptionPane.INFORMATION_MESSAGE);

@@ -1,23 +1,19 @@
 package fr.soe.a3s.ui.repositoryEditor.errorDialogs;
 
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
 
 import javax.swing.JOptionPane;
 
-import fr.soe.a3s.service.RepositoryService;
+import fr.soe.a3s.dao.DataAccessConstants;
+import fr.soe.a3s.service.CommonService;
 import fr.soe.a3s.ui.Facade;
 
-public class HeaderErrorDialog {
+public class HeaderErrorDialog implements DataAccessConstants {
 
 	private final Facade facade;
 	private final String dialogTitle;
 	private final String header;
 	private final String repositoryName;
-	private final String FILENAME = "ArmA3Sync-log.txt";
-	/* Services */
-	private final RepositoryService repositoryService = new RepositoryService();
 
 	public HeaderErrorDialog(Facade facade, String dialogTitle, String header,
 			String repositoryName) {
@@ -35,7 +31,7 @@ public class HeaderErrorDialog {
 				+ "Partial file transfer feature can be disabled from repository build options."
 				+ "\n\n"
 				+ "Do you want export the errors log file to desktop ("
-				+ FILENAME + ")?" + "\n\n";
+				+ LOG_FILE_NAME + ")?" + "\n\n";
 
 		int value = JOptionPane.showConfirmDialog(facade.getMainPanel(),
 				dialogMessage, dialogTitle, 0, JOptionPane.WARNING_MESSAGE);
@@ -55,7 +51,8 @@ public class HeaderErrorDialog {
 					+ header;
 
 			try {
-				repositoryService.exportToDesktop(exportMessage, FILENAME);
+				CommonService commonService = new CommonService();
+				commonService.exportToDesktop(exportMessage, LOG_FILE_NAME);
 				JOptionPane.showMessageDialog(facade.getMainPanel(),
 						"Log file has been exported to desktop", dialogTitle,
 						JOptionPane.INFORMATION_MESSAGE);

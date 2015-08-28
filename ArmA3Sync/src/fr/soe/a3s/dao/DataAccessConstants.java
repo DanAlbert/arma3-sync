@@ -48,4 +48,7 @@ public interface DataAccessConstants {
 	String SYNC = "sync";
 	String CHANGELOGS = "changelogs";
 	String EVENTS = "events";
+
+	/** Log */
+	String LOG_FILE_NAME = "ArmA3Sync-log.txt";
 }

@@ -6,16 +6,17 @@ import java.io.StringWriter;
 
 import javax.swing.JOptionPane;
 
+import fr.soe.a3s.dao.DataAccessConstants;
+import fr.soe.a3s.service.CommonService;
 import fr.soe.a3s.service.RepositoryService;
 import fr.soe.a3s.ui.Facade;
 
-public class UnexpectedErrorDialog {
+public class UnexpectedErrorDialog implements DataAccessConstants {
 
 	private final Facade facade;
 	private final String dialogTitle;
 	private final Exception e;
 	private final String repositoryName;
-	private final String FILENAME = "ArmA3Sync-log.txt";
 	/* Services */
 	private final RepositoryService repositoryService = new RepositoryService();
 
@@ -32,7 +33,7 @@ public class UnexpectedErrorDialog {
 		// Dialog message
 		String dialogMessage = "An unexpected error has occured." + "\n\n"
 				+ "Do you want export the errors log file to desktop ("
-				+ FILENAME + ")?" + "\n\n";
+				+ LOG_FILE_NAME + ")?" + "\n\n";
 
 		int value = JOptionPane.showConfirmDialog(facade.getMainPanel(),
 				dialogMessage, dialogTitle, 0, JOptionPane.ERROR_MESSAGE);
@@ -55,7 +56,8 @@ public class UnexpectedErrorDialog {
 					+ stacktrace;
 
 			try {
-				repositoryService.exportToDesktop(exportMessage, FILENAME);
+				CommonService commonService = new CommonService();
+				commonService.exportToDesktop(exportMessage, LOG_FILE_NAME);
 				JOptionPane.showMessageDialog(facade.getMainPanel(),
 						"Log file has been exported to desktop", dialogTitle,
 						JOptionPane.INFORMATION_MESSAGE);
