@@ -498,7 +498,7 @@ public class MyHttpConnection {
 		 * http://stackoverflow.com/questions/17643851/downloading-a-portion-of-a
 		 * -file-using-http-requests
 		 */
-		setRequestHead();
+		// Note: IIS7 does not support range request with HEAD request
 		urLConnection.setRequestProperty("Range", "bytes=" + 0 + "-" + 1);
 		int statusCode = getHttpStatusCode();
 		if (statusCode == HttpURLConnection.HTTP_PARTIAL) {
