@@ -105,16 +105,16 @@ public class ArmA3Sync implements DataAccessConstants {
 
 		String message = "";
 		if (!profilesOK) {
-			message = "Cannot write into directory: profiles.";
+			message = "Cannot write into directory: profiles";
 		} else if (!configurationOK) {
 			message = "Cannot write into directory: resources" + File.separator
-					+ "configuration.";
+					+ "configuration";
 		} else if (!ftpOK) {
 			message = "Cannot write into directory: resources" + File.separator
-					+ "ftp.";
+					+ "ftp";
 		} else if (!tempOK) {
 			message = "Cannot write into directory: resources" + File.separator
-					+ "temp.";
+					+ "temp";
 		}
 
 		if (!message.isEmpty()) {
