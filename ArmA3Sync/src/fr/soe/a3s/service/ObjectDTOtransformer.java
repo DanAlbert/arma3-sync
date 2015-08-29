@@ -85,7 +85,7 @@ public class ObjectDTOtransformer {
 		launcherOptionsDTO.setEnableHT(launcherOptions.isEnableHT());
 		launcherOptionsDTO.setNoPause(launcherOptions.isNoPause());
 		launcherOptionsDTO
-				.setNoFilePatching(launcherOptions.isNoFilePatching());
+				.setFilePatching(launcherOptions.isFilePatching());
 		launcherOptionsDTO
 				.setNoSplashScreen(launcherOptions.isNoSplashScreen());
 		launcherOptionsDTO.setShowScriptError(launcherOptions

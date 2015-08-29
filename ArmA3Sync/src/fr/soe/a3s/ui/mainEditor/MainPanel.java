@@ -492,7 +492,7 @@ public class MainPanel extends JFrame implements UIConstants {
 			profileService.setCheckBoxAutoRestart(oldLps.isAutoRestart());
 			profileService.setCheckBoxCheckSignatures(oldLps
 					.isCheckSignatures());
-			profileService.setCheckBoxNoFilePatching(oldLps.isNoFilePatching());
+			profileService.setCheckBoxFilePatching(oldLps.isFilePatching());
 			profileService.setCheckBoxNoPause(oldLps.isNoPause());
 			profileService.setCheckBoxShowScriptErrors(oldLps
 					.isShowScriptErrors());

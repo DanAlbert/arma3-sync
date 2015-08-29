@@ -10,7 +10,9 @@ public class LauncherOptions implements Serializable {
 	private String gameProfile;
 	private boolean showScriptErrors = false;
 	private boolean noPause = false;
+	@Deprecated
 	private boolean noFilePatching = false;
+	private boolean filePatching = false;
 	private boolean windowMode = false;
 	private boolean checkSignatures = false;
 	private boolean autoRestart = false;
@@ -142,12 +144,12 @@ public class LauncherOptions implements Serializable {
 		this.exThreadsSelection = exThreadsSelection;
 	}
 
-	public boolean isNoFilePatching() {
-		return noFilePatching;
+	public boolean isFilePatching() {
+		return filePatching;
 	}
 
-	public void setNoFilePatching(boolean value) {
-		this.noFilePatching = value;
+	public void setFilePatching(boolean value) {
+		this.filePatching = value;
 	}
 
 	public boolean isEnableHT() {

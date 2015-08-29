@@ -71,7 +71,7 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener,
 			checkBoxShowScriptErrors, checkBoxMaxMemory, checkBoxCpuCount,
 			checkBoxNoSplashScreen, checkBoxDefaultWorld, checkBoxNoLogs,
 			checkBoxCheckSignatures, checkBoxExThreads, checkBoxEnableHT,
-			checkBoxNoFilePatching, checkBoxAutoRestart, checkBoxMalloc;
+			checkBoxFilePatching, checkBoxAutoRestart, checkBoxMalloc;
 	private JLabel labelMallocPath;
 
 	/* Services */
@@ -179,11 +179,11 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener,
 			vBox.add(hBox);
 		}
 		{
-			checkBoxNoFilePatching = new JCheckBox();
-			checkBoxNoFilePatching.setText("No File Patching");
-			checkBoxNoFilePatching.setFocusable(false);
+			checkBoxFilePatching = new JCheckBox();
+			checkBoxFilePatching.setText("File Patching");
+			checkBoxFilePatching.setFocusable(false);
 			Box hBox = Box.createHorizontalBox();
-			hBox.add(checkBoxNoFilePatching);
+			hBox.add(checkBoxFilePatching);
 			hBox.add(Box.createHorizontalGlue());
 			vBox.add(hBox);
 		}
@@ -403,7 +403,7 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener,
 				checkBoxNoPausePerformed();
 			}
 		});
-		checkBoxNoFilePatching.addActionListener(new ActionListener() {
+		checkBoxFilePatching.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				checkBoxNoFilePatchingPerformed();
@@ -516,7 +516,7 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener,
 		checkBoxShowScriptErrors.setToolTipText("Show in game script error");
 		checkBoxNoPause
 				.setToolTipText("Don't suspend the game when placed in background");
-		checkBoxNoFilePatching.setToolTipText("Load only PBO files");
+		checkBoxFilePatching.setToolTipText("Allow the game to load unpacked data");
 		checkBoxWindowMode
 				.setToolTipText("Display the game windowed instead of full screen");
 		checkBoxCheckSignatures.setToolTipText("Check signatures of PBO files");
@@ -583,7 +583,7 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener,
 	}
 
 	private void checkBoxNoFilePatchingPerformed() {
-		profileService.setCheckBoxNoFilePatching(checkBoxNoFilePatching
+		profileService.setCheckBoxFilePatching(checkBoxFilePatching
 				.isSelected());
 		updateRunParameters();
 	}
@@ -804,8 +804,8 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener,
 		checkBoxShowScriptErrors.setSelected(launcherOptionsDTO
 				.isShowScriptError());
 		checkBoxNoPause.setSelected(launcherOptionsDTO.isNoPause());
-		checkBoxNoFilePatching.setSelected(launcherOptionsDTO
-				.isNoFilePatching());
+		checkBoxFilePatching.setSelected(launcherOptionsDTO
+				.isFilePatching());
 		checkBoxWindowMode.setSelected(launcherOptionsDTO.isWindowMode());
 		checkBoxCheckSignatures.setSelected(launcherOptionsDTO
 				.isCheckSignatures());

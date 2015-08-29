@@ -178,8 +178,8 @@ public class ProfileService extends ObjectDTOtransformer {
 				.getGameProfile());
 		duplicateLauncherOptions.setMaxMemorySelection(launcherOptions
 				.getMaxMemorySelection());
-		duplicateLauncherOptions.setNoFilePatching(launcherOptions
-				.isNoFilePatching());
+		duplicateLauncherOptions.setFilePatching(launcherOptions
+				.isFilePatching());
 		duplicateLauncherOptions.setNoLogs(launcherOptions.isNologs());
 		duplicateLauncherOptions.setNoPause(launcherOptions.isNoPause());
 		duplicateLauncherOptions.setEnableHT(launcherOptions.isEnableHT());
@@ -488,14 +488,14 @@ public class ProfileService extends ObjectDTOtransformer {
 		}
 	}
 
-	public void setCheckBoxNoFilePatching(boolean selected) {
+	public void setCheckBoxFilePatching(boolean selected) {
 
 		String profileName = configurationDAO.getConfiguration()
 				.getProfileName();
 
 		Profile profile = profileDAO.getMap().get(profileName);
 		if (profile != null) {
-			profile.getLauncherOptions().setNoFilePatching(selected);
+			profile.getLauncherOptions().setFilePatching(selected);
 		}
 	}
 

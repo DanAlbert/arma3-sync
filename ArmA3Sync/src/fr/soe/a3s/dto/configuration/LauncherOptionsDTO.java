@@ -6,7 +6,7 @@ public class LauncherOptionsDTO {
 	private String gameProfile;
 	private boolean showScriptError;
 	private boolean noPause;
-	private boolean noFilePatching;
+	private boolean filePatching;
 	private boolean windowMode;
 	private boolean checkSignatures;
 	private boolean autoRestart;
@@ -127,12 +127,12 @@ public class LauncherOptionsDTO {
 		this.enableHT = enableHT;
 	}
 
-	public boolean isNoFilePatching() {
-		return noFilePatching;
+	public boolean isFilePatching() {
+		return filePatching;
 	}
 
-	public void setNoFilePatching(boolean noFilePatching) {
-		this.noFilePatching = noFilePatching;
+	public void setFilePatching(boolean noFilePatching) {
+		this.filePatching = noFilePatching;
 	}
 
 	public boolean isCheckSignatures() {
