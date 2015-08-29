@@ -87,7 +87,7 @@ public class UploadEventsPanel extends ProgressPanel {
 					if (response == false) {
 						JOptionPane.showMessageDialog(
 								facade.getMainPanel(),
-								"Failed to upload events informations. \n Please check out the server permissions.",
+								"Failed to upload events informations. \n Please check upload options and server permissions.",
 								"Information", JOptionPane.INFORMATION_MESSAGE);
 					} else {
 						JOptionPane.showMessageDialog(
