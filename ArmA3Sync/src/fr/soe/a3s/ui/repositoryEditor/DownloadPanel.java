@@ -12,8 +12,6 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
-import java.nio.file.FileSystems;
-import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -51,6 +49,7 @@ import javax.swing.plaf.basic.BasicSplitPaneUI;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 
+import fr.soe.a3s.constant.GameExecutables;
 import fr.soe.a3s.dto.sync.SyncTreeDirectoryDTO;
 import fr.soe.a3s.dto.sync.SyncTreeLeafDTO;
 import fr.soe.a3s.dto.sync.SyncTreeNodeDTO;
@@ -575,6 +574,7 @@ public class DownloadPanel extends JPanel implements UIConstants {
 			@Override
 			public void popupMenuWillBecomeInvisible(PopupMenuEvent arg0) {
 				defaultFolderDestinationReleased();
+				updateExactMatchSelection();
 			}
 
 			@Override
@@ -804,9 +804,29 @@ public class DownloadPanel extends JPanel implements UIConstants {
 
 		checkBoxExactMatch.setEnabled(true);
 		checkBoxAutoDiscover.setEnabled(true);
+		boolean isArmA3Directory = false;
+
+		// Disable exactMath if ArmA3Directory is selected
+		String path = (String) comBoxDestinationFolder.getSelectedItem();
+		if (path != null && !"".equals(path)) {
+			File directory = new File(path);
+			if (directory != null) {
+				File arma3ExeFile = new File(directory.getAbsolutePath() + "/"
+						+ GameExecutables.GAME.getDescription());
+				File arma3ServerExeFile = new File(directory.getAbsolutePath()
+						+ "/" + GameExecutables.WIN_SERVER.getDescription());
+				if (arma3ExeFile.exists() || arma3ServerExeFile.exists()) {
+					isArmA3Directory = true;
+				}
+			}
+		}
 
 		if (eventName != null) {
 			checkBoxExactMatch.setEnabled(false);
+			checkBoxExactMatch.setSelected(false);
+		} else if (isArmA3Directory) {
+			checkBoxExactMatch.setEnabled(false);
+			checkBoxExactMatch.setSelected(false);
 		} else {
 			boolean value = repositoryService.isExactMatch(repositoryName);
 			checkBoxExactMatch.setSelected(value);
