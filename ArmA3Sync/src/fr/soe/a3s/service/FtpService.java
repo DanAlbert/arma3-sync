@@ -646,7 +646,8 @@ public class FtpService extends AbstractConnexionService implements
 							FTPFile.DIRECTORY_TYPE);
 
 					boolean exists = remoteFileExists(repository.getName(),
-							relativePath, fileName, repository.getRepositoryUploadProtocole());
+							relativePath, fileName,
+							repository.getRepositoryUploadProtocole());
 
 					if (!exists || filesToUpload.contains(node)) {
 						ftpFilesToUpload.add(ftpFile);
@@ -707,14 +708,16 @@ public class FtpService extends AbstractConnexionService implements
 					if (ftpDAOPool.get(0).isCanceled()) {
 						return;
 					} else {
-						// ftpDAOPool.get(0).deleteFile(ftpFile,
-						// repositoryRemotePath);
+						String relativePath = ftpFile.getLink();
+						String fileName = ftpFile.getName();
+						ftpDAOPool.get(0).updateObserverCountWithText(
+								"Uploading file: " + relativePath + "/"
+										+ fileName);
 						boolean ok = ftpDAOPool.get(0).uploadFile(ftpFile,
 								repositoryPath, repositoryRemotePath);
 						if (!ok) {
 							throw new IOException("Failed to upload file: "
-									+ ftpFile.getLink() + "/"
-									+ ftpFile.getName());
+									+ relativePath + "/" + fileName);
 						}
 					}
 				}
