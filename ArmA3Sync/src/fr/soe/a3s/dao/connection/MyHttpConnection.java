@@ -497,18 +497,6 @@ public class MyHttpConnection {
 			byte[] bytes = byteArrayBuffer.toByteArray();
 			contLen = bytes.length;
 			allData += contLen;
-
-			if (!httpDAO.isCanceled()) {
-				if (contLen != transferSize) {
-					String message = "Incorrect partial file transfer. Expected size: "
-							+ transferSize
-							+ " Bytes, "
-							+ "Transfered size: "
-							+ contLen + " Bytes";
-					throw new IOException(message);
-				}
-			}
-
 			return bytes;
 		} finally {
 			httpDAO.setSpeed(0);
