@@ -200,6 +200,12 @@ public class FtpDAO extends AbstractConnexionDAO {
 				}
 				if (!canceled) {
 					found = ftpClient.completePendingCommand();
+					long actualSize = file.length();
+					long expectedSize = expectedFullSize;
+					String message = "Incorrect file transfer. Expected size: "
+							+ expectedSize + " Bytes, " + "Transfered size: "
+							+ actualSize + " Bytes";
+					throw new IOException(message);
 				}
 			}
 		} catch (IOException e) {
@@ -620,6 +626,11 @@ public class FtpDAO extends AbstractConnexionDAO {
 				};
 				found = ftpClient.storeFile(file.getName(), uis);
 				ftpClient.noop();
+			} catch (IOException e) {
+				String coreMessage = "Failed to upload file " + relativePath
+						+ "/" + file.getName();
+				IOException ioe = transferIOExceptionFactory(coreMessage, e);
+				throw ioe;
 			} finally {
 				if (fis != null) {
 					fis.close();

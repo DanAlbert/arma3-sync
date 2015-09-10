@@ -63,35 +63,34 @@ public class HttpDAO extends AbstractConnexionDAO {
 		}
 	}
 
-	private void downloadFile(File file, String remotePath) throws IOException {
+	private void downloadFile(File file, String relativePath)
+			throws IOException {
 
 		try {
 			myHttpConnection.downloadFile(file);
 		} catch (IOException e) {
-			String coreMessage = "Failed to retreive file " + remotePath + "/"
-					+ file.getName();
+			String coreMessage = "Failed to retreive file " + relativePath;
 			IOException ioe = transferIOExceptionFactory(coreMessage, e);
 			throw ioe;
 		} catch (HttpException e) {
 			String message = "Server returned message " + e.getMessage()
-					+ " on url:" + "\n" + remotePath + "/" + file.getName();
+					+ " on url:" + "\n" + relativePath;
 			throw new ConnectException(message);
 		}
 	}
 
-	private void downloadFileWithRecordProgress(File file, String remotePath)
+	private void downloadFileWithRecordProgress(File file, String relativePath)
 			throws IOException {
 
 		try {
 			myHttpConnection.downloadFileWithRecordProgress(file);
 		} catch (IOException e) {
-			String coreMessage = "Failed to retreive file " + remotePath + "/"
-					+ file.getName();
+			String coreMessage = "Failed to retreive file " + relativePath;
 			IOException ioe = transferIOExceptionFactory(coreMessage, e);
 			throw ioe;
 		} catch (HttpException e) {
 			String message = "Server returned message " + e.getMessage()
-					+ " on url:" + "\n" + remotePath + "/" + file.getName();
+					+ " on url:" + "\n" + relativePath;
 			throw new ConnectException(message);
 		}
 	}
@@ -149,11 +148,10 @@ public class HttpDAO extends AbstractConnexionDAO {
 		SyncTreeDirectory sync = null;
 		File directory = new File(TEMP_FOLDER_PATH + "/" + repositoryName);
 		File file = new File(directory + "/" + DataAccessConstants.SYNC);
-		String remotePath = protocole.getRemotePath() + A3S_FOlDER_PATH;
 
 		try {
 			directory.mkdir();
-			downloadFile(file, remotePath);
+			downloadFile(file, SYNC_FILE_PATH);
 			sync = A3SFilesAccessor.readSyncFile(file);
 		} finally {
 			FileAccessMethods.deleteDirectory(directory);
@@ -167,11 +165,10 @@ public class HttpDAO extends AbstractConnexionDAO {
 		ServerInfo serverInfo = null;
 		File directory = new File(TEMP_FOLDER_PATH + "/" + repositoryName);
 		File file = new File(directory + "/" + DataAccessConstants.SERVERINFO);
-		String remotePath = protocole.getRemotePath() + A3S_FOlDER_PATH;
 
 		try {
 			directory.mkdir();
-			downloadFile(file, remotePath);
+			downloadFile(file, SERVERINFO_FILE_PATH);
 			serverInfo = A3SFilesAccessor.readServerInfoFile(file);
 		} finally {
 			FileAccessMethods.deleteDirectory(directory);
@@ -185,11 +182,10 @@ public class HttpDAO extends AbstractConnexionDAO {
 		Changelogs changelogs = null;
 		File directory = new File(TEMP_FOLDER_PATH + "/" + repositoryName);
 		File file = new File(directory + "/" + DataAccessConstants.CHANGELOGS);
-		String remotePath = protocole.getRemotePath() + A3S_FOlDER_PATH;
 
 		try {
 			directory.mkdir();
-			downloadFile(file, remotePath);
+			downloadFile(file, CHANGELOGS_FILE_PATH);
 			changelogs = A3SFilesAccessor.readChangelogsFile(file);
 		} finally {
 			FileAccessMethods.deleteDirectory(directory);
@@ -203,11 +199,10 @@ public class HttpDAO extends AbstractConnexionDAO {
 		AutoConfig autoConfig = null;
 		File directory = new File(TEMP_FOLDER_PATH + "/" + repositoryName);
 		File file = new File(directory + "/" + DataAccessConstants.AUTOCONFIG);
-		String remotePath = protocole.getRemotePath() + A3S_FOlDER_PATH;
 
 		try {
 			directory.mkdir();
-			downloadFile(file, remotePath);
+			downloadFile(file, AUTOCONFIG_FILE_PATH);
 			autoConfig = A3SFilesAccessor.readAutoConfigFile(file);
 		} finally {
 			FileAccessMethods.deleteDirectory(directory);
@@ -221,11 +216,10 @@ public class HttpDAO extends AbstractConnexionDAO {
 		Events events = null;
 		File directory = new File(TEMP_FOLDER_PATH + "/" + repositoryName);
 		File file = new File(directory + "/" + DataAccessConstants.EVENTS);
-		String remotePath = protocole.getRemotePath() + A3S_FOlDER_PATH;
 
 		try {
 			directory.mkdir();
-			downloadFile(file, remotePath);
+			downloadFile(file, EVENTS_FILE_PATH);
 			events = A3SFilesAccessor.readEventsFile(file);
 		} finally {
 			FileAccessMethods.deleteDirectory(directory);
@@ -239,20 +233,18 @@ public class HttpDAO extends AbstractConnexionDAO {
 		AutoConfig autoConfig = null;
 		File directory = new File(TEMP_FOLDER_PATH);
 		File file = new File(directory + "/" + DataAccessConstants.AUTOCONFIG);
-		// Parent path from full autoconfig url
-		String remotePath = protocole.getRemotePath();
+		String relativePath = AUTOCONFIG_FILE_PATH;
 
 		try {
 			connect(protocole, "/" + DataAccessConstants.AUTOCONFIG);
 		} catch (IOException e) {
-			String coreMessage = "Failed to retreive file " + remotePath + "/"
-					+ file.getName();
+			String coreMessage = "Failed to retreive file " + relativePath;
 			IOException ioe = transferIOExceptionFactory(coreMessage, e);
 			throw ioe;
 		}
 		try {
 			directory.mkdir();
-			downloadFile(file, remotePath);
+			downloadFile(file, relativePath);
 			autoConfig = A3SFilesAccessor.readAutoConfigFile(file);
 		} finally {
 			FileAccessMethods.deleteFile(file);
@@ -306,15 +298,6 @@ public class HttpDAO extends AbstractConnexionDAO {
 				try {
 					connectToRepository(repositoryName, protocole, relativePath);
 					downloadFileWithRecordProgress(downloadedFile, relativePath);
-
-					// if (found) {
-					//
-					// } else {
-					// String message = "Failed to retreive file "
-					// + remotePath + "/" + downloadedFile.getName()
-					// + "\n" + FILE_NOT_FOUND;
-					// throw new FileNotFoundException(message);
-					// }
 					if (!canceled) {
 						updateObserverDownloadTotalSizeProgress();
 						node.setDownloadStatus(DownloadStatus.DONE);
