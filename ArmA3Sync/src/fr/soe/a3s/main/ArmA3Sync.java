@@ -11,6 +11,7 @@ import java.util.Properties;
 
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.plaf.FontUIResource;
 
@@ -207,15 +208,21 @@ public class ArmA3Sync implements DataAccessConstants {
 		/* Start */
 		final Facade facade = new Facade();
 		facade.setDevMode(devMode);
-		try {
-			MainPanel mainPanel = new MainPanel(facade);
-			mainPanel.drawGUI();
-			mainPanel.init();
-			mainPanel.initBackGround();
-		} catch (Exception e) {
-			ErrorLogDialog dialog = new ErrorLogDialog(facade, e);
-			dialog.show();
-		}
+
+		SwingUtilities.invokeLater(new Runnable() {
+			@Override
+			public void run() {
+				try {
+					MainPanel mainPanel = new MainPanel(facade);
+					mainPanel.drawGUI();
+					mainPanel.init();
+					mainPanel.initBackGround();
+				} catch (Exception e) {
+					ErrorLogDialog dialog = new ErrorLogDialog(facade, e);
+					dialog.show();
+				}
+			}
+		});
 	}
 
 	private static String lockInstance() {
