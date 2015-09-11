@@ -9,14 +9,10 @@ import java.util.List;
 import java.util.Stack;
 
 import fr.soe.a3s.controller.ObserverProceed;
-import fr.soe.a3s.dao.ConfigurationDAO;
 import fr.soe.a3s.dao.DataAccessConstants;
 import fr.soe.a3s.dao.connection.AbstractConnexionDAO;
 import fr.soe.a3s.dao.connection.HttpDAO;
-import fr.soe.a3s.dao.repository.RepositoryDAO;
-import fr.soe.a3s.dao.zip.UnZipFlowProcessor;
 import fr.soe.a3s.domain.AbstractProtocole;
-import fr.soe.a3s.domain.configration.FavoriteServer;
 import fr.soe.a3s.domain.repository.AutoConfig;
 import fr.soe.a3s.domain.repository.Changelogs;
 import fr.soe.a3s.domain.repository.Events;
@@ -24,7 +20,6 @@ import fr.soe.a3s.domain.repository.Repository;
 import fr.soe.a3s.domain.repository.ServerInfo;
 import fr.soe.a3s.domain.repository.SyncTreeDirectory;
 import fr.soe.a3s.domain.repository.SyncTreeLeaf;
-import fr.soe.a3s.domain.repository.SyncTreeNode;
 import fr.soe.a3s.dto.AutoConfigDTO;
 import fr.soe.a3s.dto.sync.SyncTreeDirectoryDTO;
 import fr.soe.a3s.dto.sync.SyncTreeLeafDTO;
@@ -38,14 +33,6 @@ public class HttpService extends AbstractConnexionService implements
 		DataAccessConstants {
 
 	private final List<HttpDAO> httpDAOPool = new ArrayList<HttpDAO>();
-	private Stack<SyncTreeNodeDTO> downloadFilesStack = null;
-	private List<Exception> downloadErrors = null;
-	private List<Exception> downloadTimeouterrors = null;
-	private int semaphore;
-	private List<SyncTreeLeaf> checkRepositoryFilesList = null;
-	private final UnZipFlowProcessor unZipFlowProcessor = new UnZipFlowProcessor();
-	private static final RepositoryDAO repositoryDAO = new RepositoryDAO();
-	private static final ConfigurationDAO configurationDAO = new ConfigurationDAO();
 
 	/* Initialize Service */
 
@@ -208,36 +195,6 @@ public class HttpService extends AbstractConnexionService implements
 		}
 	}
 
-	private void updateFavoriteServersFromAutoconfig(AutoConfig autoConfig) {
-
-		List<FavoriteServer> list1 = autoConfig.getFavoriteServers();
-		List<FavoriteServer> list2 = configurationDAO.getConfiguration()
-				.getFavoriteServers();
-
-		List<FavoriteServer> newList = new ArrayList<FavoriteServer>();
-
-		for (FavoriteServer favoriteServerList2 : list2) {
-			if (!autoConfig.getRepositoryName().equals(
-					favoriteServerList2.getRepositoryName())) {
-				boolean nameIsDifferent = true;
-				for (FavoriteServer favoriteServerList1 : list1) {
-					if (favoriteServerList1.getName().equals(
-							favoriteServerList2.getName())) {
-						nameIsDifferent = false;
-					}
-				}
-				if (nameIsDifferent) {
-					newList.add(favoriteServerList2);
-				}
-			}
-		}
-		newList.addAll(list1);
-
-		configurationDAO.getConfiguration().getFavoriteServers().clear();
-		configurationDAO.getConfiguration().getFavoriteServers()
-				.addAll(newList);
-	}
-
 	/* Import autoconfig */
 
 	@Override
@@ -323,6 +280,45 @@ public class HttpService extends AbstractConnexionService implements
 		}
 
 		return header;
+	}
+
+	private void determineFileForComputingCompletion(String rootRemotePath,
+			String rootDestinationPath, SyncTreeDirectoryDTO parent,
+			List<SyncTreeLeafDTO> list) {
+
+		for (SyncTreeNodeDTO node : parent.getList()) {
+			if (node.isLeaf()) {
+				SyncTreeLeafDTO leaf = (SyncTreeLeafDTO) node;
+				if (leaf.isUpdated()) {
+					String destinationPath = null;
+					String remotePath = rootRemotePath;
+					String path = determinePath(node);
+					if (node.getDestinationPath() != null) {
+						destinationPath = node.getDestinationPath();
+						remotePath = remotePath + "/" + path;
+					} else {
+						destinationPath = rootDestinationPath + "/" + path;
+						remotePath = remotePath + "/" + path;
+					}
+					leaf.setDestinationPath(destinationPath);
+					leaf.setRemotePath(remotePath);
+
+					File file = new File(destinationPath + "/" + node.getName());
+					if (file.exists()) {
+						list.add(leaf);
+					} else {
+						leaf.setComplete(0);
+					}
+				} else {
+					leaf.setComplete(100);
+				}
+
+			} else {
+				SyncTreeDirectoryDTO directory = (SyncTreeDirectoryDTO) node;
+				determineFileForComputingCompletion(rootRemotePath,
+						rootDestinationPath, directory, list);
+			}
+		}
 	}
 
 	@Override
@@ -504,76 +500,6 @@ public class HttpService extends AbstractConnexionService implements
 				repository.getProtocol(), remotePath, destinationPath, node);
 	}
 
-	private synchronized void addError(Exception e) {
-		downloadErrors.add(e);
-	}
-
-	private synchronized void addTimeoutError(Exception e) {
-		downloadTimeouterrors.add(e);
-	}
-
-	private synchronized SyncTreeNodeDTO popDownloadFilesStack() {
-
-		if (downloadFilesStack.isEmpty()) {
-			return null;
-		} else {
-			return downloadFilesStack.pop();
-		}
-	}
-
-	private synchronized boolean aquireSemaphore() {
-
-		if (this.semaphore == 1) {
-			this.semaphore = 0;
-			return true;
-		} else {
-			return false;
-		}
-	}
-
-	private synchronized void releaseSemaphore() {
-		semaphore = 1;
-	}
-
-	private void determineFileForComputingCompletion(String rootRemotePath,
-			String rootDestinationPath, SyncTreeDirectoryDTO parent,
-			List<SyncTreeLeafDTO> list) {
-
-		for (SyncTreeNodeDTO node : parent.getList()) {
-			if (node.isLeaf()) {
-				SyncTreeLeafDTO leaf = (SyncTreeLeafDTO) node;
-				if (leaf.isUpdated()) {
-					String destinationPath = null;
-					String remotePath = rootRemotePath;
-					String path = determinePath(node);
-					if (node.getDestinationPath() != null) {
-						destinationPath = node.getDestinationPath();
-						remotePath = remotePath + "/" + path;
-					} else {
-						destinationPath = rootDestinationPath + "/" + path;
-						remotePath = remotePath + "/" + path;
-					}
-					leaf.setDestinationPath(destinationPath);
-					leaf.setRemotePath(remotePath);
-
-					File file = new File(destinationPath + "/" + node.getName());
-					if (file.exists()) {
-						list.add(leaf);
-					} else {
-						leaf.setComplete(0);
-					}
-				} else {
-					leaf.setComplete(100);
-				}
-
-			} else {
-				SyncTreeDirectoryDTO directory = (SyncTreeDirectoryDTO) node;
-				determineFileForComputingCompletion(rootRemotePath,
-						rootDestinationPath, directory, list);
-			}
-		}
-	}
-
 	@Override
 	public boolean upLoadEvents(String repositoryName)
 			throws RepositoryException, IOException {
@@ -587,17 +513,6 @@ public class HttpService extends AbstractConnexionService implements
 				repository.getEvents(), repository.getName(),
 				repository.getRepositoryUploadProtocole());
 		return response;
-	}
-
-	private String determinePath(SyncTreeNodeDTO syncTreeNodeDTO) {
-
-		assert (syncTreeNodeDTO.getParent() != null);
-		String path = "";
-		while (syncTreeNodeDTO.getParent().getName() != "racine") {
-			path = syncTreeNodeDTO.getParent().getName() + "/" + path;
-			syncTreeNodeDTO = syncTreeNodeDTO.getParent();
-		}
-		return path;
 	}
 
 	@Override
@@ -697,29 +612,6 @@ public class HttpService extends AbstractConnexionService implements
 		return errorsCheckRepository;
 	}
 
-	private void getFiles(SyncTreeNode node) {
-
-		if (!node.isLeaf()) {
-			SyncTreeDirectory syncTreeDirectory = (SyncTreeDirectory) node;
-			for (SyncTreeNode n : syncTreeDirectory.getList()) {
-				getFiles(n);
-			}
-		} else {
-			SyncTreeLeaf syncTreeLeaf = (SyncTreeLeaf) node;
-			checkRepositoryFilesList.add(syncTreeLeaf);
-		}
-	}
-
-	private String determinePath(SyncTreeNode syncTreeNode) {
-		assert (syncTreeNode.getParent() != null);
-		String path = "";
-		while (!syncTreeNode.getParent().getName().equals("racine")) {
-			path = syncTreeNode.getParent().getName() + "/" + path;
-			syncTreeNode = syncTreeNode.getParent();
-		}
-		return path;
-	}
-
 	private boolean fileExists(String repositoryName, String relativePath,
 			String fileName, AbstractProtocole protocole) throws IOException {
 
@@ -759,13 +651,7 @@ public class HttpService extends AbstractConnexionService implements
 	}
 
 	@Override
-	public UnZipFlowProcessor getUnZipFlowProcessor() {
-		return this.unZipFlowProcessor;
-	}
-
-	@Override
 	public void setMaximumClientDownloadSpeed(double value) {
-
 		for (HttpDAO httpDAO : httpDAOPool) {
 			httpDAO.setMaximumClientDownloadSpeed(value);
 		}

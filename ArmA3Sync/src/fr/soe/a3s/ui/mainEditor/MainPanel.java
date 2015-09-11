@@ -529,7 +529,7 @@ public class MainPanel extends JFrame implements UIConstants {
 
 	public void initBackGround() {
 
-		SwingUtilities.invokeLater(new Runnable() {
+		Thread t = new Thread(new Runnable() {
 			@Override
 			public void run() {
 				/* Check for updates */
@@ -542,6 +542,7 @@ public class MainPanel extends JFrame implements UIConstants {
 				checkRepositories();
 			}
 		});
+		t.start();
 	}
 
 	/* Menu Actions */
@@ -970,53 +971,46 @@ public class MainPanel extends JFrame implements UIConstants {
 		}
 	}
 
-	public void checkRepositories() {
+	private void checkRepositories() {
 
-		Thread t = new Thread(new Runnable() {
-			@Override
-			public void run() {
-				List<RepositoryDTO> list = repositoryService.getRepositories();
-				for (final RepositoryDTO repositoryDTO : list) {
-					try {
-						AbstractConnexionService connexion = AbstractConnexionServiceFactory
-								.getServiceFromRepository(repositoryDTO
-										.getName());
-						connexion.checkRepository(repositoryDTO.getName());
-					} catch (Exception e) {
-					}
-				}
-
-				facade.getSyncPanel().init();
-				facade.getOnlinePanel().init();
-				facade.getLaunchPanel().init();
-
-				List<String> repositoryNames = new ArrayList<String>();
-				for (final RepositoryDTO repositoryDTO : list) {
-					try {
-						RepositoryStatus repositoryStatus = repositoryService
-								.getRepositoryStatus(repositoryDTO.getName());
-						if (repositoryStatus.equals(RepositoryStatus.UPDATED)
-								&& repositoryDTO.isNotify()) {
-							repositoryNames.add(repositoryDTO.getName());
-						}
-					} catch (RepositoryException e) {
-						e.printStackTrace();
-					}
-				}
-
-				if (!repositoryNames.isEmpty()) {
-					String message = "The following repositories have been updated:";
-					for (String rep : repositoryNames) {
-						message = message + "\n" + "> " + rep;
-					}
-					InfoUpdatedRepositoryPanel infoUpdatedRepositoryPanel = new InfoUpdatedRepositoryPanel(
-							facade);
-					infoUpdatedRepositoryPanel.init(repositoryNames);
-					infoUpdatedRepositoryPanel.setVisible(true);
-				}
+		List<RepositoryDTO> list = repositoryService.getRepositories();
+		for (final RepositoryDTO repositoryDTO : list) {
+			try {
+				AbstractConnexionService connexion = AbstractConnexionServiceFactory
+						.getServiceFromRepository(repositoryDTO.getName());
+				connexion.checkRepository(repositoryDTO.getName());
+			} catch (Exception e) {
 			}
-		});
-		t.start();
+		}
+
+		facade.getSyncPanel().init();
+		facade.getOnlinePanel().init();
+		facade.getLaunchPanel().init();
+
+		List<String> repositoryNames = new ArrayList<String>();
+		for (final RepositoryDTO repositoryDTO : list) {
+			try {
+				RepositoryStatus repositoryStatus = repositoryService
+						.getRepositoryStatus(repositoryDTO.getName());
+				if (repositoryStatus.equals(RepositoryStatus.UPDATED)
+						&& repositoryDTO.isNotify()) {
+					repositoryNames.add(repositoryDTO.getName());
+				}
+			} catch (RepositoryException e) {
+				e.printStackTrace();
+			}
+		}
+
+		if (!repositoryNames.isEmpty()) {
+			String message = "The following repositories have been updated:";
+			for (String rep : repositoryNames) {
+				message = message + "\n" + "> " + rep;
+			}
+			InfoUpdatedRepositoryPanel infoUpdatedRepositoryPanel = new InfoUpdatedRepositoryPanel(
+					facade);
+			infoUpdatedRepositoryPanel.init(repositoryNames);
+			infoUpdatedRepositoryPanel.setVisible(true);
+		}
 	}
 
 	public void openRepository(final String repositoryName, String eventName,
