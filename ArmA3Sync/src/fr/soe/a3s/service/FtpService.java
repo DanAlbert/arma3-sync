@@ -833,7 +833,7 @@ public class FtpService extends AbstractConnexionService implements
 				response = null;
 			}
 		} catch (Exception e) {
-			// e.printStackTrace();
+			e.printStackTrace();
 			throw new FtpException("Failed to connect to updates repository");
 		} finally {
 			ftpDAOPool.get(0).disconnect();

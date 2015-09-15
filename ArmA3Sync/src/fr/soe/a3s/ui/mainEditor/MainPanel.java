@@ -848,6 +848,8 @@ public class MainPanel extends JFrame implements UIConstants {
 
 	public void checkForUpdates(final boolean withInfoMessage) {
 
+		System.out.println("Checking for updates...");
+
 		FtpService ftpService = new FtpService(1);
 		String availableVersion = null;
 
@@ -973,6 +975,8 @@ public class MainPanel extends JFrame implements UIConstants {
 
 	private void checkRepositories() {
 
+		System.out.println("Checking repositories...");
+
 		List<RepositoryDTO> list = repositoryService.getRepositories();
 		for (final RepositoryDTO repositoryDTO : list) {
 			try {
@@ -980,6 +984,7 @@ public class MainPanel extends JFrame implements UIConstants {
 						.getServiceFromRepository(repositoryDTO.getName());
 				connexion.checkRepository(repositoryDTO.getName());
 			} catch (Exception e) {
+				System.out.println(e.getMessage());
 			}
 		}
 
