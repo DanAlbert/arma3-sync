@@ -202,10 +202,13 @@ public class FtpDAO extends AbstractConnexionDAO {
 					found = ftpClient.completePendingCommand();
 					long actualSize = file.length();
 					long expectedSize = expectedFullSize;
-					String message = "Incorrect file transfer. Expected size: "
-							+ expectedSize + " Bytes, " + "Transfered size: "
-							+ actualSize + " Bytes";
-					throw new IOException(message);
+					if (actualSize != expectedSize) {
+						String message = "Incorrect file transfer. Expected size: "
+								+ expectedSize
+								+ " Bytes, "
+								+ "Transfered size: " + actualSize + " Bytes";
+						throw new IOException(message);
+					}
 				}
 			}
 		} catch (IOException e) {
