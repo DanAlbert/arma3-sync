@@ -11,7 +11,6 @@ import fr.soe.a3s.controller.ObserverUncompress;
 public class UnZipFlowProcessor implements ObservableUncompress {
 
 	private final List<File> compressedFilesList = new LinkedList<File>();
-	// private final ZipDAO zipDAO = new ZipDAO();
 	private final List<ZipDAO> zipDAOPool = new ArrayList<ZipDAO>();
 	private final List<Exception> errors = new ArrayList<Exception>();
 
@@ -66,7 +65,7 @@ public class UnZipFlowProcessor implements ObservableUncompress {
 					@Override
 					public void run() {
 						while (!compressedFilescheckEmpty() && !canceled) {
-							File zipFile = takeFromCompressedFilesList();
+							File zipFile = takeFromCompressedFilesList(zipDAO);
 							try {
 								if (zipFile != null) {
 									zipDAO.unZip(zipFile);
@@ -98,10 +97,12 @@ public class UnZipFlowProcessor implements ObservableUncompress {
 		compressedFilesList.add(zipFile);
 	}
 
-	private synchronized File takeFromCompressedFilesList() {
+	private synchronized File takeFromCompressedFilesList(ZipDAO zipDAO) {
 		if (compressedFilesList.isEmpty()) {
+			zipDAO.setActive(false);
 			return null;
 		} else {
+			zipDAO.setActive(true);
 			File file = compressedFilesList.remove(0);
 			return file;
 		}
@@ -125,6 +126,10 @@ public class UnZipFlowProcessor implements ObservableUncompress {
 			}
 		}
 		return compressedFilesList.isEmpty() && !active;
+	}
+
+	public boolean isStarted() {
+		return this.started;
 	}
 
 	public List<Exception> getErrors() {

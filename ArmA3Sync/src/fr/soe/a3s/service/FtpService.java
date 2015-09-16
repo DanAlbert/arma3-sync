@@ -350,16 +350,19 @@ public class FtpService extends AbstractConnexionService implements
 							// download is finished
 							if (downloadFinished) {
 								// display uncompressing progress
-								if (!unZipFlowProcessor
+								if (unZipFlowProcessor
 										.uncompressionIsFinished()) {
-									unZipFlowProcessor.start(downloadErrors);
-								} else {
 									downloadErrors.addAll(unZipFlowProcessor
 											.getErrors());
 									if (downloadErrors.isEmpty()) {
 										ftpDAO.updateObserverDownloadEnd();
 									} else {
 										ftpDAO.updateObserverDownloadEndWithErrors(downloadErrors);
+									}
+								} else {
+									if (!unZipFlowProcessor.isStarted()) {
+										unZipFlowProcessor
+												.start(downloadErrors);
 									}
 								}
 							} else {

@@ -210,4 +210,8 @@ public class ZipDAO implements DataAccessConstants {
 	public void cancel() {
 		this.canceled = true;
 	}
+
+	public void setActive(boolean value) {
+		this.active = value;
+	}
 }
