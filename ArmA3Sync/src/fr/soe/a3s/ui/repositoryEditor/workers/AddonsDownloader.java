@@ -800,9 +800,8 @@ public class AddonsDownloader extends Thread implements DataAccessConstants {
 							+ FileSizeComputer.computeExpectedSize(leaf);
 					totalUncompleteDiskFileSize = totalUncompleteDiskFileSize
 							+ leaf.getSize();
-				}
-				// TotalCompressedFilesSize & TotalUncompressedFilesSize
-				if (leaf.isCompressed()) {
+				} else if (leaf.isCompressed()) { // TotalCompressedFilesSize &
+													// TotalUncompressedFilesSize
 					compressedFiles++;
 					totalCompressedFilesSize = totalCompressedFilesSize
 							+ leaf.getCompressedSize();
