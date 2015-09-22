@@ -141,6 +141,7 @@ public class FtpDAO extends AbstractConnexionDAO {
 
 		FileOutputStream fos = null;
 		CountingOutputStream dos = null;
+		InputStream inputStream = null;
 		boolean found = false;
 
 		try {
@@ -189,8 +190,8 @@ public class FtpDAO extends AbstractConnexionDAO {
 			updateObserverDownloadResponseTime();
 
 			if (ok) {
-				InputStream inputStream = ftpClient
-						.retrieveFileStream(remotePath + "/" + file.getName());
+				inputStream = ftpClient.retrieveFileStream(remotePath + "/"
+						+ file.getName());
 
 				if (inputStream == null) {
 					found = false;
@@ -203,17 +204,22 @@ public class FtpDAO extends AbstractConnexionDAO {
 						bytesArray = bytesArray = new byte[bufferSize];
 					}
 					if (!canceled) {
+						inputStream.close();
+						fos.close();
+						dos.close();
 						found = ftpClient.completePendingCommand();
-						long actualSize = file.length();
-						long expectedSize = expectedFullSize;
-						if (actualSize != expectedSize) {
-							String message = "Incorrect file size. Expected size from /.a3s/sync (repository build): "
-									+ expectedSize
-									+ " Bytes, "
-									+ "Transfered size: "
-									+ actualSize
-									+ " Bytes";
-							throw new IOException(message);
+						if (found) {
+							long actualSize = file.length();
+							long expectedSize = expectedFullSize;
+							if (actualSize != expectedSize) {
+								String message = "Incorrect file size. Expected size from /.a3s/sync (repository build): "
+										+ expectedSize
+										+ " Bytes, "
+										+ "Transfered size: "
+										+ actualSize
+										+ " Bytes";
+								throw new IOException(message);
+							}
 						}
 					}
 				}
@@ -241,10 +247,10 @@ public class FtpDAO extends AbstractConnexionDAO {
 			String message = coreMessage + "\n" + UNKNOWN_HOST;
 			return new UnknownHostException(message);
 		} else if (e instanceof SocketTimeoutException) {
-			String message = coreMessage + "\n" + CONNECTION_TIME_OUT_REACHED;
+			String message = coreMessage + "\n" + READ_TIME_OUT_REACHED;
 			return new SocketTimeoutException(message);
 		} else if (e.getCause() instanceof SocketTimeoutException) {
-			String message = coreMessage + "\n" + READ_TIME_OUT_REACHED;
+			String message = coreMessage + "\n" + CONNECTION_TIME_OUT_REACHED;
 			return new SocketTimeoutException(message);
 		} else if (e instanceof SocketException) {
 			String message = coreMessage + "\n" + CONNECTION_FAILED;
