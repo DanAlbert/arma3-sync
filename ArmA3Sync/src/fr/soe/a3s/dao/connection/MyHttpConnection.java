@@ -335,8 +335,10 @@ public class MyHttpConnection {
 				long actualSize = targetFile.length();
 				long expectedSize = httpDAO.getExpectedFullSize();
 				if (actualSize != expectedSize) {
-					String message = "Incorrect file transfer. Expected size: "
-							+ expectedSize + " Bytes, " + "Transfered size: "
+					String message = "Incorrect file size. Expected size from /.a3s/sync (repository build): "
+							+ expectedSize
+							+ " Bytes, "
+							+ "Transfered size: "
 							+ actualSize + " Bytes";
 					throw new IOException(message);
 				}

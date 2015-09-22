@@ -191,23 +191,30 @@ public class FtpDAO extends AbstractConnexionDAO {
 			if (ok) {
 				InputStream inputStream = ftpClient
 						.retrieveFileStream(remotePath + "/" + file.getName());
-				byte[] bytesArray = bytesArray = new byte[bufferSize];
-				int bytesRead = -1;
-				while ((bytesRead = inputStream.read(bytesArray)) != -1
-						&& !isCanceled()) {
-					dos.write(bytesArray, 0, bytesRead);
-					bytesArray = bytesArray = new byte[bufferSize];
-				}
-				if (!canceled) {
-					found = ftpClient.completePendingCommand();
-					long actualSize = file.length();
-					long expectedSize = expectedFullSize;
-					if (actualSize != expectedSize) {
-						String message = "Incorrect file transfer. Expected size: "
-								+ expectedSize
-								+ " Bytes, "
-								+ "Transfered size: " + actualSize + " Bytes";
-						throw new IOException(message);
+
+				if (inputStream == null) {
+					found = false;
+				} else {
+					byte[] bytesArray = bytesArray = new byte[bufferSize];
+					int bytesRead = -1;
+					while ((bytesRead = inputStream.read(bytesArray)) != -1
+							&& !isCanceled()) {
+						dos.write(bytesArray, 0, bytesRead);
+						bytesArray = bytesArray = new byte[bufferSize];
+					}
+					if (!canceled) {
+						found = ftpClient.completePendingCommand();
+						long actualSize = file.length();
+						long expectedSize = expectedFullSize;
+						if (actualSize != expectedSize) {
+							String message = "Incorrect file size. Expected size from /.a3s/sync (repository build): "
+									+ expectedSize
+									+ " Bytes, "
+									+ "Transfered size: "
+									+ actualSize
+									+ " Bytes";
+							throw new IOException(message);
+						}
 					}
 				}
 			}
