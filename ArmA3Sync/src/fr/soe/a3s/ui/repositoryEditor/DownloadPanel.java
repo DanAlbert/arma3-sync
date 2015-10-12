@@ -956,6 +956,10 @@ public class DownloadPanel extends JPanel implements UIConstants {
 	}
 
 	private void buttonDownloadReportPerformed() {
+		showDownloadReport();
+	}
+
+	public void showDownloadReport() {
 
 		String downloadReport = repositoryService.getReport(repositoryName);
 		ReportPanel reportPanel = new ReportPanel(facade, repositoryName, this);
@@ -974,10 +978,6 @@ public class DownloadPanel extends JPanel implements UIConstants {
 
 		String defaultDestinationPath = repositoryService
 				.getDefaultDownloadLocation(repositoryName);
-
-		// AdvancedConfigurationPanel advancedConfigurationPanel = new
-		// AdvancedConfigurationPanel(
-		// facade, racine, defaultDestinationPath, repositoryName, this);
 
 		AdvancedConfigurationPanel2 advancedConfigurationPanel = new AdvancedConfigurationPanel2(
 				facade, repositoryName, this);

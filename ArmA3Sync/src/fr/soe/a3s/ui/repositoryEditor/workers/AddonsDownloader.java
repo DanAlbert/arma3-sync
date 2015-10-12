@@ -30,7 +30,6 @@ import fr.soe.a3s.ui.repositoryEditor.FileSizeComputer;
 import fr.soe.a3s.ui.repositoryEditor.UnitConverter;
 import fr.soe.a3s.ui.repositoryEditor.errorDialogs.UnexpectedErrorDialog;
 import fr.soe.a3s.ui.tools.acre2Editor.FirstPageACRE2InstallerPanel;
-import fr.soe.a3s.ui.tools.acreEditor.FirstPageACREInstallerPanel;
 import fr.soe.a3s.ui.tools.tfarEditor.FirstPageTFARInstallerPanel;
 
 public class AddonsDownloader extends Thread implements DataAccessConstants {
@@ -523,10 +522,7 @@ public class AddonsDownloader extends Thread implements DataAccessConstants {
 
 		/* End Messages */
 		downloadPanel.getLabelDownloadStatus().setText("Error!");
-		JOptionPane.showMessageDialog(facade.getMainPanel(),
-				"Download finished with errors." + "\n"
-						+ "See download report for information.", "Download",
-				JOptionPane.ERROR_MESSAGE);
+		downloadPanel.showDownloadReport();
 
 		initDownloadPanelForEndDownload();
 
