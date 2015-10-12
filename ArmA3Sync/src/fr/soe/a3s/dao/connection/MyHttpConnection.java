@@ -331,8 +331,36 @@ public class MyHttpConnection {
 				buffer = new byte[bufferSize];
 			}
 
+			fos.close();
+			dos.close();
+			inputStream.close();
+			httpDAO.setSpeed(0);
+
 			if (!httpDAO.isCanceled()) {
+
 				long actualSize = targetFile.length();
+				long remoteSize = urLConnection.getContentLengthLong();
+
+				if (actualSize < remoteSize && remoteSize != -1) {
+					String message = "WARNING: Incompete file size transfer. Remote size: "
+							+ remoteSize
+							+ " Bytes, "
+							+ "Transfered size: "
+							+ actualSize + " Bytes";
+					System.out.println(message);
+					String relativeUrl = urLConnection.getURL().getPath();
+					closeConnection();
+					openConnection(relativeUrl);
+					boolean accept = checkAcceptRanges();
+					closeConnection();
+					if (accept) {
+						openConnection(relativeUrl);
+						httpDAO.setOffset(actualSize);
+						downloadFileWithRecordProgress(targetFile);
+					}
+				}
+
+				actualSize = targetFile.length();
 				long expectedSize = httpDAO.getExpectedFullSize();
 				if (actualSize != expectedSize) {
 					String message = "Incorrect file size. Expected size from /.a3s/sync (repository build): "
