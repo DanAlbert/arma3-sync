@@ -340,6 +340,7 @@ public class MyHttpConnection {
 
 				long actualSize = targetFile.length();
 				long remoteSize = urLConnection.getContentLengthLong();
+				boolean checkSize = false;
 
 				if (actualSize < remoteSize && remoteSize != -1) {
 					String message = "WARNING: Incompete file size transfer. Remote size: "
@@ -357,18 +358,23 @@ public class MyHttpConnection {
 						openConnection(relativeUrl);
 						httpDAO.setOffset(actualSize);
 						downloadFileWithRecordProgress(targetFile);
+					} else {
+						checkSize = true;
 					}
+				} else {
+					checkSize = true;
 				}
 
-				actualSize = targetFile.length();
-				long expectedSize = httpDAO.getExpectedFullSize();
-				if (actualSize != expectedSize) {
-					String message = "Incorrect file size. Expected size from /.a3s/sync (repository build): "
-							+ expectedSize
-							+ " Bytes, "
-							+ "Transfered size: "
-							+ actualSize + " Bytes";
-					throw new IOException(message);
+				if (checkSize) {
+					actualSize = targetFile.length();
+					long expectedSize = httpDAO.getExpectedFullSize();
+					if (actualSize != expectedSize) {
+						String message = "Incorrect file size. Expected size from /.a3s/sync (repository build): "
+								+ expectedSize
+								+ " Bytes, "
+								+ "Transfered size: " + actualSize + " Bytes";
+						throw new IOException(message);
+					}
 				}
 			}
 		} finally {

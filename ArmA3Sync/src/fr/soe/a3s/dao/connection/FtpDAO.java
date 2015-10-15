@@ -203,22 +203,42 @@ public class FtpDAO extends AbstractConnexionDAO {
 						dos.write(bytesArray, 0, bytesRead);
 						bytesArray = bytesArray = new byte[bufferSize];
 					}
+
+					inputStream.close();
+					fos.close();
+					dos.close();
+					setSpeed(0);
+
 					if (!canceled) {
-						inputStream.close();
-						fos.close();
-						dos.close();
+
 						found = ftpClient.completePendingCommand();
 						if (found) {
 							long actualSize = file.length();
-							long expectedSize = expectedFullSize;
-							if (actualSize != expectedSize) {
-								String message = "Incorrect file size. Expected size from /.a3s/sync (repository build): "
-										+ expectedSize
+							long remoteSize = ftpClient.mlistFile(
+									file.getName()).getSize();
+
+							if (actualSize < remoteSize && remoteSize != -1) {
+								String message = "WARNING: Incompete file size transfer. Remote size: "
+										+ remoteSize
 										+ " Bytes, "
 										+ "Transfered size: "
 										+ actualSize
 										+ " Bytes";
-								throw new IOException(message);
+								System.out.println(message);
+								setOffset(file.length());
+								downloadFileWithRecordProgress(file, remotePath);
+							} else {
+								actualSize = file.length();
+								long expectedSize = expectedFullSize;
+								if (actualSize != expectedSize) {
+									String message = "Incorrect file size. Expected size from /.a3s/sync (repository build): "
+											+ expectedSize
+											+ " Bytes, "
+											+ "Transfered size: "
+											+ actualSize
+											+ " Bytes";
+									throw new IOException(message);
+								}
 							}
 						}
 					}
@@ -236,6 +256,7 @@ public class FtpDAO extends AbstractConnexionDAO {
 			if (dos != null) {
 				dos.close();
 			}
+			setSpeed(0);
 		}
 		return found;
 	}
