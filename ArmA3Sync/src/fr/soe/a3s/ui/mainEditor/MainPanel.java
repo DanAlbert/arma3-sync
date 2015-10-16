@@ -76,6 +76,7 @@ import fr.soe.a3s.ui.repositoryEditor.RepositoryPanel;
 import fr.soe.a3s.ui.tools.acre2Editor.FirstPageACRE2InstallerPanel;
 import fr.soe.a3s.ui.tools.acreEditor.FirstPageACREInstallerPanel;
 import fr.soe.a3s.ui.tools.aiaEditor.AiaInstallerPanel;
+import fr.soe.a3s.ui.tools.bikeyEditor.BiKeyExtactorPanel;
 import fr.soe.a3s.ui.tools.rptEditor.RptViewerPanel;
 import fr.soe.a3s.ui.tools.tfarEditor.FirstPageTFARInstallerPanel;
 
@@ -95,7 +96,7 @@ public class MainPanel extends JFrame implements UIConstants {
 			menuItemAbout, menuItemPreferences, menuItemACRE2wizard,
 			menuItemRPTviewer, menuItemeExportAsShortcut, menuItemAiAwizard,
 			menuItemBISforum, menuItemAutoConfigImport,
-			menuItemAutoConfigExport;
+			menuItemAutoConfigExport, menuItemBikeyExtractor;
 	private JTabbedPane tabbedPane;
 	private JPanel infoPanel, launchPanel;
 	private PopupMenu popup;
@@ -163,10 +164,13 @@ public class MainPanel extends JFrame implements UIConstants {
 				TFAR_SMALL));
 		menuTools.add(menuItemTFARwizard);
 		menuItemAiAwizard = new JMenuItem("AiA tweaker", new ImageIcon(
-				TRANSMISSION));
+				AIA_SMALL));
 		menuTools.add(menuItemAiAwizard);
 		menuItemRPTviewer = new JMenuItem("RPT viewer", new ImageIcon(RPT));
 		menuTools.add(menuItemRPTviewer);
+		menuItemBikeyExtractor = new JMenuItem("Bikey extractor",
+				new ImageIcon(BIKEY_SMALL));
+		menuTools.add(menuItemBikeyExtractor);
 		menuHelp = new JMenu("Help");
 		menuItemHelp = new JMenuItem("Online Help", new ImageIcon(HELP));
 		menuHelp.add(menuItemHelp);
@@ -295,6 +299,12 @@ public class MainPanel extends JFrame implements UIConstants {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
 				menuItemRPTviewerPerformed();
+			}
+		});
+		menuItemBikeyExtractor.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				menuItemBikeyExtractorPerformed();
 			}
 		});
 		menuItemHelp.addActionListener(new ActionListener() {
@@ -666,6 +676,12 @@ public class MainPanel extends JFrame implements UIConstants {
 
 		RptViewerPanel rptViewerPanel = new RptViewerPanel(facade);
 		rptViewerPanel.setVisible(true);
+	}
+
+	private void menuItemBikeyExtractorPerformed() {
+
+		BiKeyExtactorPanel biKeyExtactorPanel = new BiKeyExtactorPanel(facade);
+		biKeyExtactorPanel.setVisible(true);
 	}
 
 	private void menuItemHelpPerformed() {

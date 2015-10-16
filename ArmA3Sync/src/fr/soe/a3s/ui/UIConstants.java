@@ -197,11 +197,47 @@ public interface UIConstants {
 					java.lang.ClassLoader
 							.getSystemResource("resources/pictures/system/acre248x48.png"));
 
+	Image AIA_SMALL = Toolkit
+			.getDefaultToolkit()
+			.getImage(
+					java.lang.ClassLoader
+							.getSystemResource("resources/pictures/system/transmission16x16.png"));
+
+	Image AIA_BIG = Toolkit
+			.getDefaultToolkit()
+			.getImage(
+					java.lang.ClassLoader
+							.getSystemResource("resources/pictures/system/allinarma.png"));
+
+	Image TFAR_SMALL = Toolkit
+			.getDefaultToolkit()
+			.getImage(
+					java.lang.ClassLoader
+							.getSystemResource("resources/pictures/system/tfar18x18.png"));
+
+	Image TFAR_BIG = Toolkit
+			.getDefaultToolkit()
+			.getImage(
+					java.lang.ClassLoader
+							.getSystemResource("resources/pictures/system/tfar48x48.png"));
+
 	Image RPT = Toolkit
 			.getDefaultToolkit()
 			.getImage(
 					java.lang.ClassLoader
 							.getSystemResource("resources/pictures/system/rpt16x16.png"));
+
+	Image BIKEY_BIG = Toolkit
+			.getDefaultToolkit()
+			.getImage(
+					java.lang.ClassLoader
+							.getSystemResource("resources/pictures/system/bikey48x48.png"));
+
+	Image BIKEY_SMALL = Toolkit
+			.getDefaultToolkit()
+			.getImage(
+					java.lang.ClassLoader
+							.getSystemResource("resources/pictures/system/bikey16x16.png"));
 
 	Image UP = Toolkit
 			.getDefaultToolkit()
@@ -226,12 +262,6 @@ public interface UIConstants {
 			.getImage(
 					java.lang.ClassLoader
 							.getSystemResource("resources/pictures/system/bis16x16.png"));
-
-	Image TRANSMISSION = Toolkit
-			.getDefaultToolkit()
-			.getImage(
-					java.lang.ClassLoader
-							.getSystemResource("resources/pictures/system/transmission16x16.png"));
 
 	Image UPLOAD = Toolkit
 			.getDefaultToolkit()
@@ -262,18 +292,6 @@ public interface UIConstants {
 			.getImage(
 					java.lang.ClassLoader
 							.getSystemResource("resources/pictures/system/autoconfig16x16.png"));
-
-	Image TFAR_SMALL = Toolkit
-			.getDefaultToolkit()
-			.getImage(
-					java.lang.ClassLoader
-							.getSystemResource("resources/pictures/system/tfar18x18.png"));
-
-	Image TFAR_BIG = Toolkit
-			.getDefaultToolkit()
-			.getImage(
-					java.lang.ClassLoader
-							.getSystemResource("resources/pictures/system/tfar48x48.png"));
 
 	Image CUBE = Toolkit
 			.getDefaultToolkit()

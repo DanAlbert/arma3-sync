@@ -2,10 +2,8 @@ package fr.soe.a3s.ui.tools.aiaEditor;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
-import java.awt.Graphics;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -29,8 +27,8 @@ import fr.soe.a3s.dto.configuration.AiAOptionsDTO;
 import fr.soe.a3s.service.AddonService;
 import fr.soe.a3s.service.ConfigurationService;
 import fr.soe.a3s.ui.Facade;
+import fr.soe.a3s.ui.ImagePanel;
 import fr.soe.a3s.ui.UIConstants;
-import fr.soe.a3s.ui.mainEditor.LauncherOptionsPanel;
 
 /**
  * This code was edited or generated using CloudGarden's Jigloo SWT/Swing GUI
@@ -45,7 +43,7 @@ import fr.soe.a3s.ui.mainEditor.LauncherOptionsPanel;
 public class AiaInstallerPanel extends JDialog implements UIConstants {
 
 	protected Facade facade;
-	protected JButton buttonOK;
+	protected JButton buttonOK, buttonCancel;
 	private JTextField textFieldArmA3InstallationDirectory;
 	private JTextField textFieldArmA2InstallationDirectory;
 	private JButton buttonSelectArmA2InstallationDirectory;
@@ -53,8 +51,8 @@ public class AiaInstallerPanel extends JDialog implements UIConstants {
 	private JButton buttonSelectArmAInstallationDirectory;
 	private JTextField textFieldTOHInstallationDirectory;
 	private JButton buttonSelectTOHInstallationDirectory;
-	private ConfigurationService configurationService = new ConfigurationService();
-	private AddonService addonService = new AddonService();
+	private final ConfigurationService configurationService = new ConfigurationService();
+	private final AddonService addonService = new AddonService();
 	private JTextField textFieldArmA2OAInstallationDirectory;
 	private JButton buttonSelectArmA2OAInstallationDirectory;
 	private JTextField textFieldAllInArmAInstallationDirectory;
@@ -80,16 +78,14 @@ public class AiaInstallerPanel extends JDialog implements UIConstants {
 			topPanel.setBackground(new java.awt.Color(255, 255, 255));
 			topPanel.setPreferredSize(new java.awt.Dimension(484, 55));
 			{
-				ImagePanel acreImagePanel = new ImagePanel();
-				acreImagePanel.setBackground(new java.awt.Color(255, 255, 255));
-				ImageIcon imageIcon = new ImageIcon(
-						java.lang.ClassLoader
-								.getSystemResource("resources/pictures/system/allinarma.png"));
+				ImagePanel imagePanel = new ImagePanel();
+				imagePanel.setBackground(new java.awt.Color(255, 255, 255));
+				ImageIcon imageIcon = new ImageIcon(AIA_BIG);
 				Image myNewImage = imageIcon.getImage();
-				acreImagePanel.setImage(myNewImage);
-				topPanel.add(acreImagePanel);
-				acreImagePanel.setBounds(7, 6, 160, 42);
-				acreImagePanel.repaint();
+				imagePanel.setImage(myNewImage);
+				topPanel.add(imagePanel);
+				imagePanel.setBounds(7, 6, 160, 42);
+				imagePanel.repaint();
 			}
 			{
 				JLabel labelDescription = new JLabel();
@@ -101,10 +97,14 @@ public class AiaInstallerPanel extends JDialog implements UIConstants {
 		{
 			JPanel controlPanel = new JPanel();
 			buttonOK = new JButton("OK");
+			getRootPane().setDefaultButton(buttonOK);
 			buttonOK.setPreferredSize(new Dimension(80, 25));
+			buttonCancel = new JButton("Cancel");
+			buttonCancel.setPreferredSize(new Dimension(80, 25));
 			FlowLayout flowLayout = new FlowLayout(FlowLayout.RIGHT);
 			controlPanel.setLayout(flowLayout);
 			controlPanel.add(buttonOK);
+			controlPanel.add(buttonCancel);
 			this.add(controlPanel, BorderLayout.SOUTH);
 		}
 		{
@@ -311,8 +311,15 @@ public class AiaInstallerPanel extends JDialog implements UIConstants {
 				buttonOKPerformed();
 			}
 		});
+		buttonCancel.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				buttonCancelPerformed();
+			}
+		});
 		// Add Listeners
 		addWindowListener(new WindowAdapter() {
+			@Override
 			public void windowClosing(WindowEvent e) {
 				menuExitPerformed();
 			}
@@ -407,27 +414,11 @@ public class AiaInstallerPanel extends JDialog implements UIConstants {
 		this.dispose();
 	}
 
-	private void menuExitPerformed() {
+	private void buttonCancelPerformed() {
 		this.dispose();
 	}
 
-	class ImagePanel extends JPanel {
-
-		private Image image = null;
-
-		public void setImage(Image image) {
-			this.image = image;
-		}
-
-		public void paintComponent(Graphics g) {
-			super.paintComponent(g); // paint background
-			if (image != null) { // there is a picture: draw it
-				int height = this.getSize().height;
-				int width = this.getSize().width;
-				// g.drawImage(image, 0, 0, this); //use image size
-
-				g.drawImage(image, 0, 0, width, height, this);
-			}
-		}
+	private void menuExitPerformed() {
+		this.dispose();
 	}
 }
