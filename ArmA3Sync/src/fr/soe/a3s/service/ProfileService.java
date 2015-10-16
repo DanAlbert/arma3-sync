@@ -420,9 +420,9 @@ public class ProfileService extends ObjectDTOtransformer {
 			}
 		}
 	}
-	
+
 	public void upDirectoryPriority(int index) {
-		
+
 		String profileName = configurationDAO.getConfiguration()
 				.getProfileName();
 
@@ -437,7 +437,7 @@ public class ProfileService extends ObjectDTOtransformer {
 			}
 		}
 	}
-	
+
 	public void downDirectoryPriority(int index) {
 
 		String profileName = configurationDAO.getConfiguration()
@@ -518,6 +518,17 @@ public class ProfileService extends ObjectDTOtransformer {
 		Profile profile = profileDAO.getMap().get(profileName);
 		if (profile != null) {
 			profile.getLauncherOptions().setCheckSignatures(selected);
+		}
+	}
+
+	public void setCheckBoxUseBattleye(boolean selected) {
+
+		String profileName = configurationDAO.getConfiguration()
+				.getProfileName();
+
+		Profile profile = profileDAO.getMap().get(profileName);
+		if (profile != null) {
+			profile.getLauncherOptions().setUseBattleye(selected);
 		}
 	}
 

@@ -11,10 +11,11 @@ public class LauncherOptions implements Serializable {
 	private boolean showScriptErrors = false;
 	private boolean noPause = false;
 	@Deprecated
-	private boolean noFilePatching = false;
+	private final boolean noFilePatching = false;
 	private boolean filePatching = false;
 	private boolean windowMode = false;
 	private boolean checkSignatures = false;
+	private boolean useBattleye = false;
 	private boolean autoRestart = false;
 	private boolean runBeta = false;
 	private boolean xpCompatibilityMode = false;
@@ -153,7 +154,7 @@ public class LauncherOptions implements Serializable {
 	}
 
 	public boolean isEnableHT() {
-		return enableHT;
+		return this.enableHT;
 	}
 
 	public void setEnableHT(boolean value) {
@@ -161,11 +162,19 @@ public class LauncherOptions implements Serializable {
 	}
 
 	public boolean isCheckSignatures() {
-		return checkSignatures;
+		return this.checkSignatures;
 	}
 
 	public void setCheckSignatures(boolean value) {
 		this.checkSignatures = value;
+	}
+
+	public boolean isUseBattleye() {
+		return this.useBattleye;
+	}
+
+	public void setUseBattleye(boolean value) {
+		this.useBattleye = value;
 	}
 
 	public boolean isAutoRestart() {
@@ -177,7 +186,7 @@ public class LauncherOptions implements Serializable {
 	}
 
 	public String getMallocSelection() {
-		return mallocSelection;
+		return this.mallocSelection;
 	}
 
 	public void setMallocSelection(String mallocSelection) {

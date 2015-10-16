@@ -84,8 +84,7 @@ public class ObjectDTOtransformer {
 				.getMallocSelection());
 		launcherOptionsDTO.setEnableHT(launcherOptions.isEnableHT());
 		launcherOptionsDTO.setNoPause(launcherOptions.isNoPause());
-		launcherOptionsDTO
-				.setFilePatching(launcherOptions.isFilePatching());
+		launcherOptionsDTO.setFilePatching(launcherOptions.isFilePatching());
 		launcherOptionsDTO
 				.setNoSplashScreen(launcherOptions.isNoSplashScreen());
 		launcherOptionsDTO.setShowScriptError(launcherOptions
@@ -93,6 +92,7 @@ public class ObjectDTOtransformer {
 		launcherOptionsDTO.setWindowMode(launcherOptions.isWindowMode());
 		launcherOptionsDTO.setCheckSignatures(launcherOptions
 				.isCheckSignatures());
+		launcherOptionsDTO.setUseBattleye(launcherOptions.isUseBattleye());
 		launcherOptionsDTO.setAutoRestart(launcherOptions.isAutoRestart());
 
 		return launcherOptionsDTO;

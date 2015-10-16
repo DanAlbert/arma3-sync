@@ -313,6 +313,9 @@ public class LaunchService {
 		if (launcherOptions.isCheckSignatures()) {
 			params.add("-checkSignatures");
 		}
+		if (launcherOptions.isUseBattleye()) {
+			params.add("0 1");
+		}
 		if (launcherOptions.isXpCompatibilityMode()) {
 			params.add("-winxp");
 		}
