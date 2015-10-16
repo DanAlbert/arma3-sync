@@ -10,6 +10,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -25,6 +26,7 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.border.BevelBorder;
 
+import fr.soe.a3s.dao.FileAccessMethods;
 import fr.soe.a3s.ui.Facade;
 import fr.soe.a3s.ui.ImagePanel;
 import fr.soe.a3s.ui.UIConstants;
@@ -225,8 +227,30 @@ public class BiKeyExtactorPanel extends JDialog implements UIConstants {
 			if (!sourceDirectory.exists()) {
 
 			} else {
-				extractedFiles = new ArrayList<File>();
-				extractBikeyFiles(sourceDirectory);
+				String targetDirectoryPath = textFieldTargetDirectory.getText();
+				if (targetDirectoryPath.isEmpty()) {
+				} else {
+					File targetDiectory = new File(targetDirectoryPath);
+					if (!targetDiectory.exists()) {
+
+					} else {
+						// Check write permissions
+
+						extractedFiles = new ArrayList<File>();
+						extractBikeyFiles(sourceDirectory);
+						if (extractedFiles.isEmpty()) {
+						} else {
+							try {
+								for (File file : extractedFiles) {
+									FileAccessMethods.copyFile(file,
+											targetDiectory);
+								}
+							} catch (IOException e) {
+								//
+							}
+						}
+					}
+				}
 			}
 		}
 	}
