@@ -3,7 +3,6 @@ package fr.soe.a3s.ui.tools;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
-import java.awt.Graphics;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -21,6 +20,7 @@ import fr.soe.a3s.service.AddonService;
 import fr.soe.a3s.service.ConfigurationService;
 import fr.soe.a3s.service.ProfileService;
 import fr.soe.a3s.ui.Facade;
+import fr.soe.a3s.ui.ImagePanel;
 import fr.soe.a3s.ui.UIConstants;
 
 public abstract class WizardPanel extends JDialog implements UIConstants {
@@ -183,26 +183,6 @@ public abstract class WizardPanel extends JDialog implements UIConstants {
 				labelTS3Value.setText(ts3Version + " - 32 bit");
 			} else {
 				labelTS3Value.setText("Unknown");
-			}
-		}
-	}
-
-	protected class ImagePanel extends JPanel {
-
-		private Image image = null;
-
-		public void setImage(Image image) {
-			this.image = image;
-		}
-
-		@Override
-		public void paintComponent(Graphics g) {
-			super.paintComponent(g); // paint background
-			if (image != null) { // there is a picture: draw it
-				int height = this.getSize().height;
-				int width = this.getSize().width;
-				// g.drawImage(image, 0, 0, this); //use image size
-				g.drawImage(image, 0, 0, width, height, this);
 			}
 		}
 	}

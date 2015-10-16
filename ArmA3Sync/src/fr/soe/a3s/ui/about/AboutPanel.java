@@ -2,9 +2,7 @@ package fr.soe.a3s.ui.about;
 
 import java.awt.Cursor;
 import java.awt.Desktop;
-import java.awt.Graphics;
 import java.awt.Image;
-import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
@@ -22,30 +20,27 @@ import javax.swing.border.BevelBorder;
 
 import fr.soe.a3s.main.Version;
 import fr.soe.a3s.ui.Facade;
+import fr.soe.a3s.ui.ImagePanel;
 import fr.soe.a3s.ui.UIConstants;
 
-
-
-
-
 /**
-* This code was edited or generated using CloudGarden's Jigloo
-* SWT/Swing GUI Builder, which is free for non-commercial
-* use. If Jigloo is being used commercially (ie, by a corporation,
-* company or business for any purpose whatever) then you
-* should purchase a license for each developer using Jigloo.
-* Please visit www.cloudgarden.com for details.
-* Use of Jigloo implies acceptance of these licensing terms.
-* A COMMERCIAL LICENSE HAS NOT BEEN PURCHASED FOR
-* THIS MACHINE, SO JIGLOO OR THIS CODE CANNOT BE USED
-* LEGALLY FOR ANY CORPORATE OR COMMERCIAL PURPOSE.
-*/
+ * This code was edited or generated using CloudGarden's Jigloo
+ * SWT/Swing GUI Builder, which is free for non-commercial
+ * use. If Jigloo is being used commercially (ie, by a corporation,
+ * company or business for any purpose whatever) then you
+ * should purchase a license for each developer using Jigloo.
+ * Please visit www.cloudgarden.com for details.
+ * Use of Jigloo implies acceptance of these licensing terms.
+ * A COMMERCIAL LICENSE HAS NOT BEEN PURCHASED FOR
+ * THIS MACHINE, SO JIGLOO OR THIS CODE CANNOT BE USED
+ * LEGALLY FOR ANY CORPORATE OR COMMERCIAL PURPOSE.
+ */
 /**
  * About dialog
  * 
  */
 
-public class AboutPanel extends JDialog implements ActionListener,UIConstants {
+public class AboutPanel extends JDialog implements ActionListener, UIConstants {
 	private JButton jButtonClose;
 	private JButton buttonCredits;
 	private JTextArea jTextArea5;
@@ -55,22 +50,23 @@ public class AboutPanel extends JDialog implements ActionListener,UIConstants {
 	private JTextArea jTextArea1;
 	private ImagePanel jPanel2;
 	private JPanel jPanel1;
-	private Facade facade;
+	private final Facade facade;
 
 	public AboutPanel(Facade facade) {
 		super(facade.getMainPanel(), "About", true);
-		
+
 		this.facade = facade;
 		getContentPane().setLayout(null);
 		setResizable(false);
 		this.setSize(345, 250);
 		setIconImage(ICON);
-		this.setLocation((int) facade.getMainPanel().getLocation().getX()
-				+ facade.getMainPanel().getWidth() / 2 - this.getWidth() / 2,
+		this.setLocation(
+				(int) facade.getMainPanel().getLocation().getX()
+						+ facade.getMainPanel().getWidth() / 2
+						- this.getWidth() / 2,
 				(int) facade.getMainPanel().getLocation().getY()
 						+ facade.getMainPanel().getHeight() / 2
 						- this.getHeight() / 2);
-		
 
 		{
 			jButtonClose = new JButton();
@@ -131,13 +127,14 @@ public class AboutPanel extends JDialog implements ActionListener,UIConstants {
 				jTextArea4.setEditable(false);
 			}
 			{
-//				jTextArea5 = new JTextArea();
-//				jPanel1.add(jTextArea5);
-//				jTextArea5.setText("www.sonsofexiled.fr");
-//				jTextArea5.setBounds(12, 76, 133, 22);
-//				jTextArea5.setFont(new java.awt.Font("Tahoma", 1, 11));
-//				jTextArea5.setEditable(false);
-				JLabel l = makeHyperLink("www.sonsofexiled.fr", "www.sonsofexiled.fr", 12, 76);
+				// jTextArea5 = new JTextArea();
+				// jPanel1.add(jTextArea5);
+				// jTextArea5.setText("www.sonsofexiled.fr");
+				// jTextArea5.setBounds(12, 76, 133, 22);
+				// jTextArea5.setFont(new java.awt.Font("Tahoma", 1, 11));
+				// jTextArea5.setEditable(false);
+				JLabel l = makeHyperLink("www.sonsofexiled.fr",
+						"www.sonsofexiled.fr", 12, 76);
 				jPanel1.add(l);
 				l.setBounds(12, 76, 133, 22);
 			}
@@ -151,6 +148,7 @@ public class AboutPanel extends JDialog implements ActionListener,UIConstants {
 		}
 	}
 
+	@Override
 	public void actionPerformed(ActionEvent e) {
 		if (e.getSource() == jButtonClose) {
 			dispose();
@@ -161,36 +159,19 @@ public class AboutPanel extends JDialog implements ActionListener,UIConstants {
 		}
 	}
 
-	private class ImagePanel extends JPanel {
-
-		private Image image = null;
-
-		public void setImage(Image image) {
-			this.image = image;
-		}
-
-		public void paintComponent(Graphics g) {
-			super.paintComponent(g); // paint background
-			if (image != null) { // there is a picture: draw it
-				int height = this.getSize().height;
-				int width = this.getSize().width;
-				// g.drawImage(image, 0, 0, this); //use image size
-				g.drawImage(image, 0, 0, width, height, this);
-			}
-		}
-	}
-	
 	public JLabel makeHyperLink(final String s, final String link, int x, int y) {
 		final JLabel l = new JLabel(s);
-		l.setText(String.format("<HTML><FONT color = \"#0080FF\"><U>%s</U></FONT></HTML>",
-				s));
+		l.setText(String.format(
+				"<HTML><FONT color = \"#0080FF\"><U>%s</U></FONT></HTML>", s));
 		l.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseExited(MouseEvent arg0) {
 				l.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
-				l.setText(String.format("<HTML><FONT color = \"#0080FF\"><U>%s</U></FONT></HTML>",
-						s));
+				l.setText(String
+						.format("<HTML><FONT color = \"#0080FF\"><U>%s</U></FONT></HTML>",
+								s));
 			}
+
 			@Override
 			public void mouseEntered(MouseEvent arg0) {
 				l.setCursor(new Cursor(Cursor.HAND_CURSOR));
@@ -198,6 +179,7 @@ public class AboutPanel extends JDialog implements ActionListener,UIConstants {
 						.format("<HTML><FONT color = \"#000099\"><U>%s</U></FONT></HTML>",
 								s));
 			}
+
 			@Override
 			public void mouseClicked(MouseEvent arg0) {
 				try {
