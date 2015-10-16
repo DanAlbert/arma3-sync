@@ -2,6 +2,7 @@ package fr.soe.a3s.ui.tools.tfarEditor;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
@@ -35,8 +36,6 @@ import fr.soe.a3s.ui.tools.WizardPanel;
  * ANY CORPORATE OR COMMERCIAL PURPOSE.
  */
 public class FirstPageTFARInstallerPanel extends WizardPanel {
-
-	private java.awt.Component box$Filler_IL8;
 
 	public FirstPageTFARInstallerPanel(Facade facade) {
 		super(facade, "TFAR installer wizard",
@@ -228,10 +227,9 @@ public class FirstPageTFARInstallerPanel extends WizardPanel {
 					vBox.add(hBox);
 				}
 				{
-					box$Filler_IL8 = Box.createVerticalStrut(10);
-					vBox.add(box$Filler_IL8);
-					box$Filler_IL8.setPreferredSize(new java.awt.Dimension(506,
-							10));
+					Component c = Box.createVerticalStrut(10);
+					vBox.add(c);
+					c.setPreferredSize(new java.awt.Dimension(506, 10));
 				}
 				vBox.add(Box.createVerticalStrut(10));
 			}
@@ -491,7 +489,7 @@ public class FirstPageTFARInstallerPanel extends WizardPanel {
 
 		String tfarUserconfigHpp = textFieldUserconfigInstallationDirectory
 				.getText() + "/task_force_radio/radio_settings.hpp";
-		if (!new File(tfarUserconfigHpp).exists()){
+		if (!new File(tfarUserconfigHpp).exists()) {
 			message = "TFAR userconfig file radio_settings.hpp not found";
 		}
 
