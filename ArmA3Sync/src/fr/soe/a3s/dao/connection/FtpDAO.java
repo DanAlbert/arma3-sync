@@ -256,6 +256,9 @@ public class FtpDAO extends AbstractConnexionDAO {
 			if (dos != null) {
 				dos.close();
 			}
+			if (inputStream != null) {
+				inputStream.close();
+			}
 			setSpeed(0);
 		}
 		return found;
