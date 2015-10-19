@@ -11,8 +11,6 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -22,11 +20,13 @@ import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.border.BevelBorder;
 
-import fr.soe.a3s.dao.FileAccessMethods;
+import fr.soe.a3s.exception.CheckException;
+import fr.soe.a3s.service.CommonService;
 import fr.soe.a3s.ui.Facade;
 import fr.soe.a3s.ui.ImagePanel;
 import fr.soe.a3s.ui.UIConstants;
@@ -39,8 +39,8 @@ public class BiKeyExtactorPanel extends JDialog implements UIConstants {
 	private JButton buttonSelectSourceDirectory;
 	private JTextField textFieldTargetDirectory;
 	private JButton buttonSelectTargetDirectory;
-	/* Data */
-	private List<File> extractedFiles;
+	/* Services */
+	private final CommonService commonService = new CommonService();
 
 	public BiKeyExtactorPanel(Facade facade) {
 
@@ -220,58 +220,29 @@ public class BiKeyExtactorPanel extends JDialog implements UIConstants {
 	private void buttonProceedPerformed() {
 
 		String sourceDirectoryPath = textFieldSourceDirectory.getText();
-		if (sourceDirectoryPath.isEmpty()) {
-
-		} else {
-			File sourceDirectory = new File(sourceDirectoryPath);
-			if (!sourceDirectory.exists()) {
-
+		String targetDirectoryPath = textFieldTargetDirectory.getText();
+		try {
+			int nbBikeys = commonService.extractBikeys(sourceDirectoryPath,
+					targetDirectoryPath);
+			if (nbBikeys != 0) {
+				JOptionPane.showMessageDialog(facade.getMainPanel(), nbBikeys
+						+ " " + "have been copied to target directory.",
+						"Bikey extractor wizard",
+						JOptionPane.INFORMATION_MESSAGE);
 			} else {
-				String targetDirectoryPath = textFieldTargetDirectory.getText();
-				if (targetDirectoryPath.isEmpty()) {
-				} else {
-					File targetDiectory = new File(targetDirectoryPath);
-					if (!targetDiectory.exists()) {
-
-					} else {
-						// Check write permissions
-
-						extractedFiles = new ArrayList<File>();
-						extractBikeyFiles(sourceDirectory);
-						if (extractedFiles.isEmpty()) {
-						} else {
-							try {
-								for (File file : extractedFiles) {
-									FileAccessMethods.copyFile(file,
-											targetDiectory);
-								}
-							} catch (IOException e) {
-								//
-							}
-						}
-					}
-				}
+				JOptionPane.showMessageDialog(facade.getMainPanel(), nbBikeys
+						+ " " + "have been found.", "Bikey extractor wizard",
+						JOptionPane.WARNING_MESSAGE);
 			}
-		}
-	}
-
-	private void extractBikeyFiles(File file) {
-
-		if (file.isDirectory()) {
-			File[] subFiles = file.listFiles();
-			if (subFiles != null) {
-				for (File f : subFiles) {
-					extractBikeyFiles(f);
-				}
-			}
-		} else {
-			int index = file.getName().lastIndexOf(".");
-			if (index != -1) {
-				String extension = file.getName().substring(index);
-				if (extension.equalsIgnoreCase(".bikey")) {
-					extractedFiles.add(file);
-				}
-			}
+		} catch (CheckException e1) {
+			JOptionPane.showMessageDialog(facade.getMainPanel(),
+					e1.getMessage(), "Bikey extractor wizard",
+					JOptionPane.WARNING_MESSAGE);
+		} catch (IOException e2) {
+			e2.printStackTrace();
+			JOptionPane.showMessageDialog(facade.getMainPanel(),
+					e2.getMessage(), "Bikey extractor wizard",
+					JOptionPane.ERROR_MESSAGE);
 		}
 	}
 
