@@ -385,5 +385,4 @@ public class AddonService {
 		treeLeafDTO.setSelected(treeLeaf.isSelected());
 		return treeLeafDTO;
 	}
-
 }
