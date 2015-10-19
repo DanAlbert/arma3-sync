@@ -26,6 +26,7 @@ public interface DataAccessConstants {
 	String ZIP_EXTENSION = ".zip";
 	String PBO_EXTENSION = ".pbo";
 	String PBO_ZIP_EXTENSION = ".pbo.zip";
+	String BIKEY = ".bikey";
 
 	/** FTP */
 	String UPDATE_REPOSITORY = "/ArmA3/ArmA3Sync/download";
