@@ -1,8 +1,6 @@
 package fr.soe.a3s.console;
 
 import java.io.File;
-import java.nio.file.FileSystems;
-import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -44,10 +42,13 @@ public class CommandConsole extends CommandGeneral {
 				+ ": delete repository");
 		System.out.println(ConsoleCommands.LIST.toString()
 				+ ": list repositories");
-		System.out.println(ConsoleCommands.UPDATE.toString()
-				+ ": check for updates");
 		System.out.println(ConsoleCommands.SYNC.toString()
 				+ ": synchronize content with a repository");
+		System.out
+				.println(ConsoleCommands.EXTRACT_BIKEYS.toString()
+						+ ": extract *.bikey files from source directory to target directory");
+		System.out.println(ConsoleCommands.UPDATE.toString()
+				+ ": check for updates");
 		System.out.println(ConsoleCommands.COMMANDS.toString()
 				+ ": display commands");
 		System.out.println(ConsoleCommands.VERSION.toString()
@@ -78,6 +79,9 @@ public class CommandConsole extends CommandGeneral {
 			checkForUpdates();
 		} else if (command.equalsIgnoreCase(ConsoleCommands.SYNC.toString())) {
 			sync();
+		} else if (command.equalsIgnoreCase(ConsoleCommands.EXTRACT_BIKEYS
+				.toString())) {
+			extractBikeys();
 		} else if (command
 				.equalsIgnoreCase(ConsoleCommands.COMMANDS.toString())) {
 			displayCommands();
@@ -580,11 +584,7 @@ public class CommandConsole extends CommandGeneral {
 
 		/* Proceed with command */
 
-		super.buildRepository(name);
-
-		System.gc();
-		System.out.println("");
-		execute();
+		super.buildRepository(name, false);
 	}
 
 	private void check() {
@@ -615,10 +615,7 @@ public class CommandConsole extends CommandGeneral {
 
 		/* Proceed with command */
 
-		super.checkRepository(repositoryName);
-
-		System.out.println("");
-		execute();
+		super.checkRepository(repositoryName, false);
 	}
 
 	private void delete() {
@@ -738,15 +735,35 @@ public class CommandConsole extends CommandGeneral {
 		super.syncRepository(repositoryName, false);
 	}
 
-	public void checkForUpdates() {
+	private void extractBikeys() {
+
+		System.out.println("");
+		System.out.println("Extract *.bikey files");
+
+		Scanner c = new Scanner(System.in);
+
+		String sourceDirectoryPath = "";
+		do {
+			System.out
+					.print("Enter source directory to search for *.bikey files: ");
+			sourceDirectoryPath = c.nextLine();
+		} while (sourceDirectoryPath.isEmpty());
+
+		String targetDirectoryPath = "";
+		do {
+			System.out.print("Enter target directory to copy *.bikey files: ");
+			sourceDirectoryPath = c.nextLine();
+		} while (targetDirectoryPath.isEmpty());
+
+		super.extractBikeys(sourceDirectoryPath, targetDirectoryPath, false);
+	}
+
+	private void checkForUpdates() {
 
 		System.out.println("");
 		System.out.println("Check for updates.");
 
-		super.checkForUpdates(devMode);
-
-		System.out.println("");
-		execute();
+		super.checkForUpdates(devMode, false);
 	}
 
 	private void displayVersion() {

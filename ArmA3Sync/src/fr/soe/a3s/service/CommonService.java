@@ -130,10 +130,11 @@ public class CommonService {
 		repositoryDAO.writeLog(print, path);
 	}
 
-	public int extractBikeys(String sourceFilePath, String destinationFilePath)
-			throws CheckException, IOException {
+	public int extractBikeys(String sourceDirectoryPath,
+			String destinationDirectoryPath) throws CheckException, IOException {
 
-		return commonDAO.extractBikeys(sourceFilePath, destinationFilePath);
+		return commonDAO.extractBikeys(sourceDirectoryPath,
+				destinationDirectoryPath);
 	}
 
 	public String getWiki() {

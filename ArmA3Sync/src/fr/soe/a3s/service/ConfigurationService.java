@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
-import java.util.TreeSet;
 
 import fr.soe.a3s.dao.AddonDAO;
 import fr.soe.a3s.dao.ConfigurationDAO;
@@ -17,7 +16,6 @@ import fr.soe.a3s.domain.configration.LauncherOptions;
 import fr.soe.a3s.dto.configuration.AiAOptionsDTO;
 import fr.soe.a3s.dto.configuration.ExternalApplicationDTO;
 import fr.soe.a3s.dto.configuration.FavoriteServerDTO;
-import fr.soe.a3s.dto.configuration.LauncherOptionsDTO;
 import fr.soe.a3s.exception.LoadingException;
 import fr.soe.a3s.exception.WritingException;
 
@@ -365,6 +363,26 @@ public class ConfigurationService extends ObjectDTOtransformer {
 		// Do no set AllinArmA path here!
 	}
 
+	public String getBiketyExtractSourceDirectoryPath() {
+		return configurationDAO.getConfiguration().getBikeyExtractOptions()
+				.getSourceDirectoryPath();
+	}
+
+	public void setBiketyExtractSourceDirectoryPath(String sourceDirectoryPath) {
+		configurationDAO.getConfiguration().getBikeyExtractOptions()
+				.setSourceDirectoryPath(sourceDirectoryPath);
+	}
+
+	public String getBiketyExtractTargetDirectoryPath() {
+		return configurationDAO.getConfiguration().getBikeyExtractOptions()
+				.getTargetDirectoryPath();
+	}
+
+	public void setBiketyExtractTargetDirectoryPath(String targetDirectoryPath) {
+		configurationDAO.getConfiguration().getBikeyExtractOptions()
+				.setTargetDirectoryPath(targetDirectoryPath);
+	}
+
 	public int getHeight() {
 		return configurationDAO.getConfiguration().getHeight();
 	}
@@ -372,11 +390,12 @@ public class ConfigurationService extends ObjectDTOtransformer {
 	public int getWidth() {
 		return configurationDAO.getConfiguration().getWidth();
 	}
-	
+
 	/* DEPRECATED */
-	
+
 	public Set<String> getAddonSearchDirectoryPaths() {
-		return configurationDAO.getConfiguration().getAddonSearchDirectoryPaths();
+		return configurationDAO.getConfiguration()
+				.getAddonSearchDirectoryPaths();
 	}
 
 	public void resetAddonSearchDirectoryPaths() {

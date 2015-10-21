@@ -22,9 +22,7 @@ public class CommandLine extends CommandGeneral {
 
 		/* Proceed with command */
 
-		super.buildRepository(repositoryName);
-
-		System.exit(0);
+		super.buildRepository(repositoryName, true);
 	}
 
 	public void check(String repositoryName) {
@@ -42,9 +40,7 @@ public class CommandLine extends CommandGeneral {
 
 		/* Proceed with command */
 
-		super.checkRepository(repositoryName);
-
-		System.exit(0);
+		super.checkRepository(repositoryName, true);
 	}
 
 	public void sync(final String repositoryName, String destinationFolderPath,
@@ -89,10 +85,14 @@ public class CommandLine extends CommandGeneral {
 		super.syncRepository(repositoryName, true);
 	}
 
+	public void extractBikeys(String sourceDirectoryPath,
+			String targetDirectoryPath) {
+
+		super.extractBikeys(sourceDirectoryPath, targetDirectoryPath, true);
+	}
+
 	public void checkForUpdates() {
 
-		super.checkForUpdates(false);
-
-		System.exit(0);
+		super.checkForUpdates(false, true);
 	}
 }

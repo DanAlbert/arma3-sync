@@ -31,6 +31,7 @@ import fr.soe.a3s.exception.remote.RemoteSyncFileNotFoundException;
 import fr.soe.a3s.exception.repository.RepositoryException;
 import fr.soe.a3s.service.AbstractConnexionService;
 import fr.soe.a3s.service.AbstractConnexionServiceFactory;
+import fr.soe.a3s.service.CommonService;
 import fr.soe.a3s.service.FtpService;
 import fr.soe.a3s.service.RepositoryService;
 import fr.soe.a3s.ui.repositoryEditor.FileSizeComputer;
@@ -45,7 +46,7 @@ public class CommandGeneral {
 	private final List<SyncTreeNodeDTO> listFilesToUpdate = new ArrayList<SyncTreeNodeDTO>();
 	private final List<SyncTreeNodeDTO> listFilesToDelete = new ArrayList<SyncTreeNodeDTO>();
 
-	protected void buildRepository(String repositoryName) {
+	protected void buildRepository(String repositoryName, boolean exit) {
 
 		RepositoryService repositoryService = new RepositoryService();
 
@@ -81,9 +82,17 @@ public class CommandGeneral {
 			System.out.println("An unexpected error has occured.");
 			e.printStackTrace();
 		}
+
+		if (exit) {
+			System.exit(0);
+		} else {
+			CommandConsole console = new CommandConsole(false);
+			System.out.println("");
+			console.execute();
+		}
 	}
 
-	protected void checkRepository(String repositoryName) {
+	protected void checkRepository(String repositoryName, boolean exit) {
 
 		this.value = 0;
 		RepositoryService repositoryService = new RepositoryService();
@@ -154,6 +163,14 @@ public class CommandGeneral {
 			System.out.println("An unexpected error has occured.");
 			e.printStackTrace();
 		}
+
+		if (exit) {
+			System.exit(0);
+		} else {
+			CommandConsole console = new CommandConsole(false);
+			System.out.println("");
+			console.execute();
+		}
 	}
 
 	protected void syncRepository(String repositoryName, boolean exit) {
@@ -168,9 +185,29 @@ public class CommandGeneral {
 				System.exit(0);
 			} else {
 				CommandConsole console = new CommandConsole(false);
-				console.displayCommands();
+				System.out.println("");
 				console.execute();
 			}
+		}
+	}
+
+	protected void extractBikeys(String sourceDirectoryPath,
+			String targetDirectoryPath, boolean exit) {
+
+		try {
+			CommonService commonService = new CommonService();
+			commonService.extractBikeys(sourceDirectoryPath,
+					targetDirectoryPath);
+		} catch (CheckException | IOException e) {
+			System.out.println(e.getMessage());
+		}
+
+		if (exit) {
+			System.exit(0);
+		} else {
+			CommandConsole console = new CommandConsole(false);
+			System.out.println("");
+			console.execute();
 		}
 	}
 
@@ -446,7 +483,7 @@ public class CommandGeneral {
 					System.exit(0);
 				} else {
 					CommandConsole console = new CommandConsole(false);
-					console.displayCommands();
+					System.out.println("");
 					console.execute();
 				}
 
@@ -458,7 +495,7 @@ public class CommandGeneral {
 					System.exit(0);
 				} else {
 					CommandConsole console = new CommandConsole(false);
-					console.displayCommands();
+					System.out.println("");
 					console.execute();
 				}
 			}
@@ -496,7 +533,7 @@ public class CommandGeneral {
 			System.exit(0);
 		} else {
 			CommandConsole console = new CommandConsole(false);
-			console.displayCommands();
+			System.out.println("");
 			console.execute();
 		}
 	}
@@ -563,7 +600,7 @@ public class CommandGeneral {
 			System.exit(0);
 		} else {
 			CommandConsole console = new CommandConsole(false);
-			console.displayCommands();
+			System.out.println("");
 			console.execute();
 		}
 	}
@@ -580,7 +617,7 @@ public class CommandGeneral {
 		finishWithErrors(message, errors, repositoryName, exit);
 	}
 
-	protected void checkForUpdates(boolean devMode) {
+	protected void checkForUpdates(boolean devMode, boolean exit) {
 
 		FtpService ftpService = new FtpService();
 		String availableVersion = null;
@@ -615,6 +652,14 @@ public class CommandGeneral {
 			}
 		} else {
 			System.out.println("No new update available.");
+		}
+
+		if (exit) {
+			System.exit(0);
+		} else {
+			CommandConsole console = new CommandConsole(devMode);
+			System.out.println("");
+			console.execute();
 		}
 	}
 }

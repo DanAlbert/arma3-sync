@@ -27,6 +27,7 @@ import javax.swing.border.BevelBorder;
 
 import fr.soe.a3s.exception.CheckException;
 import fr.soe.a3s.service.CommonService;
+import fr.soe.a3s.service.ConfigurationService;
 import fr.soe.a3s.ui.Facade;
 import fr.soe.a3s.ui.ImagePanel;
 import fr.soe.a3s.ui.UIConstants;
@@ -34,13 +35,14 @@ import fr.soe.a3s.ui.UIConstants;
 public class BiKeyExtactorPanel extends JDialog implements UIConstants {
 
 	protected Facade facade;
-	protected JButton buttonProceed, buttonCancel;
+	protected JButton buttonProceed, buttonClose;
 	private JTextField textFieldSourceDirectory;
 	private JButton buttonSelectSourceDirectory;
 	private JTextField textFieldTargetDirectory;
 	private JButton buttonSelectTargetDirectory;
 	/* Services */
 	private final CommonService commonService = new CommonService();
+	private final ConfigurationService configurationService = new ConfigurationService();
 
 	public BiKeyExtactorPanel(Facade facade) {
 
@@ -85,12 +87,12 @@ public class BiKeyExtactorPanel extends JDialog implements UIConstants {
 			buttonProceed = new JButton("Proceed");
 			getRootPane().setDefaultButton(buttonProceed);
 			buttonProceed.setPreferredSize(new Dimension(80, 25));
-			buttonCancel = new JButton("Cancel");
-			buttonCancel.setPreferredSize(new Dimension(80, 25));
+			buttonClose = new JButton("Close");
+			buttonClose.setPreferredSize(new Dimension(80, 25));
 			FlowLayout flowLayout = new FlowLayout(FlowLayout.RIGHT);
 			controlPanel.setLayout(flowLayout);
 			controlPanel.add(buttonProceed);
-			controlPanel.add(buttonCancel);
+			controlPanel.add(buttonClose);
 			this.add(controlPanel, BorderLayout.SOUTH);
 		}
 		{
@@ -170,7 +172,7 @@ public class BiKeyExtactorPanel extends JDialog implements UIConstants {
 				buttonProceedPerformed();
 			}
 		});
-		buttonCancel.addActionListener(new ActionListener() {
+		buttonClose.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				buttonCancelPerformed();
@@ -187,6 +189,12 @@ public class BiKeyExtactorPanel extends JDialog implements UIConstants {
 
 	public void init() {
 
+		String sourceDirectoryPath = configurationService
+				.getBiketyExtractSourceDirectoryPath();
+		textFieldSourceDirectory.setText(sourceDirectoryPath);
+		String targetDirectoryPath = configurationService
+				.getBiketyExtractTargetDirectoryPath();
+		textFieldTargetDirectory.setText(targetDirectoryPath);
 	}
 
 	private void buttonSelectSourceDirectoryPerformed() {
@@ -221,7 +229,9 @@ public class BiKeyExtactorPanel extends JDialog implements UIConstants {
 
 		String sourceDirectoryPath = textFieldSourceDirectory.getText();
 		String targetDirectoryPath = textFieldTargetDirectory.getText();
+
 		try {
+
 			int nbBikeys = commonService.extractBikeys(sourceDirectoryPath,
 					targetDirectoryPath);
 			if (nbBikeys != 0) {
@@ -234,6 +244,12 @@ public class BiKeyExtactorPanel extends JDialog implements UIConstants {
 						+ " " + "have been found.", "Bikey extractor wizard",
 						JOptionPane.WARNING_MESSAGE);
 			}
+
+			configurationService
+					.setBiketyExtractSourceDirectoryPath(sourceDirectoryPath);
+			configurationService
+					.setBiketyExtractTargetDirectoryPath(targetDirectoryPath);
+
 		} catch (CheckException e1) {
 			JOptionPane.showMessageDialog(facade.getMainPanel(),
 					e1.getMessage(), "Bikey extractor wizard",

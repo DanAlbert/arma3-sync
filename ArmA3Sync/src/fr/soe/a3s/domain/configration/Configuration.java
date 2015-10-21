@@ -26,6 +26,7 @@ public class Configuration implements Serializable {
 	private TfarOptions tfarOptions = new TfarOptions();
 	private AiAOptions aiaOptions = new AiAOptions();
 	private RptOptions rptOptions = new RptOptions();
+	private BikeyExtractOptions bikeyExtractOptions = new BikeyExtractOptions();
 	@Deprecated
 	private Set<String> addonSearchDirectoryPaths = new TreeSet<String>();
 	@Deprecated
@@ -117,6 +118,13 @@ public class Configuration implements Serializable {
 
 	public int getHeight() {
 		return height;
+	}
+
+	public BikeyExtractOptions getBikeyExtractOptions() {
+		if (bikeyExtractOptions == null) {
+			bikeyExtractOptions = new BikeyExtractOptions();
+		}
+		return bikeyExtractOptions;
 	}
 
 	public void setHeight(int height) {
