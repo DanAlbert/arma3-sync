@@ -574,11 +574,11 @@ public class FtpDAO extends AbstractConnexionDAO {
 			boolean ok = ftpClient.changeWorkingDirectory(protocole
 					.getRemotePath() + "/" + relativePath);
 			/*
-			 * http://www.codejava.net/java-se/networking/ftp/determine-if-a-
-			 * directory-or-file-exists-on-ftp-server
+			 * http://www.codejava.net/java-se/networking/ftp/get-size-of-a-file-
+			 * on-ftp-server
 			 */
 			if (ok) {
-				inputStream = ftpClient.retrieveFileStream(fileName);
+				ftpClient.mlistFile(fileName);
 				int returnCode = ftpClient.getReplyCode();
 				if (returnCode == 550) {
 					exists = false;

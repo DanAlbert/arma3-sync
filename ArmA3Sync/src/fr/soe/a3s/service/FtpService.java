@@ -510,70 +510,81 @@ public class FtpService extends AbstractConnexionService implements
 		int count = 0;
 		int nbFilesToUpload = 0;
 
-		for (SyncTreeNodeDTO node : allLocalFiles) {
-			List<FTPFile> ftpFilesToUpload = new ArrayList<FTPFile>();
-			if (ftpDAOPool.get(0).isCanceled()) {
-				return;
-			} else {
-				String relativePath = determinePath(node);
-				if (node.isLeaf()) {
-					SyncTreeLeafDTO leaf = (SyncTreeLeafDTO) node;
-					List<String> listFilesName = new ArrayList<String>();
+		try {
+			// Connect
+			ftpDAOPool.get(0).connectToRepository(repository.getName(),
+					repository.getRepositoryUploadProtocole());
 
-					if (leaf.isCompressed()) {
-						if (repository.isUploadCompressedPboFilesOnly()) {
-							String fileName = leaf.getName() + ZIP_EXTENSION;// *.pbo.zip
-							listFilesName.add(fileName);
+			for (SyncTreeNodeDTO node : allLocalFiles) {
+				List<FTPFile> ftpFilesToUpload = new ArrayList<FTPFile>();
+				if (ftpDAOPool.get(0).isCanceled()) {
+					return;
+				} else {
+					String relativePath = determinePath(node);
+					if (node.isLeaf()) {
+						SyncTreeLeafDTO leaf = (SyncTreeLeafDTO) node;
+						List<String> listFilesName = new ArrayList<String>();
+
+						if (leaf.isCompressed()) {
+							if (repository.isUploadCompressedPboFilesOnly()) {
+								String fileName = leaf.getName()
+										+ ZIP_EXTENSION;// *.pbo.zip
+								listFilesName.add(fileName);
+							} else {
+								String fileName = leaf.getName();// *.*/*.pbo
+								listFilesName.add(fileName);
+								fileName = leaf.getName() + ZIP_EXTENSION;// *.pbo.zip
+								listFilesName.add(fileName);
+								if (repository.getProtocol() instanceof Http) {
+									fileName = leaf.getName() + ZSYNC_EXTENSION;// *.pbo.zsync
+									listFilesName.add(fileName);
+								}
+							}
 						} else {
 							String fileName = leaf.getName();// *.*/*.pbo
-							listFilesName.add(fileName);
-							fileName = leaf.getName() + ZIP_EXTENSION;// *.pbo.zip
 							listFilesName.add(fileName);
 							if (repository.getProtocol() instanceof Http) {
 								fileName = leaf.getName() + ZSYNC_EXTENSION;// *.pbo.zsync
 								listFilesName.add(fileName);
 							}
 						}
-					} else {
-						String fileName = leaf.getName();// *.*/*.pbo
-						listFilesName.add(fileName);
-						if (repository.getProtocol() instanceof Http) {
-							fileName = leaf.getName() + ZSYNC_EXTENSION;// *.pbo.zsync
-							listFilesName.add(fileName);
+						for (String fileName : listFilesName) {
+							FTPFile ftpFile = createFTPFile(fileName,
+									relativePath, FTPFile.FILE_TYPE);
+
+							boolean exists = remoteFileExists(
+									repository.getName(), relativePath,
+									fileName,
+									repository.getRepositoryUploadProtocole());
+
+							if (!exists || filesToUpload.contains(leaf)) {
+								ftpFilesToUpload.add(ftpFile);
+							}
 						}
-					}
-					for (String fileName : listFilesName) {
+					} else {
+						String fileName = node.getName();
 						FTPFile ftpFile = createFTPFile(fileName, relativePath,
-								FTPFile.FILE_TYPE);
+								FTPFile.DIRECTORY_TYPE);
 
 						boolean exists = remoteFileExists(repository.getName(),
 								relativePath, fileName,
 								repository.getRepositoryUploadProtocole());
 
-						if (!exists || filesToUpload.contains(leaf)) {
+						if (!exists || filesToUpload.contains(node)) {
 							ftpFilesToUpload.add(ftpFile);
 						}
 					}
-				} else {
-					String fileName = node.getName();
-					FTPFile ftpFile = createFTPFile(fileName, relativePath,
-							FTPFile.DIRECTORY_TYPE);
-
-					boolean exists = remoteFileExists(repository.getName(),
-							relativePath, fileName,
-							repository.getRepositoryUploadProtocole());
-
-					if (!exists || filesToUpload.contains(node)) {
-						ftpFilesToUpload.add(ftpFile);
-					}
 				}
-			}
 
-			mapFtpFilesToUpload.put(node, ftpFilesToUpload);
-			nbFilesToUpload = nbFilesToUpload + ftpFilesToUpload.size();
-			count++;
-			ftpDAOPool.get(0).setCount(count);
-			ftpDAOPool.get(0).updateObserverCountWithText();
+				mapFtpFilesToUpload.put(node, ftpFilesToUpload);
+				nbFilesToUpload = nbFilesToUpload + ftpFilesToUpload.size();
+				count++;
+				ftpDAOPool.get(0).setCount(count);
+				ftpDAOPool.get(0).updateObserverCountWithText();
+			}
+		} finally {
+			// Disconnect
+			ftpDAOPool.get(0).disconnect();
 		}
 
 		String repositoryPath = repository.getPath();
@@ -735,52 +746,65 @@ public class FtpService extends AbstractConnexionService implements
 
 		ftpDAOPool.get(0).setTotalCount(this.checkRepositoryFilesList.size());
 		ftpDAOPool.get(0).setCount(0);
-
 		int count = 0;
-		for (SyncTreeLeaf leaf : this.checkRepositoryFilesList) {
-			if (ftpDAOPool.get(0).isCanceled()) {
-				break;
-			} else {
-				String relativePath = determinePath(leaf);
-				List<String> listFilesName = new ArrayList<String>();
-				if (leaf.isCompressed()) {
-					if (serverInfo.isCompressedPboFilesOnly()) {
-						String fileName = leaf.getName() + ZIP_EXTENSION;// *.pbo.zip
-						listFilesName.add(fileName);
+
+		try {
+			// Connect
+			ftpDAOPool.get(0).connectToRepository(repositoryName,
+					repository.getProtocol());
+
+			for (SyncTreeLeaf leaf : this.checkRepositoryFilesList) {
+				if (ftpDAOPool.get(0).isCanceled()) {
+					break;
+				} else {
+					String relativePath = determinePath(leaf);
+					List<String> listFilesName = new ArrayList<String>();
+					if (leaf.isCompressed()) {
+						if (serverInfo.isCompressedPboFilesOnly()) {
+							String fileName = leaf.getName() + ZIP_EXTENSION;// *.pbo.zip
+							listFilesName.add(fileName);
+						} else {
+							String fileName = leaf.getName();// *.*
+							listFilesName.add(fileName);
+							fileName = leaf.getName() + ZIP_EXTENSION;// *.pbo.zip
+							listFilesName.add(fileName);
+							if (repository.getProtocol() instanceof Http) {
+								fileName = leaf.getName() + ZSYNC_EXTENSION;// *.pbo.zsync
+								listFilesName.add(fileName);
+							}
+						}
 					} else {
 						String fileName = leaf.getName();// *.*
-						listFilesName.add(fileName);
-						fileName = leaf.getName() + ZIP_EXTENSION;// *.pbo.zip
 						listFilesName.add(fileName);
 						if (repository.getProtocol() instanceof Http) {
 							fileName = leaf.getName() + ZSYNC_EXTENSION;// *.pbo.zsync
 							listFilesName.add(fileName);
 						}
 					}
-				} else {
-					String fileName = leaf.getName();// *.*
-					listFilesName.add(fileName);
-					if (repository.getProtocol() instanceof Http) {
-						fileName = leaf.getName() + ZSYNC_EXTENSION;// *.pbo.zsync
-						listFilesName.add(fileName);
+					for (String fileName : listFilesName) {
+						boolean found = remoteFileExists(repository.getName(),
+								relativePath, fileName,
+								repository.getProtocol());
+						if (!found) {
+							errorsCheckRepository
+									.add(new FileNotFoundException(
+											"File not found on repository: "
+													+ relativePath + "/"
+													+ fileName));
+							ftpDAOPool.get(0).updateObserverCheckCountError(
+									errorsCheckRepository.size());
+						}
 					}
+					count++;
+					ftpDAOPool.get(0).setCount(count);
 				}
-				for (String fileName : listFilesName) {
-					boolean found = remoteFileExists(repository.getName(),
-							relativePath, fileName, repository.getProtocol());
-					if (!found) {
-						errorsCheckRepository.add(new FileNotFoundException(
-								"File not found on repository: " + relativePath
-										+ "/" + fileName));
-						ftpDAOPool.get(0).updateObserverCheckCountError(
-								errorsCheckRepository.size());
-					}
-				}
-				count++;
-				ftpDAOPool.get(0).setCount(count);
+				ftpDAOPool.get(0).updateObserverCheckProgress();
 			}
-			ftpDAOPool.get(0).updateObserverCheckProgress();
+		} finally {
+			// Disconnect
+			ftpDAOPool.get(0).disconnect();
 		}
+
 		return errorsCheckRepository;
 	}
 
@@ -788,13 +812,8 @@ public class FtpService extends AbstractConnexionService implements
 			String relativePath, String fileName, AbstractProtocole protocole)
 			throws IOException {
 
-		try {
-			ftpDAOPool.get(0).connectToRepository(repositoryName, protocole);
-			return ftpDAOPool.get(0).fileExists(repositoryName, relativePath,
-					fileName, protocole);
-		} finally {
-			ftpDAOPool.get(0).disconnect();
-		}
+		return ftpDAOPool.get(0).fileExists(repositoryName, relativePath,
+				fileName, protocole);
 	}
 
 	private boolean remoteDirectoryExists(String repositoryRemotePath,
