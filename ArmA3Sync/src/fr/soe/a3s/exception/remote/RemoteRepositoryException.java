@@ -1,6 +1,6 @@
 package fr.soe.a3s.exception.remote;
 
-public class RemoteRepositoryException extends Exception {
+public abstract class RemoteRepositoryException extends Exception {
 
 	protected RemoteRepositoryException() {
 	}
