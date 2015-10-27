@@ -1,7 +1,6 @@
 package fr.soe.a3s.exception.repository;
 
-
-public class RepositoryException extends Exception {
+public abstract class RepositoryException extends Exception {
 
 	protected RepositoryException() {
 	}
