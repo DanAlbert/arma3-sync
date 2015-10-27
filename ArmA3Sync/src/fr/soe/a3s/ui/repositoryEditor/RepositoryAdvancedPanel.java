@@ -120,6 +120,7 @@ public class RepositoryAdvancedPanel extends JDialog implements UIConstants {
 				menuExitPerformed();
 			}
 		});
+		setContextualHelp();
 	}
 
 	public void init() {
@@ -127,6 +128,11 @@ public class RepositoryAdvancedPanel extends JDialog implements UIConstants {
 				.toString(TimeOutValues.CONNECTION_TIME_OUT.getValue()));
 		textFiledReadTimeout.setText(Integer
 				.toString(TimeOutValues.READ_TIME_OUT.getValue()));
+	}
+
+	private void setContextualHelp() {
+		textFieldConnectionTimeout.setToolTipText("0 = no time limit");
+		textFiledReadTimeout.setToolTipText("0 = no time limit");
 	}
 
 	private void buttonOKPerformed() {

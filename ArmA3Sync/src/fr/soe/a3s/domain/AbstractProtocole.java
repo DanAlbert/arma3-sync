@@ -112,11 +112,5 @@ public abstract class AbstractProtocole implements Serializable {
 		} catch (NumberFormatException e) {
 			throw new CheckException("Read timeout is invalid!");
 		}
-		if (Integer.parseInt(getConnectionTimeOut()) == 0) {
-			throw new CheckException("Connection timeout should be >=1!");
-		}
-		if (Integer.parseInt(getReadTimeOut()) == 0) {
-			throw new CheckException("Read timeout should be >=1!");
-		}
 	}
 }

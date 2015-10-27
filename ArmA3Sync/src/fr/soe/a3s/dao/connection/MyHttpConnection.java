@@ -141,9 +141,14 @@ public class MyHttpConnection {
 			}
 
 			// Set connection and read time out
-			urLConnection
-					.setConnectTimeout(Integer.parseInt(connectionTimeOut));
-			urLConnection.setReadTimeout(Integer.parseInt(readTimeOut));
+			int connectionTimeOutValue = Integer.parseInt(connectionTimeOut);
+			if (connectionTimeOutValue != 0) {
+				urLConnection.setConnectTimeout(connectionTimeOutValue);
+			}
+			int readTimeOutValue = Integer.parseInt(readTimeOut);
+			if (readTimeOutValue != 0) {
+				urLConnection.setReadTimeout(readTimeOutValue);
+			}
 
 			// Set User Agent
 			urLConnection.setRequestProperty("User-Agent", "ArmA3Sync");

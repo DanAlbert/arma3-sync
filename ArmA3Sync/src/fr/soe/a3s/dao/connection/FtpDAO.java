@@ -59,9 +59,17 @@ public class FtpDAO extends AbstractConnexionDAO {
 
 		ftpClient = new FTPClient();
 
-		ftpClient.setConnectTimeout(Integer.parseInt(protocole
-				.getConnectionTimeOut()));
-		ftpClient.setDataTimeout(Integer.parseInt(protocole.getReadTimeOut()));
+		// Set connection and read time out
+		int connectionTimeOutValue = Integer.parseInt(protocole
+				.getConnectionTimeOut());
+		if (connectionTimeOutValue != 0) {
+			ftpClient.setConnectTimeout(connectionTimeOutValue);
+		}
+		int readTimeOutValue = Integer.parseInt(protocole.getReadTimeOut());
+		if (readTimeOutValue != 0) {
+			ftpClient.setDataTimeout(readTimeOutValue);
+		}
+
 		ftpClient.setBufferSize(1048576);// 1024*1024
 		boolean isLoged = false;
 
