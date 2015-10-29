@@ -40,20 +40,6 @@ public class ConnectionPanel extends ProgressPanel {
 		this.repositoryName = repositoryName;
 		this.eventName = eventName;
 		labelTitle.setText("Connecting to repository...");
-
-		buttonCancel.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent arg0) {
-				menuExitPerformed();
-			}
-		});
-		// Add Listeners
-		addWindowListener(new WindowAdapter() {
-			@Override
-			public void windowClosing(WindowEvent e) {
-				menuExitPerformed();
-			}
-		});
 	}
 
 	public void init() {

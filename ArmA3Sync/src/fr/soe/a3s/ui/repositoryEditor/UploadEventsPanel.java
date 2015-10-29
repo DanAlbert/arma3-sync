@@ -30,20 +30,6 @@ public class UploadEventsPanel extends ProgressPanel {
 		super(facade);
 		this.repositoryName = repositoryName;
 		labelTitle.setText("Uploading events informations...");
-
-		buttonCancel.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent arg0) {
-				menuExitPerformed();
-			}
-		});
-		// Add Listeners
-		addWindowListener(new WindowAdapter() {
-			@Override
-			public void windowClosing(WindowEvent e) {
-				menuExitPerformed();
-			}
-		});
 	}
 
 	public void init() {

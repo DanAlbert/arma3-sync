@@ -23,7 +23,7 @@ public abstract class ProgressPanel extends JDialog implements UIConstants {
 	protected boolean canceled = false;
 
 	public ProgressPanel(Facade facade) {
-		super(facade.getMainPanel(), "Repository", false);
+		super(facade.getMainPanel(), "Progress", false);
 
 		this.facade = facade;
 		this.setResizable(false);
