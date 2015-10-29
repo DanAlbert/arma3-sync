@@ -160,7 +160,10 @@ public class ArmA3Sync implements DataAccessConstants {
 			CommandLine commandLine = new CommandLine();
 			String repositoryName = args[1];
 			commandLine.check(repositoryName);
-		} else if (args.length == 4 && args[0].equalsIgnoreCase("-sync")) {
+		} else if (args.length == 3 && args[0].equalsIgnoreCase("-extract")){
+			CommandLine commandLine = new CommandLine();
+			commandLine.extractBikeys(args[1], args[2]);
+		}else if (args.length == 4 && args[0].equalsIgnoreCase("-sync")) {
 			CommandLine commandLine = new CommandLine();
 			String repositoryName = args[1];
 			String destinationFolderPath = args[2];
@@ -173,15 +176,19 @@ public class ArmA3Sync implements DataAccessConstants {
 		} else {
 			System.out.println("ArmA3Sync - bad command.");
 			System.out.println("-BUILD " + "\"" + "Name of the Repository"
-					+ "\"" + ": build repository.");
+					+ "\"" + " : build repository.");
 			System.out.println("-CHECK " + "\"" + "Name of the Repository"
-					+ "\"" + ": check repository.");
+					+ "\"" + " : check repository.");
 			System.out.println("-CONSOLE: run ArmASync console management.");
+			System.out.println("-EXTRACT " + "\"" + "Source folder path"
+					+ "\"" + " " + "\"" + "Destination folder path" + "\""
+					+ " : extract *.bikey files.");
 			System.out.println("-SYNC " + "\"" + "Name of the Repository"
-					+ "\"" + " " + "\"" + "Destination folder path " + "\""
-					+ "true/false (with/without exact content matching)"
-					+ ": synchronize with repository.");
-			System.out.println("-UPDATE: check for ArmA3Sync updates.");
+					+ "\"" + " " + "\"" + "Destination folder path" + "\""
+					+ " " + "true/false (with/without exact content matching)"
+					+ " : synchronize with repository.");
+			System.out.println("-UPDATE : check for ArmA3Sync updates.");
+
 		}
 	}
 
