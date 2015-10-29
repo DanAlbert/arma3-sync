@@ -45,7 +45,7 @@ public class CommandConsole extends CommandGeneral {
 		System.out.println(ConsoleCommands.SYNC.toString()
 				+ ": synchronize content with a repository");
 		System.out
-				.println(ConsoleCommands.EXTRACT_BIKEYS.toString()
+				.println(ConsoleCommands.EXTRACT.toString()
 						+ ": extract *.bikey files from source directory to target directory");
 		System.out.println(ConsoleCommands.UPDATE.toString()
 				+ ": check for updates");
@@ -79,7 +79,7 @@ public class CommandConsole extends CommandGeneral {
 			checkForUpdates();
 		} else if (command.equalsIgnoreCase(ConsoleCommands.SYNC.toString())) {
 			sync();
-		} else if (command.equalsIgnoreCase(ConsoleCommands.EXTRACT_BIKEYS
+		} else if (command.equalsIgnoreCase(ConsoleCommands.EXTRACT
 				.toString())) {
 			extractBikeys();
 		} else if (command
@@ -752,7 +752,7 @@ public class CommandConsole extends CommandGeneral {
 		String targetDirectoryPath = "";
 		do {
 			System.out.print("Enter target directory to copy *.bikey files: ");
-			sourceDirectoryPath = c.nextLine();
+			targetDirectoryPath = c.nextLine();
 		} while (targetDirectoryPath.isEmpty());
 
 		/* Proceed with command */

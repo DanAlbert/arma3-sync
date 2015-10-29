@@ -200,7 +200,9 @@ public class CommandGeneral {
 			CommonService commonService = new CommonService();
 			commonService.extractBikeys(sourceDirectoryPath,
 					targetDirectoryPath);
+			System.out.println("Extraction done.");
 		} catch (CheckException | IOException e) {
+			System.out.println("Extraction failed.");
 			System.out.println(e.getMessage());
 		}
 
