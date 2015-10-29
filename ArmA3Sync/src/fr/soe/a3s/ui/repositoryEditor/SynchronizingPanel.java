@@ -11,6 +11,7 @@ import fr.soe.a3s.service.AbstractConnexionService;
 import fr.soe.a3s.service.AbstractConnexionServiceFactory;
 import fr.soe.a3s.service.RepositoryService;
 import fr.soe.a3s.ui.Facade;
+import fr.soe.a3s.ui.ProgressPanel;
 
 public class SynchronizingPanel extends ProgressPanel {
 
@@ -20,20 +21,6 @@ public class SynchronizingPanel extends ProgressPanel {
 	public SynchronizingPanel(Facade facade) {
 		super(facade);
 		labelTitle.setText("Checking repositories...");
-
-		buttonCancel.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent arg0) {
-				menuExitPerformed();
-			}
-		});
-		// Add Listeners
-		addWindowListener(new WindowAdapter() {
-			@Override
-			public void windowClosing(WindowEvent e) {
-				menuExitPerformed();
-			}
-		});
 	}
 
 	public void init(final String repositoryName) {
@@ -82,7 +69,9 @@ public class SynchronizingPanel extends ProgressPanel {
 		t.start();
 	}
 
-	private void menuExitPerformed() {
+	@Override
+	protected void menuExitPerformed() {
+		
 		this.setVisible(false);
 		canceled = true;
 		if (connexion != null) {

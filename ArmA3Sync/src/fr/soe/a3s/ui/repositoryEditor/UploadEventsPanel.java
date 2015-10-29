@@ -16,6 +16,7 @@ import fr.soe.a3s.service.AbstractConnexionService;
 import fr.soe.a3s.service.AbstractConnexionServiceFactory;
 import fr.soe.a3s.service.RepositoryService;
 import fr.soe.a3s.ui.Facade;
+import fr.soe.a3s.ui.ProgressPanel;
 
 public class UploadEventsPanel extends ProgressPanel {
 
@@ -120,7 +121,8 @@ public class UploadEventsPanel extends ProgressPanel {
 		t.start();
 	}
 
-	private void menuExitPerformed() {
+	@Override
+	protected void menuExitPerformed() {
 
 		this.setVisible(false);
 		canceled = true;

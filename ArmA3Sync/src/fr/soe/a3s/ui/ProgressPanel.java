@@ -1,7 +1,11 @@
-package fr.soe.a3s.ui.repositoryEditor;
+package fr.soe.a3s.ui;
 
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 
 import javax.swing.JButton;
 import javax.swing.JDialog;
@@ -9,8 +13,6 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 
-import fr.soe.a3s.ui.Facade;
-import fr.soe.a3s.ui.UIConstants;
 
 public abstract class ProgressPanel extends JDialog implements UIConstants {
 
@@ -64,5 +66,21 @@ public abstract class ProgressPanel extends JDialog implements UIConstants {
 			progressBar.setBounds(0, 36, 174, 16);
 		}
 		getRootPane().setDefaultButton(buttonCancel);
+
+		buttonCancel.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				menuExitPerformed();
+			}
+		});
+		// Add Listeners
+		addWindowListener(new WindowAdapter() {
+			@Override
+			public void windowClosing(WindowEvent e) {
+				menuExitPerformed();
+			}
+		});
 	}
+
+	protected abstract void menuExitPerformed();
 }
