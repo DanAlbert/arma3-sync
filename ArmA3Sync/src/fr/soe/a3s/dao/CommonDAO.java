@@ -19,6 +19,8 @@ import fr.soe.a3s.exception.CheckException;
 
 public class CommonDAO implements DataAccessConstants {
 
+	/* Test */
+	private boolean canceled = false;
 	/* Data */
 	private List<File> extractedFiles;
 
@@ -73,8 +75,11 @@ public class CommonDAO implements DataAccessConstants {
 			if (extractedFiles.isEmpty()) {
 				return 0;
 			} else {
-				for (File file : extractedFiles) {
-					FileAccessMethods.copyFile(file, targetDirectory);
+				for (File sourceFile : extractedFiles) {
+					File targetFile = new File(
+							targetDirectory.getAbsolutePath() + "/"
+									+ sourceFile.getName());
+					FileAccessMethods.copyFile(sourceFile, targetFile);
 				}
 				int count = extractedFiles.size();
 				extractedFiles = null;
@@ -85,21 +90,27 @@ public class CommonDAO implements DataAccessConstants {
 
 	private void extractBikeyFiles(File file) {
 
-		if (file.isDirectory()) {
-			File[] subFiles = file.listFiles();
-			if (subFiles != null) {
-				for (File f : subFiles) {
-					extractBikeyFiles(f);
+		if (!canceled){
+			if (file.isDirectory()) {
+				File[] subFiles = file.listFiles();
+				if (subFiles != null) {
+					for (File f : subFiles) {
+						extractBikeyFiles(f);
+					}
 				}
-			}
-		} else {
-			int index = file.getName().lastIndexOf(".");
-			if (index != -1) {
-				String extension = file.getName().substring(index);
-				if (extension.equalsIgnoreCase(BIKEY)) {
-					extractedFiles.add(file);
+			} else {
+				int index = file.getName().lastIndexOf(".");
+				if (index != -1) {
+					String extension = file.getName().substring(index);
+					if (extension.equalsIgnoreCase(BIKEY)) {
+						extractedFiles.add(file);
+					}
 				}
 			}
 		}
+	}
+
+	public void cancel() {
+		this.canceled = true;
 	}
 }
