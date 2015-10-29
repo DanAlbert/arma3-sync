@@ -681,6 +681,7 @@ public class MainPanel extends JFrame implements UIConstants {
 	private void menuItemBikeyExtractorPerformed() {
 
 		BiKeyExtactorPanel biKeyExtactorPanel = new BiKeyExtactorPanel(facade);
+		biKeyExtactorPanel.init();
 		biKeyExtactorPanel.setVisible(true);
 	}
 
