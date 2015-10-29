@@ -194,6 +194,8 @@ public class CommandGeneral {
 	protected void extractBikeys(String sourceDirectoryPath,
 			String targetDirectoryPath, boolean exit) {
 
+		System.out.println("Extracting *.bikey files...");
+		
 		try {
 			CommonService commonService = new CommonService();
 			commonService.extractBikeys(sourceDirectoryPath,

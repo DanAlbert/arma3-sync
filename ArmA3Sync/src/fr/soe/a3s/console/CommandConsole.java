@@ -755,6 +755,8 @@ public class CommandConsole extends CommandGeneral {
 			sourceDirectoryPath = c.nextLine();
 		} while (targetDirectoryPath.isEmpty());
 
+		/* Proceed with command */
+		
 		super.extractBikeys(sourceDirectoryPath, targetDirectoryPath, false);
 	}
 
