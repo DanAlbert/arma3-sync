@@ -136,6 +136,10 @@ public class CommonService {
 		return commonDAO.extractBikeys(sourceDirectoryPath,
 				destinationDirectoryPath);
 	}
+	
+	public void cancel() {
+		commonDAO.cancel();
+	}
 
 	public String getWiki() {
 		return WIKI;

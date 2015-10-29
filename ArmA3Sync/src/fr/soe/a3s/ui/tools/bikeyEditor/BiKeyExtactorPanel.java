@@ -41,7 +41,6 @@ public class BiKeyExtactorPanel extends JDialog implements UIConstants {
 	private JTextField textFieldTargetDirectory;
 	private JButton buttonSelectTargetDirectory;
 	/* Services */
-	private final CommonService commonService = new CommonService();
 	private final ConfigurationService configurationService = new ConfigurationService();
 
 	public BiKeyExtactorPanel(Facade facade) {
@@ -175,7 +174,7 @@ public class BiKeyExtactorPanel extends JDialog implements UIConstants {
 		buttonClose.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				buttonCancelPerformed();
+				menuExitPerformed();
 			}
 		});
 		// Add Listeners
@@ -230,43 +229,20 @@ public class BiKeyExtactorPanel extends JDialog implements UIConstants {
 		String sourceDirectoryPath = textFieldSourceDirectory.getText();
 		String targetDirectoryPath = textFieldTargetDirectory.getText();
 
-		try {
-
-			int nbBikeys = commonService.extractBikeys(sourceDirectoryPath,
-					targetDirectoryPath);
-			if (nbBikeys != 0) {
-				JOptionPane.showMessageDialog(facade.getMainPanel(), nbBikeys
-						+ " " + "have been copied to target directory.",
-						"Bikey extractor wizard",
-						JOptionPane.INFORMATION_MESSAGE);
-			} else {
-				JOptionPane.showMessageDialog(facade.getMainPanel(), nbBikeys
-						+ " " + "have been found.", "Bikey extractor wizard",
-						JOptionPane.WARNING_MESSAGE);
-			}
-
-			configurationService
-					.setBiketyExtractSourceDirectoryPath(sourceDirectoryPath);
-			configurationService
-					.setBiketyExtractTargetDirectoryPath(targetDirectoryPath);
-
-		} catch (CheckException e1) {
-			JOptionPane.showMessageDialog(facade.getMainPanel(),
-					e1.getMessage(), "Bikey extractor wizard",
-					JOptionPane.WARNING_MESSAGE);
-		} catch (IOException e2) {
-			e2.printStackTrace();
-			JOptionPane.showMessageDialog(facade.getMainPanel(),
-					e2.getMessage(), "Bikey extractor wizard",
-					JOptionPane.ERROR_MESSAGE);
-		}
-	}
-
-	private void buttonCancelPerformed() {
-		this.dispose();
+		ExtractProgressPanel extractProgressPanel = new ExtractProgressPanel(
+				facade);
+		extractProgressPanel.setVisible(true);
+		extractProgressPanel.init(sourceDirectoryPath, targetDirectoryPath);
 	}
 
 	private void menuExitPerformed() {
+
+		configurationService
+				.setBiketyExtractSourceDirectoryPath(textFieldSourceDirectory
+						.getText());
+		configurationService
+				.setBiketyExtractTargetDirectoryPath(textFieldTargetDirectory
+						.getText());
 		this.dispose();
 	}
 }
