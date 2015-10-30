@@ -50,6 +50,7 @@ import fr.soe.a3s.service.RepositoryService;
 import fr.soe.a3s.ui.Facade;
 import fr.soe.a3s.ui.UIConstants;
 import fr.soe.a3s.ui.mainEditor.groups.AddonsAddGroupPanel;
+import fr.soe.a3s.ui.mainEditor.groups.AddonsDuplicateGroupPanel;
 import fr.soe.a3s.ui.mainEditor.groups.AddonsRenameGroupPanel;
 import fr.soe.a3s.ui.mainEditor.tree.AddonTreeModel;
 import fr.soe.a3s.ui.mainEditor.tree.CheckTreeCellRenderer;
@@ -78,7 +79,8 @@ public class AddonsPanel extends JPanel implements UIConstants {
 	private AddonTreeModel addonTreeModel1, addonTreeModel2;
 	private JPopupMenu popup;
 	private TreeDnD treeDnD;
-	private JMenuItem menuItemAddGroup, menuItemRename, menuItemRemove;
+	private JMenuItem menuItemAddGroup, menuItemDuplicate, menuItemRename,
+			menuItemRemove;
 	private final ConfigurationService configurationService = new ConfigurationService();
 	private final ProfileService profileService = new ProfileService();
 	private final LaunchService launchService = new LaunchService();
@@ -191,6 +193,16 @@ public class AddonsPanel extends JPanel implements UIConstants {
 		menuItemAddGroup.setActionCommand("Add Group");
 		popup.add(menuItemAddGroup);
 
+		menuItemDuplicate = new JMenuItem("Duplicate");
+		menuItemDuplicate.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent evt) {
+				popupActionPerformed(evt);
+			}
+		});
+		menuItemDuplicate.setActionCommand("Duplicate");
+		popup.add(menuItemDuplicate);
+
 		menuItemRename = new JMenuItem("Rename");
 		menuItemRename.addActionListener(new ActionListener() {
 			@Override
@@ -231,27 +243,32 @@ public class AddonsPanel extends JPanel implements UIConstants {
 					if (nodes.length > 0) {
 						if (nodes[0].isLeaf()) {
 							menuItemAddGroup.setEnabled(true);
+							menuItemDuplicate.setEnabled(false);
 							menuItemRename.setEnabled(false);
 							menuItemRemove.setEnabled(true);
 						} else if (!nodes[0].isLeaf()) {
 							TreeDirectoryDTO directortDTO = (TreeDirectoryDTO) nodes[0];
 							if (directortDTO.getModsetType() == null) {
 								menuItemAddGroup.setEnabled(true);
+								menuItemDuplicate.setEnabled(true);
 								menuItemRename.setEnabled(true);
 								menuItemRemove.setEnabled(true);
 							} else {
 								menuItemAddGroup.setEnabled(false);
+								menuItemDuplicate.setEnabled(true);
 								menuItemRename.setEnabled(false);
 								menuItemRemove.setEnabled(true);
 							}
 						}
 					} else {
 						menuItemAddGroup.setEnabled(true);
+						menuItemDuplicate.setEnabled(false);
 						menuItemRename.setEnabled(false);
 						menuItemRemove.setEnabled(false);
 					}
 				} else {
 					menuItemAddGroup.setEnabled(true);
+					menuItemDuplicate.setEnabled(false);
 					menuItemRename.setEnabled(false);
 					menuItemRemove.setEnabled(false);
 				}
@@ -556,6 +573,8 @@ public class AddonsPanel extends JPanel implements UIConstants {
 	private void popupActionPerformed(ActionEvent evt) {
 		if (evt.getActionCommand().equals("Add Group")) {
 			addPerformed();
+		} else if (evt.getActionCommand().equals("Duplicate")) {
+			duplicatePerformed();
 		} else if (evt.getActionCommand().equals("Rename")) {
 			renamePormed();
 		} else if (evt.getActionCommand().equals("Remove")) {
@@ -587,6 +606,24 @@ public class AddonsPanel extends JPanel implements UIConstants {
 				addGroupPanel.init();
 				addGroupPanel.setVisible(true);
 			}
+		}
+	}
+
+	public void duplicatePerformed() {
+
+		TreeNodeDTO[] nodes = getSelectedNode();
+		if (nodes == null) {
+			return;
+		}
+		if (nodes.length == 0) {
+			return;
+		}
+		if (!nodes[0].isLeaf()) {
+			TreeNodeDTO selectedNodeDTO = nodes[0];
+			AddonsDuplicateGroupPanel duplicateGroupPanel = new AddonsDuplicateGroupPanel(
+					facade, racine2, selectedNodeDTO);
+			duplicateGroupPanel.init();
+			duplicateGroupPanel.setVisible(true);
 		}
 	}
 

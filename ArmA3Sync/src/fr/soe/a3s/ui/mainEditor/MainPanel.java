@@ -103,6 +103,7 @@ public class MainPanel extends JFrame implements UIConstants {
 	private MenuItem launchItem, exitItem;
 	private final Container contenu;
 	private JMenuItem menuItemAddGroup;
+	private JMenuItem menuItemDuplicateGroup;
 	private JMenuItem menuItemRenameGroup;
 	private JMenuItem menuItemRemoveGroup;
 	private JMenuItem menuItemTFARwizard;
@@ -148,9 +149,11 @@ public class MainPanel extends JFrame implements UIConstants {
 
 		menuGroups = new JMenu("Groups");
 		menuItemAddGroup = new JMenuItem("Add");
+		menuItemDuplicateGroup = new JMenuItem("Duplicate");
 		menuItemRenameGroup = new JMenuItem("Rename");
 		menuItemRemoveGroup = new JMenuItem("Remove");
 		menuGroups.add(menuItemAddGroup);
+		menuGroups.add(menuItemDuplicateGroup);
 		menuGroups.add(menuItemRenameGroup);
 		menuGroups.add(menuItemRemoveGroup);
 		menuBar.add(menuGroups);
@@ -385,6 +388,12 @@ public class MainPanel extends JFrame implements UIConstants {
 				menuItemAddGroupPerformed();
 			}
 		});
+		menuItemDuplicateGroup.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				menuItemDuplicateGroupPerformed();
+			}
+		});
 		menuItemRenameGroup.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -560,6 +569,11 @@ public class MainPanel extends JFrame implements UIConstants {
 	private void menuItemAddGroupPerformed() {
 		tabbedPane.setSelectedIndex(0);
 		facade.getAddonsPanel().addPerformed();
+	}
+
+	private void menuItemDuplicateGroupPerformed() {
+		tabbedPane.setSelectedIndex(0);
+		facade.getAddonsPanel().duplicatePerformed();
 	}
 
 	private void menuItemRenameGroupPerformed() {
