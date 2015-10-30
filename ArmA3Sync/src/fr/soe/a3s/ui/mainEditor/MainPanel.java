@@ -1100,7 +1100,7 @@ public class MainPanel extends JFrame implements UIConstants {
 		private Color selectedColor = null; // the foreground color of the title
 											// lable if tab is selected
 
-		public CloseableTabComponent(JTabbedPane aTabbedPane, String title) {
+		public CloseableTabComponent(JTabbedPane aTabbedPane, final String title) {
 
 			FlowLayout f = new FlowLayout(FlowLayout.CENTER, 5, 0);
 			this.setLayout(f);
@@ -1134,50 +1134,32 @@ public class MainPanel extends JFrame implements UIConstants {
 			ActionListener listener = new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
-					// The component parameter must be declared "final" so that
-					// it
-					// can be
-					// referenced in the anonymous listener class like this.
-					int selectedIndex = tabbedPane.getSelectedIndex();
-					boolean contains = false;
-					String title = null;
-					int indexMap = 0;
-					for (Iterator<String> i = mapTabIndexes.keySet().iterator(); i
-							.hasNext();) {
-						title = i.next();
-						int tabIndex = mapTabIndexes.get(title);
-						if (selectedIndex == tabIndex) {
-							contains = true;
-							break;
-						}
-						indexMap++;
-					}
-
+					/*
+					 * The component parameter must be declared "final" so that
+					 * it can be referenced in the anonymous listener class like
+					 * this.
+					 */
 					boolean isDownloading = repositoryService
 							.isDownloading(title);
 					boolean isUploading = repositoryService.isUploading(title);
 					boolean isBuilding = repositoryService.isBuilding(title);
 					boolean isChecking = repositoryService.isChecking(title);
 
-					if (contains && !isDownloading && !isUploading
-							&& !isBuilding && !isChecking) {
-						int count = 0;
+					if (!isDownloading && !isUploading && !isBuilding
+							&& !isChecking) {
+						tabbedPane.remove(mapTabIndexes.get(title));
+						mapTabIndexes.remove(title);
+						int index = 6;// First Index
 						for (Iterator<String> i = mapTabIndexes.keySet()
 								.iterator(); i.hasNext();) {
 							String key = i.next();
-							int value = mapTabIndexes.get(key);
-							if (count > indexMap) {
-								mapTabIndexes.put(key, value - 1);
-							}
-							count++;
+							mapTabIndexes.put(key, index);
+							index++;
 						}
-						mapTabIndexes.remove(title);
-						tabbedPane.remove(tabbedPane.getSelectedComponent());
 					}
 				}
 			};
 			closeButton.addActionListener(listener);
-
 		}
 
 		// calculate the tab index of this tab component
