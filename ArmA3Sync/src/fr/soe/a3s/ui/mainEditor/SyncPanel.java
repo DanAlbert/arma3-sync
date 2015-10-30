@@ -42,9 +42,9 @@ import fr.soe.a3s.exception.repository.RepositoryNotFoundException;
 import fr.soe.a3s.service.RepositoryService;
 import fr.soe.a3s.ui.Facade;
 import fr.soe.a3s.ui.UIConstants;
-import fr.soe.a3s.ui.repositoryEditor.ConnectionPanel;
-import fr.soe.a3s.ui.repositoryEditor.RepositoryEditPanel;
-import fr.soe.a3s.ui.repositoryEditor.SynchronizingPanel;
+import fr.soe.a3s.ui.repositoryEditor.dialogs.RepositoryEditPanel;
+import fr.soe.a3s.ui.repositoryEditor.progressDialogs.ConnectionPanel;
+import fr.soe.a3s.ui.repositoryEditor.progressDialogs.SynchronizingPanel;
 
 /**
  * This code was edited or generated using CloudGarden's Jigloo SWT/Swing GUI

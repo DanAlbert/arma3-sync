@@ -1,4 +1,4 @@
-package fr.soe.a3s.ui.repositoryEditor;
+package fr.soe.a3s.ui.repositoryEditor.progressDialogs;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;

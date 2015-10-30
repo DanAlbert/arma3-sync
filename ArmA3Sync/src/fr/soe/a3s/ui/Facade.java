@@ -13,7 +13,7 @@ import fr.soe.a3s.ui.mainEditor.OnlinePanel;
 import fr.soe.a3s.ui.mainEditor.PreferencesPanel;
 import fr.soe.a3s.ui.mainEditor.SyncPanel;
 import fr.soe.a3s.ui.profileEditor.ProfilePanel;
-import fr.soe.a3s.ui.repositoryEditor.ConnectionPanel;
+import fr.soe.a3s.ui.repositoryEditor.progressDialogs.ConnectionPanel;
 import fr.soe.a3s.ui.tools.acre2Editor.FirstPageACRE2InstallerPanel;
 import fr.soe.a3s.ui.tools.acreEditor.FirstPageACREInstallerPanel;
 import fr.soe.a3s.ui.tools.tfarEditor.FirstPageTFARInstallerPanel;

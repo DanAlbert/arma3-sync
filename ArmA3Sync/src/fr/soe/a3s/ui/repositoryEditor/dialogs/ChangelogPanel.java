@@ -1,4 +1,4 @@
-package fr.soe.a3s.ui.repositoryEditor;
+package fr.soe.a3s.ui.repositoryEditor.dialogs;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
@@ -26,6 +26,7 @@ import fr.soe.a3s.exception.repository.RepositoryException;
 import fr.soe.a3s.service.RepositoryService;
 import fr.soe.a3s.ui.Facade;
 import fr.soe.a3s.ui.UIConstants;
+import fr.soe.a3s.ui.repositoryEditor.AdminPanel;
 
 public class ChangelogPanel extends JFrame implements UIConstants {
 

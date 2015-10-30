@@ -1,4 +1,4 @@
-package fr.soe.a3s.ui.repositoryEditor;
+package fr.soe.a3s.ui.repositoryEditor.dialogs;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -54,6 +54,7 @@ import fr.soe.a3s.service.AbstractConnexionServiceFactory;
 import fr.soe.a3s.service.RepositoryService;
 import fr.soe.a3s.ui.Facade;
 import fr.soe.a3s.ui.UIConstants;
+import fr.soe.a3s.ui.repositoryEditor.progressDialogs.SynchronizingPanel;
 
 /**
  * This code was edited or generated using CloudGarden's Jigloo SWT/Swing GUI

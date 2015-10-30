@@ -1,4 +1,4 @@
-package fr.soe.a3s.ui.repositoryEditor;
+package fr.soe.a3s.ui;
 
 import fr.soe.a3s.dto.sync.SyncTreeLeafDTO;
 

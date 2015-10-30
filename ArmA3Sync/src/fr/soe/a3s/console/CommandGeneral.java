@@ -34,7 +34,7 @@ import fr.soe.a3s.service.AbstractConnexionServiceFactory;
 import fr.soe.a3s.service.CommonService;
 import fr.soe.a3s.service.FtpService;
 import fr.soe.a3s.service.RepositoryService;
-import fr.soe.a3s.ui.repositoryEditor.FileSizeComputer;
+import fr.soe.a3s.ui.FileSizeComputer;
 
 public class CommandGeneral {
 

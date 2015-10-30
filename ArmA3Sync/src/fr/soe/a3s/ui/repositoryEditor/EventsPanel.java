@@ -51,8 +51,10 @@ import fr.soe.a3s.ui.UIConstants;
 import fr.soe.a3s.ui.mainEditor.tree.AddonTreeModel;
 import fr.soe.a3s.ui.mainEditor.tree.CheckTreeCellRenderer;
 import fr.soe.a3s.ui.mainEditor.tree.MyRenderer2;
+import fr.soe.a3s.ui.repositoryEditor.dialogs.UploadRepositoryOptionsPanel;
 import fr.soe.a3s.ui.repositoryEditor.events.EventAddPanel;
 import fr.soe.a3s.ui.repositoryEditor.events.EventRenamePanel;
+import fr.soe.a3s.ui.repositoryEditor.progressDialogs.UploadEventsProgressPanel;
 import fr.soe.a3s.ui.repositoryEditor.tree.AddonSyncTreeModel;
 
 public class EventsPanel extends JPanel implements UIConstants {
@@ -404,7 +406,7 @@ public class EventsPanel extends JPanel implements UIConstants {
 
 	private void uploadInformations() {
 
-		UploadEventsPanel uploadPanel = new UploadEventsPanel(facade,
+		UploadEventsProgressPanel uploadPanel = new UploadEventsProgressPanel(facade,
 				repositoryName);
 		uploadPanel.setVisible(true);
 		uploadPanel.init();

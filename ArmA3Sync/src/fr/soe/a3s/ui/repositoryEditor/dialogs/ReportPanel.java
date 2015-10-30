@@ -1,4 +1,4 @@
-package fr.soe.a3s.ui.repositoryEditor;
+package fr.soe.a3s.ui.repositoryEditor.dialogs;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
@@ -23,6 +23,7 @@ import fr.soe.a3s.dao.DataAccessConstants;
 import fr.soe.a3s.service.CommonService;
 import fr.soe.a3s.ui.Facade;
 import fr.soe.a3s.ui.UIConstants;
+import fr.soe.a3s.ui.repositoryEditor.DownloadPanel;
 
 public class ReportPanel extends JFrame implements UIConstants,
 		DataAccessConstants {

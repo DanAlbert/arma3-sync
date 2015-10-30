@@ -1,4 +1,4 @@
-package fr.soe.a3s.ui.repositoryEditor;
+package fr.soe.a3s.ui.repositoryEditor.dialogs;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
@@ -41,6 +41,7 @@ import fr.soe.a3s.service.ProfileService;
 import fr.soe.a3s.service.RepositoryService;
 import fr.soe.a3s.ui.Facade;
 import fr.soe.a3s.ui.UIConstants;
+import fr.soe.a3s.ui.repositoryEditor.DownloadPanel;
 import fr.soe.a3s.ui.repositoryEditor.outline.AddonSyncRowModel;
 import fr.soe.a3s.ui.repositoryEditor.outline.RenderData;
 import fr.soe.a3s.ui.repositoryEditor.tree.AddonSyncTreeModel;

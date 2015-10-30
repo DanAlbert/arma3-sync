@@ -1,4 +1,4 @@
-package fr.soe.a3s.ui.repositoryEditor;
+package fr.soe.a3s.ui.repositoryEditor.dialogs;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;

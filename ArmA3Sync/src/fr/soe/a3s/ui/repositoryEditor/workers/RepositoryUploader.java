@@ -26,8 +26,8 @@ import fr.soe.a3s.service.AbstractConnexionService;
 import fr.soe.a3s.service.AbstractConnexionServiceFactory;
 import fr.soe.a3s.service.RepositoryService;
 import fr.soe.a3s.ui.Facade;
+import fr.soe.a3s.ui.UnitConverter;
 import fr.soe.a3s.ui.repositoryEditor.AdminPanel;
-import fr.soe.a3s.ui.repositoryEditor.UnitConverter;
 import fr.soe.a3s.ui.repositoryEditor.errorDialogs.UnexpectedErrorDialog;
 
 public class RepositoryUploader extends Thread implements DataAccessConstants {

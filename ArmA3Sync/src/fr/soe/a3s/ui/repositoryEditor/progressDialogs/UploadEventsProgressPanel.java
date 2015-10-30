@@ -1,4 +1,4 @@
-package fr.soe.a3s.ui.repositoryEditor;
+package fr.soe.a3s.ui.repositoryEditor.progressDialogs;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -18,7 +18,7 @@ import fr.soe.a3s.service.RepositoryService;
 import fr.soe.a3s.ui.Facade;
 import fr.soe.a3s.ui.ProgressPanel;
 
-public class UploadEventsPanel extends ProgressPanel {
+public class UploadEventsProgressPanel extends ProgressPanel {
 
 	private AbstractConnexionService connexion;
 	private final String repositoryName;
@@ -26,7 +26,7 @@ public class UploadEventsPanel extends ProgressPanel {
 	/* Service */
 	private final RepositoryService repositoryService = new RepositoryService();
 
-	public UploadEventsPanel(Facade facade, String repositoryName) {
+	public UploadEventsProgressPanel(Facade facade, String repositoryName) {
 		super(facade);
 		this.repositoryName = repositoryName;
 		labelTitle.setText("Uploading events informations...");
