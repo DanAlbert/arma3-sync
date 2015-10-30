@@ -341,15 +341,6 @@ public class LaunchService {
 			params.add("-nologs");
 		}
 
-		// No Launcher
-		if (launcherOptions.getArma3ExePath() != null) {
-			String arma3ExePath = launcherOptions.getArma3ExePath();
-			if (arma3ExePath.toLowerCase().contains(
-					GameExecutables.GAME.getDescription())) {
-				params.add("-nolauncher");
-			}
-		}
-
 		// Join Server
 		String serverName = configuration.getServerName();
 		if (serverName != null) {
