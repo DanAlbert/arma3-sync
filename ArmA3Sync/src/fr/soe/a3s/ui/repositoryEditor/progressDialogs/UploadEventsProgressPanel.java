@@ -1,10 +1,5 @@
 package fr.soe.a3s.ui.repositoryEditor.progressDialogs;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
-
 import javax.swing.JOptionPane;
 
 import fr.soe.a3s.constant.ProtocolType;
@@ -38,15 +33,16 @@ public class UploadEventsProgressPanel extends ProgressPanel {
 			RepositoryDTO repositoryDTO = repositoryService
 					.getRepository(repositoryName);
 			ProtocolDTO protocoleDTO = repositoryDTO.getProtocoleDTO();
-			ProtocolType protocole = protocoleDTO.getProtocolType();
+			ProtocolType protocolType = protocoleDTO.getProtocolType();
 			ProtocolDTO uploadProtocoleDTO = repositoryDTO
 					.getRepositoryUploadProtocoleDTO();
 			if (uploadProtocoleDTO == null
-					&& protocole.equals(ProtocolType.FTP)) {
+					&& protocolType.equals(ProtocolType.FTP)) {
 				repositoryService.setRepositoryUploadProtocole(repositoryName,
 						protocoleDTO.getUrl(), protocoleDTO.getPort(),
 						protocoleDTO.getLogin(), protocoleDTO.getPassword(),
-						protocole);
+						protocolType, protocoleDTO.getConnectionTimeOut(),
+						protocoleDTO.getReadTimeOut());
 			} else if (uploadProtocoleDTO == null) {
 				String message = "Please use the upload options to configure a connection.";
 				throw new CheckException(message);

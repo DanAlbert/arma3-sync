@@ -51,7 +51,7 @@ import fr.soe.a3s.ui.UIConstants;
 import fr.soe.a3s.ui.mainEditor.tree.AddonTreeModel;
 import fr.soe.a3s.ui.mainEditor.tree.CheckTreeCellRenderer;
 import fr.soe.a3s.ui.mainEditor.tree.MyRenderer2;
-import fr.soe.a3s.ui.repositoryEditor.dialogs.UploadRepositoryOptionsPanel;
+import fr.soe.a3s.ui.repositoryEditor.dialogs.UploadEventsOptionsPanel;
 import fr.soe.a3s.ui.repositoryEditor.events.EventAddPanel;
 import fr.soe.a3s.ui.repositoryEditor.events.EventRenamePanel;
 import fr.soe.a3s.ui.repositoryEditor.progressDialogs.UploadEventsProgressPanel;
@@ -398,16 +398,16 @@ public class EventsPanel extends JPanel implements UIConstants {
 
 	private void buttonUploadOptionsPerformed() {
 
-		UploadRepositoryOptionsPanel uploadRepositoryOptionsPanel = new UploadRepositoryOptionsPanel(
+		UploadEventsOptionsPanel uploadEventsOptionsPanel = new UploadEventsOptionsPanel(
 				facade);
-		uploadRepositoryOptionsPanel.init(repositoryName);
-		uploadRepositoryOptionsPanel.setVisible(true);
+		uploadEventsOptionsPanel.init(repositoryName);
+		uploadEventsOptionsPanel.setVisible(true);
 	}
 
 	private void uploadInformations() {
 
-		UploadEventsProgressPanel uploadPanel = new UploadEventsProgressPanel(facade,
-				repositoryName);
+		UploadEventsProgressPanel uploadPanel = new UploadEventsProgressPanel(
+				facade, repositoryName);
 		uploadPanel.setVisible(true);
 		uploadPanel.init();
 	}

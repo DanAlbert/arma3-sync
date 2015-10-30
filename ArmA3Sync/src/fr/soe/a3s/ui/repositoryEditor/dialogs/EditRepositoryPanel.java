@@ -522,7 +522,6 @@ public class EditRepositoryPanel extends JDialog implements UIConstants,
 	}
 
 	private void buttonAdvancedPerformed() {
-
 		repositoryAdvancedPanel.setVisible(true);
 	}
 

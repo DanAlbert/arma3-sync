@@ -11,10 +11,6 @@ import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
-import java.io.IOException;
-import java.nio.file.AccessMode;
-import java.nio.file.FileSystems;
-import java.nio.file.Files;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -534,7 +530,7 @@ public class AdminPanel extends JPanel implements UIConstants {
 						"Build repository", JOptionPane.ERROR_MESSAGE);
 				return;
 				// Repository main folder must have write permissions
-			} 
+			}
 
 			// Check available disk space
 			boolean isCompressed = repositoryService
@@ -577,8 +573,8 @@ public class AdminPanel extends JPanel implements UIConstants {
 			return;
 		}
 
-		BuildRepositoryOptionsPanel buildOptionsPanel = new BuildRepositoryOptionsPanel(facade,
-				repositoryName);
+		BuildRepositoryOptionsPanel buildOptionsPanel = new BuildRepositoryOptionsPanel(
+				facade, repositoryName);
 		buildOptionsPanel.init();
 		buildOptionsPanel.setVisible(true);
 	}
@@ -626,6 +622,14 @@ public class AdminPanel extends JPanel implements UIConstants {
 	}
 
 	private void buttonUploadOptionsPerformed() {
+
+		// Repository main folder location must be set
+		if (textFieldMainSharedFolderLocation.getText().isEmpty()) {
+			JOptionPane.showMessageDialog(facade.getMainPanel(),
+					"Please set the repository main folder location first.",
+					"Upload repository", JOptionPane.INFORMATION_MESSAGE);
+			return;
+		}
 
 		UploadRepositoryOptionsPanel uploadRepositoryOptionsPanel = new UploadRepositoryOptionsPanel(
 				facade);

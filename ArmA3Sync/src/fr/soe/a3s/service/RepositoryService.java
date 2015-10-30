@@ -1316,8 +1316,8 @@ public class RepositoryService extends ObjectDTOtransformer implements
 
 	public void setRepositoryUploadProtocole(String repositoryName, String url,
 			String port, String login, String password,
-			ProtocolType protocolType) throws CheckException,
-			RepositoryException {
+			ProtocolType protocolType, String connectionTimeOut,
+			String readTimeOut) throws CheckException, RepositoryException {
 
 		Repository repository = repositoryDAO.getMap().get(repositoryName);
 		if (repository == null) {
@@ -1325,7 +1325,8 @@ public class RepositoryService extends ObjectDTOtransformer implements
 		}
 
 		AbstractProtocole abstractProtocole = AbstractProtocoleFactory
-				.getProtocol(url, port, login, password, protocolType);
+				.getProtocol(url, port, login, password, connectionTimeOut,
+						readTimeOut, protocolType);
 
 		if (abstractProtocole == null) {
 			throw new CheckException("Upload protocol not supported.");
@@ -1349,16 +1350,13 @@ public class RepositoryService extends ObjectDTOtransformer implements
 		AutoConfig autoConfig = repositoryDAO.readAutoConfig(repositoryName);
 
 		if (sync == null) {
-			throw new LoadingException("Failed to read sync file from disk.");
+			throw new LoadingException("File not found " + SYNC_FILE_PATH);
 		} else if (serverInfo == null) {
-			throw new LoadingException(
-					"Failed to read serverinfo file from disk.");
+			throw new LoadingException("File not found " + SERVERINFO_FILE_PATH);
 		} else if (changelogs == null) {
-			throw new LoadingException(
-					"Failed to read changelogs file from disk.");
+			throw new LoadingException("File not found " + CHANGELOGS_FILE_PATH);
 		} else if (autoConfig == null) {
-			throw new LoadingException(
-					"Failed to read autoconfig file from disk.");
+			throw new LoadingException("File not found " + AUTOCONFIG_FILE_PATH);
 		}
 
 		repository.setLocalSync(sync);
