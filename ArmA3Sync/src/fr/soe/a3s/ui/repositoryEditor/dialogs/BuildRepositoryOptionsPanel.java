@@ -43,7 +43,7 @@ import fr.soe.a3s.ui.CheckBoxList;
 import fr.soe.a3s.ui.Facade;
 import fr.soe.a3s.ui.UIConstants;
 
-public class BuildOptionsPanel extends JDialog implements UIConstants,
+public class BuildRepositoryOptionsPanel extends JDialog implements UIConstants,
 		DataAccessConstants {
 
 	private final Facade facade;
@@ -70,7 +70,7 @@ public class BuildOptionsPanel extends JDialog implements UIConstants,
 	private final ConfigurationService configurationService = new ConfigurationService();
 	private final RepositoryService repositoryService = new RepositoryService();
 
-	public BuildOptionsPanel(Facade facade, String repositoryName) {
+	public BuildRepositoryOptionsPanel(Facade facade, String repositoryName) {
 		super(facade.getMainPanel(), "Build options", true);
 		this.facade = facade;
 		this.repositoryName = repositoryName;
@@ -470,7 +470,7 @@ public class BuildOptionsPanel extends JDialog implements UIConstants,
 		JFileChooser fc = new JFileChooser(
 				repositoryService.getRepositoryPath(repositoryName));
 		fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
-		int returnVal = fc.showOpenDialog(BuildOptionsPanel.this);
+		int returnVal = fc.showOpenDialog(BuildRepositoryOptionsPanel.this);
 		if (returnVal == JFileChooser.APPROVE_OPTION) {
 			File file = fc.getSelectedFile();
 			if (file != null) {
@@ -526,7 +526,7 @@ public class BuildOptionsPanel extends JDialog implements UIConstants,
 		JFileChooser fc = new JFileChooser(
 				repositoryService.getRepositoryPath(repositoryName));
 		fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-		int returnVal = fc.showOpenDialog(BuildOptionsPanel.this);
+		int returnVal = fc.showOpenDialog(BuildRepositoryOptionsPanel.this);
 		if (returnVal == JFileChooser.APPROVE_OPTION) {
 			File file = fc.getSelectedFile();
 			if (file != null) {

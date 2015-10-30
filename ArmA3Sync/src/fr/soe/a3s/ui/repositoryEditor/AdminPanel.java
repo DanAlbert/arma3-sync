@@ -39,7 +39,7 @@ import fr.soe.a3s.service.RepositoryService;
 import fr.soe.a3s.ui.Facade;
 import fr.soe.a3s.ui.UIConstants;
 import fr.soe.a3s.ui.UnitConverter;
-import fr.soe.a3s.ui.repositoryEditor.dialogs.BuildOptionsPanel;
+import fr.soe.a3s.ui.repositoryEditor.dialogs.BuildRepositoryOptionsPanel;
 import fr.soe.a3s.ui.repositoryEditor.dialogs.ChangelogPanel;
 import fr.soe.a3s.ui.repositoryEditor.dialogs.UploadRepositoryOptionsPanel;
 import fr.soe.a3s.ui.repositoryEditor.workers.RepositoryBuilder;
@@ -577,7 +577,7 @@ public class AdminPanel extends JPanel implements UIConstants {
 			return;
 		}
 
-		BuildOptionsPanel buildOptionsPanel = new BuildOptionsPanel(facade,
+		BuildRepositoryOptionsPanel buildOptionsPanel = new BuildRepositoryOptionsPanel(facade,
 				repositoryName);
 		buildOptionsPanel.init();
 		buildOptionsPanel.setVisible(true);

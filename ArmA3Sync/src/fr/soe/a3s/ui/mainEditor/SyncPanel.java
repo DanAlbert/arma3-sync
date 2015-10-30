@@ -42,7 +42,7 @@ import fr.soe.a3s.exception.repository.RepositoryNotFoundException;
 import fr.soe.a3s.service.RepositoryService;
 import fr.soe.a3s.ui.Facade;
 import fr.soe.a3s.ui.UIConstants;
-import fr.soe.a3s.ui.repositoryEditor.dialogs.RepositoryEditPanel;
+import fr.soe.a3s.ui.repositoryEditor.dialogs.EditRepositoryPanel;
 import fr.soe.a3s.ui.repositoryEditor.progressDialogs.ConnectionPanel;
 import fr.soe.a3s.ui.repositoryEditor.progressDialogs.SynchronizingPanel;
 
@@ -347,7 +347,7 @@ public class SyncPanel extends JPanel implements UIConstants {
 	}
 
 	private void buttonNewPerformed() {
-		RepositoryEditPanel repositoryEditPanel = new RepositoryEditPanel(
+		EditRepositoryPanel repositoryEditPanel = new EditRepositoryPanel(
 				facade);
 		repositoryEditPanel.init();
 		repositoryEditPanel.setVisible(true);
@@ -372,7 +372,7 @@ public class SyncPanel extends JPanel implements UIConstants {
 		} catch (Exception e) {
 		}
 		facade.getMainPanel().closeRepository(name);
-		RepositoryEditPanel repositoryEditPanel = new RepositoryEditPanel(
+		EditRepositoryPanel repositoryEditPanel = new EditRepositoryPanel(
 				facade);
 		repositoryEditPanel.init(name);
 		repositoryEditPanel.setVisible(true);

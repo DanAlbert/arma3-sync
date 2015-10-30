@@ -28,7 +28,7 @@ import fr.soe.a3s.ui.UIConstants;
  * PURCHASED FOR THIS MACHINE, SO JIGLOO OR THIS CODE CANNOT BE USED LEGALLY FOR
  * ANY CORPORATE OR COMMERCIAL PURPOSE.
  */
-public class RepositoryAdvancedPanel extends JDialog implements UIConstants {
+public class AdvancedConnectionPanel extends JDialog implements UIConstants {
 
 	private final Facade facade;
 	private JButton buttonOK, buttonCancel;
@@ -38,7 +38,7 @@ public class RepositoryAdvancedPanel extends JDialog implements UIConstants {
 	private JLabel labelConnectionTimeout;
 	private JPanel advancedPanel;
 
-	public RepositoryAdvancedPanel(Facade facade) {
+	public AdvancedConnectionPanel(Facade facade) {
 		super(facade.getMainPanel(), "Advanced configuration", true);
 		this.facade = facade;
 		this.setResizable(false);

@@ -66,7 +66,7 @@ import fr.soe.a3s.ui.repositoryEditor.progressDialogs.SynchronizingPanel;
  * PURCHASED FOR THIS MACHINE, SO JIGLOO OR THIS CODE CANNOT BE USED LEGALLY FOR
  * ANY CORPORATE OR COMMERCIAL PURPOSE.
  */
-public class RepositoryEditPanel extends JDialog implements UIConstants,
+public class EditRepositoryPanel extends JDialog implements UIConstants,
 		DataAccessConstants {
 
 	private final Facade facade;
@@ -94,12 +94,12 @@ public class RepositoryEditPanel extends JDialog implements UIConstants,
 	private JComboBox comboBoxProtocol;
 	private final JPopupMenu popup;
 	private final JMenuItem menuItemPaste;
-	private final RepositoryAdvancedPanel repositoryAdvancedPanel;
+	private final AdvancedConnectionPanel repositoryAdvancedPanel;
 
 	/* Service */
 	private final RepositoryService repositoryService = new RepositoryService();
 
-	public RepositoryEditPanel(Facade facade) {
+	public EditRepositoryPanel(Facade facade) {
 		super(facade.getMainPanel(), "Repository", true);
 		this.facade = facade;
 		this.setResizable(false);
@@ -297,7 +297,7 @@ public class RepositoryEditPanel extends JDialog implements UIConstants,
 		menuItemPaste.setActionCommand("Paste");
 		popup.add(menuItemPaste);
 
-		repositoryAdvancedPanel = new RepositoryAdvancedPanel(facade);
+		repositoryAdvancedPanel = new AdvancedConnectionPanel(facade);
 		repositoryAdvancedPanel.init();
 		repositoryAdvancedPanel.setVisible(false);
 
