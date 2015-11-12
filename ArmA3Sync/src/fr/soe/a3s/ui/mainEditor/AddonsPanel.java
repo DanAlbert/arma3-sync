@@ -505,6 +505,16 @@ public class AddonsPanel extends JPanel implements UIConstants {
 		}
 	}
 
+	public void expandGroup(String folderName) {
+
+		for (TreeNodeDTO node : racine2.getList()) {
+			if (node.getName().equals(folderName)) {
+				arbre2.expandPath((new TreePath(arbre2.getModel().getRoot())).pathByAddingChild(node));
+				break;
+			}
+		}
+	}
+
 	public void refreshViewArbre1() {
 
 		int numberRowShown = arbre1.getRowCount();
@@ -867,6 +877,7 @@ public class AddonsPanel extends JPanel implements UIConstants {
 		highlightMissingAddons();
 		refreshViewArbre2();
 		expandAddonGroups();
+
 		facade.getAddonOptionsPanel().updateAddonPriorities();
 		facade.getLaunchOptionsPanel().updateRunParameters();
 	}
@@ -1085,5 +1096,11 @@ public class AddonsPanel extends JPanel implements UIConstants {
 				setSelectedPaths(n, selectdAddonPaths);
 			}
 		}
+	}
+
+	public void disableAllGroupExcept(String name) {
+		
+		
+		
 	}
 }

@@ -186,6 +186,9 @@ public class OnlinePanel extends JPanel implements UIConstants {
 	public void init() {
 
 		isModifying = true;
+
+		List<String> list = getModsetList();
+
 		List<FavoriteServerDTO> favoriteServersDTO = configurationService
 				.getFavoriteServers();
 		model.setDataSize(favoriteServersDTO.size());
@@ -208,6 +211,8 @@ public class OnlinePanel extends JPanel implements UIConstants {
 				password = "";
 			}
 			if (modsetName == null) {
+				modsetName = "";
+			} else if (!list.contains(modsetName)) {
 				modsetName = "";
 			}
 			model.addRow(i, i);
@@ -278,7 +283,7 @@ public class OnlinePanel extends JPanel implements UIConstants {
 		}
 	}
 
-	private void updatecomboBoxModsets() {
+	private List<String> getModsetList() {
 
 		RepositoryService repositoryService = new RepositoryService();
 		List<RepositoryDTO> repositoryDTOs = repositoryService
@@ -299,6 +304,12 @@ public class OnlinePanel extends JPanel implements UIConstants {
 				e.printStackTrace();
 			}
 		}
+		return list;
+	}
+
+	private void updatecomboBoxModsets() {
+
+		List<String> list = getModsetList();
 
 		Collections.sort(list);
 
@@ -312,7 +323,7 @@ public class OnlinePanel extends JPanel implements UIConstants {
 
 	class MyTableModel extends AbstractTableModel {
 		private final String[] columnNames = { "Description", "IP Addresse",
-				"Port", "Password", "Modset" };
+				"Port", "Password", "Join with modset" };
 
 		private Object[][] data = {};
 

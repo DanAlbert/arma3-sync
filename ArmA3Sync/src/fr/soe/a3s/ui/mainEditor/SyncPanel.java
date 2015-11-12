@@ -395,6 +395,7 @@ public class SyncPanel extends JPanel implements UIConstants {
 		try {
 			repositoryService.removeRepository(name);
 			refresh();
+			facade.getOnlinePanel().init();
 		} catch (RepositoryNotFoundException e) {
 			e.printStackTrace();
 		}

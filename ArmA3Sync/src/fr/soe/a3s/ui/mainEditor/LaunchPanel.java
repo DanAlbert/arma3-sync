@@ -54,7 +54,6 @@ public class LaunchPanel extends JPanel implements UIConstants {
 	private JLabel gameVersionLabel, joinServerLabel;
 	private JComboBox gameVersionComboBox, joinServerComboBox;
 	private JButton startButton;
-	private boolean init = false;
 	/* Data */
 	private Map<String, Object> map = new TreeMap<String, Object>();
 	/* Services */
@@ -146,8 +145,6 @@ public class LaunchPanel extends JPanel implements UIConstants {
 
 	public void init() {
 
-		this.init = true;
-		
 		String serverName = configurationService.getServerName();
 		String defaultModset = configurationService.getDefaultModset();
 		String gameVersion = configurationService.getGameVersion();
@@ -156,7 +153,6 @@ public class LaunchPanel extends JPanel implements UIConstants {
 				.getFavoriteServers();
 		ComboBoxModel joinServerModel = new DefaultComboBoxModel(
 				new String[] { "" });
-		this.joinServerComboBox.setSelectedItem(null);
 		this.joinServerComboBox.setModel(joinServerModel);
 		for (int i = 0; i < favoriteServersDTO.size(); i++) {
 			String stg = favoriteServersDTO.get(i).getName();
@@ -167,21 +163,7 @@ public class LaunchPanel extends JPanel implements UIConstants {
 			}
 			this.joinServerComboBox.addItem(stg);
 		}
-
-		if (serverName != null) {
-			if (defaultModset != null) {
-				this.joinServerComboBox.setSelectedItem(serverName + " - "
-						+ defaultModset);
-			} else {
-				
-				this.joinServerComboBox.setSelectedItem(serverName);
-			}
-		}
-
-		if (gameVersion != null) {
-			this.gameVersionComboBox.setSelectedItem(gameVersion);
-		}
-
+		
 		List<RepositoryDTO> repositoryDTOs = repositoryService
 				.getRepositories();
 
@@ -200,15 +182,23 @@ public class LaunchPanel extends JPanel implements UIConstants {
 				e.printStackTrace();
 			}
 		}
-		
-		this.init = false;
+
+		if (serverName != null) {
+			if (defaultModset != null) {
+				this.joinServerComboBox.setSelectedItem(serverName + " - "
+						+ defaultModset);
+				
+			} else {
+				this.joinServerComboBox.setSelectedItem(serverName);
+			}
+		}
+
+		if (gameVersion != null) {
+			this.gameVersionComboBox.setSelectedItem(gameVersion);
+		}
 	}
 
 	private void serverSelectionPerformed() {
-
-		if (this.init){
-			return;
-		}
 		
 		String selection = (String) this.joinServerComboBox.getSelectedItem();
 		int selectedIndex = this.joinServerComboBox.getSelectedIndex();
@@ -230,15 +220,17 @@ public class LaunchPanel extends JPanel implements UIConstants {
 				Object objectDTO = map.get(modsetName);// null if not found
 				if (objectDTO instanceof RepositoryDTO) {
 					List<String> list = new ArrayList<String>();
-					list.add(((RepositoryDTO) objectDTO).getName());
+					String name = ((RepositoryDTO) objectDTO).getName();
+					list.add(name);
 					facade.getAddonsPanel().createGroupFromRepository(list);
+					facade.getAddonsPanel().disableAllGroupExcept(name);
 				} else if (objectDTO instanceof EventDTO) {
 					List<EventDTO> eventDTOs = new ArrayList<EventDTO>();
-					eventDTOs.add((EventDTO) objectDTO);;
+					EventDTO eventDTO = (EventDTO) objectDTO;
+					eventDTOs.add(eventDTO);
 					facade.getAddonsPanel().createGroupFromEvents(eventDTOs);
 				}
 				facade.getAddonsPanel().selectModset(modsetName);
-
 			} else {
 				String serverName = selection;
 				configurationService.saveServerName(serverName);

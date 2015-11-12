@@ -13,8 +13,9 @@ import fr.soe.a3s.ui.repositoryEditor.EventsPanel;
 
 public class EventAddPanel extends EventEditPanel {
 
-	public EventAddPanel(Facade facade, String repositoryName,EventsPanel eventsPanel) {
-		super(facade, repositoryName,eventsPanel);
+	public EventAddPanel(Facade facade, String repositoryName,
+			EventsPanel eventsPanel) {
+		super(facade, repositoryName, eventsPanel);
 	}
 
 	public void init() {
@@ -27,11 +28,12 @@ public class EventAddPanel extends EventEditPanel {
 			// No duplicate event name
 			List<EventDTO> eventDTOs = repositoryService
 					.getEvents(repositoryName);
-			if (eventDTOs!=null){
-				for (EventDTO eventDTO:eventDTOs){
-					if (eventDTO.getName().equals(newEventName)){
+			if (eventDTOs != null) {
+				for (EventDTO eventDTO : eventDTOs) {
+					if (eventDTO.getName().equals(newEventName)) {
 						labelWarning.setText("duplicate name!");
-						labelWarning.setFont(new Font("Tohama", Font.ITALIC, 11));
+						labelWarning
+								.setFont(new Font("Tohama", Font.ITALIC, 11));
 						labelWarning.setForeground(Color.RED);
 						return;
 					}
@@ -42,7 +44,7 @@ public class EventAddPanel extends EventEditPanel {
 			eventDTO.setName(newEventName);
 			eventDTO.setDescription(description);
 			repositoryService.addEvent(repositoryName, eventDTO);
-			this.eventsPanel.updateListEvents();
+			eventsPanel.updateListEvents();
 			this.dispose();
 		} catch (RepositoryException e) {
 			JOptionPane.showMessageDialog(facade.getMainPanel(),

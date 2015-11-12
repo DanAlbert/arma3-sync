@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.StringTokenizer;
 import java.util.concurrent.Callable;
 
+import fr.soe.a3s.constant.GameExecutables;
 import fr.soe.a3s.controller.ObservableEnd;
 import fr.soe.a3s.controller.ObservableError;
 import fr.soe.a3s.controller.ObserverEnd;
@@ -202,11 +203,25 @@ public class LauncherDAO implements DataAccessConstants, ObservableError,
 				try {
 					if (executableName.contains(".exe")) {
 						int nbParameters = params.size();
-						String[] cmd = new String[1 + nbParameters];
-						cmd[0] = exePath;
-						for (int i = 0; i < nbParameters; i++) {
-							cmd[1 + i] = params.get(i).trim();
+						String[] cmd = null;
+						if (executableName
+								.equalsIgnoreCase(GameExecutables.BATTLEYE
+										.getDescription())) {
+							cmd = new String[3 + nbParameters];
+							cmd[0] = exePath;
+							cmd[1] = "2";
+							cmd[2] = "1";
+							for (int i = 0; i < nbParameters; i++) {
+								cmd[3 + i] = params.get(i);
+							}
+						} else {
+							cmd = new String[1 + nbParameters];
+							cmd[0] = exePath;
+							for (int i = 0; i < nbParameters; i++) {
+								cmd[1 + i] = params.get(i);
+							}
 						}
+
 						Process p = Runtime.getRuntime().exec(cmd);
 						AfficheurFlux fluxSortie = new AfficheurFlux(
 								p.getInputStream());
@@ -216,10 +231,8 @@ public class LauncherDAO implements DataAccessConstants, ObservableError,
 						new Thread(fluxErreur).start();
 						updateObserverEnd();
 						p.waitFor();
-						if (launcherOptions != null) {
-							if (launcherOptions.isAutoRestart()) {
-								call();
-							}
+						if (launcherOptions.isAutoRestart()) {
+							call();
 						}
 						response = p.exitValue();
 					} else if (executableName.contains(".bat")) {
@@ -239,10 +252,8 @@ public class LauncherDAO implements DataAccessConstants, ObservableError,
 							new Thread(fluxErreur).start();
 							updateObserverEnd();
 							p.waitFor();
-							if (launcherOptions != null) {
-								if (launcherOptions.isAutoRestart()) {
-									call();
-								}
+							if (launcherOptions.isAutoRestart()) {
+								call();
 							}
 							response = p.exitValue();
 						}
@@ -262,10 +273,8 @@ public class LauncherDAO implements DataAccessConstants, ObservableError,
 							new Thread(fluxErreur).start();
 							updateObserverEnd();
 							p.waitFor();
-							if (launcherOptions != null) {
-								if (launcherOptions.isAutoRestart()) {
-									call();
-								}
+							if (launcherOptions.isAutoRestart()) {
+								call();
 							}
 							response = p.exitValue();
 						}
