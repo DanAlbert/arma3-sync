@@ -6,8 +6,12 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
+
+import javax.swing.JOptionPane;
 
 import fr.soe.a3s.controller.ObserverCheck;
 import fr.soe.a3s.controller.ObserverCount;
@@ -195,15 +199,34 @@ public class CommandGeneral {
 			String targetDirectoryPath, boolean exit) {
 
 		System.out.println("Extracting *.bikey files...");
-		
-		try {
-			CommonService commonService = new CommonService();
-			commonService.extractBikeys(sourceDirectoryPath,
-					targetDirectoryPath);
-			System.out.println("Extraction done.");
-		} catch (CheckException | IOException e) {
-			System.out.println("Extraction failed.");
-			System.out.println(e.getMessage());
+
+		String message = "";
+		if (sourceDirectoryPath.isEmpty()) {
+			message = "Source directory is empty!";
+		} else if (!new File(sourceDirectoryPath).exists()) {
+			message = "Source directory does not exists!";
+		} else if (targetDirectoryPath.isEmpty()) {
+			message = "Target directory is empty!";
+		} else if (!new File(targetDirectoryPath).exists()) {
+			message = "Target directory does not exists!";
+		} else if (!Files.isWritable(FileSystems.getDefault().getPath(
+				targetDirectoryPath))) {// Check write permissions on target
+										// directory
+			message = "Can't write on target directory!";
+		}
+
+		if (!message.isEmpty()) {
+			System.out.println(message);
+		} else {
+			try {
+				CommonService commonService = new CommonService();
+				commonService.extractBikeys(sourceDirectoryPath,
+						targetDirectoryPath);
+				System.out.println("Extraction done.");
+			} catch (IOException e) {
+				System.out.println("Extraction failed.");
+				System.out.println(e.getMessage());
+			}
 		}
 
 		if (exit) {

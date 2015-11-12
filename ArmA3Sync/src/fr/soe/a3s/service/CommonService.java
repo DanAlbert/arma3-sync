@@ -131,7 +131,7 @@ public class CommonService {
 	}
 
 	public int extractBikeys(String sourceDirectoryPath,
-			String destinationDirectoryPath) throws CheckException, IOException {
+			String destinationDirectoryPath) throws IOException {
 
 		return commonDAO.extractBikeys(sourceDirectoryPath,
 				destinationDirectoryPath);

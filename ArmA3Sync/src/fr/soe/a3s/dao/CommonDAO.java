@@ -48,49 +48,37 @@ public class CommonDAO implements DataAccessConstants {
 		fWo.close();
 	}
 
+	/**
+	 * 
+	 * @param sourceDirectoryPath not null
+	 * @param targetDirectoryPath not null
+	 * @throws CheckException
+	 * @throws IOException
+	 */
 	public int extractBikeys(String sourceDirectoryPath,
-			String targetDirectoryPath) throws CheckException, IOException {
+			String targetDirectoryPath) throws IOException {
 
-		if (targetDirectoryPath == null) {
-			throw new CheckException("Source directory is empty!");
-		} else if (sourceDirectoryPath.isEmpty()) {
-			throw new CheckException("Source directory is empty!");
-		} else if (!new File(sourceDirectoryPath).exists()) {
-			throw new CheckException("Source directory does not exists!");
-		} else if (targetDirectoryPath == null) {
-			throw new CheckException("Target directory is empty!");
-		} else if (targetDirectoryPath.isEmpty()) {
-			throw new CheckException("Target directory is empty!");
-		} else if (!new File(targetDirectoryPath).exists()) {
-			throw new CheckException("Target directory does not exists!");
-		} else if (!Files.isWritable(FileSystems.getDefault().getPath(
-				targetDirectoryPath))) {// Check write permissions on target
-										// directory
-			throw new CheckException("Can't write on target directory!");
+		File sourceDirectory = new File(sourceDirectoryPath);
+		File targetDirectory = new File(targetDirectoryPath);
+		extractedFiles = new ArrayList<File>();
+		extractBikeyFiles(sourceDirectory);
+		if (extractedFiles.isEmpty()) {
+			return 0;
 		} else {
-			File sourceDirectory = new File(sourceDirectoryPath);
-			File targetDirectory = new File(targetDirectoryPath);
-			extractedFiles = new ArrayList<File>();
-			extractBikeyFiles(sourceDirectory);
-			if (extractedFiles.isEmpty()) {
-				return 0;
-			} else {
-				for (File sourceFile : extractedFiles) {
-					File targetFile = new File(
-							targetDirectory.getAbsolutePath() + "/"
-									+ sourceFile.getName());
-					FileAccessMethods.copyFile(sourceFile, targetFile);
-				}
-				int count = extractedFiles.size();
-				extractedFiles = null;
-				return count;
+			for (File sourceFile : extractedFiles) {
+				File targetFile = new File(targetDirectory.getAbsolutePath()
+						+ "/" + sourceFile.getName());
+				FileAccessMethods.copyFile(sourceFile, targetFile);
 			}
+			int count = extractedFiles.size();
+			extractedFiles = null;
+			return count;
 		}
 	}
 
 	private void extractBikeyFiles(File file) {
 
-		if (!canceled){
+		if (!canceled) {
 			if (file.isDirectory()) {
 				File[] subFiles = file.listFiles();
 				if (subFiles != null) {

@@ -48,12 +48,7 @@ public class ExtractProgressPanel extends ProgressPanel {
 									JOptionPane.WARNING_MESSAGE);
 						}
 					}
-				} catch (CheckException e1) {
-					setVisible(false);
-					JOptionPane.showMessageDialog(facade.getMainPanel(),
-							e1.getMessage(), "Bikey extractor wizard",
-							JOptionPane.WARNING_MESSAGE);
-				} catch (IOException e2) {
+				}  catch (IOException e2) {
 					e2.printStackTrace();
 					setVisible(false);
 					JOptionPane.showMessageDialog(facade.getMainPanel(),

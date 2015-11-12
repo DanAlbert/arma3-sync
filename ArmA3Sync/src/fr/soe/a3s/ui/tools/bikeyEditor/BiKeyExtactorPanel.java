@@ -11,6 +11,8 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -229,10 +231,30 @@ public class BiKeyExtactorPanel extends JDialog implements UIConstants {
 		String sourceDirectoryPath = textFieldSourceDirectory.getText();
 		String targetDirectoryPath = textFieldTargetDirectory.getText();
 
-		ExtractProgressPanel extractProgressPanel = new ExtractProgressPanel(
-				facade);
-		extractProgressPanel.setVisible(true);
-		extractProgressPanel.init(sourceDirectoryPath, targetDirectoryPath);
+		String message = "";
+		if (sourceDirectoryPath.isEmpty()) {
+			message = "Source directory is empty!";
+		} else if (!new File(sourceDirectoryPath).exists()) {
+			message = "Source directory does not exists!";
+		} else if (targetDirectoryPath.isEmpty()) {
+			message = "Target directory is empty!";
+		} else if (!new File(targetDirectoryPath).exists()) {
+			message = "Target directory does not exists!";
+		} else if (!Files.isWritable(FileSystems.getDefault().getPath(
+				targetDirectoryPath))) {// Check write permissions on target
+										// directory
+			message = "Can't write on target directory!";
+		}
+
+		if (!message.isEmpty()) {
+			JOptionPane.showMessageDialog(facade.getMainPanel(), message,
+					"Bikey extractor wizard", JOptionPane.WARNING_MESSAGE);
+		} else {
+			ExtractProgressPanel extractProgressPanel = new ExtractProgressPanel(
+					facade);
+			extractProgressPanel.setVisible(true);
+			extractProgressPanel.init(sourceDirectoryPath, targetDirectoryPath);
+		}
 	}
 
 	private void menuExitPerformed() {
