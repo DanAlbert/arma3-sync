@@ -313,9 +313,6 @@ public class LaunchService {
 		if (launcherOptions.isCheckSignatures()) {
 			params.add("-checkSignatures");
 		}
-		if (launcherOptions.isUseBattleye()) {
-			params.add("0 1");
-		}
 		if (launcherOptions.isXpCompatibilityMode()) {
 			params.add("-winxp");
 		}
@@ -340,7 +337,7 @@ public class LaunchService {
 		if (launcherOptions.isNologs()) {
 			params.add("-nologs");
 		}
-
+		
 		// Join Server
 		String serverName = configuration.getServerName();
 		if (serverName != null) {
@@ -554,10 +551,8 @@ public class LaunchService {
 						String param = stk.nextToken().trim();
 						// -malloc must be at first place
 						if (param.toLowerCase().contains("malloc")) {
-							// params.add(0, "-" + param);
 							params.add(0, param.trim());
 						} else {
-							// params.add("-" + param);
 							params.add(param.trim());
 						}
 					}

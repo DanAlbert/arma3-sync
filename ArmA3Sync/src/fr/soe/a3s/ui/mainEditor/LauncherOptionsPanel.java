@@ -78,7 +78,6 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener,
 	private final ProfileService profileService = new ProfileService();
 	private final AddonService addonService = new AddonService();
 	private final LaunchService launchService = new LaunchService();
-	private JCheckBox checkBoxUseBattleye;
 
 	public LauncherOptionsPanel(Facade facade) {
 		this.facade = facade;
@@ -193,15 +192,6 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener,
 			checkBoxCheckSignatures.setFocusable(false);
 			Box hBox = Box.createHorizontalBox();
 			hBox.add(checkBoxCheckSignatures);
-			hBox.add(Box.createHorizontalGlue());
-			vBox.add(hBox);
-		}
-		{
-			checkBoxUseBattleye = new JCheckBox();
-			checkBoxUseBattleye.setText("Use Battleye");
-			checkBoxUseBattleye.setFocusable(false);
-			Box hBox = Box.createHorizontalBox();
-			hBox.add(checkBoxUseBattleye);
 			hBox.add(Box.createHorizontalGlue());
 			vBox.add(hBox);
 		}
@@ -430,12 +420,6 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener,
 				checkBoxCheckSignaturesPerformed();
 			}
 		});
-		checkBoxUseBattleye.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent arg0) {
-				checkBoxUseBattleyePerformed();
-			}
-		});
 		checkBoxAutoRestart.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
@@ -536,7 +520,6 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener,
 		checkBoxWindowMode
 				.setToolTipText("Display the game windowed instead of full screen");
 		checkBoxCheckSignatures.setToolTipText("Check signatures of PBO files");
-		checkBoxUseBattleye.setToolTipText("Run the game with Battleye");
 		comboBoxMaxMemory.setToolTipText("Restricts memory allocation");
 		checkBoxMaxMemory.setToolTipText("Restricts memory allocation");
 		comboBoxCpuCount.setToolTipText("Restricts number of cores used");
@@ -613,61 +596,6 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener,
 	private void checkBoxCheckSignaturesPerformed() {
 		profileService.setCheckBoxCheckSignatures(checkBoxCheckSignatures
 				.isSelected());
-		updateRunParameters();
-	}
-
-	private void checkBoxUseBattleyePerformed() {
-
-		if (checkBoxUseBattleye.isSelected()) {
-			boolean arma3BattleyeExeFound = false;
-			boolean arma3ExeChanged = false;
-			String arma3ExePath = textFieldArmAExecutableLocation.getText();
-			File arma3BattleyeExe = null;
-			if (arma3ExePath != null) {
-				File arma3ExeFile = new File(arma3ExePath);
-				if (arma3ExeFile.exists()) {
-					File arma3Directory = arma3ExeFile.getParentFile();
-					if (arma3Directory != null) {
-						arma3BattleyeExe = new File(arma3Directory + "/"
-								+ GameExecutables.BATTLEYE.getDescription());
-						if (arma3BattleyeExe.exists()) {
-							arma3BattleyeExeFound = true;
-							if (!arma3BattleyeExe.getAbsolutePath().equals(
-									arma3ExeFile.getAbsolutePath())) {
-								arma3ExeChanged = true;
-							}
-						}
-					}
-				}
-			}
-
-			if (arma3BattleyeExeFound) {
-				profileService.setCheckBoxUseBattleye(true);
-				if (arma3ExeChanged) {
-					profileService.setArmA3ExePath(arma3BattleyeExe
-							.getAbsolutePath());
-					textFieldArmAExecutableLocation.setText(arma3BattleyeExe
-							.getAbsolutePath());
-					updateOptions();
-					JOptionPane
-							.showMessageDialog(
-									this,
-									"ArmA 3 Executable Location has been changed.",
-									"Launcher options",
-									JOptionPane.INFORMATION_MESSAGE);
-				}
-			} else {
-				checkBoxUseBattleye.setSelected(false);
-				profileService.setCheckBoxUseBattleye(false);
-				JOptionPane.showMessageDialog(this,
-						"arma3Battleye.exe not found." + "\n"
-								+ "Please check ArmA 3 Executable Location.",
-						"Launcher options", JOptionPane.INFORMATION_MESSAGE);
-			}
-		} else {
-			profileService.setCheckBoxUseBattleye(false);
-		}
-
 		updateRunParameters();
 	}
 
@@ -880,16 +808,6 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener,
 		checkBoxWindowMode.setSelected(launcherOptionsDTO.isWindowMode());
 		checkBoxCheckSignatures.setSelected(launcherOptionsDTO
 				.isCheckSignatures());
-
-		/* ArmA 3 Executable Location and Battleye */
-		String osName = System.getProperty("os.name");
-		if (osName.contains("Windows")) {
-			checkBoxUseBattleye.setEnabled(true);
-			checkBoxUseBattleye.setSelected(launcherOptionsDTO.isUseBattleye());
-		} else {
-			checkBoxUseBattleye.setEnabled(false);
-			checkBoxUseBattleye.setSelected(false);
-		}
 
 		checkBoxAutoRestart.setSelected(launcherOptionsDTO.isAutoRestart());
 

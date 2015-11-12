@@ -521,17 +521,6 @@ public class ProfileService extends ObjectDTOtransformer {
 		}
 	}
 
-	public void setCheckBoxUseBattleye(boolean selected) {
-
-		String profileName = configurationDAO.getConfiguration()
-				.getProfileName();
-
-		Profile profile = profileDAO.getMap().get(profileName);
-		if (profile != null) {
-			profile.getLauncherOptions().setUseBattleye(selected);
-		}
-	}
-
 	public void setCheckBoxAutoRestart(boolean selected) {
 
 		String profileName = configurationDAO.getConfiguration()

@@ -92,7 +92,6 @@ public class ObjectDTOtransformer {
 		launcherOptionsDTO.setWindowMode(launcherOptions.isWindowMode());
 		launcherOptionsDTO.setCheckSignatures(launcherOptions
 				.isCheckSignatures());
-		launcherOptionsDTO.setUseBattleye(launcherOptions.isUseBattleye());
 		launcherOptionsDTO.setAutoRestart(launcherOptions.isAutoRestart());
 
 		return launcherOptionsDTO;

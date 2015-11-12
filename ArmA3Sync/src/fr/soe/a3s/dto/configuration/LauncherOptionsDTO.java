@@ -9,7 +9,6 @@ public class LauncherOptionsDTO {
 	private boolean filePatching;
 	private boolean windowMode;
 	private boolean checkSignatures;
-	private boolean useBattleeye;
 	private boolean autoRestart;
 	private String maxMemorySelection;
 	private int cpuCountSelection;
@@ -142,14 +141,6 @@ public class LauncherOptionsDTO {
 
 	public void setCheckSignatures(boolean checkSignatures) {
 		this.checkSignatures = checkSignatures;
-	}
-
-	public boolean isUseBattleye() {
-		return this.useBattleeye;
-	}
-
-	public void setUseBattleye(boolean useBattleye) {
-		this.useBattleeye = useBattleye;
 	}
 
 	public boolean isAutoRestart() {
