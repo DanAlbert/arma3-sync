@@ -553,6 +553,7 @@ public class EditRepositoryPanel extends JDialog implements UIConstants,
 			}
 		}
 
+		/* Remove prompt from url */
 		String url = textFieldHost.getText().trim();
 
 		String test = url.toLowerCase()
@@ -562,6 +563,17 @@ public class EditRepositoryPanel extends JDialog implements UIConstants,
 		if (url.length() > test.length()) {
 			int index = url.length() - test.length();
 			url = url.substring(index);
+		}
+
+		/* Remove port from url */
+		int index1 = url.indexOf(":");
+		int index2 = url.indexOf("/");
+		if (index1 != -1) {
+			if (index2 != -1) {
+				url = url.substring(0, index1) + url.substring(index2);
+			} else {
+				url = url.substring(0, index1);
+			}
 		}
 
 		String port = textFieldPort.getText().trim();
