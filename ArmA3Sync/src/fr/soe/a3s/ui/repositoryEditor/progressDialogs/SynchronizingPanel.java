@@ -20,6 +20,7 @@ public class SynchronizingPanel extends ProgressPanel {
 
 	public SynchronizingPanel(Facade facade) {
 		super(facade);
+		labelTitle.setText("Checking repositories...");
 	}
 
 	public void init(final String repositoryName) {
