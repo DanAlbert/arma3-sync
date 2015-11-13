@@ -51,17 +51,26 @@ public class RepositoryDAO implements DataAccessConstants {
 		}
 		String concatName = repository.getName().replaceAll(" ", "");
 		File[] subfiles = directory.listFiles();
-		boolean response = false;
+		boolean ok = false;
 		if (subfiles != null) {
 			for (File file : subfiles) {
 				if (file.getName().contains(concatName)) {
-					FileAccessMethods.deleteFile(file);
-					response = true;
+					ok = FileAccessMethods.deleteFile(file);
+					break;
 				}
 			}
 		}
-		mapRepositories.remove(repositoryName);
-		return response;
+		if (ok) {
+			Repository removedRepository = mapRepositories
+					.remove(repositoryName);
+			if (removedRepository != null) {
+				return true;
+			} else {
+				return false;
+			}
+		} else {
+			return false;
+		}
 	}
 
 	public List<String> readAll() throws InvalidKeyException,

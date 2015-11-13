@@ -393,7 +393,12 @@ public class SyncPanel extends JPanel implements UIConstants {
 		}
 		String name = (String) model.getValueAt(index, 0);
 		try {
-			repositoryService.removeRepository(name);
+			boolean remove = repositoryService.removeRepository(name);
+			if (remove) {
+				System.out.println("Repository " + name + " removed.");
+			} else {
+				System.out.println("Failded to remove repository.");
+			}
 			refresh();
 			facade.getOnlinePanel().init();
 		} catch (RepositoryNotFoundException e) {
