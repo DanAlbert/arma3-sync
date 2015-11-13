@@ -271,6 +271,10 @@ public class RepositoryUploader extends Thread implements DataAccessConstants {
 					JOptionPane.showMessageDialog(facade.getMainPanel(),
 							e.getMessage(), "Upload repository",
 							JOptionPane.ERROR_MESSAGE);
+				} else if (e instanceof CheckException) {
+					JOptionPane.showMessageDialog(facade.getMainPanel(),
+							e.getMessage(), "Upload repository",
+							JOptionPane.WARNING_MESSAGE);
 				} else if (e instanceof IOException) {
 					JOptionPane.showMessageDialog(facade.getMainPanel(),
 							e.getMessage(), "Upload repository",
