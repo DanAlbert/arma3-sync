@@ -160,6 +160,8 @@ public class HttpService extends AbstractConnexionService implements
 	public void checkRepository(String repositoryName)
 			throws RepositoryException, IOException {
 
+		System.out.println("Checking repository: " + repositoryName);
+		
 		Repository repository = repositoryDAO.getMap().get(repositoryName);
 		if (repository == null) {
 			throw new RepositoryNotFoundException(repositoryName);
