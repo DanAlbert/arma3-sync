@@ -191,13 +191,15 @@ public class FtpDAO extends AbstractConnexionDAO {
 			};
 
 			ftpClient.setRestartOffset(this.offset);
-			long startResponseTime = System.nanoTime();
-			boolean ok = ftpClient.changeWorkingDirectory(remotePath);
-			long endResponseTime = System.nanoTime();
-			responseTime = endResponseTime - startResponseTime;
-			updateObserverDownloadResponseTime();
+			found = ftpClient.changeWorkingDirectory(remotePath);
 
-			if (ok) {
+			if (found) {
+
+				long startResponseTime = System.nanoTime();
+				long endResponseTime = System.nanoTime();
+				responseTime = endResponseTime - startResponseTime;
+				updateObserverDownloadResponseTime();
+
 				inputStream = ftpClient.retrieveFileStream(remotePath + "/"
 						+ file.getName());
 
@@ -222,30 +224,21 @@ public class FtpDAO extends AbstractConnexionDAO {
 						found = ftpClient.completePendingCommand();
 						if (found) {
 							long actualSize = file.length();
-							long remoteSize = ftpClient.mlistFile(
-									file.getName()).getSize();
-
-							if (actualSize < remoteSize && remoteSize != -1) {
-								String message = "WARNING: Incompete file size transfer. Remote size: "
-										+ remoteSize
-										+ " Bytes, "
-										+ "Transfered size: "
-										+ actualSize
-										+ " Bytes";
-								System.out.println(message);
-								setOffset(file.length());
-								downloadFileWithRecordProgress(file, remotePath);
-							} else {
-								actualSize = file.length();
-								long expectedSize = expectedFullSize;
-								if (actualSize != expectedSize) {
-									String message = "Incorrect file size. Expected size from /.a3s/sync (repository build): "
-											+ expectedSize
+							FTPFile ftpFile = ftpClient.mlistFile(file
+									.getName());
+							if (ftpFile != null) {
+								long remoteSize = ftpFile.getSize();
+								if (actualSize < remoteSize && remoteSize != -1) {
+									String message = "WARNING: Incompete file size transfer. Remote size: "
+											+ remoteSize
 											+ " Bytes, "
 											+ "Transfered size: "
 											+ actualSize
 											+ " Bytes";
-									throw new IOException(message);
+									System.out.println(message);
+									setOffset(file.length());
+									downloadFileWithRecordProgress(file,
+											remotePath);
 								}
 							}
 						}
@@ -308,9 +301,9 @@ public class FtpDAO extends AbstractConnexionDAO {
 		String remotePath = protocole.getRemotePath() + A3S_FOlDER_PATH;
 
 		try {
-			directory.mkdir();
+			boolean ok = directory.mkdir();
 			boolean found = downloadFile(file, remotePath);
-			if (found) {
+			if (ok && found) {
 				sync = A3SFilesAccessor.readSyncFile(file);
 			}
 		} finally {
@@ -328,9 +321,9 @@ public class FtpDAO extends AbstractConnexionDAO {
 		String remotePath = protocole.getRemotePath() + A3S_FOlDER_PATH;
 
 		try {
-			directory.mkdir();
+			boolean ok = directory.mkdir();
 			boolean found = downloadFile(file, remotePath);
-			if (found) {
+			if (ok && found) {
 				serverInfo = A3SFilesAccessor.readServerInfoFile(file);
 			}
 		} finally {
@@ -348,9 +341,9 @@ public class FtpDAO extends AbstractConnexionDAO {
 		String remotePath = protocole.getRemotePath() + A3S_FOlDER_PATH;
 
 		try {
-			directory.mkdir();
+			boolean ok = directory.mkdir();
 			boolean found = downloadFile(file, remotePath);
-			if (found) {
+			if (ok && found) {
 				changelogs = A3SFilesAccessor.readChangelogsFile(file);
 			}
 		} finally {
@@ -368,9 +361,9 @@ public class FtpDAO extends AbstractConnexionDAO {
 		String remotePath = protocole.getRemotePath() + A3S_FOlDER_PATH;
 
 		try {
-			directory.mkdir();
+			boolean ok = directory.mkdir();
 			boolean found = downloadFile(file, remotePath);
-			if (found) {
+			if (ok && found) {
 				events = A3SFilesAccessor.readEventsFile(file);
 			}
 		} finally {
@@ -388,9 +381,9 @@ public class FtpDAO extends AbstractConnexionDAO {
 		String remotePath = protocole.getRemotePath() + A3S_FOlDER_PATH;
 
 		try {
-			directory.mkdir();
+			boolean ok = directory.mkdir();
 			boolean found = downloadFile(file, remotePath);
-			if (found) {
+			if (ok && found) {
 				autoConfig = A3SFilesAccessor.readAutoConfigFile(file);
 			}
 		} finally {
@@ -426,9 +419,11 @@ public class FtpDAO extends AbstractConnexionDAO {
 						+ DataAccessConstants.AUTOCONFIG;
 				throw new ConnectException(message);
 			}
+
+			boolean ok = directory.mkdir();
 			boolean found = downloadFile(file, protocol.getRemotePath());
-			if (found) {
-				directory.mkdir();
+
+			if (ok && found) {
 				downloadFile(file, remotePath);
 				autoConfig = A3SFilesAccessor.readAutoConfigFile(file);
 			}
@@ -539,48 +534,57 @@ public class FtpDAO extends AbstractConnexionDAO {
 		return response;
 	}
 
-	public String downloadXMLupdateFile(boolean devMode) throws IOException,
-			DocumentException, FtpException {
+	public String downloadXMLupdateFile(boolean devMode) throws IOException, DocumentException,
+            FtpException {
 
-		ftpClient = new FTPClient();
-		ftpClient.connect(UPDTATE_REPOSITORY_ADRESS, UPDTATE_REPOSITORY_PORT);
-		ftpClient.login(UPDTATE_REPOSITORY_LOGIN, UPDTATE_REPOSITORY_PASS);
-		ftpClient.setFileType(FTP.BINARY_FILE_TYPE);
-		ftpClient.enterLocalPassiveMode();// passive mode
-		int reply = ftpClient.getReplyCode();
-		if (FTPReply.isPositiveCompletion(reply)) {
-			System.out.println("Connection updates repository Success");
-		} else {
-			System.out.println("Connection Failed");
-			throw new FtpException("Failed to connect to updates repository.");
-		}
+        ftpClient = new FTPClient();
+        ftpClient.connect(UPDTATE_REPOSITORY_ADRESS, UPDTATE_REPOSITORY_PORT);
+        ftpClient.login(UPDTATE_REPOSITORY_LOGIN, UPDTATE_REPOSITORY_PASS);
+        ftpClient.setFileType(FTP.BINARY_FILE_TYPE);
+        ftpClient.enterLocalPassiveMode();// passive mode
+        int reply = ftpClient.getReplyCode();
+        if (FTPReply.isPositiveCompletion(reply)) {
+            System.out.println("Connection updates repository Success");
+        }
+        else {
+            System.out.println("Connection Failed");
+            throw new FtpException("Failed to connect to updates repository.");
+        }
 
-		File file = new File(INSTALLATION_PATH + "/" + "a3s.xml");
-		boolean found = false;
-		if (devMode) {
-			found = downloadFile(file, UPDATE_REPOSITORY_DEV);
-		} else {
-			found = downloadFile(file, UPDATE_REPOSITORY);
-		}
+        File file = new File(INSTALLATION_PATH + "/" + "a3s.xml");
+        boolean found = false;
+        if (devMode) {
+            found = downloadFile(file, UPDATE_REPOSITORY_DEV);
+        }
+        else {
+            found = downloadFile(file, UPDATE_REPOSITORY);
+        }
 
-		String nom = null;
-		if (found && file.exists()) {
-			SAXReader reader = new SAXReader();
-			Document documentLeaVersion = reader.read(file);
-			Element root = documentLeaVersion.getRootElement();
-			nom = root.selectSingleNode("nom").getText();
-		}
-		return nom;
-	}
+        String nom = null;
+        if (found && file.exists()) {
+            SAXReader reader = new SAXReader();
+            Document documentLeaVersion = reader.read(file);
+            Element root = documentLeaVersion.getRootElement();
+            nom = root.selectSingleNode("nom").getText();
+        }
+        return nom;
+    }
 
 	public boolean fileExists(String repositoryName, String relativePath,
-			String fileName, AbstractProtocole protocole) throws IOException {
+			String fileName, AbstractProtocole protocole) throws IOException,
+			FtpException {
+
+		String path = protocole.getRemotePath();
+		if (!relativePath.isEmpty()) {
+			path = protocole.getRemotePath() + "/" + relativePath;
+		}
+
+		System.out.println("Checking remote file: " + path + "/" + fileName);
 
 		boolean exists = false;
 		InputStream inputStream = null;
 		try {
-			boolean ok = ftpClient.changeWorkingDirectory(protocole
-					.getRemotePath() + "/" + relativePath);
+			boolean ok = ftpClient.changeWorkingDirectory(path);
 			/*
 			 * http://www.codejava.net/java-se/networking/ftp/get-size-of-a-file-
 			 * on-ftp-server
@@ -588,7 +592,12 @@ public class FtpDAO extends AbstractConnexionDAO {
 			if (ok) {
 				ftpClient.mlistFile(fileName);
 				int returnCode = ftpClient.getReplyCode();
-				if (returnCode == 550) {
+				if (returnCode == 500) {// mlist is not supported
+					exists = false;
+					String message = "The server does not support the FTP command MLIST.";
+					System.out.println("WARNING " + message);
+					throw new FtpException(message);
+				} else if (returnCode == 550) {
 					exists = false;
 				} else {
 					exists = true;
@@ -597,8 +606,8 @@ public class FtpDAO extends AbstractConnexionDAO {
 		} catch (IOException e) {
 			String coreMessage = "Failed to connect to repository "
 					+ repositoryName + " on url: " + "\n"
-					+ protocole.getProtocolType().getPrompt()
-					+ protocole.getUrl() + "/" + relativePath + "/" + fileName;
+					+ protocole.getProtocolType().getPrompt() + path + "/"
+					+ fileName;
 			IOException ioe = transferIOExceptionFactory(coreMessage, e);
 			throw ioe;
 		} finally {
@@ -606,6 +615,14 @@ public class FtpDAO extends AbstractConnexionDAO {
 				inputStream.close();
 			}
 		}
+
+		if (exists) {
+			System.out.println("Remote file found: " + path + "/" + fileName);
+		} else {
+			System.out.println("Remote file not found: " + path + "/"
+					+ fileName);
+		}
+
 		return exists;
 	}
 
@@ -749,7 +766,10 @@ public class FtpDAO extends AbstractConnexionDAO {
 		boolean isFile = (ftpFile.getType() == FTPFile.FILE_TYPE) ? true
 				: false;
 
-		String remotePath = repositoryRemotePath + "/" + relativePath;
+		String remotePath = repositoryRemotePath;
+		if (!relativePath.isEmpty()) {
+			remotePath = repositoryRemotePath + "/" + relativePath;
+		}
 
 		boolean exists = ftpClient.changeWorkingDirectory(remotePath);
 		if (exists) {

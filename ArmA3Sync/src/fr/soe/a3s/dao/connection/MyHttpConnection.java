@@ -36,25 +36,15 @@ import fr.soe.a3s.exception.HttpException;
 public class MyHttpConnection {
 
 	private URLConnection urLConnection;
-
 	private final AbstractProtocole protocole;
-
 	private final HttpDAO httpDAO;
-
 	private String rangeRequest;
-
 	private String boundary;
-
 	private byte[] boundaryBytes;
-
 	private long contLen;
-
 	private static final int BUFFER_SIZE = 4096;// 4KB
-
 	private int bufferSize = BUFFER_SIZE;
-
 	private long elapsedTime = 0;
-
 	private long allData = 0;
 
 	public MyHttpConnection(AbstractProtocole protocole, HttpDAO httpDAO) {
@@ -344,7 +334,8 @@ public class MyHttpConnection {
 			if (!httpDAO.isCanceled()) {
 
 				long actualSize = targetFile.length();
-				long remoteSize = urLConnection.getContentLengthLong();
+				long remoteSize = urLConnection.getContentLengthLong()
+						+ httpDAO.getOffset();
 				boolean checkSize = false;
 
 				if (actualSize < remoteSize && remoteSize != -1) {
@@ -360,25 +351,14 @@ public class MyHttpConnection {
 					boolean accept = checkAcceptRanges();
 					closeConnection();
 					if (accept) {
+						System.out.println("Server supports resuming");
 						openConnection(relativeUrl);
 						httpDAO.setOffset(actualSize);
 						downloadFileWithRecordProgress(targetFile);
 					} else {
-						checkSize = true;
-					}
-				} else {
-					checkSize = true;
-				}
-
-				if (checkSize) {
-					actualSize = targetFile.length();
-					long expectedSize = httpDAO.getExpectedFullSize();
-					if (actualSize != expectedSize) {
-						String message = "Incorrect file size. Expected size from /.a3s/sync (repository build): "
-								+ expectedSize
-								+ " Bytes, "
-								+ "Transfered size: " + actualSize + " Bytes";
-						throw new IOException(message);
+						System.out.println("Server does not supports resuming");
+						throw new IOException(message + "/n"
+								+ "Server does not supports resuming");
 					}
 				}
 			}
