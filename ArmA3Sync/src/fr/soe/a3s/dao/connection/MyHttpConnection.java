@@ -358,7 +358,7 @@ public class MyHttpConnection {
 					} else {
 						System.out.println("Server does not supports resuming");
 						throw new IOException(message + "/n"
-								+ "Server does not supports resuming");
+								+ "Server does not supports resuming.");
 					}
 				}
 			}
