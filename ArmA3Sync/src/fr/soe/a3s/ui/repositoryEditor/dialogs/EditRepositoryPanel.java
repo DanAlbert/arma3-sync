@@ -576,6 +576,24 @@ public class EditRepositoryPanel extends JDialog implements UIConstants,
 			}
 		}
 
+		/* Remove / at the end of url */
+
+		if (!url.isEmpty()) {
+			boolean urlCleanded = false;
+			do {
+				int index = url.lastIndexOf("/");
+				if (index != -1) {
+					if (index == url.length() - 1) {
+						url = url.substring(0, url.length() - 1);
+					} else {
+						urlCleanded = true;
+					}
+				} else {
+					urlCleanded = true;
+				}
+			} while (!urlCleanded);
+		}
+
 		String port = textFieldPort.getText().trim();
 		String login = textFieldLogin.getText().trim();
 		password = passwordField.getPassword();
