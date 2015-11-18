@@ -42,499 +42,486 @@ import fr.soe.a3s.exception.FtpException;
 
 public class FtpDAO extends AbstractConnexionDAO {
 
-	private FTPClient ftpClient;
-	private static final int BUFFER_SIZE = 4096;// 4KB
-	private int bufferSize = BUFFER_SIZE;
-	private long elapsedTime = 0;
+    private FTPClient ftpClient;
 
-	private void connect(AbstractProtocole protocole) throws IOException,
-			FtpException {
+    private static final int BUFFER_SIZE = 4096;// 4KB
 
-		String url = protocole.getUrl();
-		String port = protocole.getPort();
-		String login = protocole.getLogin();
-		String password = protocole.getPassword();
-		String hostname = protocole.getHostname();
-		String remotePath = protocole.getRemotePath();
+    private int bufferSize = BUFFER_SIZE;
 
-		ftpClient = new FTPClient();
+    private long elapsedTime = 0;
 
-		// Set connection and read time out
-		int connectionTimeOutValue = Integer.parseInt(protocole
-				.getConnectionTimeOut());
-		if (connectionTimeOutValue != 0) {
-			ftpClient.setConnectTimeout(connectionTimeOutValue);
-		}
-		int readTimeOutValue = Integer.parseInt(protocole.getReadTimeOut());
-		if (readTimeOutValue != 0) {
-			ftpClient.setDataTimeout(readTimeOutValue);
-		}
+    private void connect(AbstractProtocole protocole) throws IOException, FtpException {
 
-		ftpClient.setBufferSize(1048576);// 1024*1024
-		boolean isLoged = false;
+        String url = protocole.getUrl();
+        String port = protocole.getPort();
+        String login = protocole.getLogin();
+        String password = protocole.getPassword();
+        String hostname = protocole.getHostname();
+        String remotePath = protocole.getRemotePath();
 
-		ftpClient.connect(hostname, Integer.parseInt(port));
-		isLoged = ftpClient.login(login, password);
-		ftpClient.setFileType(FTP.BINARY_FILE_TYPE);
-		ftpClient.enterLocalPassiveMode();// passive mode
-		int reply = ftpClient.getReplyCode();
+        ftpClient = new FTPClient();
 
-		if (!isLoged) {
-			throw new FtpException(WRONG_LOGIN_PASSWORD);
-		}
+        // Set connection and read time out
+        int connectionTimeOutValue = Integer.parseInt(protocole.getConnectionTimeOut());
+        if (connectionTimeOutValue != 0) {
+            ftpClient.setConnectTimeout(connectionTimeOutValue);
+        }
+        int readTimeOutValue = Integer.parseInt(protocole.getReadTimeOut());
+        if (readTimeOutValue != 0) {
+            ftpClient.setDataTimeout(readTimeOutValue);
+        }
 
-		if (!FTPReply.isPositiveCompletion(reply)) {
-			throw new FtpException("FTP error code: " + Integer.toString(reply));
-		}
-	}
+        ftpClient.setBufferSize(1048576);// 1024*1024
+        boolean isLoged = false;
 
-	public void connectToRepository(String repositoryName,
-			AbstractProtocole protocole) throws IOException {
+        ftpClient.connect(hostname, Integer.parseInt(port));
+        isLoged = ftpClient.login(login, password);
+        ftpClient.setFileType(FTP.BINARY_FILE_TYPE);
+        ftpClient.enterLocalPassiveMode();// passive mode
+        int reply = ftpClient.getReplyCode();
 
-		try {
-			connect(protocole);
-		} catch (IOException e) {
-			String coreMessage = "Failed to connect to repository "
-					+ repositoryName + " on url: " + "\n"
-					+ protocole.getProtocolType().getPrompt()
-					+ protocole.getUrl();
-			IOException ioe = transferIOExceptionFactory(coreMessage, e);
-			throw ioe;
-		} catch (FtpException e) {
-			String message = "Server returned message " + e.getMessage()
-					+ " on url:" + "\n"
-					+ protocole.getProtocolType().getPrompt()
-					+ protocole.getUrl();
-			throw new ConnectException(message);
-		}
-	}
+        if (!isLoged) {
+            throw new FtpException(WRONG_LOGIN_PASSWORD);
+        }
 
-	private boolean downloadFile(File file, String remotePath)
-			throws IOException {
+        if (!FTPReply.isPositiveCompletion(reply)) {
+            throw new FtpException("FTP error code: " + Integer.toString(reply));
+        }
+    }
 
-		boolean found = false;
-		FileOutputStream fos = null;
-		try {
-			boolean ok = ftpClient.changeWorkingDirectory(remotePath);
-			fos = new FileOutputStream(file);
-			if (ok) {
-				found = ftpClient.retrieveFile(file.getName(), fos);
-			}
-		} catch (IOException e) {
-			String coreMessage = "Failed to retrieve file " + remotePath + "/"
-					+ file.getName();
-			IOException ioe = transferIOExceptionFactory(coreMessage, e);
-			throw ioe;
-		} finally {
-			if (fos != null) {
-				fos.close();
-			}
-		}
-		return found;
-	}
+    public void connectToRepository(String repositoryName, AbstractProtocole protocole)
+            throws IOException {
 
-	private boolean downloadFileWithRecordProgress(File file, String remotePath)
-			throws IOException {
+        try {
+            connect(protocole);
+        }
+        catch (IOException e) {
+            String coreMessage = "Failed to connect to repository " + repositoryName + " on url: "
+                    + "\n" + protocole.getProtocolType().getPrompt() + protocole.getUrl();
+            IOException ioe = transferIOExceptionFactory(coreMessage, e);
+            throw ioe;
+        }
+        catch (FtpException e) {
+            String message = "Server returned message " + e.getMessage() + " on url:" + "\n"
+                    + protocole.getProtocolType().getPrompt() + protocole.getUrl();
+            throw new ConnectException(message);
+        }
+    }
 
-		boolean resume = false;
-		if (this.offset > 0) {
-			resume = true;
-			System.out.println("Resuming file: " + file.getAbsolutePath()
-					+ " at offset " + offset);
-		} else {
-			resume = false;
-			System.out.println("Downloading whole file: "
-					+ file.getAbsolutePath());
-		}
+    private boolean downloadFile(File file, String remotePath) throws IOException {
 
-		FileOutputStream fos = null;
-		CountingOutputStream dos = null;
-		InputStream inputStream = null;
-		boolean found = false;
+        boolean found = false;
+        FileOutputStream fos = null;
+        try {
+            boolean ok = ftpClient.changeWorkingDirectory(remotePath);
+            fos = new FileOutputStream(file);
+            if (ok) {
+                found = ftpClient.retrieveFile(file.getName(), fos);
+            }
+        }
+        catch (IOException e) {
+            String coreMessage = "Failed to retrieve file " + remotePath + "/" + file.getName();
+            IOException ioe = transferIOExceptionFactory(coreMessage, e);
+            throw ioe;
+        }
+        finally {
+            if (fos != null) {
+                fos.close();
+            }
+        }
+        return found;
+    }
 
-		try {
-			final long startTime = System.nanoTime();
-			this.elapsedTime = 0;
-			fos = new FileOutputStream(file, resume);
-			dos = new CountingOutputStream(fos) {
-				@Override
-				protected void afterWrite(int n) throws IOException {
-					super.afterWrite(n);
-					int nbBytes = getCount();
-					countFileSize = nbBytes;
-					long endTime = System.nanoTime();
-					long totalTime = endTime - startTime;
-					long deltaTime = totalTime - elapsedTime;
-					speed = (long) ((nbBytes * Math.pow(10, 9)) / totalTime);// B/s
-					if (maximumClientDownloadSpeed != 0) {
-						if (speed > maximumClientDownloadSpeed) {
-							bufferSize = bufferSize - 1;
-							if (bufferSize < 0) {
-								bufferSize = 0;
-							}
-						} else {
-							bufferSize = bufferSize + 1;
-							if (bufferSize > BUFFER_SIZE) {
-								bufferSize = BUFFER_SIZE;
-							}
-						}
-					}
+    private boolean downloadFileWithRecordProgress(File file, String remotePath) throws IOException {
 
-					if (acquiredSemaphore) {
-						updateObserverDownloadSingleSizeProgress();
-						if (deltaTime > Math.pow(10, 9) / 4) {
-							updateObserverDownloadSpeed();
-							elapsedTime = totalTime;
-						}
-					}
-				}
-			};
+        boolean resume = false;
+        if (this.offset > 0) {
+            resume = true;
+            System.out.println("Resuming file: " + file.getAbsolutePath() + " at offset " + offset);
+        }
+        else {
+            resume = false;
+            System.out.println("Downloading whole file: " + file.getAbsolutePath());
+        }
 
-			ftpClient.setRestartOffset(this.offset);
-			found = ftpClient.changeWorkingDirectory(remotePath);
+        FileOutputStream fos = null;
+        CountingOutputStream dos = null;
+        InputStream inputStream = null;
+        boolean found = false;
 
-			if (found) {
+        try {
+            final long startTime = System.nanoTime();
+            this.elapsedTime = 0;
+            fos = new FileOutputStream(file, resume);
+            dos = new CountingOutputStream(fos) {
+                @Override
+                protected void afterWrite(int n) throws IOException {
+                    super.afterWrite(n);
+                    int nbBytes = getCount();
+                    countFileSize = nbBytes;
+                    long endTime = System.nanoTime();
+                    long totalTime = endTime - startTime;
+                    long deltaTime = totalTime - elapsedTime;
+                    speed = (long) ((nbBytes * Math.pow(10, 9)) / totalTime);// B/s
+                    if (maximumClientDownloadSpeed != 0) {
+                        if (speed > maximumClientDownloadSpeed) {
+                            bufferSize = bufferSize - 1;
+                            if (bufferSize < 0) {
+                                bufferSize = 0;
+                            }
+                        }
+                        else {
+                            bufferSize = bufferSize + 1;
+                            if (bufferSize > BUFFER_SIZE) {
+                                bufferSize = BUFFER_SIZE;
+                            }
+                        }
+                    }
 
-				long startResponseTime = System.nanoTime();
-				long endResponseTime = System.nanoTime();
-				responseTime = endResponseTime - startResponseTime;
-				updateObserverDownloadResponseTime();
+                    if (acquiredSemaphore) {
+                        updateObserverDownloadSingleSizeProgress();
+                        if (deltaTime > Math.pow(10, 9) / 4) {
+                            updateObserverDownloadSpeed();
+                            elapsedTime = totalTime;
+                        }
+                    }
+                }
+            };
 
-				inputStream = ftpClient.retrieveFileStream(remotePath + "/"
-						+ file.getName());
+            ftpClient.setRestartOffset(this.offset);
+            found = ftpClient.changeWorkingDirectory(remotePath);
 
-				if (inputStream == null) {
-					found = false;
-				} else {
-					byte[] bytesArray = bytesArray = new byte[bufferSize];
-					int bytesRead = -1;
-					while ((bytesRead = inputStream.read(bytesArray)) != -1
-							&& !isCanceled()) {
-						dos.write(bytesArray, 0, bytesRead);
-						bytesArray = bytesArray = new byte[bufferSize];
-					}
+            if (found) {
 
-					inputStream.close();
-					fos.close();
-					dos.close();
-					setSpeed(0);
+                long startResponseTime = System.nanoTime();
+                long endResponseTime = System.nanoTime();
+                responseTime = endResponseTime - startResponseTime;
+                updateObserverDownloadResponseTime();
 
-					if (!canceled) {
+                inputStream = ftpClient.retrieveFileStream(remotePath + "/" + file.getName());
 
-						found = ftpClient.completePendingCommand();
-						if (found) {
-							long actualSize = file.length();
-							FTPFile ftpFile = ftpClient.mlistFile(file
-									.getName());
-							if (ftpFile != null) {
-								long remoteSize = ftpFile.getSize();
-								if (actualSize < remoteSize && remoteSize != -1) {
-									String message = "WARNING: Incompete file size transfer. Remote size: "
-											+ remoteSize
-											+ " Bytes, "
-											+ "Transfered size: "
-											+ actualSize
-											+ " Bytes";
-									System.out.println(message);
-									setOffset(file.length());
-									downloadFileWithRecordProgress(file,
-											remotePath);
-								}
-							}
-						}
-					}
-				}
-			}
-		} catch (IOException e) {
-			String coreMessage = "Failed to retrieve file " + remotePath + "/"
-					+ file.getName();
-			IOException ioe = transferIOExceptionFactory(coreMessage, e);
-			throw ioe;
-		} finally {
-			if (fos != null) {
-				fos.close();
-			}
-			if (dos != null) {
-				dos.close();
-			}
-			if (inputStream != null) {
-				inputStream.close();
-			}
-			setSpeed(0);
-		}
-		return found;
-	}
+                if (inputStream == null) {
+                    found = false;
+                }
+                else {
+                    byte[] bytesArray = bytesArray = new byte[bufferSize];
+                    int bytesRead = -1;
+                    while ((bytesRead = inputStream.read(bytesArray)) != -1 && !canceled) {
+                        dos.write(bytesArray, 0, bytesRead);
+                        bytesArray = bytesArray = new byte[bufferSize];
+                    }
 
-	private IOException transferIOExceptionFactory(String coreMessage,
-			IOException e) {
+                    inputStream.close();
+                    fos.close();
+                    dos.close();
+                    setSpeed(0);
 
-		if (e instanceof UnknownHostException) {
-			String message = coreMessage + "\n" + UNKNOWN_HOST;
-			return new UnknownHostException(message);
-		} else if (e instanceof SocketTimeoutException) {
-			String message = coreMessage + "\n" + READ_TIME_OUT_REACHED;
-			return new SocketTimeoutException(message);
-		} else if (e.getCause() instanceof SocketTimeoutException) {
-			String message = coreMessage + "\n" + CONNECTION_TIME_OUT_REACHED;
-			return new SocketTimeoutException(message);
-		} else if (e instanceof SocketException) {
-			String message = coreMessage + "\n" + CONNECTION_FAILED;
-			return new SocketException(message);
-		} else if (e.getCause() instanceof SocketException) {
-			String message = coreMessage + "\n" + CONNECTION_FAILED;
-			return new SocketException(message);
-		} else {
-			String message = coreMessage;
-			if (e.getMessage() != null) {
-				message = message + "\n" + e.getMessage();
-			}
-			return new IOException(message);
-		}
-	}
+                    if (!canceled) {
+                        found = ftpClient.completePendingCommand();
+                    }
+                }
+            }
+        }
+        catch (IOException e) {
+            String coreMessage = "Failed to retrieve file " + remotePath + "/" + file.getName();
+            IOException ioe = transferIOExceptionFactory(coreMessage, e);
+            throw ioe;
+        }
+        finally {
+            if (fos != null) {
+                fos.close();
+            }
+            if (dos != null) {
+                dos.close();
+            }
+            if (inputStream != null) {
+                inputStream.close();
+            }
+            setSpeed(0);
+        }
+        return found;
+    }
 
-	public SyncTreeDirectory downloadSync(String repositoryName,
-			AbstractProtocole protocole) throws IOException {
+    private IOException transferIOExceptionFactory(String coreMessage, IOException e) {
 
-		SyncTreeDirectory sync = null;
-		File directory = new File(TEMP_FOLDER_PATH + "/" + repositoryName);
-		File file = new File(directory + "/" + DataAccessConstants.SYNC);
-		String remotePath = protocole.getRemotePath() + A3S_FOlDER_PATH;
+        if (e instanceof UnknownHostException) {
+            String message = coreMessage + "\n" + UNKNOWN_HOST;
+            return new UnknownHostException(message);
+        }
+        else if (e instanceof SocketTimeoutException) {
+            String message = coreMessage + "\n" + READ_TIME_OUT_REACHED;
+            return new SocketTimeoutException(message);
+        }
+        else if (e.getCause() instanceof SocketTimeoutException) {
+            String message = coreMessage + "\n" + CONNECTION_TIME_OUT_REACHED;
+            return new SocketTimeoutException(message);
+        }
+        else if (e instanceof SocketException) {
+            String message = coreMessage + "\n" + CONNECTION_FAILED;
+            return new SocketException(message);
+        }
+        else if (e.getCause() instanceof SocketException) {
+            String message = coreMessage + "\n" + CONNECTION_FAILED;
+            return new SocketException(message);
+        }
+        else {
+            String message = coreMessage;
+            if (e.getMessage() != null) {
+                message = message + "\n" + e.getMessage();
+            }
+            return new IOException(message);
+        }
+    }
 
-		try {
-			boolean ok = directory.mkdir();
-			boolean found = downloadFile(file, remotePath);
-			if (ok && found) {
-				sync = A3SFilesAccessor.readSyncFile(file);
-			}
-		} finally {
-			FileAccessMethods.deleteDirectory(directory);
-		}
-		return sync;
-	}
+    public SyncTreeDirectory downloadSync(String repositoryName, AbstractProtocole protocole)
+            throws IOException {
 
-	public ServerInfo downloadSeverInfo(String repositoryName,
-			AbstractProtocole protocole) throws IOException {
+        SyncTreeDirectory sync = null;
+        File directory = new File(TEMP_FOLDER_PATH + "/" + repositoryName);
+        File file = new File(directory + "/" + DataAccessConstants.SYNC);
+        String remotePath = protocole.getRemotePath() + A3S_FOlDER_PATH;
 
-		ServerInfo serverInfo = null;
-		File directory = new File(TEMP_FOLDER_PATH + "/" + repositoryName);
-		File file = new File(directory + "/" + DataAccessConstants.SERVERINFO);
-		String remotePath = protocole.getRemotePath() + A3S_FOlDER_PATH;
+        try {
+            boolean ok = directory.mkdir();
+            boolean found = downloadFile(file, remotePath);
+            if (ok && found) {
+                sync = A3SFilesAccessor.readSyncFile(file);
+            }
+        }
+        finally {
+            FileAccessMethods.deleteDirectory(directory);
+        }
+        return sync;
+    }
 
-		try {
-			boolean ok = directory.mkdir();
-			boolean found = downloadFile(file, remotePath);
-			if (ok && found) {
-				serverInfo = A3SFilesAccessor.readServerInfoFile(file);
-			}
-		} finally {
-			FileAccessMethods.deleteDirectory(directory);
-		}
-		return serverInfo;
-	}
+    public ServerInfo downloadSeverInfo(String repositoryName, AbstractProtocole protocole)
+            throws IOException {
 
-	public Changelogs downloadChangelogs(String repositoryName,
-			AbstractProtocole protocole) throws IOException {
+        ServerInfo serverInfo = null;
+        File directory = new File(TEMP_FOLDER_PATH + "/" + repositoryName);
+        File file = new File(directory + "/" + DataAccessConstants.SERVERINFO);
+        String remotePath = protocole.getRemotePath() + A3S_FOlDER_PATH;
 
-		Changelogs changelogs = null;
-		File directory = new File(TEMP_FOLDER_PATH + "/" + repositoryName);
-		File file = new File(directory + "/" + DataAccessConstants.CHANGELOGS);
-		String remotePath = protocole.getRemotePath() + A3S_FOlDER_PATH;
+        try {
+            boolean ok = directory.mkdir();
+            boolean found = downloadFile(file, remotePath);
+            if (ok && found) {
+                serverInfo = A3SFilesAccessor.readServerInfoFile(file);
+            }
+        }
+        finally {
+            FileAccessMethods.deleteDirectory(directory);
+        }
+        return serverInfo;
+    }
 
-		try {
-			boolean ok = directory.mkdir();
-			boolean found = downloadFile(file, remotePath);
-			if (ok && found) {
-				changelogs = A3SFilesAccessor.readChangelogsFile(file);
-			}
-		} finally {
-			FileAccessMethods.deleteDirectory(directory);
-		}
-		return changelogs;
-	}
+    public Changelogs downloadChangelogs(String repositoryName, AbstractProtocole protocole)
+            throws IOException {
 
-	public Events downloadEvents(String repositoryName,
-			AbstractProtocole protocole) throws IOException {
+        Changelogs changelogs = null;
+        File directory = new File(TEMP_FOLDER_PATH + "/" + repositoryName);
+        File file = new File(directory + "/" + DataAccessConstants.CHANGELOGS);
+        String remotePath = protocole.getRemotePath() + A3S_FOlDER_PATH;
 
-		Events events = null;
-		File directory = new File(TEMP_FOLDER_PATH + "/" + repositoryName);
-		File file = new File(directory + "/" + DataAccessConstants.EVENTS);
-		String remotePath = protocole.getRemotePath() + A3S_FOlDER_PATH;
+        try {
+            boolean ok = directory.mkdir();
+            boolean found = downloadFile(file, remotePath);
+            if (ok && found) {
+                changelogs = A3SFilesAccessor.readChangelogsFile(file);
+            }
+        }
+        finally {
+            FileAccessMethods.deleteDirectory(directory);
+        }
+        return changelogs;
+    }
 
-		try {
-			boolean ok = directory.mkdir();
-			boolean found = downloadFile(file, remotePath);
-			if (ok && found) {
-				events = A3SFilesAccessor.readEventsFile(file);
-			}
-		} finally {
-			FileAccessMethods.deleteDirectory(directory);
-		}
-		return events;
-	}
+    public Events downloadEvents(String repositoryName, AbstractProtocole protocole)
+            throws IOException {
 
-	public AutoConfig downloadAutoconfig(String repositoryName,
-			AbstractProtocole protocole) throws IOException {
+        Events events = null;
+        File directory = new File(TEMP_FOLDER_PATH + "/" + repositoryName);
+        File file = new File(directory + "/" + DataAccessConstants.EVENTS);
+        String remotePath = protocole.getRemotePath() + A3S_FOlDER_PATH;
 
-		AutoConfig autoConfig = null;
-		File directory = new File(TEMP_FOLDER_PATH + "/" + repositoryName);
-		File file = new File(directory + "/" + DataAccessConstants.AUTOCONFIG);
-		String remotePath = protocole.getRemotePath() + A3S_FOlDER_PATH;
+        try {
+            boolean ok = directory.mkdir();
+            boolean found = downloadFile(file, remotePath);
+            if (ok && found) {
+                events = A3SFilesAccessor.readEventsFile(file);
+            }
+        }
+        finally {
+            FileAccessMethods.deleteDirectory(directory);
+        }
+        return events;
+    }
 
-		try {
-			boolean ok = directory.mkdir();
-			boolean found = downloadFile(file, remotePath);
-			if (ok && found) {
-				autoConfig = A3SFilesAccessor.readAutoConfigFile(file);
-			}
-		} finally {
-			FileAccessMethods.deleteDirectory(directory);
-		}
-		return autoConfig;
-	}
+    public AutoConfig downloadAutoconfig(String repositoryName, AbstractProtocole protocole)
+            throws IOException {
 
-	public AutoConfig importAutoConfig(AbstractProtocole protocol)
-			throws ConnectException, IOException {
+        AutoConfig autoConfig = null;
+        File directory = new File(TEMP_FOLDER_PATH + "/" + repositoryName);
+        File file = new File(directory + "/" + DataAccessConstants.AUTOCONFIG);
+        String remotePath = protocole.getRemotePath() + A3S_FOlDER_PATH;
 
-		AutoConfig autoConfig = null;
-		File directory = new File(TEMP_FOLDER_PATH);
-		File file = new File(directory + "/" + DataAccessConstants.AUTOCONFIG);
-		// Parent path from full autoconfig url
-		String remotePath = protocol.getRemotePath();
+        try {
+            boolean ok = directory.mkdir();
+            boolean found = downloadFile(file, remotePath);
+            if (ok && found) {
+                autoConfig = A3SFilesAccessor.readAutoConfigFile(file);
+            }
+        }
+        finally {
+            FileAccessMethods.deleteDirectory(directory);
+        }
+        return autoConfig;
+    }
 
-		try {
-			try {
-				connect(protocol);
-			} catch (IOException e) {
-				String coreMessage = "Failed to connect to url: " + "\n"
-						+ protocol.getProtocolType().getPrompt()
-						+ protocol.getUrl() + "/"
-						+ DataAccessConstants.AUTOCONFIG;
-				IOException ioe = transferIOExceptionFactory(coreMessage, e);
-				throw ioe;
-			} catch (FtpException e) {
-				String message = "Server returned error message "
-						+ e.getMessage() + " on url:" + "\n"
-						+ protocol.getProtocolType().getPrompt()
-						+ protocol.getUrl() + "/"
-						+ DataAccessConstants.AUTOCONFIG;
-				throw new ConnectException(message);
-			}
+    public AutoConfig importAutoConfig(AbstractProtocole protocol) throws ConnectException,
+            IOException {
 
-			boolean ok = directory.mkdir();
-			boolean found = downloadFile(file, protocol.getRemotePath());
+        AutoConfig autoConfig = null;
+        File directory = new File(TEMP_FOLDER_PATH);
+        File file = new File(directory + "/" + DataAccessConstants.AUTOCONFIG);
+        // Parent path from full autoconfig url
+        String remotePath = protocol.getRemotePath();
 
-			if (ok && found) {
-				downloadFile(file, remotePath);
-				autoConfig = A3SFilesAccessor.readAutoConfigFile(file);
-			}
-		} finally {
-			FileAccessMethods.deleteFile(file);
-		}
-		return autoConfig;
-	}
+        try {
+            try {
+                connect(protocol);
+            }
+            catch (IOException e) {
+                String coreMessage = "Failed to connect to url: " + "\n"
+                        + protocol.getProtocolType().getPrompt() + protocol.getUrl() + "/"
+                        + DataAccessConstants.AUTOCONFIG;
+                IOException ioe = transferIOExceptionFactory(coreMessage, e);
+                throw ioe;
+            }
+            catch (FtpException e) {
+                String message = "Server returned error message " + e.getMessage() + " on url:"
+                        + "\n" + protocol.getProtocolType().getPrompt() + protocol.getUrl() + "/"
+                        + DataAccessConstants.AUTOCONFIG;
+                throw new ConnectException(message);
+            }
 
-	public File downloadFile(String remotePath, String destinationPath,
-			SyncTreeNodeDTO node) throws IOException {
+            boolean found = downloadFile(file, protocol.getRemotePath());
 
-		File downloadedFile = null;
+            if (found) {
+                downloadFile(file, remotePath);
+                autoConfig = A3SFilesAccessor.readAutoConfigFile(file);
+            }
+        }
+        finally {
+            FileAccessMethods.deleteFile(file);
+        }
+        return autoConfig;
+    }
 
-		File parentDirectory = new File(destinationPath);
-		parentDirectory.mkdirs();
+    public File downloadFile(String remotePath, String destinationPath, SyncTreeNodeDTO node)
+            throws IOException {
 
-		if (node.isLeaf()) {
+        File downloadedFile = null;
 
-			SyncTreeLeafDTO leaf = (SyncTreeLeafDTO) node;
+        File parentDirectory = new File(destinationPath);
+        parentDirectory.mkdirs();
 
-			if (leaf.isCompressed()) {
-				downloadedFile = new File(parentDirectory + "/"
-						+ leaf.getName() + ZIP_EXTENSION);
-				this.expectedFullSize = leaf.getCompressedSize();
-			} else {
-				downloadedFile = new File(parentDirectory + "/"
-						+ leaf.getName());
-				this.expectedFullSize = leaf.getSize();
-			}
+        if (node.isLeaf()) {
 
-			// Resuming
-			boolean resume = false;
-			if (leaf.getDownloadStatus().equals(DownloadStatus.RUNNING)
-					&& downloadedFile.exists()
-					&& downloadedFile.length() != this.expectedFullSize) {
-				this.offset = downloadedFile.length();
-			} else {
-				FileAccessMethods.deleteFile(downloadedFile);
-				this.offset = 0;
-			}
+            SyncTreeLeafDTO leaf = (SyncTreeLeafDTO) node;
 
-			this.downloadingLeaf = leaf;
-			leaf.setDownloadStatus(DownloadStatus.RUNNING);
+            if (leaf.isCompressed()) {
+                downloadedFile = new File(parentDirectory + "/" + leaf.getName() + ZIP_EXTENSION);
+                this.expectedFullSize = leaf.getCompressedSize();
+            }
+            else {
+                downloadedFile = new File(parentDirectory + "/" + leaf.getName());
+                this.expectedFullSize = leaf.getSize();
+            }
 
-			try {
-				boolean found = downloadFileWithRecordProgress(downloadedFile,
-						remotePath);
-				if (!found) {
-					String message = "File not found on repository: "
-							+ remotePath + "/" + downloadedFile.getName();
-					throw new FileNotFoundException(message);
-				}
-				if (!canceled) {
-					updateObserverDownloadTotalSizeProgress();
-					node.setDownloadStatus(DownloadStatus.DONE);
-				} else {
-					downloadedFile = null;
-				}
-			} catch (IOException e) {
-				downloadedFile = null;
-				if (!canceled) {
-					throw e;
-				}
-			} finally {
-				this.expectedFullSize = 0;
-				this.downloadingLeaf = null;
-				this.offset = 0;
-				this.countFileSize = 0;
-				this.speed = 0;
-			}
-		} else {// directory
-			downloadedFile = new File(parentDirectory + "/" + node.getName());
-			downloadedFile.mkdir();
-			node.setDownloadStatus(DownloadStatus.DONE);
-		}
+            // Resuming
+            boolean resume = false;
+            if (leaf.getDownloadStatus().equals(DownloadStatus.RUNNING) && downloadedFile.exists()
+                    && downloadedFile.length() != this.expectedFullSize) {
+                this.offset = downloadedFile.length();
+            }
+            else {
+                FileAccessMethods.deleteFile(downloadedFile);
+                this.offset = 0;
+            }
 
-		return downloadedFile;
-	}
+            this.downloadingLeaf = leaf;
+            leaf.setDownloadStatus(DownloadStatus.RUNNING);
 
-	public boolean uploadEvents(Events events, AbstractProtocole protocole)
-			throws IOException {
+            try {
+                boolean found = downloadFileWithRecordProgress(downloadedFile, remotePath);
+                if (!found) {
+                    String message = "File not found on repository: " + remotePath + "/"
+                            + downloadedFile.getName();
+                    throw new FileNotFoundException(message);
+                }
+                if (!canceled) {
+                    updateObserverDownloadTotalSizeProgress();
+                    node.setDownloadStatus(DownloadStatus.DONE);
+                }
+                else {
+                    downloadedFile = null;
+                }
+            }
+            catch (IOException e) {
+                downloadedFile = null;
+                if (!canceled) {
+                    throw e;
+                }
+            }
+            finally {
+                this.expectedFullSize = 0;
+                this.downloadingLeaf = null;
+                this.offset = 0;
+                this.countFileSize = 0;
+                this.speed = 0;
+            }
+        }
+        else {// directory
+            downloadedFile = new File(parentDirectory + "/" + node.getName());
+            downloadedFile.mkdir();
+            node.setDownloadStatus(DownloadStatus.DONE);
+        }
 
-		boolean response = false;
-		ObjectOutputStream oos = null;
-		InputStream uis = null;
-		try {
-			String remotePath = protocole.getRemotePath() + A3S_FOlDER_PATH;
-			boolean ok = ftpClient.changeWorkingDirectory(remotePath);
-			if (ok) {
-				ByteArrayOutputStream baos = new ByteArrayOutputStream();
-				oos = new ObjectOutputStream(new GZIPOutputStream(baos));
-				oos.writeObject(events);
-				oos.flush();
-				oos.close();
-				uis = new ByteArrayInputStream(baos.toByteArray());
-				response = ftpClient.storeFile(EVENTS, uis);
-				ftpClient.noop();
-			}
-		} finally {
-			if (uis != null) {
-				uis.close();
-			}
-			if (oos != null) {
-				oos.close();
-			}
-		}
-		return response;
-	}
+        return downloadedFile;
+    }
 
-	public String downloadXMLupdateFile(boolean devMode) throws IOException, DocumentException,
+    public boolean uploadEvents(Events events, AbstractProtocole protocole) throws IOException {
+
+        boolean response = false;
+        ObjectOutputStream oos = null;
+        InputStream uis = null;
+        try {
+            String remotePath = protocole.getRemotePath() + A3S_FOlDER_PATH;
+            boolean ok = ftpClient.changeWorkingDirectory(remotePath);
+            if (ok) {
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                oos = new ObjectOutputStream(new GZIPOutputStream(baos));
+                oos.writeObject(events);
+                oos.flush();
+                oos.close();
+                uis = new ByteArrayInputStream(baos.toByteArray());
+                response = ftpClient.storeFile(EVENTS, uis);
+                ftpClient.noop();
+            }
+        }
+        finally {
+            if (uis != null) {
+                uis.close();
+            }
+            if (oos != null) {
+                oos.close();
+            }
+        }
+        return response;
+    }
+
+    public String downloadXMLupdateFile(boolean devMode) throws IOException, DocumentException,
             FtpException {
 
         ftpClient = new FTPClient();
@@ -570,407 +557,409 @@ public class FtpDAO extends AbstractConnexionDAO {
         return nom;
     }
 
-	public boolean fileExists(String repositoryName, String relativePath,
-			String fileName, AbstractProtocole protocole) throws IOException,
-			FtpException {
+    public boolean fileExists(String repositoryName, String relativePath, String fileName,
+            AbstractProtocole protocole) throws IOException {
 
-		String path = protocole.getRemotePath();
-		if (!relativePath.isEmpty()) {
-			path = protocole.getRemotePath() + "/" + relativePath;
-		}
+        String path = protocole.getRemotePath();
+        if (!relativePath.isEmpty()) {
+            path = protocole.getRemotePath() + "/" + relativePath;
+        }
 
-		System.out.println("Checking remote file: " + path + "/" + fileName);
+        System.out.println("Checking remote file: " + path + "/" + fileName);
 
-		boolean exists = false;
-		InputStream inputStream = null;
-		try {
-			boolean ok = ftpClient.changeWorkingDirectory(path);
-			/*
-			 * http://www.codejava.net/java-se/networking/ftp/get-size-of-a-file-
-			 * on-ftp-server
-			 */
-			if (ok) {
-				ftpClient.mlistFile(fileName);
-				int returnCode = ftpClient.getReplyCode();
-				if (returnCode == 500) {// mlist is not supported
-					exists = false;
-					String message = "The server does not support the FTP command MLIST.";
-					System.out.println("WARNING " + message);
-					throw new FtpException(message);
-				} else if (returnCode == 550) {
-					exists = false;
-				} else {
-					exists = true;
-				}
-			}
-		} catch (IOException e) {
-			String coreMessage = "Failed to connect to repository "
-					+ repositoryName + " on url: " + "\n"
-					+ protocole.getProtocolType().getPrompt() + path + "/"
-					+ fileName;
-			IOException ioe = transferIOExceptionFactory(coreMessage, e);
-			throw ioe;
-		} finally {
-			if (inputStream != null) {
-				inputStream.close();
-			}
-		}
+        boolean exists = false;
+        InputStream inputStream = null;
+        try {
+            boolean ok = ftpClient.changeWorkingDirectory(path);
+            /*
+             * http://www.codejava.net/java-se/networking/ftp/get-size-of-a-file-
+             * on-ftp-server
+             */
+            if (ok) {
+                ftpClient.mlistFile(fileName);
+                int returnCode = ftpClient.getReplyCode();
+                if (returnCode == 500) {// mlist is not supported
+                    System.out.println("WARNING: FTP command MLST is not supported.");
+                    FTPFile[] subfiles = ftpClient.listFiles();
+                    if (subfiles != null) {
+                        for (FTPFile ftpFile : subfiles) {
+                            if (ftpFile.getName().equals(fileName)) {
+                                exists = true;
+                                break;
+                            }
+                        }
+                    }
+                }
+                else {// mlist is supported
+                    if (returnCode == 550) {
+                        exists = false;
+                    }
+                    else {
+                        exists = true;
+                    }
+                }
+            }
+        }
+        catch (IOException e) {
+            String coreMessage = "Failed to connect to repository " + repositoryName + " on url: "
+                    + "\n" + protocole.getProtocolType().getPrompt() + path + "/" + fileName;
+            IOException ioe = transferIOExceptionFactory(coreMessage, e);
+            throw ioe;
+        }
+        finally {
+            if (inputStream != null) {
+                inputStream.close();
+            }
+        }
 
-		if (exists) {
-			System.out.println("Remote file found: " + path + "/" + fileName);
-		} else {
-			System.out.println("Remote file not found: " + path + "/"
-					+ fileName);
-		}
+        if (exists) {
+            System.out.println("Remote file found: " + path + "/" + fileName);
+        }
+        else {
+            System.out.println("Remote file not found: " + path + "/" + fileName);
+        }
 
-		return exists;
-	}
+        return exists;
+    }
 
-	public boolean directoryExists(String remotePath, String fileName)
-			throws IOException {
+    public boolean directoryExists(String remotePath, String fileName) throws IOException {
 
-		boolean exists = false;
-		boolean ok = ftpClient.changeWorkingDirectory(remotePath);
-		if (ok) {
-			int returnCode = ftpClient.getReplyCode();
-			if (returnCode == 550) {
-				return false;
-			}
-			exists = true;
-		}
-		return exists;
-	}
+        boolean exists = false;
+        boolean ok = ftpClient.changeWorkingDirectory(remotePath);
+        if (ok) {
+            int returnCode = ftpClient.getReplyCode();
+            if (returnCode == 550) {
+                return false;
+            }
+            exists = true;
+        }
+        return exists;
+    }
 
-	public boolean uploadFile(FTPFile ftpFile, String repositoryPath,
-			String repositoryRemotePath) throws IOException {
+    public boolean uploadFile(FTPFile ftpFile, String repositoryPath, String repositoryRemotePath)
+            throws IOException {
 
-		String relativePath = ftpFile.getLink();
-		String fileName = ftpFile.getName();
-		boolean isFile = (ftpFile.getType() == FTPFile.FILE_TYPE) ? true
-				: false;
+        String relativePath = ftpFile.getLink();
+        String fileName = ftpFile.getName();
+        boolean isFile = (ftpFile.getType() == FTPFile.FILE_TYPE) ? true : false;
 
-		boolean found = false;
+        boolean found = false;
 
-		if (isFile) {
-			File file = new File(repositoryPath + "/" + relativePath + "/"
-					+ fileName);
-			this.expectedFullSize = file.length();
+        if (isFile) {
+            File file = new File(repositoryPath + "/" + relativePath + "/" + fileName);
+            this.expectedFullSize = file.length();
 
-			makeDir(repositoryRemotePath, relativePath);
-			boolean ok = ftpClient.changeWorkingDirectory(repositoryRemotePath
-					+ "/" + relativePath);
-			if (!ok) {
-				return false;
-			}
+            makeDir(repositoryRemotePath, relativePath);
+            boolean ok = ftpClient
+                    .changeWorkingDirectory(repositoryRemotePath + "/" + relativePath);
+            if (!ok) {
+                return false;
+            }
 
-			System.out.println("");
-			System.out.println("Uploading file: " + file.getAbsolutePath());
-			System.out.println("to target directory: " + repositoryRemotePath
-					+ "/" + relativePath);
+            System.out.println("");
+            System.out.println("Uploading file: " + file.getAbsolutePath());
+            System.out.println("to target directory: " + repositoryRemotePath + "/" + relativePath);
 
-			this.offset = 0;
-			FileInputStream fis = null;
-			CountingInputStream uis = null;
-			try {
-				final long startTime = System.nanoTime();
-				fis = new FileInputStream(file);
-				uis = new CountingInputStream(fis) {
-					@Override
-					protected void afterRead(int n) {
-						super.afterRead(n);
-						int nbBytes = getCount();
-						countFileSize = nbBytes;
-						updateObserverUploadSingleSizeProgress();
-						long endTime = System.nanoTime();
-						long totalTime = endTime - startTime;
-						speed = (long) (nbBytes / (totalTime * Math.pow(10, -9)));
-						if (totalTime > Math.pow(10, 9) / 2) {// 0.5s
-							updateObserverUploadSpeed();
-						}
-					}
-				};
-				found = ftpClient.storeFile(file.getName(), uis);
-				ftpClient.noop();
-			} catch (IOException e) {
-				String coreMessage = "Failed to upload file " + relativePath
-						+ "/" + file.getName();
-				IOException ioe = transferIOExceptionFactory(coreMessage, e);
-				throw ioe;
-			} finally {
-				if (fis != null) {
-					fis.close();
-				}
-				if (uis != null) {
-					uis.close();
-				}
-			}
-		} else {
-			makeDir(repositoryRemotePath, relativePath + "/" + fileName);
-			found = true;
-		}
-		updateObserverUploadTotalSizeProgress();
-		return found;
-	}
+            this.offset = 0;
+            FileInputStream fis = null;
+            CountingInputStream uis = null;
+            try {
+                final long startTime = System.nanoTime();
+                fis = new FileInputStream(file);
+                uis = new CountingInputStream(fis) {
+                    @Override
+                    protected void afterRead(int n) {
+                        super.afterRead(n);
+                        int nbBytes = getCount();
+                        countFileSize = nbBytes;
+                        updateObserverUploadSingleSizeProgress();
+                        long endTime = System.nanoTime();
+                        long totalTime = endTime - startTime;
+                        speed = (long) (nbBytes / (totalTime * Math.pow(10, -9)));
+                        if (totalTime > Math.pow(10, 9) / 2) {// 0.5s
+                            updateObserverUploadSpeed();
+                        }
+                    }
+                };
+                found = ftpClient.storeFile(file.getName(), uis);
+                ftpClient.noop();
+            }
+            catch (IOException e) {
+                String coreMessage = "Failed to upload file " + relativePath + "/" + file.getName();
+                IOException ioe = transferIOExceptionFactory(coreMessage, e);
+                throw ioe;
+            }
+            finally {
+                if (fis != null) {
+                    fis.close();
+                }
+                if (uis != null) {
+                    uis.close();
+                }
+            }
+        }
+        else {
+            makeDir(repositoryRemotePath, relativePath + "/" + fileName);
+            found = true;
+        }
+        updateObserverUploadTotalSizeProgress();
+        return found;
+    }
 
-	public void makeDir(String remotePath, String dirTree) throws IOException {
+    public void makeDir(String remotePath, String dirTree) throws IOException {
 
-		boolean dirExists = ftpClient.changeWorkingDirectory(remotePath);
-		if (!dirExists) {
-			if (!ftpClient.makeDirectory(remotePath)) {
-				throw new IOException("Unable to create remote directory "
-						+ remotePath + "\n" + "Server returned FTP error: "
-						+ ftpClient.getReplyString());
-			}
-			if (!ftpClient.changeWorkingDirectory(remotePath)) {
-				throw new IOException(
-						"Unable to change into newly created remote directory"
-								+ remotePath + "\n"
-								+ "Server returned FTP error: "
-								+ ftpClient.getReplyString());
-			}
-		}
+        boolean dirExists = ftpClient.changeWorkingDirectory(remotePath);
+        if (!dirExists) {
+            if (!ftpClient.makeDirectory(remotePath)) {
+                throw new IOException("Unable to create remote directory " + remotePath + "\n"
+                        + "Server returned FTP error: " + ftpClient.getReplyString());
+            }
+            if (!ftpClient.changeWorkingDirectory(remotePath)) {
+                throw new IOException("Unable to change into newly created remote directory"
+                        + remotePath + "\n" + "Server returned FTP error: "
+                        + ftpClient.getReplyString());
+            }
+        }
 
-		// tokenize the string and attempt to change into each directory level.
-		// If you cannot, then start creating.
-		String[] directories = dirTree.split("/");
-		for (String dir : directories) {
-			if (!dir.isEmpty()) {
-				if (dirExists) {
-					dirExists = ftpClient.changeWorkingDirectory(dir);
-				}
-				if (!dirExists) {
-					if (!ftpClient.makeDirectory(dir)) {
-						throw new IOException(
-								"Unable to create remote directory "
-										+ remotePath + dirTree + "\n"
-										+ "Server returned FTP error: "
-										+ ftpClient.getReplyString());
-					}
-					if (!ftpClient.changeWorkingDirectory(dir)) {
-						throw new IOException(
-								"Unable to change into newly created remote directory "
-										+ remotePath + dirTree + "\n"
-										+ "Server returned FTP error: "
-										+ ftpClient.getReplyString());
-					}
-				}
-			}
-		}
-	}
+        // tokenize the string and attempt to change into each directory level.
+        // If you cannot, then start creating.
+        String[] directories = dirTree.split("/");
+        for (String dir : directories) {
+            if (!dir.isEmpty()) {
+                if (dirExists) {
+                    dirExists = ftpClient.changeWorkingDirectory(dir);
+                }
+                if (!dirExists) {
+                    if (!ftpClient.makeDirectory(dir)) {
+                        throw new IOException("Unable to create remote directory " + remotePath
+                                + dirTree + "\n" + "Server returned FTP error: "
+                                + ftpClient.getReplyString());
+                    }
+                    if (!ftpClient.changeWorkingDirectory(dir)) {
+                        throw new IOException(
+                                "Unable to change into newly created remote directory "
+                                        + remotePath + dirTree + "\n"
+                                        + "Server returned FTP error: "
+                                        + ftpClient.getReplyString());
+                    }
+                }
+            }
+        }
+    }
 
-	public void deleteFile(FTPFile ftpFile, String repositoryRemotePath)
-			throws IOException {
+    public void deleteFile(FTPFile ftpFile, String repositoryRemotePath) throws IOException {
 
-		String relativePath = ftpFile.getLink();
-		String fileName = ftpFile.getName();
-		boolean isFile = (ftpFile.getType() == FTPFile.FILE_TYPE) ? true
-				: false;
+        String relativePath = ftpFile.getLink();
+        String fileName = ftpFile.getName();
+        boolean isFile = (ftpFile.getType() == FTPFile.FILE_TYPE) ? true : false;
 
-		String remotePath = repositoryRemotePath;
-		if (!relativePath.isEmpty()) {
-			remotePath = repositoryRemotePath + "/" + relativePath;
-		}
+        String remotePath = repositoryRemotePath;
+        if (!relativePath.isEmpty()) {
+            remotePath = repositoryRemotePath + "/" + relativePath;
+        }
 
-		boolean exists = ftpClient.changeWorkingDirectory(remotePath);
-		if (exists) {
-			if (isFile) {
-				ftpClient.deleteFile(fileName);
-			} else {
-				removeDirectory(fileName, relativePath, repositoryRemotePath);
-			}
-		}
-	}
+        boolean exists = ftpClient.changeWorkingDirectory(remotePath);
+        if (exists) {
+            if (isFile) {
+                ftpClient.deleteFile(fileName);
+            }
+            else {
+                removeDirectory(fileName, relativePath, repositoryRemotePath);
+            }
+        }
+    }
 
-	private void removeDirectory(String folderName, String relativePath,
-			String repositoryRemotePath) throws IOException {
+    private void removeDirectory(String folderName, String relativePath, String repositoryRemotePath)
+            throws IOException {
 
-		FTPFile[] subFiles = ftpClient.listFiles(folderName);
-		if (subFiles != null && subFiles.length > 0) {
-			for (FTPFile aFile : subFiles) {
-				String newRemotePath = relativePath + "/" + folderName;
-				aFile.setLink(newRemotePath);
-				deleteFile(aFile, repositoryRemotePath);
-			}
-		}
-		String remotePath = repositoryRemotePath + "/" + relativePath;
-		boolean exists = ftpClient.changeWorkingDirectory(remotePath);
-		if (exists) {
-			ftpClient.removeDirectory(folderName);
-		}
-	}
+        FTPFile[] subFiles = ftpClient.listFiles(folderName);
+        if (subFiles != null && subFiles.length > 0) {
+            for (FTPFile aFile : subFiles) {
+                String newRemotePath = relativePath + "/" + folderName;
+                aFile.setLink(newRemotePath);
+                deleteFile(aFile, repositoryRemotePath);
+            }
+        }
+        String remotePath = repositoryRemotePath + "/" + relativePath;
+        boolean exists = ftpClient.changeWorkingDirectory(remotePath);
+        if (exists) {
+            ftpClient.removeDirectory(folderName);
+        }
+    }
 
-	public void uploadSync(SyncTreeDirectory sync, String remotePath)
-			throws IOException {
+    public void uploadSync(SyncTreeDirectory sync, String remotePath) throws IOException {
 
-		makeDir(remotePath, A3S_FOlDER_PATH);
+        makeDir(remotePath, A3S_FOlDER_PATH);
 
-		ByteArrayOutputStream baos = null;
-		ObjectOutputStream oos = null;
-		InputStream uis = null;
-		try {
-			baos = new ByteArrayOutputStream();
-			oos = new ObjectOutputStream(new GZIPOutputStream(baos));
-			oos.writeObject(sync);
-			oos.flush();
-			oos.close();
-			uis = new ByteArrayInputStream(baos.toByteArray());
-			boolean ok = ftpClient.storeFile(SYNC, uis);
-			if (!ok) {
-				throw new IOException("Failed to upload /.a3s/sync file.");
-			}
-			ftpClient.noop();
-		} finally {
-			if (baos != null) {
-				baos.close();
-			}
-			if (oos != null) {
-				oos.close();
-			}
-			if (uis != null) {
-				uis.close();
-			}
-		}
-	}
+        ByteArrayOutputStream baos = null;
+        ObjectOutputStream oos = null;
+        InputStream uis = null;
+        try {
+            baos = new ByteArrayOutputStream();
+            oos = new ObjectOutputStream(new GZIPOutputStream(baos));
+            oos.writeObject(sync);
+            oos.flush();
+            oos.close();
+            uis = new ByteArrayInputStream(baos.toByteArray());
+            boolean ok = ftpClient.storeFile(SYNC, uis);
+            if (!ok) {
+                throw new IOException("Failed to upload /.a3s/sync file.");
+            }
+            ftpClient.noop();
+        }
+        finally {
+            if (baos != null) {
+                baos.close();
+            }
+            if (oos != null) {
+                oos.close();
+            }
+            if (uis != null) {
+                uis.close();
+            }
+        }
+    }
 
-	public void uploadServerInfo(ServerInfo serverInfo, String remotePath)
-			throws IOException {
+    public void uploadServerInfo(ServerInfo serverInfo, String remotePath) throws IOException {
 
-		makeDir(remotePath, A3S_FOlDER_PATH);
+        makeDir(remotePath, A3S_FOlDER_PATH);
 
-		ByteArrayOutputStream baos = null;
-		ObjectOutputStream oos = null;
-		InputStream uis = null;
-		try {
-			baos = new ByteArrayOutputStream();
-			oos = new ObjectOutputStream(new GZIPOutputStream(baos));
-			oos.writeObject(serverInfo);
-			oos.flush();
-			oos.close();
-			uis = new ByteArrayInputStream(baos.toByteArray());
-			boolean ok = ftpClient.storeFile(SERVERINFO, uis);
-			if (!ok) {
-				throw new IOException("Failed to upload /.a3s/serverInfo file.");
-			}
-			ftpClient.noop();
-		} finally {
-			if (baos != null) {
-				baos.close();
-			}
-			if (oos != null) {
-				oos.close();
-			}
-			if (uis != null) {
-				uis.close();
-			}
-		}
-	}
+        ByteArrayOutputStream baos = null;
+        ObjectOutputStream oos = null;
+        InputStream uis = null;
+        try {
+            baos = new ByteArrayOutputStream();
+            oos = new ObjectOutputStream(new GZIPOutputStream(baos));
+            oos.writeObject(serverInfo);
+            oos.flush();
+            oos.close();
+            uis = new ByteArrayInputStream(baos.toByteArray());
+            boolean ok = ftpClient.storeFile(SERVERINFO, uis);
+            if (!ok) {
+                throw new IOException("Failed to upload /.a3s/serverInfo file.");
+            }
+            ftpClient.noop();
+        }
+        finally {
+            if (baos != null) {
+                baos.close();
+            }
+            if (oos != null) {
+                oos.close();
+            }
+            if (uis != null) {
+                uis.close();
+            }
+        }
+    }
 
-	public void uploadChangelogs(Changelogs changelogs, String remotePath)
-			throws IOException {
+    public void uploadChangelogs(Changelogs changelogs, String remotePath) throws IOException {
 
-		makeDir(remotePath, A3S_FOlDER_PATH);
+        makeDir(remotePath, A3S_FOlDER_PATH);
 
-		ByteArrayOutputStream baos = null;
-		ObjectOutputStream oos = null;
-		InputStream uis = null;
-		try {
-			baos = new ByteArrayOutputStream();
-			oos = new ObjectOutputStream(new GZIPOutputStream(baos));
-			oos.writeObject(changelogs);
-			oos.flush();
-			oos.close();
-			uis = new ByteArrayInputStream(baos.toByteArray());
-			boolean ok = ftpClient.storeFile(CHANGELOGS, uis);
-			if (!ok) {
-				throw new IOException("Failed to upload /.a3s/changelogs file.");
-			}
-			ftpClient.noop();
-		} finally {
-			if (baos != null) {
-				baos.close();
-			}
-			if (oos != null) {
-				oos.close();
-			}
-			if (uis != null) {
-				uis.close();
-			}
-		}
-	}
+        ByteArrayOutputStream baos = null;
+        ObjectOutputStream oos = null;
+        InputStream uis = null;
+        try {
+            baos = new ByteArrayOutputStream();
+            oos = new ObjectOutputStream(new GZIPOutputStream(baos));
+            oos.writeObject(changelogs);
+            oos.flush();
+            oos.close();
+            uis = new ByteArrayInputStream(baos.toByteArray());
+            boolean ok = ftpClient.storeFile(CHANGELOGS, uis);
+            if (!ok) {
+                throw new IOException("Failed to upload /.a3s/changelogs file.");
+            }
+            ftpClient.noop();
+        }
+        finally {
+            if (baos != null) {
+                baos.close();
+            }
+            if (oos != null) {
+                oos.close();
+            }
+            if (uis != null) {
+                uis.close();
+            }
+        }
+    }
 
-	public void uploadAutoconfig(AutoConfig autoConfig, String remotePath)
-			throws IOException {
+    public void uploadAutoconfig(AutoConfig autoConfig, String remotePath) throws IOException {
 
-		makeDir(remotePath, A3S_FOlDER_PATH);
+        makeDir(remotePath, A3S_FOlDER_PATH);
 
-		ByteArrayOutputStream baos = null;
-		ObjectOutputStream oos = null;
-		InputStream uis = null;
-		try {
-			baos = new ByteArrayOutputStream();
-			oos = new ObjectOutputStream(new GZIPOutputStream(baos));
-			oos.writeObject(autoConfig);
-			oos.flush();
-			oos.close();
-			uis = new ByteArrayInputStream(baos.toByteArray());
-			boolean ok = ftpClient.storeFile(AUTOCONFIG, uis);
-			if (!ok) {
-				throw new IOException("Failed to upload /.a3s/autoconfig file.");
-			}
-			ftpClient.noop();
-		} finally {
-			if (baos != null) {
-				baos.close();
-			}
-			if (oos != null) {
-				oos.close();
-			}
-			if (uis != null) {
-				uis.close();
-			}
-		}
-	}
+        ByteArrayOutputStream baos = null;
+        ObjectOutputStream oos = null;
+        InputStream uis = null;
+        try {
+            baos = new ByteArrayOutputStream();
+            oos = new ObjectOutputStream(new GZIPOutputStream(baos));
+            oos.writeObject(autoConfig);
+            oos.flush();
+            oos.close();
+            uis = new ByteArrayInputStream(baos.toByteArray());
+            boolean ok = ftpClient.storeFile(AUTOCONFIG, uis);
+            if (!ok) {
+                throw new IOException("Failed to upload /.a3s/autoconfig file.");
+            }
+            ftpClient.noop();
+        }
+        finally {
+            if (baos != null) {
+                baos.close();
+            }
+            if (oos != null) {
+                oos.close();
+            }
+            if (uis != null) {
+                uis.close();
+            }
+        }
+    }
 
-	public void uploadEvents(Events events, String remotePath)
-			throws IOException {
+    public void uploadEvents(Events events, String remotePath) throws IOException {
 
-		makeDir(remotePath, A3S_FOlDER_PATH);
+        makeDir(remotePath, A3S_FOlDER_PATH);
 
-		ByteArrayOutputStream baos = null;
-		ObjectOutputStream oos = null;
-		InputStream uis = null;
-		try {
-			baos = new ByteArrayOutputStream();
-			oos = new ObjectOutputStream(new GZIPOutputStream(baos));
-			oos.writeObject(events);
-			oos.flush();
-			oos.close();
-			uis = new ByteArrayInputStream(baos.toByteArray());
-			boolean ok = ftpClient.storeFile(EVENTS, uis);
-			if (!ok) {
-				throw new IOException("Failed to upload /.a3s/events file.");
-			}
-			ftpClient.noop();
-		} finally {
-			if (baos != null) {
-				baos.close();
-			}
-			if (oos != null) {
-				oos.close();
-			}
-			if (uis != null) {
-				uis.close();
-			}
-		}
-	}
+        ByteArrayOutputStream baos = null;
+        ObjectOutputStream oos = null;
+        InputStream uis = null;
+        try {
+            baos = new ByteArrayOutputStream();
+            oos = new ObjectOutputStream(new GZIPOutputStream(baos));
+            oos.writeObject(events);
+            oos.flush();
+            oos.close();
+            uis = new ByteArrayInputStream(baos.toByteArray());
+            boolean ok = ftpClient.storeFile(EVENTS, uis);
+            if (!ok) {
+                throw new IOException("Failed to upload /.a3s/events file.");
+            }
+            ftpClient.noop();
+        }
+        finally {
+            if (baos != null) {
+                baos.close();
+            }
+            if (oos != null) {
+                oos.close();
+            }
+            if (uis != null) {
+                uis.close();
+            }
+        }
+    }
 
-	public void disconnect() {
+    public void disconnect() {
 
-		if (ftpClient != null) {
-			try {
-				ftpClient.disconnect();
-			} catch (Exception e) {
-			}
-		}
-	}
+        if (ftpClient != null) {
+            try {
+                ftpClient.disconnect();
+            }
+            catch (Exception e) {
+            }
+        }
+    }
 }

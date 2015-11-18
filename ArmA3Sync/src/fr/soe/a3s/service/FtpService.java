@@ -549,18 +549,10 @@ public class FtpService extends AbstractConnexionService implements DataAccessCo
                             FTPFile ftpFile = createFTPFile(fileName, relativePath,
                                     FTPFile.FILE_TYPE);
 
-                            try {
-                                boolean exists = remoteFileExists(repository.getName(),
-                                        relativePath, fileName,
-                                        repository.getRepositoryUploadProtocole());
-                                if (!exists || filesToUpload.contains(leaf)) {
-                                    ftpFilesToUpload.add(ftpFile);
-                                }
-                            }
-                            catch (FtpException e) {
-                                if (filesToUpload.contains(leaf)) {
-                                    ftpFilesToUpload.add(ftpFile);
-                                }
+                            boolean exists = remoteFileExists(repository.getName(), relativePath,
+                                    fileName, repository.getRepositoryUploadProtocole());
+                            if (!exists || filesToUpload.contains(leaf)) {
+                                ftpFilesToUpload.add(ftpFile);
                             }
                         }
                     }
@@ -569,17 +561,10 @@ public class FtpService extends AbstractConnexionService implements DataAccessCo
                         FTPFile ftpFile = createFTPFile(fileName, relativePath,
                                 FTPFile.DIRECTORY_TYPE);
 
-                        try {
-                            boolean exists = remoteFileExists(repository.getName(), relativePath,
-                                    fileName, repository.getRepositoryUploadProtocole());
-                            if (!exists || filesToUpload.contains(node)) {
-                                ftpFilesToUpload.add(ftpFile);
-                            }
-                        }
-                        catch (FtpException e) {
-                            if (filesToUpload.contains(node)) {
-                                ftpFilesToUpload.add(ftpFile);
-                            }
+                        boolean exists = remoteFileExists(repository.getName(), relativePath,
+                                fileName, repository.getRepositoryUploadProtocole());
+                        if (!exists || filesToUpload.contains(node)) {
+                            ftpFilesToUpload.add(ftpFile);
                         }
                     }
                 }
@@ -784,19 +769,14 @@ public class FtpService extends AbstractConnexionService implements DataAccessCo
                         }
                     }
                     for (String fileName : listFilesName) {
-                        try {
-                            boolean found = remoteFileExists(repository.getName(), relativePath,
-                                    fileName, repository.getProtocol());
-                            if (!found) {
-                                errorsCheckRepository.add(new FileNotFoundException(
-                                        "File not found on repository: " + relativePath + "/"
-                                                + fileName));
-                                ftpDAOPool.get(0).updateObserverCheckCountError(
-                                        errorsCheckRepository.size());
-                            }
-                        }
-                        catch (FtpException e) {
-                            throw new IOException(e.getMessage());
+                        boolean found = remoteFileExists(repository.getName(), relativePath,
+                                fileName, repository.getProtocol());
+                        if (!found) {
+                            errorsCheckRepository.add(new FileNotFoundException(
+                                    "File not found on repository: " + relativePath + "/"
+                                            + fileName));
+                            ftpDAOPool.get(0).updateObserverCheckCountError(
+                                    errorsCheckRepository.size());
                         }
                     }
                     count++;
@@ -814,7 +794,7 @@ public class FtpService extends AbstractConnexionService implements DataAccessCo
     }
 
     private boolean remoteFileExists(String repositoryName, String relativePath, String fileName,
-            AbstractProtocole protocole) throws IOException, FtpException {
+            AbstractProtocole protocole) throws IOException {
 
         return ftpDAOPool.get(0).fileExists(repositoryName, relativePath, fileName, protocole);
     }
