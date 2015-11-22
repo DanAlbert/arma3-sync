@@ -157,7 +157,7 @@ public class FtpDAO extends AbstractConnexionDAO {
                 @Override
                 protected void afterWrite(int n) throws IOException {
                     super.afterWrite(n);
-                    int nbBytes = getCount();
+                    long nbBytes = getByteCount();
                     countFileSize = nbBytes;
                     long endTime = System.nanoTime();
                     long totalTime = endTime - startTime;
@@ -670,7 +670,7 @@ public class FtpDAO extends AbstractConnexionDAO {
                     @Override
                     protected void afterRead(int n) {
                         super.afterRead(n);
-                        int nbBytes = getCount();
+                        long nbBytes = getByteCount();
                         countFileSize = nbBytes;
                         updateObserverUploadSingleSizeProgress();
                         long endTime = System.nanoTime();

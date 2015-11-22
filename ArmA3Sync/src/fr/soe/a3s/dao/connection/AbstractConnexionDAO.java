@@ -37,7 +37,7 @@ public abstract class AbstractConnexionDAO implements DataAccessConstants,
 	protected boolean acquiredSemaphore = false;
 	protected boolean canceled = false;
 	protected boolean activeConnection = false;
-	protected int countFileSize = 0;
+	protected long countFileSize = 0;
 	protected long offset = 0;
 	protected long speed = 0;
 	protected int count = 0, totalCount = 0;
@@ -67,11 +67,11 @@ public abstract class AbstractConnexionDAO implements DataAccessConstants,
 		this.speed = speed;
 	}
 
-	public int getCountFileSize() {
+	public long getCountFileSize() {
 		return countFileSize;
 	}
 
-	public void setCountFileSize(int countFileSize) {
+	public void setCountFileSize(long countFileSize) {
 		this.countFileSize = countFileSize;
 	}
 

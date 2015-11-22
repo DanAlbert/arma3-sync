@@ -286,7 +286,7 @@ public class MyHttpConnection {
 				@Override
 				protected void afterWrite(int n) throws IOException {
 					super.afterWrite(n);
-					int nbBytes = getCount();
+					long nbBytes = getByteCount();
 					httpDAO.setCountFileSize(nbBytes);
 					long endTime = System.nanoTime();
 					long totalTime = endTime - startTime;
@@ -475,7 +475,7 @@ public class MyHttpConnection {
 				@Override
 				protected void afterWrite(int n) throws IOException {
 					super.afterWrite(n);
-					int nbBytes = getCount();
+					long nbBytes = getByteCount();
 					httpDAO.setCountFileSize(cumulatedBytesDownloaded + nbBytes);
 					long endTime = System.nanoTime();
 					long totalTime = endTime - startTime;
