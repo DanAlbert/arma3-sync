@@ -493,7 +493,7 @@ public class MainPanel extends JFrame implements UIConstants {
 		this.setLocation(x, y);
 		this.pack();
 
-		/* Copy old addons search directores to profile */
+		/* Copy old Addons search directories to profile */
 		Set<String> set = configurationService.getAddonSearchDirectoryPaths();
 		if (set != null) {
 			Iterator iter = set.iterator();
