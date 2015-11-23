@@ -509,7 +509,8 @@ public class AddonsPanel extends JPanel implements UIConstants {
 
 		for (TreeNodeDTO node : racine2.getList()) {
 			if (node.getName().equals(folderName)) {
-				arbre2.expandPath((new TreePath(arbre2.getModel().getRoot())).pathByAddingChild(node));
+				arbre2.expandPath((new TreePath(arbre2.getModel().getRoot()))
+						.pathByAddingChild(node));
 				break;
 			}
 		}
@@ -525,6 +526,7 @@ public class AddonsPanel extends JPanel implements UIConstants {
 
 	public void refreshViewArbre2() {
 
+		arbre2.setEnabled(false);
 		int numberRowShown = arbre2.getRowCount();
 		arbre2.setVisibleRowCount(numberRowShown);
 		arbre2.setPreferredSize(arbre2.getPreferredScrollableViewportSize());
@@ -535,6 +537,7 @@ public class AddonsPanel extends JPanel implements UIConstants {
 		} else {
 			arbre2.setToolTipText(null);
 		}
+		arbre2.setEnabled(true);
 	}
 
 	private void addonSelectionPerformed() {
@@ -694,6 +697,8 @@ public class AddonsPanel extends JPanel implements UIConstants {
 		} else {
 			refreshViewArbre2();
 		}
+		facade.getOnlinePanel().init();
+		facade.getLaunchPanel().init();
 		facade.getAddonOptionsPanel().updateAddonPriorities();
 		facade.getLaunchOptionsPanel().updateRunParameters();
 	}
@@ -1096,11 +1101,5 @@ public class AddonsPanel extends JPanel implements UIConstants {
 				setSelectedPaths(n, selectdAddonPaths);
 			}
 		}
-	}
-
-	public void disableAllGroupExcept(String name) {
-		
-		
-		
 	}
 }

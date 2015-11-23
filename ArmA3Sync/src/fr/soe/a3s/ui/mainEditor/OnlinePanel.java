@@ -30,9 +30,12 @@ import javax.swing.table.TableColumn;
 
 import fr.soe.a3s.dto.EventDTO;
 import fr.soe.a3s.dto.RepositoryDTO;
+import fr.soe.a3s.dto.TreeDirectoryDTO;
+import fr.soe.a3s.dto.TreeNodeDTO;
 import fr.soe.a3s.dto.configuration.FavoriteServerDTO;
 import fr.soe.a3s.exception.repository.RepositoryException;
 import fr.soe.a3s.service.ConfigurationService;
+import fr.soe.a3s.service.ProfileService;
 import fr.soe.a3s.service.RepositoryService;
 import fr.soe.a3s.ui.Facade;
 import fr.soe.a3s.ui.UIConstants;
@@ -155,8 +158,10 @@ public class OnlinePanel extends JPanel implements UIConstants {
 						list.add(favoriteServerDTO);
 					}
 					configurationService.setFavoriteServers(list);
-					facade.getLaunchPanel().init();
+					configurationService.setServerName(null);
+					configurationService.setDefautlModset(null);
 					init();
+					facade.getLaunchPanel().init();
 				}
 			}
 		});
@@ -214,6 +219,7 @@ public class OnlinePanel extends JPanel implements UIConstants {
 				modsetName = "";
 			} else if (!list.contains(modsetName)) {
 				modsetName = "";
+				favoriteServerDTO.setModsetName(null);
 			}
 			model.addRow(i, i);
 			model.setValueAt(description, i, 0);
@@ -223,6 +229,8 @@ public class OnlinePanel extends JPanel implements UIConstants {
 			model.setValueAt(modsetName, i, 4);
 			i++;
 		}
+
+		configurationService.setFavoriteServers(favoriteServersDTO);
 		isModifying = false;
 	}
 
@@ -304,6 +312,16 @@ public class OnlinePanel extends JPanel implements UIConstants {
 				e.printStackTrace();
 			}
 		}
+
+		ProfileService profileService = new ProfileService();
+		TreeDirectoryDTO parent = profileService.getAddonGroupsTree();
+		for (TreeNodeDTO node : parent.getList()) {
+			TreeDirectoryDTO directory = (TreeDirectoryDTO) node;
+			if (directory.getModsetType() == null) {
+				list.add(directory.getName());
+			}
+		}
+
 		return list;
 	}
 

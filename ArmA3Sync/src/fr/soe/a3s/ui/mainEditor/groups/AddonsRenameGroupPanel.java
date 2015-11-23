@@ -7,18 +7,19 @@ import fr.soe.a3s.dto.TreeDirectoryDTO;
 import fr.soe.a3s.dto.TreeNodeDTO;
 import fr.soe.a3s.ui.Facade;
 
-public class AddonsRenameGroupPanel extends AddonsEditGroupPanel{
+public class AddonsRenameGroupPanel extends AddonsEditGroupPanel {
 
-	private TreeDirectoryDTO treeDirectoryDTO;
-	private TreeNodeDTO selectedTreeNodeDTO;
-	
-	public AddonsRenameGroupPanel(Facade facade,TreeDirectoryDTO treeDirectoryDTO,TreeNodeDTO selectedTreeNodeDTO) {
+	private final TreeDirectoryDTO treeDirectoryDTO;
+	private final TreeNodeDTO selectedTreeNodeDTO;
+
+	public AddonsRenameGroupPanel(Facade facade,
+			TreeDirectoryDTO treeDirectoryDTO, TreeNodeDTO selectedTreeNodeDTO) {
 		super(facade);
 		this.setTitle("Rename Group");
 		this.treeDirectoryDTO = treeDirectoryDTO;
 		this.selectedTreeNodeDTO = selectedTreeNodeDTO;
 	}
-	
+
 	public void init() {
 		textFieldGroupName.setText(selectedTreeNodeDTO.getName());
 		textFieldGroupName.requestFocus();
@@ -27,7 +28,7 @@ public class AddonsRenameGroupPanel extends AddonsEditGroupPanel{
 
 	@Override
 	protected void buttonOKPerformed(String groupName) {
-		
+
 		labelWarning.setText("");
 		for (TreeNodeDTO node : treeDirectoryDTO.getList()) {
 			if (!node.isLeaf()
@@ -41,6 +42,8 @@ public class AddonsRenameGroupPanel extends AddonsEditGroupPanel{
 		selectedTreeNodeDTO.setName(groupName);
 		facade.getAddonsPanel().refreshViewArbre2();
 		facade.getAddonsPanel().saveAddonGroups();
+		facade.getOnlinePanel().init();
+		facade.getLaunchPanel().init();
 		this.dispose();
 	}
 }

@@ -163,7 +163,7 @@ public class LaunchPanel extends JPanel implements UIConstants {
 			}
 			this.joinServerComboBox.addItem(stg);
 		}
-		
+
 		List<RepositoryDTO> repositoryDTOs = repositoryService
 				.getRepositories();
 
@@ -187,7 +187,7 @@ public class LaunchPanel extends JPanel implements UIConstants {
 			if (defaultModset != null) {
 				this.joinServerComboBox.setSelectedItem(serverName + " - "
 						+ defaultModset);
-				
+
 			} else {
 				this.joinServerComboBox.setSelectedItem(serverName);
 			}
@@ -199,11 +199,11 @@ public class LaunchPanel extends JPanel implements UIConstants {
 	}
 
 	private void serverSelectionPerformed() {
-		
+
 		String selection = (String) this.joinServerComboBox.getSelectedItem();
 		int selectedIndex = this.joinServerComboBox.getSelectedIndex();
 		if (selection == null || "".equals(selection)) {
-			configurationService.saveServerName(null);
+			configurationService.setServerName(null);
 			configurationService.setDefautlModset(null);
 		} else {
 			List<FavoriteServerDTO> favoriteServersDTO = configurationService
@@ -215,25 +215,27 @@ public class LaunchPanel extends JPanel implements UIConstants {
 						.get(selectedIndex - 1);
 				String serverName = favoriteServerDTO.getName();
 				String modsetName = favoriteServerDTO.getModsetName();
-				configurationService.saveServerName(serverName);
+				configurationService.setServerName(serverName);
 				configurationService.setDefautlModset(modsetName);
-				Object objectDTO = map.get(modsetName);// null if not found
-				if (objectDTO instanceof RepositoryDTO) {
-					List<String> list = new ArrayList<String>();
-					String name = ((RepositoryDTO) objectDTO).getName();
-					list.add(name);
-					facade.getAddonsPanel().createGroupFromRepository(list);
-					facade.getAddonsPanel().disableAllGroupExcept(name);
-				} else if (objectDTO instanceof EventDTO) {
-					List<EventDTO> eventDTOs = new ArrayList<EventDTO>();
-					EventDTO eventDTO = (EventDTO) objectDTO;
-					eventDTOs.add(eventDTO);
-					facade.getAddonsPanel().createGroupFromEvents(eventDTOs);
+				if (modsetName != null) {
+					Object objectDTO = map.get(modsetName);// null if not found
+					if (objectDTO instanceof RepositoryDTO) {
+						List<String> list = new ArrayList<String>();
+						String name = ((RepositoryDTO) objectDTO).getName();
+						list.add(name);
+						facade.getAddonsPanel().createGroupFromRepository(list);
+					} else if (objectDTO instanceof EventDTO) {
+						List<EventDTO> eventDTOs = new ArrayList<EventDTO>();
+						EventDTO eventDTO = (EventDTO) objectDTO;
+						eventDTOs.add(eventDTO);
+						facade.getAddonsPanel()
+								.createGroupFromEvents(eventDTOs);
+					}
+					facade.getAddonsPanel().selectModset(modsetName);
 				}
-				facade.getAddonsPanel().selectModset(modsetName);
 			} else {
 				String serverName = selection;
-				configurationService.saveServerName(serverName);
+				configurationService.setServerName(serverName);
 			}
 		}
 		facade.getLaunchOptionsPanel().updateRunParameters();

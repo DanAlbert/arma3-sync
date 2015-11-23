@@ -46,7 +46,7 @@ public class ConfigurationService extends ObjectDTOtransformer {
 		return configurationDAO.getConfiguration().getServerName();
 	}
 
-	public void saveServerName(String serverName) {
+	public void setServerName(String serverName) {
 		configurationDAO.getConfiguration().setServerName(serverName);
 	}
 
