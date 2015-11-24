@@ -51,6 +51,8 @@ public class AddonsDownloader extends Thread implements DataAccessConstants {
 	private long averageDownloadSpeed;
 	private long averageResponseTime;
 	private int maxActiveconnections;
+	private int unCompleteFiles;
+	private int compressedFiles;
 	/* Tests */
 	private boolean canceled = false;
 	private boolean tfarIsUpdated = false;
@@ -58,8 +60,6 @@ public class AddonsDownloader extends Thread implements DataAccessConstants {
 	/* Services */
 	private final RepositoryService repositoryService = new RepositoryService();
 	private AbstractConnexionService connexionService;
-	private int unCompleteFiles;
-	private int compressedFiles;
 
 	public AddonsDownloader(Facade facade, String repositoryName,
 			SyncTreeDirectoryDTO racine, DownloadPanel downloadPanel) {
