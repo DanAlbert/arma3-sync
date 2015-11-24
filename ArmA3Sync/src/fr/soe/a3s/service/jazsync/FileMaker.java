@@ -23,7 +23,7 @@
       Boston, MA  02111-1307
       USA
  */
-package fr.soe.a3s.jazsync;
+package fr.soe.a3s.service.jazsync;
 
 import java.io.BufferedInputStream;
 import java.io.File;

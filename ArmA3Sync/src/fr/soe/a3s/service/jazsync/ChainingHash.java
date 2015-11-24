@@ -24,7 +24,7 @@
       USA
  */
 
-package fr.soe.a3s.jazsync;
+package fr.soe.a3s.service.jazsync;
 
 import java.util.ArrayList;
 import java.util.Arrays;

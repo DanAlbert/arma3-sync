@@ -29,7 +29,7 @@
    conditions of the GNU General Public License cover the whole
    combination. */
 
-package fr.soe.a3s.jazsync;
+package fr.soe.a3s.service.jazsync;
 
 /**
  * This provider implements the MD4 message digest, and is provided to

@@ -30,7 +30,7 @@
    conditions of the GNU General Public License cover the whole
    combination. */
 
-package fr.soe.a3s.jazsync;
+package fr.soe.a3s.service.jazsync;
 
 /**
  * A general interface for 32-bit checksums that have the "rolling"

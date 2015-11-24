@@ -24,7 +24,7 @@
       USA
  */
 
-package fr.soe.a3s.jazsync;
+package fr.soe.a3s.service.jazsync;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -34,7 +34,7 @@ import fr.soe.a3s.dao.connection.HttpDAO;
 import fr.soe.a3s.dao.connection.MyHttpConnection;
 import fr.soe.a3s.domain.AbstractProtocole;
 import fr.soe.a3s.exception.HttpException;
-import fr.soe.a3s.jazsyncmake.MetaFileMaker;
+import fr.soe.a3s.service.jazsyncmake.MetaFileMaker;
 
 /**
  * Modified code of Jazsync v0.8.9

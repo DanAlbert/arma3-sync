@@ -21,7 +21,7 @@ import fr.soe.a3s.domain.repository.SyncTreeDirectory;
 import fr.soe.a3s.dto.sync.SyncTreeLeafDTO;
 import fr.soe.a3s.dto.sync.SyncTreeNodeDTO;
 import fr.soe.a3s.exception.HttpException;
-import fr.soe.a3s.jazsync.Jazsync;
+import fr.soe.a3s.service.jazsync.Jazsync;
 
 public class HttpDAO extends AbstractConnexionDAO {
 
