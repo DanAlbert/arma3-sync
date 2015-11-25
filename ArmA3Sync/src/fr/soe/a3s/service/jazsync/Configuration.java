@@ -34,6 +34,7 @@ package fr.soe.a3s.service.jazsync;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
@@ -52,7 +53,7 @@ import java.security.NoSuchAlgorithmException;
  * @author Casey Marshall
  * @version $Revision: 1.9 $
  */
-public class Configuration implements Cloneable {
+public class Configuration implements Cloneable, Serializable {
 
 	// Constants and variables.
 	// ------------------------------------------------------------------------

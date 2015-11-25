@@ -32,15 +32,14 @@
 package fr.soe.a3s.service.jazsync;
 
 /**
- * This provider implements the MD4 message digest, and is provided to
- * ensure that MD4 is available.
+ * This provider implements the MD4 message digest, and is provided to ensure
+ * that MD4 is available.
  */
 public final class JarsyncProvider extends java.security.Provider {
-   public JarsyncProvider() {
-      super("JARSYNC", 1.3,
-            "Jarsync provider; implementing MD4, BrokenMD4");
+	public JarsyncProvider() {
+		super("JARSYNC", 1.3, "Jarsync provider; implementing MD4, BrokenMD4");
 
-      put("MessageDigest.MD4",       "fr.soe.a3s.jazsync.MD4");
-      put("MessageDigest.BrokenMD4", "fr.soe.a3s.jazsync.BrokenMD4");
-   }
+		put("MessageDigest.MD4", "fr.soe.a3s.service.jazsync.MD4");
+		put("MessageDigest.BrokenMD4", "fr.soe.a3s.service.jazsync.BrokenMD4");
+	}
 }
