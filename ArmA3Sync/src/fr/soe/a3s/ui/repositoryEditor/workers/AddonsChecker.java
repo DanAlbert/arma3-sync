@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
 
 import fr.soe.a3s.controller.ObserverCount;
 import fr.soe.a3s.dto.EventDTO;
@@ -97,11 +98,18 @@ public class AddonsChecker extends Thread {
 			repositoryService.getRepositoryAddonsCheckerDAO().addObserverCount(
 					new ObserverCount() {
 						@Override
-						public synchronized void update(int value) {
-							downloadPanel.getProgressBarCheckForAddons()
-									.setIndeterminate(false);
-							downloadPanel.getProgressBarCheckForAddons()
-									.setValue(value);
+						public synchronized void update(final int value) {
+							SwingUtilities.invokeLater(new Runnable() {
+								@Override
+								public void run() {
+									downloadPanel
+											.getProgressBarCheckForAddons()
+											.setIndeterminate(false);
+									downloadPanel
+											.getProgressBarCheckForAddons()
+											.setValue(value);
+								}
+							});
 						}
 					});
 
@@ -120,9 +128,15 @@ public class AddonsChecker extends Thread {
 			connexionService.getConnexionDAO().addObserverCount(
 					new ObserverCount() {
 						@Override
-						public void update(int value) {
-							downloadPanel.getProgressBarCheckForAddons()
-									.setValue(value);
+						public void update(final int value) {
+							SwingUtilities.invokeLater(new Runnable() {
+								@Override
+								public void run() {
+									downloadPanel
+											.getProgressBarCheckForAddons()
+											.setValue(value);
+								}
+							});
 						}
 					});
 

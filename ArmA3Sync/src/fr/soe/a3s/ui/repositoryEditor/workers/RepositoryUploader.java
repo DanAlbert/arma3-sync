@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 
 import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
 
 import fr.soe.a3s.constant.ProtocolType;
 import fr.soe.a3s.controller.ObserverCountWithText;
@@ -176,15 +177,27 @@ public class RepositoryUploader extends Thread implements DataAccessConstants {
 			connexionService.getConnexionDAO().addObserverCountWithText(
 					new ObserverCountWithText() {
 						@Override
-						public void update(int value) {
-							adminPanel.getUploadrogressBar().setIndeterminate(
-									false);
-							adminPanel.getUploadrogressBar().setValue(value);
+						public void update(final int value) {
+							SwingUtilities.invokeLater(new Runnable() {
+								@Override
+								public void run() {
+									adminPanel.getUploadrogressBar()
+											.setIndeterminate(false);
+									adminPanel.getUploadrogressBar().setValue(
+											value);
+								}
+							});
 						}
 
 						@Override
-						public void update(String text) {
-							adminPanel.getUploadrogressBar().setString(text);
+						public void update(final String text) {
+							SwingUtilities.invokeLater(new Runnable() {
+								@Override
+								public void run() {
+									adminPanel.getUploadrogressBar().setString(
+											text);
+								}
+							});
 						}
 					});
 
@@ -217,13 +230,18 @@ public class RepositoryUploader extends Thread implements DataAccessConstants {
 						}
 
 						@Override
-						public void updateSingleSizeProgress(int pourcentage,
-								long value) {
-							adminPanel.getUploadrogressBar().setIndeterminate(
-									false);
-							adminPanel.getUploadrogressBar().setValue(
-									pourcentage);
-							currentSize = value;
+						public void updateSingleSizeProgress(
+								final int pourcentage, final long value) {
+							SwingUtilities.invokeLater(new Runnable() {
+								@Override
+								public void run() {
+									adminPanel.getUploadrogressBar()
+											.setIndeterminate(false);
+									adminPanel.getUploadrogressBar().setValue(
+											pourcentage);
+									currentSize = value;
+								}
+							});
 						}
 
 						@Override

@@ -3,6 +3,7 @@ package fr.soe.a3s.ui.repositoryEditor.workers;
 import java.io.IOException;
 
 import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
 
 import fr.soe.a3s.constant.RepositoryStatus;
 import fr.soe.a3s.controller.ObserverCountWithText;
@@ -50,17 +51,29 @@ public class RepositoryBuilder extends Thread {
 		repositoryService.getRepositoryBuilderDAO().addObserverCountWithText(
 				new ObserverCountWithText() {
 					@Override
-					public synchronized void update(int value) {
-						adminPanel.getBuildProgressBar()
-								.setIndeterminate(false);
-						adminPanel.getBuildProgressBar().setValue(value);
+					public synchronized void update(final int value) {
+						SwingUtilities.invokeLater(new Runnable() {
+							@Override
+							public void run() {
+								adminPanel.getBuildProgressBar()
+										.setIndeterminate(false);
+								adminPanel.getBuildProgressBar()
+										.setValue(value);
+							}
+						});
 					}
 
 					@Override
-					public synchronized void update(String text) {
-						adminPanel.getBuildProgressBar()
-								.setIndeterminate(false);
-						adminPanel.getBuildProgressBar().setString(text);
+					public synchronized void update(final String text) {
+						SwingUtilities.invokeLater(new Runnable() {
+							@Override
+							public void run() {
+								adminPanel.getBuildProgressBar()
+										.setIndeterminate(false);
+								adminPanel.getBuildProgressBar()
+										.setString(text);
+							}
+						});
 					}
 				});
 

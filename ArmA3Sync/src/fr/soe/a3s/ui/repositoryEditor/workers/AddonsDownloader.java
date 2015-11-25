@@ -9,6 +9,7 @@ import java.util.Date;
 import java.util.List;
 
 import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
 
 import fr.soe.a3s.constant.DownloadStatus;
 import fr.soe.a3s.controller.ObserverDownload;
@@ -347,21 +348,34 @@ public class AddonsDownloader extends Thread implements DataAccessConstants {
 
 		if (totalExpectedFilesSize != 0) {// division by 0!
 			incrementedFilesSize = incrementedFilesSize + value;
-			downloadPanel
-					.getProgressBarDownloadAddons()
-					.setValue(
-							(int) (((incrementedFilesSize) * 100) / totalExpectedFilesSize));
+			SwingUtilities.invokeLater(new Runnable() {
+				@Override
+				public void run() {
+					downloadPanel
+							.getProgressBarDownloadAddons()
+							.setValue(
+									(int) (((incrementedFilesSize) * 100) / totalExpectedFilesSize));
+				}
+			});
 		}
 	}
 
-	private synchronized void executeUpdateSingleSizeProgress(long value,
-			int pourcentage) {
+	private synchronized void executeUpdateSingleSizeProgress(final long value,
+			final int pourcentage) {
 
-		downloadPanel.getProgressBarDownloadSingleAddon().setIndeterminate(
-				false);
-		downloadPanel.getProgressBarDownloadSingleAddon().setValue(pourcentage);
-		downloadPanel.getLabelDownloadedValue().setText(
-				UnitConverter.convertSize(incrementedFilesSize + value));
+		SwingUtilities.invokeLater(new Runnable() {
+			@Override
+			public void run() {
+				downloadPanel.getProgressBarDownloadSingleAddon()
+						.setIndeterminate(false);
+				downloadPanel.getProgressBarDownloadSingleAddon().setValue(
+						pourcentage);
+				downloadPanel.getLabelDownloadedValue()
+						.setText(
+								UnitConverter.convertSize(incrementedFilesSize
+										+ value));
+			}
+		});
 	}
 
 	private synchronized void executeUpdateDownloadSpeed() {
@@ -416,8 +430,13 @@ public class AddonsDownloader extends Thread implements DataAccessConstants {
 		averageResponseTime = (averageResponseTime + responseTime) / 2;
 	}
 
-	private synchronized void executeUncompressingProgress(int value) {
-		downloadPanel.getProgressBarDownloadAddons().setValue(value);
+	private synchronized void executeUncompressingProgress(final int value) {
+		SwingUtilities.invokeLater(new Runnable() {
+			@Override
+			public void run() {
+				downloadPanel.getProgressBarDownloadAddons().setValue(value);
+			}
+		});
 	}
 
 	private void finish() {
