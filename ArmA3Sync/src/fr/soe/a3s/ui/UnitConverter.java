@@ -8,19 +8,19 @@ public class UnitConverter {
 
 		String response = "";
 		if (size >= Math.pow(1024, 3)) {// GB
-			double value = (double) size / Math.pow(1024, 3);
+			double value = size / Math.pow(1024, 3);
 			value = ((int) (value * 100.0)) / 100.0;
 			response = Double.toString(value) + " GB";
 		} else if (size >= Math.pow(1024, 2)) {// MB
-			double value = (double) size / Math.pow(1024, 2);
+			double value = size / Math.pow(1024, 2);
 			value = ((int) (value * 100.0)) / 100.0;
 			response = Double.toString(value) + " MB";
 		} else if (size >= Math.pow(1024, 1)) {// KB
-			double value = (double) size / Math.pow(1024, 1);
+			double value = size / Math.pow(1024, 1);
 			value = ((int) (value * 100.0)) / 100.0;
 			response = Double.toString(value) + " KB";
 		} else {// B
-			double value = (double) size / Math.pow(1024, 0);
+			double value = size / Math.pow(1024, 0);
 			value = ((int) (value * 100.0)) / 100.0;
 			response = Double.toString(value) + " B";
 		}
@@ -31,16 +31,16 @@ public class UnitConverter {
 
 		String response = "";
 		if (speed >= Math.pow(10, 9)) {// GB
-			double value = (double) speed / Math.pow(10, 9);
+			double value = speed / Math.pow(10, 9);
 			response = Double.toString(((int) (value * 10.0)) / 10.0) + " GB/s";
 		} else if (speed >= Math.pow(10, 6)) {// MB
-			double value = (double) speed / Math.pow(10, 6);
+			double value = speed / Math.pow(10, 6);
 			response = Double.toString(((int) (value * 10.0)) / 10.0) + " MB/s";
 		} else if (speed >= Math.pow(10, 3)) {// KB
-			double value = (double) speed / Math.pow(10, 3);
+			double value = speed / Math.pow(10, 3);
 			response = Double.toString((int) value) + " KB/s";
 		} else {// B
-			double value = (double) speed / Math.pow(10, 0);
+			double value = speed / Math.pow(10, 0);
 			response = Double.toString((int) value) + " B/s";
 		}
 		return response;
@@ -55,5 +55,4 @@ public class UnitConverter {
 		return String.format("%s:%s:%s", formatter.format(hours),
 				formatter.format(minutes), formatter.format(seconds));
 	}
-
 }
