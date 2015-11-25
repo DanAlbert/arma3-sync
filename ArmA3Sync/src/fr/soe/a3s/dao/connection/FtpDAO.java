@@ -578,7 +578,7 @@ public class FtpDAO extends AbstractConnexionDAO {
 				int returnCode = ftpClient.getReplyCode();
 				if (returnCode == 500) {// mlist is not supported
 					System.out
-							.println("WARNING: FTP command MLST is not supported.");
+							.println("WARNING: FTP command MLST is not supported, using LST instead.");
 					FTPFile[] subfiles = ftpClient.listFiles();
 					if (subfiles != null) {
 						for (FTPFile ftpFile : subfiles) {
