@@ -132,7 +132,18 @@ public class ChangelogPanel extends JFrame implements UIConstants {
 				String message = "Changelog is not available.";
 				textArea.setText(message);
 			} else {
-				display(changelogDTOs.get(changelogDTOs.size() - 1));
+				// look for the first changelogDTO with changes
+				int index = changelogDTOs.size() - 1;
+				int topRevision = changelogDTOs.get(index).getRevision();
+				for (int i = index; i >= 0; i--) {
+					ChangelogDTO changelogDTO = changelogDTOs.get(i);
+					boolean changed = checkChanges(changelogDTO);
+					index = i;
+					if (changed) {
+						break;
+					}
+				}
+				display(changelogDTOs.get(index), topRevision);
 			}
 			textArea.setRows(1);
 			textArea.setCaretPosition(0);
@@ -151,16 +162,25 @@ public class ChangelogPanel extends JFrame implements UIConstants {
 		if (changelogDTOs == null || changelogDTOs.isEmpty()) {
 			return;
 		}
-
 		textArea.setText("");
-
 		if (buttonSwitch.getText().equals(LAST_BUILD)) {
-			display(changelogDTOs.get(changelogDTOs.size() - 1));
+			// look for the first changelogDTO with changes
+			int index = changelogDTOs.size() - 1;
+			int topRevision = changelogDTOs.get(index).getRevision();
+			for (int i = index; i >= 0; i--) {
+				ChangelogDTO changelogDTO = changelogDTOs.get(i);
+				boolean changed = checkChanges(changelogDTO);
+				index = i;
+				if (changed) {
+					break;
+				}
+			}
+			display(changelogDTOs.get(index), topRevision);
 			buttonSwitch.setText(TEN_LAST_BUILD);
 		} else if (buttonSwitch.getText().equals(TEN_LAST_BUILD)) {
 			buttonSwitch.setText(LAST_BUILD);
-			for (ChangelogDTO changelogDTO : changelogDTOs) {
-				display(changelogDTO);
+			for (int i = changelogDTOs.size() - 1; i >= 0; i--) {
+				display(changelogDTOs.get(i), -1);
 				textArea.append("\n\n");
 			}
 		}
@@ -183,9 +203,26 @@ public class ChangelogPanel extends JFrame implements UIConstants {
 		}
 	}
 
-	private void display(ChangelogDTO changelogDTO) {
+	private boolean checkChanges(ChangelogDTO changelogDTO) {
 
-		textArea.append("--- Revision: " + changelogDTO.getRevision() + " ---");
+		if (changelogDTO.getNewAddons().size() == 0
+				&& changelogDTO.getUpdatedAddons().size() == 0
+				&& changelogDTO.getDeletedAddons().size() == 0) {
+			return false;
+		} else {
+			return true;
+		}
+	}
+
+	private void display(ChangelogDTO changelogDTO, int topRevision) {
+
+		if (topRevision == -1 || changelogDTO.getRevision() == topRevision) {
+			textArea.append("--- Revision: " + changelogDTO.getRevision()
+					+ " ---");
+		} else {
+			textArea.append("--- Revisions: " + changelogDTO.getRevision()
+					+ " - " + topRevision + " ---");
+		}
 		textArea.append("\nBuild date: "
 				+ changelogDTO.getBuildDate().toLocaleString());
 		textArea.append("\n");
