@@ -371,11 +371,13 @@ public class SyncPanel extends JPanel implements UIConstants {
 			name = (String) model.getValueAt(index, 0);
 		} catch (Exception e) {
 		}
-		facade.getMainPanel().closeRepository(name);
-		EditRepositoryPanel repositoryEditPanel = new EditRepositoryPanel(
-				facade);
-		repositoryEditPanel.init(name);
-		repositoryEditPanel.setVisible(true);
+		boolean closed = facade.getMainPanel().closeRepository(name);
+		if (closed){
+			EditRepositoryPanel repositoryEditPanel = new EditRepositoryPanel(
+					facade);
+			repositoryEditPanel.init(name);
+			repositoryEditPanel.setVisible(true);
+		}
 	}
 
 	private void buttonRemovePerformed() {

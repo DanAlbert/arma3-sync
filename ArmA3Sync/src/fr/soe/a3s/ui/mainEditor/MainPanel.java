@@ -1153,24 +1153,7 @@ public class MainPanel extends JFrame implements UIConstants {
 					 * it can be referenced in the anonymous listener class like
 					 * this.
 					 */
-					boolean isDownloading = repositoryService
-							.isDownloading(title);
-					boolean isUploading = repositoryService.isUploading(title);
-					boolean isBuilding = repositoryService.isBuilding(title);
-					boolean isChecking = repositoryService.isChecking(title);
-
-					if (!isDownloading && !isUploading && !isBuilding
-							&& !isChecking) {
-						tabbedPane.remove(mapTabIndexes.get(title));
-						mapTabIndexes.remove(title);
-						int index = 6;// First Index
-						for (Iterator<String> i = mapTabIndexes.keySet()
-								.iterator(); i.hasNext();) {
-							String key = i.next();
-							mapTabIndexes.put(key, index);
-							index++;
-						}
-					}
+					closeRepository(title);
 				}
 			};
 			closeButton.addActionListener(listener);
@@ -1256,12 +1239,41 @@ public class MainPanel extends JFrame implements UIConstants {
 		}
 	}
 
-	public void closeRepository(String repositoryName) {
+	public boolean closeRepository(String repositoryName) {
 
-		if (mapTabIndexes.containsKey(repositoryName)) {
-			int index = mapTabIndexes.get(repositoryName);
-			tabbedPane.removeTabAt(index);
+		boolean isDownloading = repositoryService.isDownloading(repositoryName);
+		boolean isUploading = repositoryService.isUploading(repositoryName);
+		boolean isBuilding = repositoryService.isBuilding(repositoryName);
+		boolean isChecking = repositoryService.isChecking(repositoryName);
+
+		if (!isDownloading && !isUploading && !isBuilding && !isChecking) {
+			tabbedPane.remove(mapTabIndexes.get(repositoryName));
 			mapTabIndexes.remove(repositoryName);
+			int index = 6;// First Index
+			for (Iterator<String> i = mapTabIndexes.keySet().iterator(); i
+					.hasNext();) {
+				String key = i.next();
+				mapTabIndexes.put(key, index);
+				index++;
+			}
+			return true;
+		} else if (isDownloading) {
+			JOptionPane.showMessageDialog(facade.getMainPanel(),
+					"Repository can't be closed.\nFiles are being downloaded.",
+					repositoryName, JOptionPane.INFORMATION_MESSAGE);
+		} else if (isUploading) {
+			JOptionPane.showMessageDialog(facade.getMainPanel(),
+					"Repository can't be closed.\nFiles are being uploaded.",
+					repositoryName, JOptionPane.INFORMATION_MESSAGE);
+		} else if (isChecking) {
+			JOptionPane.showMessageDialog(facade.getMainPanel(),
+					"Repository can't be closed.\nFiles are being checked.",
+					repositoryName, JOptionPane.INFORMATION_MESSAGE);
+		} else if (isBuilding) {
+			JOptionPane.showMessageDialog(facade.getMainPanel(),
+					"Repository can't be closed.\nRepository is being built.",
+					repositoryName, JOptionPane.INFORMATION_MESSAGE);
 		}
+		return false;
 	}
 }
