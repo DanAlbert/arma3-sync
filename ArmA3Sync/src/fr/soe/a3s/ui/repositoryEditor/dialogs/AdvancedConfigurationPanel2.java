@@ -16,14 +16,12 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JDialog;
-import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 
-import fr.soe.a3s.dto.sync.SyncTreeDirectoryDTO;
 import fr.soe.a3s.service.RepositoryService;
 import fr.soe.a3s.ui.Facade;
 import fr.soe.a3s.ui.UIConstants;
@@ -39,7 +37,7 @@ public class AdvancedConfigurationPanel2 extends JDialog implements UIConstants 
 	private JComboBox<Integer> comboBoxConnections;
 	private JTextField textFieldMaximumDownloadSpeed;
 	/* Services */
-	private RepositoryService repositoryService = new RepositoryService();
+	private final RepositoryService repositoryService = new RepositoryService();
 
 	public AdvancedConfigurationPanel2(Facade facade, String repositoryName,
 			DownloadPanel downloadPanel) {
@@ -146,6 +144,11 @@ public class AdvancedConfigurationPanel2 extends JDialog implements UIConstants 
 				menuExitPerformed();
 			}
 		});
+		setContextualHelp();
+	}
+
+	private void setContextualHelp() {
+		textFieldMaximumDownloadSpeed.setToolTipText("0.0 = no speed limit");
 	}
 
 	public void init() {
@@ -186,7 +189,7 @@ public class AdvancedConfigurationPanel2 extends JDialog implements UIConstants 
 		double maximumClientDownloadSpeed = repositoryService
 				.getMaximumClientDownloadSpeed(repositoryName);
 		/* MB/s */
-		maximumClientDownloadSpeed = (double) maximumClientDownloadSpeed
+		maximumClientDownloadSpeed = maximumClientDownloadSpeed
 				/ Math.pow(10, 6);
 		textFieldMaximumDownloadSpeed.setText(Double
 				.toString(maximumClientDownloadSpeed));
@@ -207,7 +210,7 @@ public class AdvancedConfigurationPanel2 extends JDialog implements UIConstants 
 			if (maximumClientDownloadSpeed < 0) {
 				throw new NumberFormatException();
 			} else {
-				maximumClientDownloadSpeed = (double) maximumClientDownloadSpeed
+				maximumClientDownloadSpeed = maximumClientDownloadSpeed
 						* Math.pow(10, 6);
 			}
 			repositoryService.setMaximumClientDownloadSpeed(repositoryName,
