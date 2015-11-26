@@ -1247,14 +1247,16 @@ public class MainPanel extends JFrame implements UIConstants {
 		boolean isChecking = repositoryService.isChecking(repositoryName);
 
 		if (!isDownloading && !isUploading && !isBuilding && !isChecking) {
-			tabbedPane.remove(mapTabIndexes.get(repositoryName));
-			mapTabIndexes.remove(repositoryName);
-			int index = 6;// First Index
-			for (Iterator<String> i = mapTabIndexes.keySet().iterator(); i
-					.hasNext();) {
-				String key = i.next();
-				mapTabIndexes.put(key, index);
-				index++;
+			if (mapTabIndexes.get(repositoryName) != null) {
+				tabbedPane.remove(mapTabIndexes.get(repositoryName));
+				mapTabIndexes.remove(repositoryName);
+				int index = 6;// First Index
+				for (Iterator<String> i = mapTabIndexes.keySet().iterator(); i
+						.hasNext();) {
+					String key = i.next();
+					mapTabIndexes.put(key, index);
+					index++;
+				}
 			}
 			return true;
 		} else if (isDownloading) {
