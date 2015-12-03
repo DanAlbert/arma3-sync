@@ -30,7 +30,7 @@
    combination. */
 
 
-package fr.soe.a3s.service.jazsync;
+package fr.soe.a3s.jazsync;
 
 import java.io.File;
 import java.io.FileInputStream;

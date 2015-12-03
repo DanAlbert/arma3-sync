@@ -24,14 +24,14 @@
       USA
  */
 
-package fr.soe.a3s.service.jazsyncmake;
+package fr.soe.a3s.jazsyncmake;
 
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
-import fr.soe.a3s.service.jazsync.SHA1;
+import fr.soe.a3s.jazsync.SHA1;
 /**
  * Simple class for creating headers for metafile
  * @author Tomáš Hlavni�?ka

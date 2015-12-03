@@ -29,7 +29,7 @@
    conditions of the GNU General Public License cover the whole
    combination. */
 
-package fr.soe.a3s.service.jazsync;
+package fr.soe.a3s.jazsync;
 
 /**
  * This provider implements the MD4 message digest, and is provided to ensure
@@ -39,7 +39,7 @@ public final class JarsyncProvider extends java.security.Provider {
 	public JarsyncProvider() {
 		super("JARSYNC", 1.3, "Jarsync provider; implementing MD4, BrokenMD4");
 
-		put("MessageDigest.MD4", "fr.soe.a3s.service.jazsync.MD4");
-		put("MessageDigest.BrokenMD4", "fr.soe.a3s.service.jazsync.BrokenMD4");
+		put("MessageDigest.MD4", "fr.soe.a3s.jazsync.MD4");
+		put("MessageDigest.BrokenMD4", "fr.soe.a3s.jazsync.BrokenMD4");
 	}
 }

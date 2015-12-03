@@ -40,7 +40,7 @@ import fr.soe.a3s.domain.repository.ServerInfo;
 import fr.soe.a3s.domain.repository.SyncTreeDirectory;
 import fr.soe.a3s.domain.repository.SyncTreeLeaf;
 import fr.soe.a3s.domain.repository.SyncTreeNode;
-import fr.soe.a3s.service.jazsync.Jazsync;
+import fr.soe.a3s.jazsync.Jazsync;
 
 public class RepositoryBuilderDAO implements DataAccessConstants,
 		ObservableCountWithText {

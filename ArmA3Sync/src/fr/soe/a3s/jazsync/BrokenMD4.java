@@ -32,7 +32,7 @@
    conditions of the GNU General Public License cover the whole
    combination. */
 
-package fr.soe.a3s.service.jazsync;
+package fr.soe.a3s.jazsync;
 
 /**
  * <p>An implementation of Ron Rivest's MD4 message digest algorithm.

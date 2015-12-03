@@ -24,7 +24,7 @@
       USA
  */
 
-package fr.soe.a3s.service.jazsyncmake;
+package fr.soe.a3s.jazsyncmake;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -37,11 +37,11 @@ import java.security.Security;
 import java.util.ArrayList;
 import java.util.List;
 
-import fr.soe.a3s.service.jazsync.ChecksumPair;
-import fr.soe.a3s.service.jazsync.Configuration;
-import fr.soe.a3s.service.jazsync.Generator;
-import fr.soe.a3s.service.jazsync.JarsyncProvider;
-import fr.soe.a3s.service.jazsync.Rsum;
+import fr.soe.a3s.jazsync.ChecksumPair;
+import fr.soe.a3s.jazsync.Configuration;
+import fr.soe.a3s.jazsync.Generator;
+import fr.soe.a3s.jazsync.JarsyncProvider;
+import fr.soe.a3s.jazsync.Rsum;
 
 /**
  * Metafile making class
