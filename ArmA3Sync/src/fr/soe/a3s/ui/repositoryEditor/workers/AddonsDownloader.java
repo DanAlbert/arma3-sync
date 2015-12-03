@@ -598,7 +598,9 @@ public class AddonsDownloader extends Thread implements DataAccessConstants {
 		// Server Connection
 		averageResponseTime = Math.round(averageResponseTime / Math.pow(10, 6));
 		String avgRespTime = "unavailable";
-		if (averageResponseTime > 0) {
+		if (averageResponseTime == 0) {
+			avgRespTime = "1 ms";
+		} else if (averageResponseTime > 0) {
 			avgRespTime = Long.toString(averageResponseTime) + " ms";
 		}
 		String avgDlSpeed = "unavailable";

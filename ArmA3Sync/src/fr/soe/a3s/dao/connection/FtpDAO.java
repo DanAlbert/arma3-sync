@@ -205,31 +205,35 @@ public class FtpDAO extends AbstractConnexionDAO {
 			if (found) {
 
 				long startResponseTime = System.nanoTime();
+				int code = ftpClient.getReplyCode();
 				long endResponseTime = System.nanoTime();
 				responseTime = endResponseTime - startResponseTime;
 				updateObserverDownloadResponseTime();
 
-				inputStream = ftpClient.retrieveFileStream(remotePath + "/"
-						+ file.getName());
+				if (FTPReply.isPositiveCompletion(code)) {
 
-				if (inputStream == null) {
-					found = false;
-				} else {
-					byte[] bytesArray = bytesArray = new byte[bufferSize];
-					int bytesRead = -1;
-					while ((bytesRead = inputStream.read(bytesArray)) != -1
-							&& !canceled) {
-						dos.write(bytesArray, 0, bytesRead);
-						bytesArray = bytesArray = new byte[bufferSize];
-					}
+					inputStream = ftpClient.retrieveFileStream(remotePath + "/"
+							+ file.getName());
 
-					inputStream.close();
-					fos.close();
-					dos.close();
-					setSpeed(0);
+					if (inputStream == null) {
+						found = false;
+					} else {
+						byte[] bytesArray = bytesArray = new byte[bufferSize];
+						int bytesRead = -1;
+						while ((bytesRead = inputStream.read(bytesArray)) != -1
+								&& !canceled) {
+							dos.write(bytesArray, 0, bytesRead);
+							bytesArray = bytesArray = new byte[bufferSize];
+						}
 
-					if (!canceled) {
-						found = ftpClient.completePendingCommand();
+						inputStream.close();
+						fos.close();
+						dos.close();
+						setSpeed(0);
+
+						if (!canceled) {
+							found = ftpClient.completePendingCommand();
+						}
 					}
 				}
 			}
