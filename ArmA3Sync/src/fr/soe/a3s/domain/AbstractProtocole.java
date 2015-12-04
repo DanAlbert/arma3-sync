@@ -96,6 +96,11 @@ public abstract class AbstractProtocole implements Serializable {
 		} catch (NumberFormatException e) {
 			throw new CheckException("Port is invalid!");
 		}
+		// http://stackoverflow.com/questions/15657266/java-lang-illegalargumentexception-port-out-of-range67001
+		if (Integer.parseInt(getPort()) > 65535) {
+			throw new CheckException("Port number is out of range!" + "\n"
+					+ "Maximum port number is 65535.");
+		}
 		if ("".equals(getConnectionTimeOut()) || getConnectionTimeOut() == null) {
 			throw new CheckException("Connection timeout field is empty!");
 		}
