@@ -1,9 +1,5 @@
 package fr.soe.a3s.ui.repositoryEditor.progressDialogs;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
 import java.io.IOException;
 
 import javax.swing.JOptionPane;
@@ -69,12 +65,16 @@ public class ConnectionPanel extends ProgressPanel {
 						System.out.println("Events not found.");
 					}
 				} catch (Exception e) {
+					setVisible(false);
 					if (e instanceof RepositoryException) {
 						JOptionPane.showMessageDialog(facade.getMainPanel(),
 								e.getMessage(), "Repository",
 								JOptionPane.ERROR_MESSAGE);
 					} else if (!canceled && e instanceof IOException) {
 						System.out.println(e.getMessage());
+						JOptionPane.showMessageDialog(facade.getMainPanel(),
+								e.getMessage(), "Repository",
+								JOptionPane.WARNING_MESSAGE);
 					} else {
 						e.printStackTrace();
 						if (!canceled) {
@@ -84,17 +84,18 @@ public class ConnectionPanel extends ProgressPanel {
 						}
 					}
 				} finally {
-					facade.getSyncPanel().enableAllButtons();
 					if (!canceled) {
+						setVisible(true);
+						buttonCancel.setEnabled(false);
+						facade.getSyncPanel().enableAllButtons();
 						facade.getSyncPanel().init();
 						facade.getOnlinePanel().init();
 						facade.getLaunchPanel().init();
+						progressBar.setIndeterminate(false);
+						dispose();
 						facade.getMainPanel().openRepository(repositoryName,
 								eventName, false);
-						progressBar.setIndeterminate(false);
 					}
-					setVisible(false);
-					dispose();
 				}
 			}
 		});
@@ -104,11 +105,14 @@ public class ConnectionPanel extends ProgressPanel {
 	@Override
 	protected void menuExitPerformed() {
 
-		this.setVisible(false);
 		canceled = true;
 		if (connexion != null) {
 			connexion.cancel();
 		}
+		buttonCancel.setEnabled(false);
+		facade.getSyncPanel().enableAllButtons();
+		progressBar.setIndeterminate(false);
 		this.dispose();
+		facade.getMainPanel().openRepository(repositoryName, eventName, false);
 	}
 }
