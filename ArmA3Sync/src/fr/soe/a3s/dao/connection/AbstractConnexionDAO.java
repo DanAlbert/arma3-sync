@@ -45,11 +45,11 @@ public abstract class AbstractConnexionDAO implements DataAccessConstants,
 	protected double maximumClientDownloadSpeed = 0;
 
 	protected static final String UNKNOWN_HOST = "Host cannot be reached."
-			+ "\n" + "Checkout repository url, firewall and connection.";
+			+ "\n" + "Checkout url, firewall and connection.";
 	protected static final String CONNECTION_TIME_OUT_REACHED = "Connection time out reached."
-			+ "\n" + "Checkout Advanced options from repository edit panel.";
+			+ "\n" + "Checkout Advanced connection options.";
 	protected static final String READ_TIME_OUT_REACHED = "Read time out reached."
-			+ "\n" + "Checkout Advanced options from repository edit panel.";
+			+ "\n" + "Checkout Advanced connection options.";
 	protected static final String CONNECTION_FAILED = "Connection failed.";
 	protected static final String WRONG_LOGIN_PASSWORD = "login or password wrong or missing";
 
