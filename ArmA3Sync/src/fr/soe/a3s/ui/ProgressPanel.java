@@ -13,7 +13,6 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 
-
 public abstract class ProgressPanel extends JDialog implements UIConstants {
 
 	protected Facade facade;
