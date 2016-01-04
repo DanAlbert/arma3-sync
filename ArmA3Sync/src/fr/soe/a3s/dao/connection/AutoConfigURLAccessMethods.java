@@ -1,9 +1,16 @@
 package fr.soe.a3s.dao.connection;
 
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+
+import javax.crypto.Cipher;
+import javax.crypto.NoSuchPaddingException;
+
 import fr.soe.a3s.constant.ProtocolType;
 import fr.soe.a3s.dao.DataAccessConstants;
-import fr.soe.a3s.domain.AbstractProtocoleFactory;
+import fr.soe.a3s.dao.EncryptionProvider;
 import fr.soe.a3s.domain.AbstractProtocole;
+import fr.soe.a3s.domain.AbstractProtocoleFactory;
 import fr.soe.a3s.exception.CheckException;
 
 public class AutoConfigURLAccessMethods implements DataAccessConstants {
@@ -53,14 +60,6 @@ public class AutoConfigURLAccessMethods implements DataAccessConstants {
 	public static AbstractProtocole parse(String autoConfigURL)
 			throws CheckException {
 
-		String url = "";
-		String port = "";
-		String login = "";
-		String password = "";
-
-		String hostname = "";
-		String relativePath = "";
-
 		ProtocolType protocolType = null;
 		if (autoConfigURL.toLowerCase().trim()
 				.contains(ProtocolType.FTP.getPrompt())) {
@@ -71,22 +70,89 @@ public class AutoConfigURLAccessMethods implements DataAccessConstants {
 		} else if (autoConfigURL.toLowerCase().trim()
 				.contains(ProtocolType.HTTPS.getPrompt())) {
 			protocolType = ProtocolType.HTTPS;
+		} else if (autoConfigURL.toLowerCase().trim()
+				.contains(ProtocolType.A3S.getPrompt())) {
+			protocolType = ProtocolType.A3S;
 		} else {
 			String message = "Invalid url or unsupported protocol." + "\n"
 					+ "Url must start with " + ProtocolType.FTP.getPrompt()
 					+ " or " + ProtocolType.HTTP.getPrompt() + " or  "
-					+ ProtocolType.HTTPS.getPrompt();
+					+ ProtocolType.HTTPS.getPrompt() + " or  "
+					+ ProtocolType.A3S.getPrompt();
 			throw new CheckException(message);
 		}
 
 		assert (protocolType != null);
 
-		if (autoConfigURL.toLowerCase().trim()
-				.contains(protocolType.getPrompt())) {// remove prompt from
-														// autoConfigURL
-			autoConfigURL = autoConfigURL.substring(protocolType.getPrompt()
-					.length());
+		autoConfigURL = autoConfigURL.substring(protocolType.getPrompt()
+				.length());
+
+		if (protocolType.equals(ProtocolType.A3S)) {
+			return parseA3S(autoConfigURL);
+		} else {
+			return parseStandard(autoConfigURL, protocolType);
 		}
+	}
+
+	/**
+	 * 
+	 * @param autoConfigURL
+	 *            : repositoryUrl/encryptedLoginInfos
+	 * @return AbstractProtocole or null
+	 * @throws CheckException
+	 */
+	private static AbstractProtocole parseA3S(String autoConfigURL)
+			throws CheckException {
+
+		String url = "";
+		String port = "";
+		String hostname = "";
+		String relativePath = "";
+		String login = "";
+		String password = "";
+		ProtocolType protocolType = null;
+
+		int index1 = autoConfigURL.indexOf("/");
+		if (index1 != -1) {
+			hostname = autoConfigURL.substring(0, index1);
+			relativePath = autoConfigURL.substring(index1);
+		} else {
+			hostname = autoConfigURL;
+		}
+
+		int index2 = autoConfigURL.indexOf("#");
+		if (index1 != -1) {
+			try {
+				Cipher cipher = EncryptionProvider.getDecryptionCipher();
+			} catch (NoSuchAlgorithmException | NoSuchPaddingException
+					| InvalidKeyException e) {
+				e.printStackTrace();
+				throw new RuntimeException(e);
+			}
+		} else {
+			String message = "Invalid url or unsupported protocol.";
+			throw new CheckException(message);
+		}
+
+		return AbstractProtocoleFactory.getProtocol(url, port, login, password,
+				protocolType);
+	}
+
+	/**
+	 * 
+	 * @param autoConfigURL
+	 *            : repositoryUrl/.a3s/autoconfig
+	 * @param protocolType
+	 *            not null
+	 * @return AbstractProtocole or null
+	 */
+	private static AbstractProtocole parseStandard(String autoConfigURL,
+			ProtocolType protocolType) {
+
+		String url = "";
+		String port = "";
+		String hostname = "";
+		String relativePath = "";
 
 		int index = autoConfigURL.indexOf("/");
 		if (index != -1) {
@@ -115,14 +181,12 @@ public class AutoConfigURLAccessMethods implements DataAccessConstants {
 			port = "";
 		}
 
-		if (login.isEmpty()) {
-			login = "anonymous";
-			password = "";
-		}
-
 		if (port.isEmpty()) {
 			port = protocolType.getDefaultPort();
 		}
+
+		String login = "anonymous";
+		String password = "";
 
 		return AbstractProtocoleFactory.getProtocol(url, port, login, password,
 				protocolType);
