@@ -11,12 +11,9 @@ import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.swing.JOptionPane;
-
-import fr.soe.a3s.controller.ObserverCheck;
 import fr.soe.a3s.controller.ObserverCount;
-import fr.soe.a3s.controller.ObserverCountWithText;
 import fr.soe.a3s.controller.ObserverDownload;
+import fr.soe.a3s.controller.ObserverText;
 import fr.soe.a3s.controller.ObserverUncompress;
 import fr.soe.a3s.dao.FileAccessMethods;
 import fr.soe.a3s.dao.connection.AbstractConnexionDAO;
@@ -33,11 +30,11 @@ import fr.soe.a3s.exception.remote.RemoteRepositoryException;
 import fr.soe.a3s.exception.remote.RemoteServerInfoFileNotFoundException;
 import fr.soe.a3s.exception.remote.RemoteSyncFileNotFoundException;
 import fr.soe.a3s.exception.repository.RepositoryException;
-import fr.soe.a3s.service.AbstractConnexionService;
-import fr.soe.a3s.service.AbstractConnexionServiceFactory;
 import fr.soe.a3s.service.CommonService;
-import fr.soe.a3s.service.FtpService;
 import fr.soe.a3s.service.RepositoryService;
+import fr.soe.a3s.service.connection.ConnexionService;
+import fr.soe.a3s.service.connection.ConnexionServiceFactory;
+import fr.soe.a3s.service.connection.FtpService;
 import fr.soe.a3s.ui.FileSizeComputer;
 
 public class CommandGeneral {
@@ -54,8 +51,17 @@ public class CommandGeneral {
 
 		RepositoryService repositoryService = new RepositoryService();
 
-		repositoryService.getRepositoryBuilderDAO().addObserverCountWithText(
-				new ObserverCountWithText() {
+		repositoryService.getRepositoryBuilderDAO().addObserverText(
+				new ObserverText() {
+					@Override
+					public void update(String t) {
+						text = t;
+						value = 0;
+					}
+				});
+
+		repositoryService.getRepositoryBuilderDAO().addObserverCount(
+				new ObserverCount() {
 					@Override
 					public synchronized void update(int v) {
 						if (v > value) {
@@ -63,12 +69,6 @@ public class CommandGeneral {
 							System.out.println(text + " complete: " + value
 									+ " %");
 						}
-					}
-
-					@Override
-					public void update(String t) {
-						text = t;
-						value = 0;
 					}
 				});
 
@@ -78,7 +78,7 @@ public class CommandGeneral {
 			repositoryService.write(repositoryName);
 			System.out.println("");
 			System.out.println("Repository build finished.");
-		} catch (RepositoryException | IOException | WritingException e) {
+		} catch (RepositoryException | IOException e) {
 			System.out.println("Build repository failed.");
 			System.out.println(e.getMessage());
 		} catch (Exception e) {
@@ -100,14 +100,14 @@ public class CommandGeneral {
 
 		this.value = 0;
 		RepositoryService repositoryService = new RepositoryService();
-		AbstractConnexionService connexionService = null;
+		ConnexionService connexionService = null;
 
 		try {
 			RepositoryDTO repositoryDTO = repositoryService
 					.getRepository(repositoryName);
 			System.out.println("Checking repository...");
-			connexionService = AbstractConnexionServiceFactory
-					.getServiceFromRepository(repositoryName);
+			connexionService = ConnexionServiceFactory
+					.getServiceForRepositoryManagement(repositoryName);
 			connexionService.getSync(repositoryName);
 			connexionService.getServerInfo(repositoryName);
 			connexionService.getChangelogs(repositoryName);
@@ -131,20 +131,15 @@ public class CommandGeneral {
 
 			this.value = 0;
 
-			connexionService.getConnexionDAO().addObserverCheck(
-					new ObserverCheck() {
-
+			connexionService.getConnexionDAO().addObserverCount(
+					new ObserverCount() {
 						@Override
-						public void updateProgress(int v) {
+						public void update(int v) {
 							if (v > value) {
 								value = v;
 								System.out.println("Check Complete: " + value
 										+ " %");
 							}
-						}
-
-						@Override
-						public void updateErrorCount(int value) {
 						}
 					});
 
@@ -242,11 +237,11 @@ public class CommandGeneral {
 
 		RepositoryService repositoryService = new RepositoryService();
 		boolean ok = false;
-		AbstractConnexionService connexionService = null;
+		ConnexionService connexionService = null;
 
 		try {
-			connexionService = AbstractConnexionServiceFactory
-					.getServiceFromRepository(repositoryName);
+			connexionService = ConnexionServiceFactory
+					.getServiceForRepositoryManagement(repositoryName);
 		} catch (RepositoryException | CheckException e) {
 			System.out.println("Sync repository failed.");
 			System.out.println(e.getMessage());
@@ -267,7 +262,7 @@ public class CommandGeneral {
 
 			this.value = 0;
 
-			repositoryService.getRepositoryAddonsCheckerDAO().addObserverCount(
+			repositoryService.getRepositorySHA1Processor().addObserverCount(
 					new ObserverCount() {
 						@Override
 						public synchronized void update(int v) {
@@ -303,7 +298,7 @@ public class CommandGeneral {
 					});
 
 			// Determine completion
-			connexionService.determineCompletion(repositoryName, parent);
+			connexionService.determineFilesCompletion(repositoryName, parent);
 
 			listFilesToUpdate.clear();
 			listFilesToDelete.clear();
@@ -393,8 +388,8 @@ public class CommandGeneral {
 			RepositoryService repositoryService = new RepositoryService();
 
 			try {
-				final AbstractConnexionService connexionService = AbstractConnexionServiceFactory
-						.getServiceFromRepository(repositoryName);
+				final ConnexionService connexionService = ConnexionServiceFactory
+						.getServiceForRepositoryManagement(repositoryName);
 
 				for (AbstractConnexionDAO connect : connexionService
 						.getConnexionDAOs()) {
@@ -500,8 +495,7 @@ public class CommandGeneral {
 							}
 						});
 
-				connexionService.downloadAddons(repositoryName,
-						listFilesToUpdate);
+				connexionService.synchronize(repositoryName, listFilesToUpdate);
 
 			} catch (RepositoryException | CheckException | IOException e) {
 				System.out.println("Sync repository failed.");

@@ -22,6 +22,7 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 
+import fr.soe.a3s.exception.WritingException;
 import fr.soe.a3s.service.RepositoryService;
 import fr.soe.a3s.ui.Facade;
 import fr.soe.a3s.ui.UIConstants;
@@ -41,7 +42,7 @@ public class AdvancedConfigurationPanel2 extends JDialog implements UIConstants 
 
 	public AdvancedConfigurationPanel2(Facade facade, String repositoryName,
 			DownloadPanel downloadPanel) {
-		super(facade.getMainPanel(), "Advanced configuration", true);
+		super(facade.getMainPanel(), "Download", true);
 		this.facade = facade;
 		this.downloadPanel = downloadPanel;
 		this.repositoryName = repositoryName;
@@ -221,6 +222,16 @@ public class AdvancedConfigurationPanel2 extends JDialog implements UIConstants 
 					JOptionPane.WARNING_MESSAGE);
 			return;
 		}
+
+		try {
+			repositoryService.write(repositoryName);
+		} catch (WritingException e) {
+			e.printStackTrace();
+			JOptionPane.showMessageDialog(this, e.getMessage(), "Error",
+					JOptionPane.ERROR_MESSAGE);
+			return;
+		}
+
 		this.dispose();
 	}
 

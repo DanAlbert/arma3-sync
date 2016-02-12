@@ -17,17 +17,20 @@ import javax.swing.JCheckBox;
 import javax.swing.JDialog;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.SwingUtilities;
 import javax.swing.border.BevelBorder;
 
 import fr.soe.a3s.dto.EventDTO;
 import fr.soe.a3s.dto.RepositoryDTO;
 import fr.soe.a3s.exception.repository.RepositoryException;
 import fr.soe.a3s.service.RepositoryService;
+import fr.soe.a3s.service.connection.ConnexionServiceFactory;
 import fr.soe.a3s.ui.CheckBoxList;
 import fr.soe.a3s.ui.Facade;
 import fr.soe.a3s.ui.UIConstants;
+import fr.soe.a3s.ui.repositoryEditor.progressDialogs.SynchronizingPanel;
 
-public class EventSelectionPanel extends JDialog implements UIConstants {
+public class ModdsetsSelectionPanel extends JDialog implements UIConstants {
 
 	private Facade facade;
 	private JButton buttonOK;
@@ -38,8 +41,9 @@ public class EventSelectionPanel extends JDialog implements UIConstants {
 	private RepositoryService repositoryService = new RepositoryService();
 	private List<EventDTO> eventDTOs = new ArrayList<EventDTO>();
 	private List<RepositoryDTO> repositoryDTOs = new ArrayList<RepositoryDTO>();
+	private List<String> repositoryNamesForSync = new ArrayList<String>();
 
-	public EventSelectionPanel(Facade facade) {
+	public ModdsetsSelectionPanel(Facade facade) {
 		super(facade.getMainPanel(), "Modsets", true);
 		this.facade = facade;
 		setResizable(true);
@@ -115,27 +119,6 @@ public class EventSelectionPanel extends JDialog implements UIConstants {
 			controlPanel.add(buttonCancel);
 			this.add(controlPanel, BorderLayout.SOUTH);
 		}
-
-		// {
-		// JPanel topPanel = new JPanel();
-		// topPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
-		// JLabel label = new JLabel();
-		// label.setText("  Get addon group from event");
-		// topPanel.add(label);
-		// contenu.add(topPanel, BorderLayout.NORTH);
-		// }
-		// {
-		// JPanel centerPanel = new JPanel();
-		// contenu.add(centerPanel, BorderLayout.CENTER);
-		// centerPanel.setLayout(new BorderLayout());
-		// listEvents = new JList();
-		// scrollPane = new JScrollPane(listEvents);
-		// scrollPane.setColumnHeader(null);
-		// scrollPane.setBorder(BorderFactory
-		// .createEtchedBorder(BevelBorder.LOWERED));
-		// centerPanel.add(scrollPane);
-		// }
-
 		buttonOK.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -171,6 +154,7 @@ public class EventSelectionPanel extends JDialog implements UIConstants {
 						.getName());
 				if (list != null) {
 					for (EventDTO eventDTO : list) {
+						eventDTO.setRepositoryName(repositoryDTO.getName());
 						eventDTOs.add(eventDTO);
 					}
 				}
@@ -193,49 +177,61 @@ public class EventSelectionPanel extends JDialog implements UIConstants {
 
 	private void buttonOKPerformed() {
 
-		if (!(listRepositories.getSelectedItems().size() == 0)) {
-			List<String> list = new ArrayList<String>();
-			for (int i = 0; i < listRepositories.getSelectedItems().size(); i++) {
-				String name = listRepositories.getSelectedItems().get(i);
-				for (RepositoryDTO repositoryDTO : repositoryDTOs) {
-					if (repositoryDTO.getName().equals(name)) {
-						list.add(repositoryDTO.getName());
-						break;
-					}
+		List<RepositoryDTO> selectedRepositoryDTOs = new ArrayList<RepositoryDTO>();
+		for (int i = 0; i < listRepositories.getSelectedItems().size(); i++) {
+			String name = listRepositories.getSelectedItems().get(i);
+			for (RepositoryDTO repositoryDTO : repositoryDTOs) {
+				if (repositoryDTO.getName().equals(name)) {
+					selectedRepositoryDTOs.add(repositoryDTO);
+					break;
 				}
 			}
-			facade.getAddonsPanel().createGroupFromRepository(list);
 		}
 
-		if (!(listEvents.getSelectedItems().size() == 0)) {
-			List<EventDTO> list = new ArrayList<EventDTO>();
-			for (int i = 0; i < listEvents.getSelectedItems().size(); i++) {
-				String name = listEvents.getSelectedItems().get(i);
-				for (EventDTO eventDTO : eventDTOs) {
-					if (eventDTO.getName().equals(name)) {
-						list.add(eventDTO);
-						break;
-					}
+		List<EventDTO> selectedEventDTOs = new ArrayList<EventDTO>();
+		for (int i = 0; i < listEvents.getSelectedItems().size(); i++) {
+			String name = listEvents.getSelectedItems().get(i);
+			for (EventDTO eventDTO : eventDTOs) {
+				if (eventDTO.getName().equals(name)) {
+					selectedEventDTOs.add(eventDTO);
+					break;
 				}
 			}
-			facade.getAddonsPanel().createGroupFromEvents(list);
 		}
 
+		{
+			List<String> repositoryNames = new ArrayList<String>();
+			for (RepositoryDTO repositoryDTO : selectedRepositoryDTOs) {
+				repositoryNames.add(repositoryDTO.getName());
+			}
+			if (!repositoryNames.isEmpty()) {
+				facade.getAddonsPanel().createGroupFromRepository(
+						repositoryNames);
+			}
+			if (!selectedEventDTOs.isEmpty()) {
+				facade.getAddonsPanel()
+						.createGroupFromEvents(selectedEventDTOs);
+			}
+		}
+		
+		// Check remote content of selected repositories
+		{
+			for (RepositoryDTO repositoryDTO : selectedRepositoryDTOs) {
+				repositoryNamesForSync.add(repositoryDTO.getName());
+			}
+			for (EventDTO eventDTO : selectedEventDTOs) {
+				repositoryNamesForSync.add(eventDTO.getRepositoryName());
+			}
+		}
+		
 		this.dispose();
-
-		// int index = listEvents.getSelectedIndex();
-		//
-		// if (index == -1 || (index > listEvents.getVisibleRowCount())) {
-		// this.dispose();
-		// } else {
-		// EventDTO eventDTO = eventDTOs.get(index);
-		// facade.getAddonsPanel().createGroupFromEvent(eventDTO.getName(),
-		// eventDTO.getAddonNames());
-		// this.dispose();
-		// }
 	}
 
 	private void buttonCancelPerformed() {
 		this.dispose();
+	}
+
+	public List<String> getRepositoryNamesForSync() {
+		return repositoryNamesForSync;
 	}
 }

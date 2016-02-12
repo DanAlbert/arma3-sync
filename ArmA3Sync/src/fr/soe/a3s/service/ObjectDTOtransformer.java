@@ -225,23 +225,23 @@ public class ObjectDTOtransformer {
 		repositoryDTO.setProtocoleDTO(protocoleDTO);
 		// Repository upload protocole
 		ProtocolDTO repositoryUploadProtocoleDTO = new ProtocolDTO();
-		if (repository.getRepositoryUploadProtocole() != null) {
+		if (repository.getUploadProtocole() != null) {
 			repositoryUploadProtocoleDTO.setUrl(repository
-					.getRepositoryUploadProtocole().getUrl());
+					.getUploadProtocole().getUrl());
 			repositoryUploadProtocoleDTO.setLogin(repository
-					.getRepositoryUploadProtocole().getLogin());
+					.getUploadProtocole().getLogin());
 			repositoryUploadProtocoleDTO.setPassword(repository
-					.getRepositoryUploadProtocole().getPassword());
+					.getUploadProtocole().getPassword());
 			repositoryUploadProtocoleDTO.setPort(repository
-					.getRepositoryUploadProtocole().getPort());
+					.getUploadProtocole().getPort());
 			repositoryUploadProtocoleDTO.setEncryptionMode(repository
-					.getRepositoryUploadProtocole().getEncryptionMode());
+					.getUploadProtocole().getEncryptionMode());
 			repositoryUploadProtocoleDTO.setProtocolType(repository
-					.getRepositoryUploadProtocole().getProtocolType());
+					.getUploadProtocole().getProtocolType());
 			repositoryUploadProtocoleDTO.setConnectionTimeOut(repository
-					.getRepositoryUploadProtocole().getConnectionTimeOut());
+					.getUploadProtocole().getConnectionTimeOut());
 			repositoryUploadProtocoleDTO.setReadTimeOut(repository
-					.getRepositoryUploadProtocole().getReadTimeOut());
+					.getUploadProtocole().getReadTimeOut());
 			repositoryDTO
 					.setRepositoryUploadProtocoleDTO(repositoryUploadProtocoleDTO);
 		}

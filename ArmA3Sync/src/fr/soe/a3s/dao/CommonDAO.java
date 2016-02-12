@@ -4,11 +4,11 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.nio.file.FileSystems;
-import java.nio.file.Files;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.zip.GZIPInputStream;
@@ -22,7 +22,7 @@ public class CommonDAO implements DataAccessConstants {
 	/* Test */
 	private boolean canceled = false;
 	/* Data */
-	private List<File> extractedFiles;
+	private List<File> extractedBikeyFiles = null;
 
 	public AutoConfig importAutoConfig(String path)
 			throws FileNotFoundException, IOException, ClassNotFoundException {
@@ -50,8 +50,10 @@ public class CommonDAO implements DataAccessConstants {
 
 	/**
 	 * 
-	 * @param sourceDirectoryPath not null
-	 * @param targetDirectoryPath not null
+	 * @param sourceDirectoryPath
+	 *            not null
+	 * @param targetDirectoryPath
+	 *            not null
 	 * @throws CheckException
 	 * @throws IOException
 	 */
@@ -60,18 +62,18 @@ public class CommonDAO implements DataAccessConstants {
 
 		File sourceDirectory = new File(sourceDirectoryPath);
 		File targetDirectory = new File(targetDirectoryPath);
-		extractedFiles = new ArrayList<File>();
+		extractedBikeyFiles = new ArrayList<File>();
 		extractBikeyFiles(sourceDirectory);
-		if (extractedFiles.isEmpty()) {
+		if (extractedBikeyFiles.isEmpty()) {
 			return 0;
 		} else {
-			for (File sourceFile : extractedFiles) {
+			for (File sourceFile : extractedBikeyFiles) {
 				File targetFile = new File(targetDirectory.getAbsolutePath()
 						+ "/" + sourceFile.getName());
 				FileAccessMethods.copyFile(sourceFile, targetFile);
 			}
-			int count = extractedFiles.size();
-			extractedFiles = null;
+			int count = extractedBikeyFiles.size();
+			extractedBikeyFiles = null;
 			return count;
 		}
 	}
@@ -91,11 +93,19 @@ public class CommonDAO implements DataAccessConstants {
 				if (index != -1) {
 					String extension = file.getName().substring(index);
 					if (extension.equalsIgnoreCase(BIKEY)) {
-						extractedFiles.add(file);
+						extractedBikeyFiles.add(file);
 					}
 				}
 			}
 		}
+	}
+
+	public void writeLog(String print, String path) throws IOException {
+
+		PrintWriter fWo = new PrintWriter(new FileWriter(
+				new File(path).getAbsolutePath()));
+		fWo.println(print);
+		fWo.close();
 	}
 
 	public void cancel() {

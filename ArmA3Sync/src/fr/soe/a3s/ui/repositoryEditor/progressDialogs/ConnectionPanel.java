@@ -1,13 +1,15 @@
 package fr.soe.a3s.ui.repositoryEditor.progressDialogs;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.swing.JOptionPane;
 
 import fr.soe.a3s.exception.repository.RepositoryException;
-import fr.soe.a3s.service.AbstractConnexionService;
-import fr.soe.a3s.service.AbstractConnexionServiceFactory;
 import fr.soe.a3s.service.RepositoryService;
+import fr.soe.a3s.service.connection.ConnexionService;
+import fr.soe.a3s.service.connection.ConnexionServiceFactory;
 import fr.soe.a3s.ui.Facade;
 import fr.soe.a3s.ui.ProgressPanel;
 import fr.soe.a3s.ui.repositoryEditor.errorDialogs.UnexpectedErrorDialog;
@@ -24,7 +26,7 @@ import fr.soe.a3s.ui.repositoryEditor.errorDialogs.UnexpectedErrorDialog;
  */
 public class ConnectionPanel extends ProgressPanel {
 
-	private AbstractConnexionService connexion;
+	private ConnexionService connexion;
 	private final String repositoryName;
 	private final String eventName;
 	/* Services */
@@ -48,8 +50,8 @@ public class ConnectionPanel extends ProgressPanel {
 				try {
 					System.out.println("Connecting to repository: "
 							+ repositoryName);
-					connexion = AbstractConnexionServiceFactory
-							.getServiceFromRepository(repositoryName);
+					connexion = ConnexionServiceFactory
+							.getServiceForRepositoryManagement(repositoryName);
 					connexion.checkRepository(repositoryName);
 
 					if (repositoryService.getServerInfo(repositoryName) == null) {
@@ -83,19 +85,16 @@ public class ConnectionPanel extends ProgressPanel {
 							dialog.show();
 						}
 					}
+					setVisible(true);
 				} finally {
-					if (!canceled) {
-						setVisible(true);
-						buttonCancel.setEnabled(false);
-						facade.getSyncPanel().enableAllButtons();
-						facade.getSyncPanel().init();
-						facade.getOnlinePanel().init();
-						facade.getLaunchPanel().init();
-						progressBar.setIndeterminate(false);
-						dispose();
-						facade.getMainPanel().openRepository(repositoryName,
-								eventName, false);
-					}
+					List<String> repositoryNames = new ArrayList<String>();
+					repositoryNames.add(repositoryName);
+					facade.getAddonsPanel().updateModsetSelection(
+							repositoryNames);
+					facade.getSyncPanel().init();
+					facade.getOnlinePanel().init();
+					facade.getLaunchPanel().init();
+					terminate();
 				}
 			}
 		});
@@ -109,9 +108,14 @@ public class ConnectionPanel extends ProgressPanel {
 		if (connexion != null) {
 			connexion.cancel();
 		}
+		terminate();
+	}
+
+	private void terminate() {
+
 		buttonCancel.setEnabled(false);
-		facade.getSyncPanel().enableAllButtons();
 		progressBar.setIndeterminate(false);
+		facade.getSyncPanel().enableAllButtons();
 		this.dispose();
 		facade.getMainPanel().openRepository(repositoryName, eventName, false);
 	}

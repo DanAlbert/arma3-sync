@@ -28,6 +28,8 @@ public class AutoConfigURLAccessMethods implements DataAccessConstants {
 		String port = protocol.getPort();
 		String login = protocol.getLogin();
 		String password = protocol.getPassword();
+		String hostname = protocol.getHostname();
+		String remotePath = protocol.getRemotePath();
 
 		if (login.equalsIgnoreCase("anonymous")) {
 			login = "";
@@ -41,7 +43,7 @@ public class AutoConfigURLAccessMethods implements DataAccessConstants {
 
 		String autoConfigURL = repositoryUrl;
 		if (!port.isEmpty()) {
-			autoConfigURL = autoConfigURL + ":" + port;
+			autoConfigURL = hostname + ":" + port + remotePath;
 		}
 
 		autoConfigURL = autoConfigURL + AUTOCONFIG_FILE_PATH;

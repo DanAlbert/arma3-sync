@@ -6,7 +6,8 @@ import java.util.List;
 
 import fr.soe.a3s.constant.DownloadStatus;
 
-public class SyncTreeDirectoryDTO implements SyncTreeNodeDTO {
+public class SyncTreeDirectoryDTO extends SyncTreeNodeDTOMethods implements
+		SyncTreeNodeDTO {
 
 	private String name;
 	private SyncTreeDirectoryDTO parent;
@@ -167,20 +168,20 @@ public class SyncTreeDirectoryDTO implements SyncTreeNodeDTO {
 		this.changed = value;
 	}
 
-	@Override
-	public String getRelativePath() {
-		String path = this.name;
-		SyncTreeDirectoryDTO p = this.parent;
-		if (p == null) {
-			return "";
-		} else {
-			while (p != null && !RACINE.equals(p.getName())) {
-				path = p.getName() + "/" + path;
-				p = p.getParent();
-			}
-		}
-		return path;
-	}
+	// @Override
+	// public String getRelativePath() {
+	// String path = this.name;
+	// SyncTreeDirectoryDTO p = this.parent;
+	// if (p == null) {
+	// return "";
+	// } else {
+	// while (p != null && !RACINE.equals(p.getName())) {
+	// path = p.getName() + "/" + path;
+	// p = p.getParent();
+	// }
+	// }
+	// return path;
+	// }
 
 	@Override
 	public DownloadStatus getDownloadStatus() {
@@ -190,5 +191,23 @@ public class SyncTreeDirectoryDTO implements SyncTreeNodeDTO {
 	@Override
 	public void setDownloadStatus(DownloadStatus downloadStatus) {
 		this.downloadStatus = downloadStatus;
+	}
+
+	@Override
+	public String getRelativePath() {
+		return determinePath(this);
+	}
+
+	@Override
+	public String getParentRelativePath() {
+		return determineParentRelativePath(this);
+	}
+
+	public List<SyncTreeNodeDTO> getDeepSearchNodeList() {
+		return determineDeepSearchNodesList(this);
+	}
+
+	public List<SyncTreeLeafDTO> getDeepSearchLeafsList() {
+		return determineDeepSearchLeafsList(this);
 	}
 }

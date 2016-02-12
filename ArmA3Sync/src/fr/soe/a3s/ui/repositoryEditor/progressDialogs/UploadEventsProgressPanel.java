@@ -1,5 +1,8 @@
 package fr.soe.a3s.ui.repositoryEditor.progressDialogs;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import javax.swing.JOptionPane;
 
 import fr.soe.a3s.constant.ProtocolType;
@@ -7,15 +10,15 @@ import fr.soe.a3s.dto.ProtocolDTO;
 import fr.soe.a3s.dto.RepositoryDTO;
 import fr.soe.a3s.exception.CheckException;
 import fr.soe.a3s.exception.repository.RepositoryException;
-import fr.soe.a3s.service.AbstractConnexionService;
-import fr.soe.a3s.service.AbstractConnexionServiceFactory;
 import fr.soe.a3s.service.RepositoryService;
+import fr.soe.a3s.service.connection.ConnexionService;
+import fr.soe.a3s.service.connection.ConnexionServiceFactory;
 import fr.soe.a3s.ui.Facade;
 import fr.soe.a3s.ui.ProgressPanel;
 
 public class UploadEventsProgressPanel extends ProgressPanel {
 
-	private AbstractConnexionService connexion;
+	private ConnexionService connexion;
 	private final String repositoryName;
 	private Thread t;
 	/* Service */
@@ -63,8 +66,8 @@ public class UploadEventsProgressPanel extends ProgressPanel {
 			@Override
 			public void run() {
 				try {
-					connexion = AbstractConnexionServiceFactory
-							.getRepositoryUploadServiceFromRepository(repositoryName);
+					connexion = ConnexionServiceFactory
+							.getServiceForRepositoryUpload(repositoryName);
 					boolean response = connexion.upLoadEvents(repositoryName);
 					setVisible(false);
 					if (response == false) {
@@ -80,7 +83,9 @@ public class UploadEventsProgressPanel extends ProgressPanel {
 						SynchronizingPanel synchronizingPanel = new SynchronizingPanel(
 								facade);
 						synchronizingPanel.setVisible(true);
-						synchronizingPanel.init(repositoryName);
+						List<String> repositoryNames = new ArrayList<String>();
+						repositoryNames.add(repositoryName);
+						synchronizingPanel.init(repositoryNames);
 					}
 				} catch (RepositoryException e) {
 					setVisible(false);

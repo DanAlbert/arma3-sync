@@ -1,6 +1,7 @@
 package fr.soe.a3s.ui.repositoryEditor.workers;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -19,10 +20,10 @@ import fr.soe.a3s.exception.remote.RemoteRepositoryException;
 import fr.soe.a3s.exception.remote.RemoteServerInfoFileNotFoundException;
 import fr.soe.a3s.exception.remote.RemoteSyncFileNotFoundException;
 import fr.soe.a3s.exception.repository.RepositoryException;
-import fr.soe.a3s.service.AbstractConnexionService;
-import fr.soe.a3s.service.AbstractConnexionServiceFactory;
 import fr.soe.a3s.service.AddonService;
 import fr.soe.a3s.service.RepositoryService;
+import fr.soe.a3s.service.connection.ConnexionService;
+import fr.soe.a3s.service.connection.ConnexionServiceFactory;
 import fr.soe.a3s.ui.Facade;
 import fr.soe.a3s.ui.repositoryEditor.DownloadPanel;
 import fr.soe.a3s.ui.repositoryEditor.errorDialogs.HeaderErrorDialog;
@@ -44,7 +45,7 @@ public class AddonsChecker extends Thread {
 	/* Services */
 	private final RepositoryService repositoryService = new RepositoryService();
 	private final AddonService addonService = new AddonService();
-	private AbstractConnexionService connexionService;
+	private ConnexionService connexionService;
 
 	public AddonsChecker(Facade facade, String repositoryName,
 			String eventName, boolean update,
@@ -65,13 +66,16 @@ public class AddonsChecker extends Thread {
 				+ repositoryName);
 
 		// Initialize download panel for start checking
-		initDownlaodPanelForStartCheck();
+		initDownloadPanelForStartCheck();
+
+		// Set checking for addons state
+		repositoryService.setCheckingForAddons(repositoryName, true);
 
 		downloadPanel.getProgressBarCheckForAddons().setIndeterminate(true);
 
 		try {
-			connexionService = AbstractConnexionServiceFactory
-					.getServiceFromRepository(repositoryName);
+			connexionService = ConnexionServiceFactory
+					.getServiceForRepositoryManagement(repositoryName);
 		} catch (RepositoryException | CheckException e) {
 			JOptionPane.showMessageDialog(facade.getMainPanel(),
 					e.getMessage(), "Download", JOptionPane.ERROR_MESSAGE);
@@ -95,7 +99,7 @@ public class AddonsChecker extends Thread {
 			}
 
 			// 2. Compare remote and local files SHA1
-			repositoryService.getRepositoryAddonsCheckerDAO().addObserverCount(
+			repositoryService.getRepositorySHA1Processor().addObserverCount(
 					new ObserverCount() {
 						@Override
 						public synchronized void update(final int value) {
@@ -140,7 +144,7 @@ public class AddonsChecker extends Thread {
 						}
 					});
 
-			String header = connexionService.determineCompletion(
+			String header = connexionService.determineFilesCompletion(
 					repositoryName, parent);
 
 			if (!canceled) {
@@ -161,7 +165,9 @@ public class AddonsChecker extends Thread {
 				downloadPanel.getRepositoryPanel().getEventsPanel()
 						.init(repositoryName);
 				// 7. Update modset selection
-				facade.getAddonsPanel().updateModsetSelection(repositoryName);
+				List<String> repositoryNames = new ArrayList<String>();
+				repositoryNames.add(repositoryName);
+				facade.getAddonsPanel().updateModsetSelection(repositoryNames);
 				// 8. Update repository status, save repository status to disk
 				repositoryService.updateRepositoryRevision(repositoryName);
 				repositoryService.setOutOfSync(repositoryName, false);
@@ -210,9 +216,8 @@ public class AddonsChecker extends Thread {
 		}
 	}
 
-	private void initDownlaodPanelForStartCheck() {
+	private void initDownloadPanelForStartCheck() {
 
-		downloadPanel.getButtonCheckForAddonsCancel().setEnabled(false);
 		downloadPanel.getLabelCheckForAddonsStatus().setText(
 				"Checking files...");
 		downloadPanel.getButtonCheckForAddonsStart().setEnabled(false);
@@ -243,13 +248,20 @@ public class AddonsChecker extends Thread {
 
 	private void terminate() {
 
+		repositoryService.setCheckingForAddons(repositoryName, false);
 		this.interrupt();
 		System.gc();
 	}
 
 	public void cancel() {
 
+		System.out.println("Canceling Checking for Addons on repository: "
+				+ repositoryName);
+
 		this.canceled = true;
+		if (repositoryService != null) {
+			repositoryService.cancel();
+		}
 		if (connexionService != null) {
 			connexionService.cancel();
 		}
@@ -260,37 +272,32 @@ public class AddonsChecker extends Thread {
 		terminate();
 	}
 
-	private void setEventAddonSelection() {
+	private void setEventAddonSelection() throws RepositoryException {
 
-		try {
-			List<EventDTO> eventDTOs = repositoryService
-					.getEvents(this.repositoryName);
-			Map<String, Boolean> addonNames = new HashMap<String, Boolean>();
-			Map<String, Boolean> userconfigFolderNames = new HashMap<String, Boolean>();
-			if (eventDTOs != null) {
-				for (EventDTO eventDTO : eventDTOs) {
-					if (eventDTO.getName().equals(eventName)) {
-						addonNames = eventDTO.getAddonNames();
-						userconfigFolderNames = eventDTO
-								.getUserconfigFolderNames();
-						break;
-					}
+		List<EventDTO> eventDTOs = repositoryService
+				.getEvents(this.repositoryName);
+		Map<String, Boolean> addonNames = new HashMap<String, Boolean>();
+		Map<String, Boolean> userconfigFolderNames = new HashMap<String, Boolean>();
+		if (eventDTOs != null) {
+			for (EventDTO eventDTO : eventDTOs) {
+				if (eventDTO.getName().equals(eventName)) {
+					addonNames = eventDTO.getAddonNames();
+					userconfigFolderNames = eventDTO.getUserconfigFolderNames();
+					break;
 				}
 			}
-
-			SyncTreeDirectoryDTO newRacine = new SyncTreeDirectoryDTO();
-			newRacine.setName(parent.getName());
-			newRacine.setParent(null);
-			if (!userconfigFolderNames.isEmpty()) {
-				refineUserconfig(parent, newRacine, userconfigFolderNames);
-			}
-			if (!addonNames.isEmpty()) {
-				refineAddons(parent, newRacine, addonNames);
-			}
-			parent = newRacine;
-		} catch (RepositoryException e) {
-			e.printStackTrace();
 		}
+
+		SyncTreeDirectoryDTO newRacine = new SyncTreeDirectoryDTO();
+		newRacine.setName(parent.getName());
+		newRacine.setParent(null);
+		if (!userconfigFolderNames.isEmpty()) {
+			refineUserconfig(parent, newRacine, userconfigFolderNames);
+		}
+		if (!addonNames.isEmpty()) {
+			refineAddons(parent, newRacine, addonNames);
+		}
+		parent = newRacine;
 	}
 
 	private void refineAddons(SyncTreeDirectoryDTO oldSyncTreeDirectoryDTO,

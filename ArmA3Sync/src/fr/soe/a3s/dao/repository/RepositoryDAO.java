@@ -3,11 +3,9 @@ package fr.soe.a3s.dao.repository;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.io.PrintWriter;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
@@ -32,7 +30,6 @@ import fr.soe.a3s.domain.repository.Events;
 import fr.soe.a3s.domain.repository.Repository;
 import fr.soe.a3s.domain.repository.ServerInfo;
 import fr.soe.a3s.domain.repository.SyncTreeDirectory;
-import fr.soe.a3s.exception.WritingException;
 
 public class RepositoryDAO implements DataAccessConstants {
 
@@ -40,6 +37,10 @@ public class RepositoryDAO implements DataAccessConstants {
 
 	public Map<String, Repository> getMap() {
 		return mapRepositories;
+	}
+
+	public void add(Repository repository) {
+		mapRepositories.put(repository.getName(), repository);
 	}
 
 	public boolean remove(String repositoryName) {
@@ -194,32 +195,19 @@ public class RepositoryDAO implements DataAccessConstants {
 		return events;
 	}
 
-	public void saveToDiskEvents(Events events, String repositoryPath)
-			throws WritingException {
+	public void writeEvents(String repositoryName) throws IOException {
 
-		try {
-			File file = new File(repositoryPath);
-			File a3sFolder = new File(repositoryPath + A3S_FOlDER_PATH);
-			a3sFolder.mkdirs();
-			File eventsFile = new File(file.getAbsolutePath()
-					+ EVENTS_FILE_PATH);
+		Repository repository = mapRepositories.get(repositoryName);
+		if (repository != null) {
+			Events events = repository.getEvents();
 			if (events != null) {
-				ObjectOutputStream fWo = null;
-				fWo = new ObjectOutputStream(new GZIPOutputStream(
-						new FileOutputStream(eventsFile.getAbsolutePath())));
-				fWo.writeObject(events);
-				fWo.close();
+				String path = repository.getPath();
+				File a3sFolder = new File(path + A3S_FOlDER_PATH);
+				a3sFolder.mkdir();
+				String eventsPath = a3sFolder.getAbsolutePath() + "/" + EVENTS;
+				File file = new File(eventsPath);
+				A3SFilesAccessor.writeEvents(events, file);
 			}
-		} catch (Exception e) {
-			throw new WritingException(e.getMessage());
 		}
-	}
-
-	public void writeLog(String print, String path) throws IOException {
-
-		PrintWriter fWo = new PrintWriter(new FileWriter(
-				new File(path).getAbsolutePath()));
-		fWo.println(print);
-		fWo.close();
 	}
 }

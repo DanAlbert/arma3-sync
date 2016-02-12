@@ -33,6 +33,7 @@ public class Repository implements Serializable {
 	private Set<String> hidddenFolderPaths = new HashSet<String>();
 
 	/** Check for Addons */
+	private transient boolean checkingForAddons = false;
 	private transient ServerInfo serverInfo;// Gets from remote location
 	private transient SyncTreeDirectory sync;// Gets from remote location
 	private transient Changelogs changelogs;// Gets from remote location
@@ -43,13 +44,13 @@ public class Repository implements Serializable {
 	private Map<String, FileAttributes> mapFilesForSync = new HashMap<String, FileAttributes>();// <Path,FileAttrbutes>
 
 	/** Repository download */
-	private int numberOfClientConnections = 1;
+	private int numberOfClientConnections = 0;
 	private double maximumClientDownloadSpeed = 0;
 	private transient String downloadReport;
-	private transient boolean downloading;
+	private transient boolean downloading = false;
 
 	/** Repository upload */
-	private AbstractProtocole repositoryUploadProtocole;
+	private AbstractProtocole uploadProtocole;
 	private boolean uploadCompressedPboFilesOnly = false;
 	private transient ServerInfo localServerInfo;
 	private transient SyncTreeDirectory localSync;
@@ -68,13 +69,16 @@ public class Repository implements Serializable {
 	private List<FavoriteServer> favoriteServersSetToAutoconfig = new ArrayList<FavoriteServer>();
 	private Set<String> excludedFilesFromBuild = new HashSet<String>();
 	private Set<String> excludedFoldersFromSync = new HashSet<String>();
-	private transient boolean building;
+	private transient boolean building = false;
 
 	/** Repository check */
-	private transient boolean checking;
+	private transient boolean checking = false;
 
 	/** Local data: SHA1 computation for Build repository */
 	private Map<String, FileAttributes> mapFilesForBuild = new HashMap<String, FileAttributes>();// <Path,FileAttrbutes>
+
+	/** BitTorrent */
+	private AbstractProtocole bitTorrentProtocole;
 
 	public Repository(String name, AbstractProtocole protocole) {
 		this.name = name;
@@ -283,13 +287,12 @@ public class Repository implements Serializable {
 		this.uploading = value;
 	}
 
-	public AbstractProtocole getRepositoryUploadProtocole() {
-		return repositoryUploadProtocole;
+	public AbstractProtocole getUploadProtocole() {
+		return uploadProtocole;
 	}
 
-	public void setRepositoryUploadProtocole(
-			AbstractProtocole repositoryUploadProtocole) {
-		this.repositoryUploadProtocole = repositoryUploadProtocole;
+	public void setUploadProtocole(AbstractProtocole uploadProtocole) {
+		this.uploadProtocole = uploadProtocole;
 	}
 
 	/* Local files */
@@ -388,6 +391,14 @@ public class Repository implements Serializable {
 
 	public void setChecking(boolean value) {
 		this.checking = value;
+	}
+
+	public boolean isCheckingForAddons() {
+		return checkingForAddons;
+	}
+
+	public void setCheckingForAddons(boolean value) {
+		this.checkingForAddons = value;
 	}
 
 	public boolean isUploadCompressedPboFilesOnly() {

@@ -1,5 +1,9 @@
 package fr.soe.a3s.main;
 
+import it.sauronsoftware.junique.AlreadyLockedException;
+import it.sauronsoftware.junique.JUnique;
+import it.sauronsoftware.junique.MessageHandler;
+
 import java.awt.Font;
 import java.awt.GraphicsEnvironment;
 import java.io.File;
@@ -41,11 +45,11 @@ public class ArmA3Sync implements DataAccessConstants {
 	 *            command line parameters
 	 */
 
+	private static MainPanel mainPanel;
+
 	public static void main(String[] args) {
 
 		checkArmA3SyncVersion();
-
-		checkJRE();
 
 		setFoldersAndPermissions();
 
@@ -56,26 +60,6 @@ public class ArmA3Sync implements DataAccessConstants {
 
 		System.out.println("ArmA3Sync Installed version = "
 				+ Version.getVersion());
-	}
-
-	private static void checkJRE() {
-
-		String version = System.getProperty("java.version");
-		System.out.println("JRE installed version = " + version);
-
-		String specification = System.getProperty("java.specification.version");
-
-		if (!(Double.parseDouble(specification) >= 1.7)) {
-			String message = "JRE installed version = " + version + "\n"
-					+ "ArmA3Sync required JRE 1.7 (Java 7) or above to run.";
-			System.out.println(message);
-			if (!GraphicsEnvironment.isHeadless()) {
-				JFrame frame = new JFrame();
-				JOptionPane.showMessageDialog(frame, message, "ArmA3Sync",
-						JOptionPane.INFORMATION_MESSAGE);
-			}
-			System.exit(0);
-		}
 	}
 
 	private static void setFoldersAndPermissions() {
@@ -160,10 +144,10 @@ public class ArmA3Sync implements DataAccessConstants {
 			CommandLine commandLine = new CommandLine();
 			String repositoryName = args[1];
 			commandLine.check(repositoryName);
-		} else if (args.length == 3 && args[0].equalsIgnoreCase("-extract")){
+		} else if (args.length == 3 && args[0].equalsIgnoreCase("-extract")) {
 			CommandLine commandLine = new CommandLine();
 			commandLine.extractBikeys(args[1], args[2]);
-		}else if (args.length == 4 && args[0].equalsIgnoreCase("-sync")) {
+		} else if (args.length == 4 && args[0].equalsIgnoreCase("-sync")) {
 			CommandLine commandLine = new CommandLine();
 			String repositoryName = args[1];
 			String destinationFolderPath = args[2];
@@ -180,8 +164,8 @@ public class ArmA3Sync implements DataAccessConstants {
 			System.out.println("-CHECK " + "\"" + "Name of the Repository"
 					+ "\"" + " : check repository.");
 			System.out.println("-CONSOLE: run ArmASync console management.");
-			System.out.println("-EXTRACT " + "\"" + "Source folder path"
-					+ "\"" + " " + "\"" + "Destination folder path" + "\""
+			System.out.println("-EXTRACT " + "\"" + "Source folder path" + "\""
+					+ " " + "\"" + "Destination folder path" + "\""
 					+ " : extract *.bikey files.");
 			System.out.println("-SYNC " + "\"" + "Name of the Repository"
 					+ "\"" + " " + "\"" + "Destination folder path" + "\""
@@ -192,46 +176,62 @@ public class ArmA3Sync implements DataAccessConstants {
 		}
 	}
 
-	private static void start(boolean devMode) {
+	private static void start(final boolean devMode) {
 
 		if (GraphicsEnvironment.isHeadless()) {
 			System.out.println("Can't start ArmA3Sync. GUI is missing.");
 			System.exit(1);
+		} else {
+			applyLookAndFeel();
 		}
 
-		/* Apply Look and Feel */
-		applyLookAndFeel();
-
-		/* Set Single Instance */
-		String message = lockInstance();
-		if (!message.isEmpty()) {
-			JFrame frame = new JFrame();
-			System.out.println(message);
-			JOptionPane.showMessageDialog(frame, message, "ArmA3Sync",
-					JOptionPane.INFORMATION_MESSAGE);
-			System.exit(0);
-		}
-
-		/* Start */
-		final Facade facade = new Facade();
-		facade.setDevMode(devMode);
-
-		SwingUtilities.invokeLater(new Runnable() {
-			@Override
-			public void run() {
-				try {
-					MainPanel mainPanel = new MainPanel(facade);
-					mainPanel.drawGUI();
-					mainPanel.init();
-					mainPanel.initBackGround();
-				} catch (Exception e) {
-					ErrorLogDialog dialog = new ErrorLogDialog(facade, e);
-					dialog.show();
+		/*
+		 * Start with single instance using JUnique
+		 * http://www.sauronsoftware.it/projects/junique/manual.php
+		 */
+		String appId = ArmA3Sync.class.getName();
+		boolean alreadyRunning;
+		try {
+			JUnique.acquireLock(appId, new MessageHandler() {
+				@Override
+				public String handle(String message) {
+					// http://stackoverflow.com/questions/309023/how-to-bring-a-window-to-the-front
+					mainPanel.setAlwaysOnTop(true);
+					mainPanel.setToFront();
+					mainPanel.requestFocus();
+					mainPanel.setAlwaysOnTop(false);
+					return null;
 				}
-			}
-		});
+			});
+			alreadyRunning = false;
+		} catch (AlreadyLockedException e) {
+			alreadyRunning = true;
+		}
+		if (!alreadyRunning) {
+			// Start sequence
+			SwingUtilities.invokeLater(new Runnable() {
+				@Override
+				public void run() {
+					final Facade facade = new Facade();
+					facade.setDevMode(devMode);
+					try {
+						mainPanel = new MainPanel(facade);
+						mainPanel.drawGUI();
+						mainPanel.init();
+						mainPanel.initBackGround();
+					} catch (Exception e) {
+						ErrorLogDialog dialog = new ErrorLogDialog(facade, e);
+						dialog.show();
+					}
+				}
+			});
+		} else {
+			JUnique.sendMessage(appId, "");
+			System.exit(1);
+		}
 	}
 
+	@Deprecated
 	private static String lockInstance() {
 
 		final String path = "lock";

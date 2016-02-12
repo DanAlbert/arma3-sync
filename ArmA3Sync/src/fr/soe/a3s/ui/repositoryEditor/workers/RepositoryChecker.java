@@ -9,7 +9,7 @@ import java.util.List;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
-import fr.soe.a3s.controller.ObserverCheck;
+import fr.soe.a3s.controller.ObserverCount;
 import fr.soe.a3s.dao.DataAccessConstants;
 import fr.soe.a3s.dto.sync.SyncTreeLeafDTO;
 import fr.soe.a3s.exception.remote.RemoteAutoconfigFileNotFoundException;
@@ -18,9 +18,9 @@ import fr.soe.a3s.exception.remote.RemoteRepositoryException;
 import fr.soe.a3s.exception.remote.RemoteServerInfoFileNotFoundException;
 import fr.soe.a3s.exception.remote.RemoteSyncFileNotFoundException;
 import fr.soe.a3s.exception.repository.RepositoryException;
-import fr.soe.a3s.service.AbstractConnexionService;
-import fr.soe.a3s.service.AbstractConnexionServiceFactory;
 import fr.soe.a3s.service.RepositoryService;
+import fr.soe.a3s.service.connection.ConnexionService;
+import fr.soe.a3s.service.connection.ConnexionServiceFactory;
 import fr.soe.a3s.ui.Facade;
 import fr.soe.a3s.ui.repositoryEditor.AdminPanel;
 import fr.soe.a3s.ui.repositoryEditor.errorDialogs.ErrorsListDialog;
@@ -38,7 +38,7 @@ public class RepositoryChecker extends Thread implements DataAccessConstants {
 	private boolean canceled = false;
 	/* Services */
 	private final RepositoryService repositoryService = new RepositoryService();
-	private AbstractConnexionService connexionService;
+	private ConnexionService connexionService;
 
 	public RepositoryChecker(Facade facade, String repositoryName,
 			AdminPanel adminPanel) {
@@ -63,8 +63,8 @@ public class RepositoryChecker extends Thread implements DataAccessConstants {
 		try {
 			// 1. Try to retrieve the remote repository sync, serverInfo,
 			// changelogs, autoconfig files.
-			connexionService = AbstractConnexionServiceFactory
-					.getServiceFromRepository(repositoryName);
+			connexionService = ConnexionServiceFactory
+					.getServiceForRepositoryManagement(repositoryName);
 			connexionService.getSync(repositoryName);
 			connexionService.getServerInfo(repositoryName);
 			connexionService.getChangelogs(repositoryName);
@@ -86,11 +86,10 @@ public class RepositoryChecker extends Thread implements DataAccessConstants {
 				throw new RemoteAutoconfigFileNotFoundException();
 			}
 
-			connexionService.getConnexionDAO().addObserverCheck(
-					new ObserverCheck() {
-
+			connexionService.getConnexionDAO().addObserverCount(
+					new ObserverCount() {
 						@Override
-						public void updateProgress(final int value) {
+						public void update(final int value) {
 							SwingUtilities.invokeLater(new Runnable() {
 								@Override
 								public void run() {
@@ -101,9 +100,12 @@ public class RepositoryChecker extends Thread implements DataAccessConstants {
 								}
 							});
 						}
+					});
 
+			connexionService.getConnexionDAO().addObserverCountErrors(
+					new ObserverCount() {
 						@Override
-						public void updateErrorCount(int value) {
+						public void update(int value) {
 							adminPanel.getCheckErrorLabelValue().setText(
 									Integer.toString(value));
 							adminPanel.getCheckErrorLabel().setForeground(

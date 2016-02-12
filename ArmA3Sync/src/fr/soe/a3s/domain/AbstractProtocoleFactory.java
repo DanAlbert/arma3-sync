@@ -11,18 +11,15 @@ public class AbstractProtocoleFactory {
 		if (protocolType.equals(ProtocolType.FTP)) {
 			return new Ftp(url, port, login, password, connectionTimeOut,
 					readTimeOut, protocolType);
-		} else if (protocolType.equals(ProtocolType.HTTP)) {
+		} else if (protocolType.equals(ProtocolType.HTTP)
+				|| protocolType.equals(ProtocolType.HTTPS)) {
 			return new Http(url, port, login, password, connectionTimeOut,
 					readTimeOut, protocolType);
-		} else if (protocolType.equals(ProtocolType.HTTPS)) {
-			return new Http(url, port, login, password, connectionTimeOut,
-					readTimeOut, protocolType);
-		} else if (protocolType.equals(ProtocolType.HTTP_WEBDAV)) {
-			return new Http(url, port, login, password, connectionTimeOut,
-					readTimeOut, protocolType);
-		} else if (protocolType.equals(ProtocolType.HTTPS_WEBDAV)) {
-			return new Http(url, port, login, password, connectionTimeOut,
-					readTimeOut, protocolType);
+		} else if (protocolType.equals(ProtocolType.FTP_BITTORRENT)
+				|| protocolType.equals(ProtocolType.HTTP_BITTORRENT)
+				|| protocolType.equals(ProtocolType.HTTPS_BITTORRENT)) {
+			return new BitTorrent(url, port, login, password,
+					connectionTimeOut, readTimeOut, protocolType);
 		} else {
 			return null;
 		}
@@ -33,13 +30,8 @@ public class AbstractProtocoleFactory {
 
 		if (protocolType.equals(ProtocolType.FTP)) {
 			return new Ftp(url, port, login, password, protocolType);
-		} else if (protocolType.equals(ProtocolType.HTTP)) {
-			return new Http(url, port, login, password, protocolType);
-		} else if (protocolType.equals(ProtocolType.HTTPS)) {
-			return new Http(url, port, login, password, protocolType);
-		} else if (protocolType.equals(ProtocolType.HTTP_WEBDAV)) {
-			return new Http(url, port, login, password, protocolType);
-		} else if (protocolType.equals(ProtocolType.HTTPS_WEBDAV)) {
+		} else if (protocolType.equals(ProtocolType.HTTP)
+				|| protocolType.equals(ProtocolType.HTTPS)) {
 			return new Http(url, port, login, password, protocolType);
 		} else {
 			return null;

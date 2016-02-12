@@ -1,33 +1,39 @@
 package fr.soe.a3s.dao.connection;
 
+import java.io.File;
+import java.io.IOException;
+import java.net.SocketException;
+import java.net.SocketTimeoutException;
+import java.net.UnknownHostException;
 import java.util.List;
 
-import fr.soe.a3s.controller.ObservableCheck;
 import fr.soe.a3s.controller.ObservableCount;
-import fr.soe.a3s.controller.ObservableCountWithText;
+import fr.soe.a3s.controller.ObservableCountErrors;
 import fr.soe.a3s.controller.ObservableDownload;
 import fr.soe.a3s.controller.ObservableProceed;
+import fr.soe.a3s.controller.ObservableText;
 import fr.soe.a3s.controller.ObservableUpload;
-import fr.soe.a3s.controller.ObserverCheck;
 import fr.soe.a3s.controller.ObserverCount;
-import fr.soe.a3s.controller.ObserverCountWithText;
 import fr.soe.a3s.controller.ObserverDownload;
 import fr.soe.a3s.controller.ObserverProceed;
+import fr.soe.a3s.controller.ObserverText;
 import fr.soe.a3s.controller.ObserverUpload;
 import fr.soe.a3s.dao.DataAccessConstants;
+import fr.soe.a3s.domain.AbstractProtocole;
 import fr.soe.a3s.dto.sync.SyncTreeLeafDTO;
+import fr.soe.a3s.dto.sync.SyncTreeNodeDTO;
 
 public abstract class AbstractConnexionDAO implements DataAccessConstants,
-		ObservableCount, ObservableCountWithText, ObservableUpload,
-		ObservableProceed, ObservableDownload, ObservableCheck {
+		ObservableCount, ObservableCountErrors, ObservableText,
+		ObservableUpload, ObservableProceed, ObservableDownload {
 
 	/***/
 	private ObserverCount observerCount;
-	private ObserverCountWithText observerCountWithText;
+	private ObserverCount observerCountErrors;
+	private ObserverText observerText;
 	private ObserverUpload observerUpload;
 	private ObserverProceed observerProceed;
 	private ObserverDownload observerDownload;
-	private ObserverCheck observerCheck;
 
 	/***/
 	protected long expectedFullSize = 0;
@@ -44,14 +50,75 @@ public abstract class AbstractConnexionDAO implements DataAccessConstants,
 	protected long responseTime = 0;
 	protected double maximumClientDownloadSpeed = 0;
 
-	protected static final String UNKNOWN_HOST = "Host cannot be reached."
-			+ "\n" + "Checkout url, firewall and connection.";
-	protected static final String CONNECTION_TIME_OUT_REACHED = "Connection time out reached."
-			+ "\n" + "Checkout Advanced connection options.";
-	protected static final String READ_TIME_OUT_REACHED = "Read time out reached."
-			+ "\n" + "Checkout Advanced connection options.";
+	protected static final String UNKNOWN_HOST = "Host name cannot be reached."
+			+ "\n" + "Checkout the connection settings, DNS and firewall.";
+	protected static final String CONNECTION_TIME_OUT_REACHED = "ArmA3Sync closed connection: Connection timeout reached."
+			+ "\n" + "Checkout the connection advanced settings.";
+	protected static final String READ_TIME_OUT_REACHED = "ArmA3Sync closed connection: Read timeout reached."
+			+ "\n" + "Checkout the connection advanced settings.";
+	protected static final String TIME_OUT_REACHED = "ArmA3Sync closed connection: Connection or Read timeout reached."
+			+ "\n" + "Checkout the connection advanced settings.";
 	protected static final String CONNECTION_FAILED = "Connection failed.";
-	protected static final String WRONG_LOGIN_PASSWORD = "login or password wrong or missing";
+	public static final String WRONG_LOGIN_PASSWORD = "login or password wrong or missing";
+
+	/* Abstract Methods */
+
+	public abstract boolean fileExists(String name, AbstractProtocole protocol,
+			RemoteFile remoteFile) throws IOException;
+
+	public abstract void deleteFile(RemoteFile remoteFile,
+			String repositoryRemotePath) throws IOException;
+
+	public abstract boolean uploadFile(RemoteFile remoteFile,
+			String repositoryPath, String remotePath) throws IOException;
+
+	public abstract File downloadFile(String name, AbstractProtocole protocol,
+			String remotePath, String destinationPath, SyncTreeNodeDTO node)
+			throws IOException;
+
+	public abstract void disconnect();
+
+	public IOException transferIOExceptionFactory(String coreMessage,
+			IOException e) {
+
+		if (e instanceof UnknownHostException) {
+			String message = coreMessage + "\n" + UNKNOWN_HOST;
+			return new UnknownHostException(message);
+		} else if (e instanceof SocketTimeoutException) {
+			String message = coreMessage + "\n" + TIME_OUT_REACHED;
+			if (e.getMessage() != null) {
+				if (e.getMessage().toLowerCase().contains("read")) {
+					message = coreMessage + "\n" + READ_TIME_OUT_REACHED;
+				} else if (e.getMessage().toLowerCase().contains("connect")) {
+					message = coreMessage + "\n" + CONNECTION_TIME_OUT_REACHED;
+				}
+			}
+			return new SocketTimeoutException(message);
+		} else if (e.getCause() instanceof SocketTimeoutException) {
+			String message = coreMessage + "\n" + TIME_OUT_REACHED;
+			if (e.getCause().getMessage() != null) {
+				if (e.getCause().getMessage().toLowerCase().contains("read")) {
+					message = coreMessage + "\n" + READ_TIME_OUT_REACHED;
+				} else if (e.getCause().getMessage().toLowerCase()
+						.contains("connect")) {
+					message = coreMessage + "\n" + CONNECTION_TIME_OUT_REACHED;
+				}
+			}
+			return new SocketTimeoutException(message);
+		} else if (e instanceof SocketException) {
+			String message = coreMessage + "\n" + CONNECTION_FAILED;
+			return new SocketException(message);
+		} else if (e.getCause() instanceof SocketException) {
+			String message = coreMessage + "\n" + CONNECTION_FAILED;
+			return new SocketException(message);
+		} else {
+			String message = coreMessage;
+			if (e.getMessage() != null) {
+				message = message + "\n" + e.getMessage();
+			}
+			return new IOException(message);
+		}
+	}
 
 	/* Getters and Setters */
 
@@ -151,21 +218,30 @@ public abstract class AbstractConnexionDAO implements DataAccessConstants,
 		this.observerCount.update(this.count * 100 / totalCount);
 	}
 
-	/* Count with text observable Interface */
+	/* Count errors observable Interface */
 
 	@Override
-	public void addObserverCountWithText(ObserverCountWithText obs) {
-		this.observerCountWithText = obs;
+	public void addObserverCountErrors(ObserverCount obs) {
+		this.observerCountErrors = obs;
 	}
 
 	@Override
-	public void updateObserverCountWithText() {
-		this.observerCountWithText.update(this.count * 100 / totalCount);
+	public void updateObserverCountErrors(int value) {
+		if (this.observerCountErrors != null) {
+			this.observerCountErrors.update(value);
+		}
+	}
+
+	/* Text observable Interface */
+
+	@Override
+	public void addObserverText(ObserverText obs) {
+		this.observerText = obs;
 	}
 
 	@Override
-	public void updateObserverCountWithText(String text) {
-		this.observerCountWithText.update(text);
+	public void updateObserverText(String text) {
+		this.observerText.update(text);
 	}
 
 	/* Upload observable Interface */
@@ -279,22 +355,5 @@ public abstract class AbstractConnexionDAO implements DataAccessConstants,
 	@Override
 	public void updateObserverProceed() {
 		this.observerProceed.proceed();
-	}
-
-	/* Check observable Interface */
-
-	@Override
-	public void addObserverCheck(ObserverCheck obs) {
-		this.observerCheck = obs;
-	}
-
-	@Override
-	public void updateObserverCheckProgress() {
-		this.observerCheck.updateProgress(this.count * 100 / totalCount);
-	}
-
-	@Override
-	public void updateObserverCheckCountError(int value) {
-		this.observerCheck.updateErrorCount(value);
 	}
 }

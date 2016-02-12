@@ -56,6 +56,7 @@ import fr.soe.a3s.ui.mainEditor.tree.AddonTreeModel;
 import fr.soe.a3s.ui.mainEditor.tree.CheckTreeCellRenderer;
 import fr.soe.a3s.ui.mainEditor.tree.MyRenderer2;
 import fr.soe.a3s.ui.mainEditor.tree.TreeDnD;
+import fr.soe.a3s.ui.repositoryEditor.progressDialogs.SynchronizingPanel;
 
 /**
  * This code was edited or generated using CloudGarden's Jigloo SWT/Swing GUI
@@ -373,7 +374,7 @@ public class AddonsPanel extends JPanel implements UIConstants {
 		buttonModsets.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				buttonEventsPerformed();
+				buttonModsetsPerformed();
 			}
 		});
 
@@ -468,11 +469,14 @@ public class AddonsPanel extends JPanel implements UIConstants {
 	}
 
 	public void expandAddonGroups() {
+
+		arbre2.setEnabled(false);
 		Set<TreePath> paths = new HashSet<TreePath>();
 		expandAddonGroups(new TreePath(arbre2.getModel().getRoot()), paths);
 		for (TreePath treePath : paths) {
 			arbre2.expandPath(treePath);
 		}
+		arbre2.setEnabled(true);
 	}
 
 	private void expandAddonGroups(TreePath path, Set<TreePath> paths) {
@@ -843,12 +847,20 @@ public class AddonsPanel extends JPanel implements UIConstants {
 		}
 	}
 
-	private void buttonEventsPerformed() {
+	private void buttonModsetsPerformed() {
 
-		EventSelectionPanel eventSelectionPanel = new EventSelectionPanel(
+		ModdsetsSelectionPanel modsetsSelectionPanel = new ModdsetsSelectionPanel(
 				facade);
-		eventSelectionPanel.init();
-		eventSelectionPanel.setVisible(true);
+		modsetsSelectionPanel.init();
+		modsetsSelectionPanel.setVisible(true);
+		final List<String> repositoryNames = modsetsSelectionPanel
+				.getRepositoryNamesForSync();
+		if (!repositoryNames.isEmpty()) {
+			SynchronizingPanel synchronizingPanel = new SynchronizingPanel(
+					facade);
+			synchronizingPanel.setVisible(true);
+			synchronizingPanel.init(repositoryNames);
+		}
 	}
 
 	public void createGroupFromRepository(List<String> repositoryNames) {
@@ -960,73 +972,79 @@ public class AddonsPanel extends JPanel implements UIConstants {
 		return checkBoxTree;
 	}
 
-	public void updateModsetSelection(String repositoryName) {
+	public void updateModsetSelection(List<String> repositoryNames) {
 
-		try {
-			/* Repository modsets */
-			TreeDirectoryDTO treeDirectoryDTO = null;
-			for (TreeNodeDTO node : racine2.getList()) {
-				if (node.getName().equals(repositoryName)) {
-					treeDirectoryDTO = (TreeDirectoryDTO) node;
-					break;
-				}
-			}
-
-			if (treeDirectoryDTO != null) {
-				List<String> selectdAddonPaths = new ArrayList<String>();
-				getSelectedAddonPaths(treeDirectoryDTO, selectdAddonPaths);
-				racine2.removeTreeNode(treeDirectoryDTO);
-				TreeDirectoryDTO newTreeDirectoryDTO = repositoryService
-						.getAddonTreeFromRepository(repositoryName, false);
-				newTreeDirectoryDTO.setName(repositoryName);
-				newTreeDirectoryDTO.setParent(racine2);
-				racine2.addTreeNode(newTreeDirectoryDTO);
-				setSelectedPaths(newTreeDirectoryDTO, selectdAddonPaths);
-			}
-
-			/* Event modsets */
-			List<EventDTO> eventDTOs = repositoryService
-					.getEvents(repositoryName);
-
-			if (eventDTOs != null) {
-				for (EventDTO eventDTO : eventDTOs) {
-					treeDirectoryDTO = null;
-					for (TreeNodeDTO node : racine2.getList()) {
-						if (node.getName().equals(eventDTO.getName())) {
-							treeDirectoryDTO = (TreeDirectoryDTO) node;
-							break;
-						}
+		for (String repositoryName : repositoryNames) {
+			try {
+				/* Repository modsets */
+				TreeDirectoryDTO treeDirectoryDTO = null;
+				for (TreeNodeDTO node : racine2.getList()) {
+					if (node.getName().equals(repositoryName)) {
+						treeDirectoryDTO = (TreeDirectoryDTO) node;
+						break;
 					}
+				}
 
-					if (treeDirectoryDTO != null) {
-						List<String> selectdAddonPaths = new ArrayList<String>();
-						getSelectedAddonPaths(treeDirectoryDTO,
-								selectdAddonPaths);
-						racine2.removeTreeNode(treeDirectoryDTO);
-
-						TreeDirectoryDTO newTreeDirectoryDTO = new TreeDirectoryDTO();
-						newTreeDirectoryDTO.setName(eventDTO.getName());
+				if (treeDirectoryDTO != null) {
+					List<String> selectdAddonPaths = new ArrayList<String>();
+					getSelectedAddonPaths(treeDirectoryDTO, selectdAddonPaths);
+					racine2.removeTreeNode(treeDirectoryDTO);
+					TreeDirectoryDTO newTreeDirectoryDTO = repositoryService
+							.getAddonTreeFromRepository(repositoryName, false);
+					if (newTreeDirectoryDTO !=null){
+						newTreeDirectoryDTO.setName(repositoryName);
 						newTreeDirectoryDTO.setParent(racine2);
 						racine2.addTreeNode(newTreeDirectoryDTO);
-
-						for (Iterator<String> iter = eventDTO.getAddonNames()
-								.keySet().iterator(); iter.hasNext();) {
-							String name = iter.next();
-							boolean optional = eventDTO.getAddonNames().get(
-									name);
-							TreeLeafDTO leaf = new TreeLeafDTO();
-							leaf.setName(name);
-							leaf.setOptional(optional);
-							leaf.setParent(newTreeDirectoryDTO);
-							// leaf.setSelected(true);
-							newTreeDirectoryDTO.addTreeNode(leaf);
-						}
 						setSelectedPaths(newTreeDirectoryDTO, selectdAddonPaths);
 					}
 				}
+
+				/* Event modsets */
+				List<EventDTO> eventDTOs = repositoryService
+						.getEvents(repositoryName);
+
+				if (eventDTOs != null) {
+					for (EventDTO eventDTO : eventDTOs) {
+						treeDirectoryDTO = null;
+						for (TreeNodeDTO node : racine2.getList()) {
+							if (node.getName().equals(eventDTO.getName())) {
+								treeDirectoryDTO = (TreeDirectoryDTO) node;
+								break;
+							}
+						}
+
+						if (treeDirectoryDTO != null) {
+							List<String> selectdAddonPaths = new ArrayList<String>();
+							getSelectedAddonPaths(treeDirectoryDTO,
+									selectdAddonPaths);
+							racine2.removeTreeNode(treeDirectoryDTO);
+
+							TreeDirectoryDTO newTreeDirectoryDTO = new TreeDirectoryDTO();
+							newTreeDirectoryDTO.setName(eventDTO.getName());
+							newTreeDirectoryDTO.setParent(racine2);
+							racine2.addTreeNode(newTreeDirectoryDTO);
+
+							for (Iterator<String> iter = eventDTO
+									.getAddonNames().keySet().iterator(); iter
+									.hasNext();) {
+								String name = iter.next();
+								boolean optional = eventDTO.getAddonNames()
+										.get(name);
+								TreeLeafDTO leaf = new TreeLeafDTO();
+								leaf.setName(name);
+								leaf.setOptional(optional);
+								leaf.setParent(newTreeDirectoryDTO);
+								// leaf.setSelected(true);
+								newTreeDirectoryDTO.addTreeNode(leaf);
+							}
+							setSelectedPaths(newTreeDirectoryDTO,
+									selectdAddonPaths);
+						}
+					}
+				}
+			} catch (RepositoryException e) {
+				e.printStackTrace();
 			}
-		} catch (RepositoryException e) {
-			e.printStackTrace();
 		}
 
 		saveAddonGroups();

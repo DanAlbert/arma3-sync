@@ -8,15 +8,15 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import fr.soe.a3s.controller.ObservableCountWithText;
-import fr.soe.a3s.controller.ObserverCountWithText;
+import fr.soe.a3s.controller.ObservableCount;
+import fr.soe.a3s.controller.ObserverCount;
 import fr.soe.a3s.domain.repository.SyncTreeLeaf;
 
-public class ZipBatchProcessor implements ObservableCountWithText {
+public class ZipBatchProcessor implements ObservableCount {
 
 	private final List<SyncTreeLeaf> filesList = new ArrayList<SyncTreeLeaf>();
 	private final List<ZipDAO> zipDAOPool = new ArrayList<ZipDAO>();
-	private ObserverCountWithText observerCountWithText;
+	private ObserverCount observerCount;
 	private int count, numberOfFiles;
 	private boolean canceled = false;
 	private final List<Callable<Integer>> callables = new ArrayList<Callable<Integer>>();
@@ -44,7 +44,11 @@ public class ZipBatchProcessor implements ObservableCountWithText {
 					"ZipBatch processor has been anormaly interrupted.");
 		}
 
+		System.out.println("Number of files compressed = "
+				+ this.callables.size());
+
 		executor.shutdownNow();
+		System.gc();
 
 		if (ex != null) {
 			throw ex;
@@ -70,7 +74,7 @@ public class ZipBatchProcessor implements ObservableCountWithText {
 							leaf.setCompressedSize(compressedSize);
 							leaf.setCompressed(true);
 							count++;
-							updateObserverCountWithText();
+							updateObserverCount();
 						}
 					} catch (IOException e) {
 						canceled = true;
@@ -99,20 +103,15 @@ public class ZipBatchProcessor implements ObservableCountWithText {
 		}
 	}
 
-	/* Interface ObservableCountWithText */
+	/* Interface observerCount */
 
 	@Override
-	public void addObserverCountWithText(ObserverCountWithText obs) {
-		this.observerCountWithText = obs;
+	public void addObserverCount(ObserverCount obs) {
+		this.observerCount = obs;
 	}
 
 	@Override
-	public void updateObserverCountWithText() {
-		this.observerCountWithText.update(this.count * 100 / numberOfFiles);
-	}
-
-	@Override
-	public void updateObserverCountWithText(String text) {
-		this.observerCountWithText.update(text);
+	public void updateObserverCount() {
+		this.observerCount.update(this.count * 100 / numberOfFiles);
 	}
 }

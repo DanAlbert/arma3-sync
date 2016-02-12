@@ -145,6 +145,8 @@ public class LaunchPanel extends JPanel implements UIConstants {
 
 	public void init() {
 
+		joinServerComboBox.setEnabled(false);
+
 		String serverName = configurationService.getServerName();
 		String defaultModset = configurationService.getDefaultModset();
 		String gameVersion = configurationService.getGameVersion();
@@ -196,6 +198,8 @@ public class LaunchPanel extends JPanel implements UIConstants {
 		if (gameVersion != null) {
 			this.gameVersionComboBox.setSelectedItem(gameVersion);
 		}
+
+		joinServerComboBox.setEnabled(true);
 	}
 
 	private void serverSelectionPerformed() {

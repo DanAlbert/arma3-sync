@@ -106,7 +106,7 @@ public class ReportPanel extends JFrame implements UIConstants,
 		this.downloadPanel.getButtonDownloadReport().setEnabled(false);
 		if (downloadReport == null) {
 			this.setMinimumSize(new Dimension(300, 300));
-			String message = "Report is not available.";
+			String message = "Download report is not available.";
 			textArea.setText(message);
 			buttonExport.setEnabled(false);
 		} else {

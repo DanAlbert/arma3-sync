@@ -337,7 +337,7 @@ public class LaunchService {
 		if (launcherOptions.isNologs()) {
 			params.add("-nologs");
 		}
-		
+
 		// Join Server
 		String serverName = configuration.getServerName();
 		if (serverName != null) {
@@ -392,16 +392,19 @@ public class LaunchService {
 						.getParentFile().getAbsolutePath().toLowerCase();
 				for (Addon addon : addons) {
 					String path = addon.getPath().toLowerCase();
-					if (path.contains(parentArma3ExePath)
-							&& !path.equals(parentArma3ExePath)) {
-						path = path.substring(parentArma3ExePath.length() + 1);
-						addon.setPath(path);
-						addon.setAtArmA3InstallRoot(true);
-					} else if (path.equals(parentArma3ExePath)) {
+					addon.setAtArmA3InstallRoot(false);
+					if (path.equals(parentArma3ExePath)) {
 						addon.setPath("");
 						addon.setAtArmA3InstallRoot(true);
-					} else {
-						addon.setAtArmA3InstallRoot(false);
+					} else if (path.contains(parentArma3ExePath)) {
+						String parentPath = (new File(path)).getParentFile()
+								.getAbsolutePath();
+						if (parentPath.equals(parentArma3ExePath)) {
+							path = path
+									.substring(parentArma3ExePath.length() + 1);
+							addon.setPath(path);
+							addon.setAtArmA3InstallRoot(true);
+						}
 					}
 				}
 			}

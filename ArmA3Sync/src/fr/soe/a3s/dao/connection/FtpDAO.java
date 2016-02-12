@@ -10,9 +10,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectOutputStream;
 import java.net.ConnectException;
-import java.net.SocketException;
-import java.net.SocketTimeoutException;
-import java.net.UnknownHostException;
 import java.util.zip.GZIPOutputStream;
 
 import org.apache.commons.io.input.CountingInputStream;
@@ -43,11 +40,8 @@ import fr.soe.a3s.exception.FtpException;
 public class FtpDAO extends AbstractConnexionDAO {
 
 	private FTPClient ftpClient;
-
 	private static final int BUFFER_SIZE = 4096;// 4KB
-
 	private int bufferSize = BUFFER_SIZE;
-
 	private long elapsedTime = 0;
 
 	private void connect(AbstractProtocole protocole) throws IOException,
@@ -161,6 +155,11 @@ public class FtpDAO extends AbstractConnexionDAO {
 		InputStream inputStream = null;
 		boolean found = false;
 
+		countFileSize = 0;
+		speed = 0;
+		updateObserverDownloadSingleSizeProgress();
+		updateObserverDownloadSpeed();
+
 		try {
 			final long startTime = System.nanoTime();
 			this.elapsedTime = 0;
@@ -174,7 +173,7 @@ public class FtpDAO extends AbstractConnexionDAO {
 					long endTime = System.nanoTime();
 					long totalTime = endTime - startTime;
 					long deltaTime = totalTime - elapsedTime;
-					speed = (long) ((nbBytes * Math.pow(10, 9)) / totalTime);// B/s
+					long speed = (long) ((nbBytes * Math.pow(10, 9)) / totalTime);// B/s
 					if (maximumClientDownloadSpeed != 0) {
 						if (speed > maximumClientDownloadSpeed) {
 							bufferSize = bufferSize - 1;
@@ -191,9 +190,13 @@ public class FtpDAO extends AbstractConnexionDAO {
 
 					if (acquiredSemaphore) {
 						updateObserverDownloadSingleSizeProgress();
-						if (deltaTime > Math.pow(10, 9) / 4) {
+					}
+
+					if (deltaTime > Math.pow(10, 9) / 2) {
+						setSpeed(speed);
+						elapsedTime = totalTime;
+						if (acquiredSemaphore) {
 							updateObserverDownloadSpeed();
-							elapsedTime = totalTime;
 						}
 					}
 				}
@@ -226,10 +229,15 @@ public class FtpDAO extends AbstractConnexionDAO {
 							bytesArray = bytesArray = new byte[bufferSize];
 						}
 
-						inputStream.close();
-						fos.close();
-						dos.close();
-						setSpeed(0);
+						if (fos != null) {
+							fos.close();
+						}
+						if (dos != null) {
+							dos.close();
+						}
+						if (inputStream != null) {
+							inputStream.close();
+						}
 
 						if (!canceled) {
 							found = ftpClient.completePendingCommand();
@@ -252,36 +260,10 @@ public class FtpDAO extends AbstractConnexionDAO {
 			if (inputStream != null) {
 				inputStream.close();
 			}
-			setSpeed(0);
+			speed = 0;
+			updateObserverDownloadSpeed();
 		}
 		return found;
-	}
-
-	private IOException transferIOExceptionFactory(String coreMessage,
-			IOException e) {
-
-		if (e instanceof UnknownHostException) {
-			String message = coreMessage + "\n" + UNKNOWN_HOST;
-			return new UnknownHostException(message);
-		} else if (e instanceof SocketTimeoutException) {
-			String message = coreMessage + "\n" + READ_TIME_OUT_REACHED;
-			return new SocketTimeoutException(message);
-		} else if (e.getCause() instanceof SocketTimeoutException) {
-			String message = coreMessage + "\n" + CONNECTION_TIME_OUT_REACHED;
-			return new SocketTimeoutException(message);
-		} else if (e instanceof SocketException) {
-			String message = coreMessage + "\n" + CONNECTION_FAILED;
-			return new SocketException(message);
-		} else if (e.getCause() instanceof SocketException) {
-			String message = coreMessage + "\n" + CONNECTION_FAILED;
-			return new SocketException(message);
-		} else {
-			String message = coreMessage;
-			if (e.getMessage() != null) {
-				message = message + "\n" + e.getMessage();
-			}
-			return new IOException(message);
-		}
 	}
 
 	public SyncTreeDirectory downloadSync(String repositoryName,
@@ -424,8 +406,10 @@ public class FtpDAO extends AbstractConnexionDAO {
 		return autoConfig;
 	}
 
-	public File downloadFile(String remotePath, String destinationPath,
-			SyncTreeNodeDTO node) throws IOException {
+	@Override
+	public File downloadFile(String repositoryName,
+			AbstractProtocole protocole, String remotePath,
+			String destinationPath, SyncTreeNodeDTO node) throws IOException {
 
 		File downloadedFile = null;
 
@@ -559,24 +543,57 @@ public class FtpDAO extends AbstractConnexionDAO {
 		return nom;
 	}
 
-	public boolean fileExists(String repositoryName, String relativePath,
-			String fileName, AbstractProtocole protocole) throws IOException {
+	@Override
+	public boolean fileExists(String repositoryName,
+			AbstractProtocole protocole, RemoteFile remoteFile)
+			throws IOException {
 
-		String path = protocole.getRemotePath();
-		if (!relativePath.isEmpty()) {
-			path = protocole.getRemotePath() + "/" + relativePath;
+		String fileName = remoteFile.getFilename();
+		String relativeParentDirectoryPath = remoteFile
+				.getParentDirectoryRelativePath();
+
+		String relativeFilePath = "/" + relativeParentDirectoryPath + "/"
+				+ fileName;
+		String remoteParentDirectoryPath = protocole.getRemotePath() + "/"
+				+ relativeParentDirectoryPath;
+		if (relativeParentDirectoryPath.isEmpty()) {
+			relativeFilePath = "/" + fileName;
+			remoteParentDirectoryPath = protocole.getRemotePath();
 		}
 
-		System.out.println("Checking remote file: " + path + "/" + fileName);
+		System.out.println("Checking remote file: " + relativeFilePath);
+
+		boolean exists = false;
+		if (remoteFile.isDirectory()) {
+			exists = directoryExists(remoteParentDirectoryPath, fileName);
+		} else {
+			exists = fileExists(remoteParentDirectoryPath, fileName,
+					relativeFilePath);
+		}
+
+		if (exists) {
+			System.out.println("Remote file found: " + relativeFilePath);
+		} else {
+			System.out.println("Remote file not found: " + relativeFilePath);
+		}
+
+		return exists;
+	}
+
+	/**
+	 * http://www.codejava.net/java-se/networking/ftp/get-size-of-a-file-
+	 * on-ftp-server
+	 */
+	private boolean fileExists(String remoteParentDirectoryPath,
+			String fileName, String relativeFilePath) throws IOException {
 
 		boolean exists = false;
 		InputStream inputStream = null;
+
 		try {
-			boolean ok = ftpClient.changeWorkingDirectory(path);
-			/*
-			 * http://www.codejava.net/java-se/networking/ftp/get-size-of-a-file-
-			 * on-ftp-server
-			 */
+			boolean ok = ftpClient
+					.changeWorkingDirectory(remoteParentDirectoryPath);
+
 			if (ok) {
 				ftpClient.mlistFile(fileName);
 				int returnCode = ftpClient.getReplyCode();
@@ -601,10 +618,7 @@ public class FtpDAO extends AbstractConnexionDAO {
 				}
 			}
 		} catch (IOException e) {
-			String coreMessage = "Failed to connect to repository "
-					+ repositoryName + " on url: " + "\n"
-					+ protocole.getProtocolType().getPrompt() + path + "/"
-					+ fileName;
+			String coreMessage = "Failed to check file " + relativeFilePath;
 			IOException ioe = transferIOExceptionFactory(coreMessage, e);
 			throw ioe;
 		} finally {
@@ -612,22 +626,15 @@ public class FtpDAO extends AbstractConnexionDAO {
 				inputStream.close();
 			}
 		}
-
-		if (exists) {
-			System.out.println("Remote file found: " + path + "/" + fileName);
-		} else {
-			System.out.println("Remote file not found: " + path + "/"
-					+ fileName);
-		}
-
 		return exists;
 	}
 
-	public boolean directoryExists(String remotePath, String fileName)
-			throws IOException {
+	private boolean directoryExists(String remoteParentDirectoryPath,
+			String fileName) throws IOException {
 
 		boolean exists = false;
-		boolean ok = ftpClient.changeWorkingDirectory(remotePath);
+		boolean ok = ftpClient.changeWorkingDirectory(remoteParentDirectoryPath
+				+ "/" + fileName);
 		if (ok) {
 			int returnCode = ftpClient.getReplyCode();
 			if (returnCode == 550) {
@@ -638,24 +645,25 @@ public class FtpDAO extends AbstractConnexionDAO {
 		return exists;
 	}
 
-	public boolean uploadFile(FTPFile ftpFile, String repositoryPath,
+	@Override
+	public boolean uploadFile(RemoteFile remoteFile, String repositoryPath,
 			String repositoryRemotePath) throws IOException {
 
-		String relativePath = ftpFile.getLink();
-		String fileName = ftpFile.getName();
-		boolean isFile = (ftpFile.getType() == FTPFile.FILE_TYPE) ? true
-				: false;
+		String parentDirectoryRelativePath = remoteFile
+				.getParentDirectoryRelativePath();
+		String fileName = remoteFile.getFilename();
+		boolean isFile = !remoteFile.isDirectory();
 
 		boolean found = false;
 
 		if (isFile) {
-			File file = new File(repositoryPath + "/" + relativePath + "/"
-					+ fileName);
+			File file = new File(repositoryPath + "/"
+					+ parentDirectoryRelativePath + "/" + fileName);
 			this.expectedFullSize = file.length();
 
-			makeDir(repositoryRemotePath, relativePath);
+			makeDir(repositoryRemotePath, parentDirectoryRelativePath);
 			boolean ok = ftpClient.changeWorkingDirectory(repositoryRemotePath
-					+ "/" + relativePath);
+					+ "/" + parentDirectoryRelativePath);
 			if (!ok) {
 				return false;
 			}
@@ -663,7 +671,7 @@ public class FtpDAO extends AbstractConnexionDAO {
 			System.out.println("");
 			System.out.println("Uploading file: " + file.getAbsolutePath());
 			System.out.println("to target directory: " + repositoryRemotePath
-					+ "/" + relativePath);
+					+ "/" + parentDirectoryRelativePath);
 
 			this.offset = 0;
 			FileInputStream fis = null;
@@ -689,8 +697,8 @@ public class FtpDAO extends AbstractConnexionDAO {
 				found = ftpClient.storeFile(file.getName(), uis);
 				ftpClient.noop();
 			} catch (IOException e) {
-				String coreMessage = "Failed to upload file " + relativePath
-						+ "/" + file.getName();
+				String coreMessage = "Failed to upload file "
+						+ parentDirectoryRelativePath + "/" + file.getName();
 				IOException ioe = transferIOExceptionFactory(coreMessage, e);
 				throw ioe;
 			} finally {
@@ -702,10 +710,10 @@ public class FtpDAO extends AbstractConnexionDAO {
 				}
 			}
 		} else {
-			makeDir(repositoryRemotePath, relativePath + "/" + fileName);
+			makeDir(repositoryRemotePath, parentDirectoryRelativePath + "/"
+					+ fileName);
 			found = true;
 		}
-		updateObserverUploadTotalSizeProgress();
 		return found;
 	}
 
@@ -739,14 +747,14 @@ public class FtpDAO extends AbstractConnexionDAO {
 					if (!ftpClient.makeDirectory(dir)) {
 						throw new IOException(
 								"Unable to create remote directory "
-										+ remotePath + dirTree + "\n"
+										+ remotePath + "/" + dirTree + "\n"
 										+ "Server returned FTP error: "
 										+ ftpClient.getReplyString());
 					}
 					if (!ftpClient.changeWorkingDirectory(dir)) {
 						throw new IOException(
 								"Unable to change into newly created remote directory "
-										+ remotePath + dirTree + "\n"
+										+ remotePath + "/" + dirTree + "\n"
 										+ "Server returned FTP error: "
 										+ ftpClient.getReplyString());
 					}
@@ -755,13 +763,13 @@ public class FtpDAO extends AbstractConnexionDAO {
 		}
 	}
 
-	public void deleteFile(FTPFile ftpFile, String repositoryRemotePath)
+	@Override
+	public void deleteFile(RemoteFile remoteFile, String repositoryRemotePath)
 			throws IOException {
 
-		String relativePath = ftpFile.getLink();
-		String fileName = ftpFile.getName();
-		boolean isFile = (ftpFile.getType() == FTPFile.FILE_TYPE) ? true
-				: false;
+		String relativePath = remoteFile.getParentDirectoryRelativePath();
+		String fileName = remoteFile.getFilename();
+		boolean isFile = !remoteFile.isDirectory();
 
 		String remotePath = repositoryRemotePath;
 		if (!relativePath.isEmpty()) {
@@ -771,8 +779,14 @@ public class FtpDAO extends AbstractConnexionDAO {
 		boolean exists = ftpClient.changeWorkingDirectory(remotePath);
 		if (exists) {
 			if (isFile) {
+				System.out.println("Deleting remote file: "
+						+ remoteFile.getParentDirectoryRelativePath() + "/"
+						+ remoteFile.getFilename());
 				ftpClient.deleteFile(fileName);
 			} else {
+				System.out.println("Deleting remote directory: "
+						+ remoteFile.getParentDirectoryRelativePath() + "/"
+						+ remoteFile.getFilename());
 				removeDirectory(fileName, relativePath, repositoryRemotePath);
 			}
 		}
@@ -785,8 +799,9 @@ public class FtpDAO extends AbstractConnexionDAO {
 		if (subFiles != null && subFiles.length > 0) {
 			for (FTPFile aFile : subFiles) {
 				String newRemotePath = relativePath + "/" + folderName;
-				aFile.setLink(newRemotePath);
-				deleteFile(aFile, repositoryRemotePath);
+				deleteFile(
+						new RemoteFile(aFile.getName(), newRemotePath,
+								aFile.isDirectory()), repositoryRemotePath);
 			}
 		}
 		String remotePath = repositoryRemotePath + "/" + relativePath;
@@ -961,6 +976,7 @@ public class FtpDAO extends AbstractConnexionDAO {
 		}
 	}
 
+	@Override
 	public void disconnect() {
 
 		if (ftpClient != null) {

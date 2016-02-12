@@ -4,9 +4,6 @@ import java.io.File;
 import java.io.IOException;
 import java.net.ConnectException;
 import java.net.HttpURLConnection;
-import java.net.SocketException;
-import java.net.SocketTimeoutException;
-import java.net.UnknownHostException;
 
 import fr.soe.a3s.constant.DownloadStatus;
 import fr.soe.a3s.dao.A3SFilesAccessor;
@@ -118,35 +115,6 @@ public class HttpDAO extends AbstractConnexionDAO {
 		}
 	}
 
-	private IOException transferIOExceptionFactory(String coreMessage,
-			IOException e) {
-
-		if (e instanceof UnknownHostException) {
-			String message = coreMessage + "\n" + UNKNOWN_HOST;
-			return new UnknownHostException(message);
-		} else if (e instanceof SocketTimeoutException
-				&& e.getMessage().contains("connect timed out")) {
-			String message = coreMessage + "\n" + CONNECTION_TIME_OUT_REACHED;
-			return new SocketTimeoutException(message);
-		} else if (e instanceof SocketTimeoutException
-				&& e.getMessage().contains("Read timed out")) {
-			String message = coreMessage + "\n" + READ_TIME_OUT_REACHED;
-			return new SocketTimeoutException(message);
-		} else if (e instanceof SocketException) {
-			String message = coreMessage + "\n" + CONNECTION_FAILED;
-			return new SocketException(message);
-		} else if (e.getCause() instanceof SocketException) {
-			String message = coreMessage + "\n" + CONNECTION_FAILED;
-			return new SocketException(message);
-		} else {
-			String message = coreMessage;
-			if (e.getMessage() != null) {
-				message = message + "\n" + e.getMessage();
-			}
-			return new IOException(message);
-		}
-	}
-
 	public SyncTreeDirectory downloadSync(String repositoryName,
 			AbstractProtocole protocole) throws IOException {
 
@@ -156,6 +124,7 @@ public class HttpDAO extends AbstractConnexionDAO {
 
 		try {
 			directory.mkdir();
+			connectToRepository(repositoryName, protocole, SYNC_FILE_PATH);
 			downloadFile(file, SYNC_FILE_PATH);
 			sync = A3SFilesAccessor.readSyncFile(file);
 		} finally {
@@ -173,6 +142,7 @@ public class HttpDAO extends AbstractConnexionDAO {
 
 		try {
 			directory.mkdir();
+			connectToRepository(repositoryName, protocole, SERVERINFO_FILE_PATH);
 			downloadFile(file, SERVERINFO_FILE_PATH);
 			serverInfo = A3SFilesAccessor.readServerInfoFile(file);
 		} finally {
@@ -190,6 +160,7 @@ public class HttpDAO extends AbstractConnexionDAO {
 
 		try {
 			directory.mkdir();
+			connectToRepository(repositoryName, protocole, CHANGELOGS_FILE_PATH);
 			downloadFile(file, CHANGELOGS_FILE_PATH);
 			changelogs = A3SFilesAccessor.readChangelogsFile(file);
 		} finally {
@@ -207,6 +178,7 @@ public class HttpDAO extends AbstractConnexionDAO {
 
 		try {
 			directory.mkdir();
+			connectToRepository(repositoryName, protocole, AUTOCONFIG_FILE_PATH);
 			downloadFile(file, AUTOCONFIG_FILE_PATH);
 			autoConfig = A3SFilesAccessor.readAutoConfigFile(file);
 		} finally {
@@ -224,6 +196,7 @@ public class HttpDAO extends AbstractConnexionDAO {
 
 		try {
 			directory.mkdir();
+			connectToRepository(repositoryName, protocole, EVENTS_FILE_PATH);
 			downloadFile(file, EVENTS_FILE_PATH);
 			events = A3SFilesAccessor.readEventsFile(file);
 		} finally {
@@ -257,6 +230,7 @@ public class HttpDAO extends AbstractConnexionDAO {
 		return autoConfig;
 	}
 
+	@Override
 	public File downloadFile(String repositoryName,
 			AbstractProtocole protocole, String remotePath,
 			String destinationPath, SyncTreeNodeDTO node)
@@ -404,48 +378,58 @@ public class HttpDAO extends AbstractConnexionDAO {
 	 * http://stackoverflow.com/questions/4596447/check-if-file-exists-on-remote
 	 * -server-using-its-url
 	 * 
-	 * @param remotePath
-	 * @param fileName
-	 * @param protocole
-	 * @return
 	 * @throws IOException
 	 */
-	public boolean fileExists(String repositoryName, String relativePath,
-			String fileName, AbstractProtocole protocole) throws IOException {
+	@Override
+	public boolean fileExists(String repositoryName,
+			AbstractProtocole protocol, RemoteFile remoteFile)
+			throws IOException {
 
-		String path = "/" + relativePath + "/" + fileName;
-		if (relativePath.isEmpty()) {
-			path = "/" + fileName;
+		String fileName = remoteFile.getFilename();
+		String relativeParentDirectoryPath = remoteFile
+				.getParentDirectoryRelativePath();
+
+		String relativeFilePath = "/" + relativeParentDirectoryPath + "/"
+				+ fileName;
+		if (relativeParentDirectoryPath.isEmpty()) {
+			relativeFilePath = "/" + fileName;
 		}
+
+		System.out.println("Checking remote file: " + relativeFilePath);
+
+		connectToRepository(repositoryName, protocol, relativeFilePath);
+
 		boolean exists = false;
-
-		System.out.println("Checking remote file: " + path);
-
 		try {
-			connectToRepository(repositoryName, protocole, path);
 			myHttpConnection.setRequestHead();
 			int code = myHttpConnection.getHttpStatusCode();
 			if (code == HttpURLConnection.HTTP_OK) {
 				exists = true;
 			}
 		} catch (IOException e) {
-			String coreMessage = "Failed to connect to repository "
-					+ repositoryName + " on url: " + "\n"
-					+ protocole.getProtocolType().getPrompt()
-					+ protocole.getUrl() + path;
+			String coreMessage = "Failed to check file " + relativeFilePath;
 			IOException ioe = transferIOExceptionFactory(coreMessage, e);
 			throw ioe;
-		} finally {
-			disconnect();
 		}
 
 		if (exists) {
-			System.out.println("Remote file found: " + path);
+			System.out.println("Remote file found: " + relativeFilePath);
 		} else {
-			System.out.println("Remote file not found: " + path);
+			System.out.println("Remote file not found: " + relativeFilePath);
 		}
-
 		return exists;
+	}
+
+	@Override
+	public void deleteFile(RemoteFile remoteFile, String repositoryRemotePath)
+			throws IOException {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public boolean uploadFile(RemoteFile remoteFile, String repositoryPath,
+			String remotePath) throws IOException {
+		throw new UnsupportedOperationException();
 	}
 
 	public String checkPartialFileTransfer(String repositoryName,
@@ -466,8 +450,6 @@ public class HttpDAO extends AbstractConnexionDAO {
 
 	public boolean uploadEvents(Events events, String repositoryName,
 			AbstractProtocole protocole) throws IOException {
-
-		boolean response = true;
 
 		// try {
 		// // set some connection properties
@@ -581,6 +563,7 @@ public class HttpDAO extends AbstractConnexionDAO {
 		return false;
 	}
 
+	@Override
 	public void disconnect() {
 
 		if (myHttpConnection != null) {

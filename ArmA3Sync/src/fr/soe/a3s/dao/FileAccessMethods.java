@@ -229,6 +229,7 @@ public class FileAccessMethods implements DataAccessConstants {
 					 */
 					zip.write(buf, 0, len);
 				}
+				in.close();
 			}
 		}
 	}

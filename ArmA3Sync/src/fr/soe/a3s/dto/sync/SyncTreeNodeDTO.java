@@ -22,7 +22,8 @@ public interface SyncTreeNodeDTO extends java.lang.Comparable {
 	public boolean isDeleted();
 	public void setOptional(boolean value);
 	public boolean isOptional();
-	public String getRelativePath();
 	public DownloadStatus getDownloadStatus();
 	public void setDownloadStatus(DownloadStatus downloadStatus);
+	public String getRelativePath();
+	public String getParentRelativePath();
 }

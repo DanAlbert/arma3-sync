@@ -191,6 +191,7 @@ public class OnlinePanel extends JPanel implements UIConstants {
 	public void init() {
 
 		isModifying = true;
+		tableServers.setEnabled(false);
 
 		List<String> list = getModsetList();
 
@@ -231,6 +232,8 @@ public class OnlinePanel extends JPanel implements UIConstants {
 		}
 
 		configurationService.setFavoriteServers(favoriteServersDTO);
+
+		tableServers.setEnabled(true);
 		isModifying = false;
 	}
 

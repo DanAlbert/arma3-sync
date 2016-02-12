@@ -49,9 +49,9 @@ import fr.soe.a3s.exception.WritingException;
 import fr.soe.a3s.exception.remote.RemoteAutoconfigFileNotFoundException;
 import fr.soe.a3s.exception.repository.RepositoryException;
 import fr.soe.a3s.exception.repository.RepositoryNotFoundException;
-import fr.soe.a3s.service.AbstractConnexionService;
-import fr.soe.a3s.service.AbstractConnexionServiceFactory;
 import fr.soe.a3s.service.RepositoryService;
+import fr.soe.a3s.service.connection.ConnexionService;
+import fr.soe.a3s.service.connection.ConnexionServiceFactory;
 import fr.soe.a3s.ui.Facade;
 import fr.soe.a3s.ui.UIConstants;
 
@@ -97,6 +97,10 @@ public class EditRepositoryPanel extends JDialog implements UIConstants,
 
 	/* Service */
 	private final RepositoryService repositoryService = new RepositoryService();
+	private ConnexionService connexion = null;
+
+	/* Test */
+	private boolean connexionCanceled = false;
 
 	public EditRepositoryPanel(Facade facade) {
 		super(facade.getMainPanel(), "Repository", true);
@@ -190,12 +194,12 @@ public class EditRepositoryPanel extends JDialog implements UIConstants,
 					comboBoxProtocol = new JComboBox();
 					comboBoxProtocol.setFocusable(false);
 					protocolPanel.add(comboBoxProtocol);
+					comboBoxProtocol.setBounds(141, 24, 70, 23);
 					ComboBoxModel comboBoxProtocolModel = new DefaultComboBoxModel(
 							new String[] { ProtocolType.FTP.getDescription(),
 									ProtocolType.HTTP.getDescription(),
 									ProtocolType.HTTPS.getDescription() });
 					comboBoxProtocol.setModel(comboBoxProtocolModel);
-					comboBoxProtocol.setBounds(141, 24, 77, 23);
 				}
 			}
 			{
@@ -364,6 +368,7 @@ public class EditRepositoryPanel extends JDialog implements UIConstants,
 	public void init() {
 
 		this.setTitle("New repository");
+		this.labelConnection.setText("(Anonymous access required)");
 		this.textFieldHost.setText(ProtocolType.FTP.getPrompt());
 		this.textFieldPort.setText(ProtocolType.FTP.getDefaultPort());
 	}
@@ -371,6 +376,7 @@ public class EditRepositoryPanel extends JDialog implements UIConstants,
 	public void init(String repositoryName) {
 
 		this.setTitle("Edit repository");
+		this.labelConnection.setText("(Anonymous access required)");
 		this.textFieldHost.setText(ProtocolType.FTP.getPrompt());
 		this.textFieldPort.setText(ProtocolType.FTP.getDefaultPort());
 
@@ -411,6 +417,19 @@ public class EditRepositoryPanel extends JDialog implements UIConstants,
 
 	private void buttonImportPerformed() {
 
+		if (buttonImport.getText().equals("Cancel")) {
+			if (connexion != null) {
+				connexion.cancel();
+				connexionCanceled = true;
+			}
+			buttonImport.setText("Import");
+		} else {
+			importAutoConfig();
+		}
+	}
+
+	public void importAutoConfig() {
+
 		Thread t = new Thread(new Runnable() {
 			@Override
 			public void run() {
@@ -450,10 +469,10 @@ public class EditRepositoryPanel extends JDialog implements UIConstants,
 
 				assert (protocol != null);
 
-				AbstractConnexionService connexion = null;
 				try {
-					connexion = AbstractConnexionServiceFactory
-							.getServiceFromProtocol(protocol);
+					connexion = ConnexionServiceFactory
+							.getServiceForAutoconfigURLimportation(protocol);
+					connexionCanceled = false;
 				} catch (CheckException e) {
 					JOptionPane.showMessageDialog(facade.getMainPanel(),
 							e.getMessage(), "Error",
@@ -466,6 +485,7 @@ public class EditRepositoryPanel extends JDialog implements UIConstants,
 				labelConnection.setText("Connecting to repository...");
 				labelConnection.setFont(new Font("Tohama", Font.ITALIC, 11));
 				labelConnection.setForeground(Color.BLACK);
+				buttonImport.setText("Cancel");
 
 				try {
 					AutoConfigDTO autoConfigDTO = connexion
@@ -501,19 +521,23 @@ public class EditRepositoryPanel extends JDialog implements UIConstants,
 						// Update join server list
 						facade.getLaunchPanel().init();
 					} else {
-						labelConnection.setText("Url is not reachable!");
-						labelConnection.setFont(new Font("Tohama", Font.ITALIC,
-								11));
-						labelConnection.setForeground(Color.RED);
 						throw new RemoteAutoconfigFileNotFoundException();
 					}
 				} catch (Exception e) {
-					labelConnection.setText("Url is not reachable!");
-					labelConnection
-							.setFont(new Font("Tohama", Font.ITALIC, 11));
-					labelConnection.setForeground(Color.RED);
-					JOptionPane.showMessageDialog(facade.getMainPanel(),
-							e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+					if (!connexionCanceled) {
+						labelConnection.setText("Connection failed!");
+						labelConnection.setFont(new Font("Tohama", Font.ITALIC,
+								11));
+						labelConnection.setForeground(Color.RED);
+						JOptionPane.showMessageDialog(facade.getMainPanel(),
+								e.getMessage(), "Error",
+								JOptionPane.ERROR_MESSAGE);
+					}
+				} finally {
+					buttonImport.setText("Import");
+					if (connexion != null) {
+						connexion.cancel();
+					}
 				}
 			}
 		});
@@ -552,16 +576,24 @@ public class EditRepositoryPanel extends JDialog implements UIConstants,
 			}
 		}
 
-		/* Remove prompt from url */
-		String url = textFieldHost.getText().trim();
+		/*
+		 * Remove all white spaces in the url
+		 * http://stackoverflow.com/questions/
+		 * 18295759/java-lang-illegalargumentexception
+		 * -illegal-character-in-authority-at-index-7-wh
+		 */
+		String url = textFieldHost.getText().replaceAll("\\s+", "");
 
-		String test = url.toLowerCase()
-				.replaceAll(ProtocolType.FTP.getPrompt(), "")
-				.replaceAll(ProtocolType.HTTP.getPrompt(), "")
-				.replaceAll(ProtocolType.HTTPS.getPrompt(), "");
-		if (url.length() > test.length()) {
-			int index = url.length() - test.length();
-			url = url.substring(index);
+		/* Remove prompt from url */
+		for (int i = 0; i < comboBoxProtocol.getModel().getSize(); i++) {
+			String description = (String) comboBoxProtocol.getItemAt(i);
+			ProtocolType protocolType = ProtocolType.getEnum(description);
+			String test = url.toLowerCase().replaceAll(
+					protocolType.getPrompt(), "");
+			if (url.length() > test.length()) {
+				int index = url.length() - test.length();
+				url = url.substring(index);
+			}
 		}
 
 		/* Remove port from url */
@@ -611,13 +643,20 @@ public class EditRepositoryPanel extends JDialog implements UIConstants,
 				.getText().trim();
 
 		try {
-			repositoryService.createRepository(name, url, port, login, pass,
-					protocole, connectionTimeOut, readTimeOut);
-
-			if (initialRepositoryName != null) {
-				if (!initialRepositoryName.equals(name)) {
-					repositoryService.removeRepository(initialRepositoryName);
+			if (initialRepositoryName != null) {// Edit Repository
+				if (initialRepositoryName.equals(name)) {
+					repositoryService.setRepository(initialRepositoryName, url,
+							port, login, pass, protocole, connectionTimeOut,
+							readTimeOut);
+				} else {
+					repositoryService.renameRepository(initialRepositoryName,
+							name);
+					repositoryService.setRepository(name, url, port, login,
+							pass, protocole, connectionTimeOut, readTimeOut);
 				}
+			} else {// New Repository
+				repositoryService.createRepository(name, url, port, login,
+						pass, protocole, connectionTimeOut, readTimeOut);
 			}
 			repositoryService.write(name);
 		} catch (RepositoryNotFoundException | CheckException
@@ -627,8 +666,8 @@ public class EditRepositoryPanel extends JDialog implements UIConstants,
 			return;
 		}
 
-		facade.getSyncPanel().init();
 		this.dispose();
+		facade.getSyncPanel().init();
 	}
 
 	private void checkBoxAnonymousPerformed() {
@@ -658,6 +697,9 @@ public class EditRepositoryPanel extends JDialog implements UIConstants,
 		passwordField.setText("");
 		if (password != null) {
 			Arrays.fill(password, '0');
+		}
+		if (connexion != null) {
+			connexion.cancel();
 		}
 		this.dispose();
 	}

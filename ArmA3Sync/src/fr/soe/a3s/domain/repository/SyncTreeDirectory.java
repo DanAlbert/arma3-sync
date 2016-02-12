@@ -5,7 +5,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class SyncTreeDirectory implements SyncTreeNode, Serializable {
+public class SyncTreeDirectory extends SyncTreeNodeMethods implements
+		SyncTreeNode, Serializable {
 
 	/**
 	 * 
@@ -128,5 +129,18 @@ public class SyncTreeDirectory implements SyncTreeNode, Serializable {
 	@Override
 	public boolean isUpdated() {
 		return this.updated;
+	}
+
+	public List<SyncTreeLeaf> getDeepSearchLeafsList() {
+		return determineDeepSearchLeafsList(this);
+	}
+
+	public List<SyncTreeNode> getDeepSearchNodesList() {
+		return determineDeepSearchNodesList(this);
+	}
+
+	@Override
+	public String getRelativePath() {
+		return determinePath(this);
 	}
 }

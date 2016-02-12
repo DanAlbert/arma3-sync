@@ -6,6 +6,7 @@ import java.awt.Component;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -280,6 +281,9 @@ public class SyncPanel extends JPanel implements UIConstants {
 
 		isModifying = true;
 		tableRepositories.setRowSelectionAllowed(false);
+		tableRepositories.setEnabled(false);
+		listEvents.setEnabled(false);
+
 		List<RepositoryDTO> repositoryDTOs = repositoryService
 				.getRepositories();
 		Collections.sort(repositoryDTOs);
@@ -333,6 +337,8 @@ public class SyncPanel extends JPanel implements UIConstants {
 		listEvents.setListData(tab);
 
 		tableRepositories.setRowSelectionAllowed(true);
+		tableRepositories.setEnabled(true);
+		listEvents.setEnabled(true);
 		isModifying = false;
 	}
 
@@ -372,7 +378,7 @@ public class SyncPanel extends JPanel implements UIConstants {
 		} catch (Exception e) {
 		}
 		boolean closed = facade.getMainPanel().closeRepository(name);
-		if (closed){
+		if (closed) {
 			EditRepositoryPanel repositoryEditPanel = new EditRepositoryPanel(
 					facade);
 			repositoryEditPanel.init(name);
@@ -411,7 +417,11 @@ public class SyncPanel extends JPanel implements UIConstants {
 	private void buttonSyncPerformed() {
 		SynchronizingPanel synchronizingPanel = new SynchronizingPanel(facade);
 		synchronizingPanel.setVisible(true);
-		synchronizingPanel.init(null);
+		List<String> repositoryNames = new ArrayList<String>();
+		for (final RepositoryDTO repositoryDTO : repositoryService.getRepositories()) {
+			repositoryNames.add(repositoryDTO.getName());
+		}
+		synchronizingPanel.init(repositoryNames);
 	}
 
 	private void buttonConnectPerformed() {

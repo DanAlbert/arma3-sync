@@ -21,9 +21,8 @@ public class UnZipFlowProcessor implements ObservableUncompress {
 	private boolean started = false;
 
 	private boolean canceled;
-
-	public void init() {
-		compressedFilesList.clear();
+	
+	public UnZipFlowProcessor(){
 		for (int i = 0; i < Runtime.getRuntime().availableProcessors(); i++) {
 			ZipDAO zipDAO = new ZipDAO();
 			zipDAOPool.add(zipDAO);

@@ -2,7 +2,8 @@ package fr.soe.a3s.domain.repository;
 
 import java.io.Serializable;
 
-public class SyncTreeLeaf implements SyncTreeNode, Serializable {
+public class SyncTreeLeaf extends SyncTreeNodeMethods implements SyncTreeNode,
+		Serializable {
 
 	/**
 	 * 
@@ -10,12 +11,12 @@ public class SyncTreeLeaf implements SyncTreeNode, Serializable {
 	private static final long serialVersionUID = 8849248143660225239L;
 	private String name;
 	private SyncTreeDirectory parent;
-	private String sha1;
+	private String sha1;// remote sha1
 	private long size;
 	private long compressedSize;
 	private transient long complete;// file completion in %
 	private transient String destinationPath;
-	private transient String localSHA1;
+	private transient String localSHA1;// local sha1
 	private boolean updated = false;
 	private boolean deleted = false;
 	private boolean compressed = false;
@@ -136,5 +137,10 @@ public class SyncTreeLeaf implements SyncTreeNode, Serializable {
 
 	public void setCompressedSize(long compressedSize) {
 		this.compressedSize = compressedSize;
+	}
+
+	@Override
+	public String getRelativePath() {
+		return determinePath(this);
 	}
 }

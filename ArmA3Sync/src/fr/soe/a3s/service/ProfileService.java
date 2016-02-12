@@ -2,10 +2,9 @@ package fr.soe.a3s.service;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
 
 import fr.soe.a3s.constant.DefaultProfileName;
 import fr.soe.a3s.dao.ConfigurationDAO;
@@ -348,8 +347,10 @@ public class ProfileService extends ObjectDTOtransformer {
 		if (profile != null) {
 			List<String> list = profile.getAddonNamesByPriority();
 			TreeDirectory treeDirectory = profile.getTree();
-			Set<String> extractedAddonNames = new TreeSet<String>();
+			List<String> extractedAddonNames = new ArrayList<String>();
 			getAddonsByName(treeDirectory, extractedAddonNames);
+			// Alphabetic order ignore case
+			Collections.sort(extractedAddonNames, new SortIgnoreCase());
 			if (list.isEmpty()) {
 				list.addAll(extractedAddonNames);
 				return list;
@@ -374,15 +375,60 @@ public class ProfileService extends ObjectDTOtransformer {
 		return null;
 	}
 
-	private void getAddonsByName(TreeNode treendNode, Set<String> set) {
+	private void getAddonsByName(TreeNode treendNode, List<String> list) {
 
 		if (treendNode.isLeaf()) {
 			TreeLeaf treeLeaf = (TreeLeaf) treendNode;
-			set.add(treeLeaf.getName());
+			if (!list.contains(treeLeaf.getName())) {
+				list.add(treeLeaf.getName());
+			}
 		} else {
 			TreeDirectory treeDirectory = (TreeDirectory) treendNode;
 			for (TreeNode node : treeDirectory.getList()) {
-				getAddonsByName(node, set);
+				getAddonsByName(node, list);
+			}
+		}
+	}
+
+	private class SortIgnoreCase implements Comparator<Object> {
+		@Override
+		public int compare(Object o1, Object o2) {
+			String s1 = (String) o1;
+			String s2 = (String) o2;
+			return s1.toLowerCase().compareTo(s2.toLowerCase());
+		}
+	}
+
+	public void resetAddonPriority() {
+
+		String profileName = configurationDAO.getConfiguration()
+				.getProfileName();
+
+		Profile profile = profileDAO.getMap().get(profileName);
+		if (profile != null) {
+			TreeDirectory treeDirectory = profile.getTree();
+			List<String> extractedAddonNames = new ArrayList<String>();
+			getAddonsByName(treeDirectory, extractedAddonNames);
+			// Alphabetic order ignore case
+			Collections.sort(extractedAddonNames, new SortIgnoreCase());
+			profile.getAddonNamesByPriority().clear();
+			profile.getAddonNamesByPriority().addAll(extractedAddonNames);
+		}
+	}
+
+	public void topAddonPriority(int index) {
+
+		String profileName = configurationDAO.getConfiguration()
+				.getProfileName();
+
+		Profile profile = profileDAO.getMap().get(profileName);
+		if (profile != null) {
+			List<String> list = profile.getAddonNamesByPriority();
+			if (index != 0 && !(index > list.size() - 1)) {
+				String name = list.get(index);
+				String nextName = list.get(0);
+				list.set(index, nextName);
+				list.set(0, name);
 			}
 		}
 	}

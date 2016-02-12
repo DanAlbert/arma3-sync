@@ -239,6 +239,12 @@ public interface UIConstants {
 					java.lang.ClassLoader
 							.getSystemResource("resources/pictures/system/bikey16x16.png"));
 
+	Image TOP = Toolkit
+			.getDefaultToolkit()
+			.getImage(
+					java.lang.ClassLoader
+							.getSystemResource("resources/pictures/system/top16x16.png"));
+
 	Image UP = Toolkit
 			.getDefaultToolkit()
 			.getImage(

@@ -24,8 +24,6 @@ import javax.swing.JProgressBar;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 
-import org.apache.commons.io.FileUtils;
-
 import fr.soe.a3s.constant.RepositoryStatus;
 import fr.soe.a3s.dto.RepositoryDTO;
 import fr.soe.a3s.dto.ServerInfoDTO;
@@ -53,7 +51,7 @@ public class AdminPanel extends JPanel implements UIConstants {
 	private JLabel labelChangelog;
 	private JButton buttonView;
 	private final RepositoryPanel repositoryPanel;
-	private JButton buttonSelectFTPfolderPath, buttonBuild,
+	private JButton buttonSelectMainfolderPath, buttonBuild,
 			buttonCopyAutoConfigURL, buttonCheck;
 	private String repositoryName;
 	private JTextField textFieldMainSharedFolderLocation,
@@ -183,13 +181,13 @@ public class AdminPanel extends JPanel implements UIConstants {
 			JPanel locationPanel = new JPanel();
 			locationPanel.setLayout(new BorderLayout());
 			textFieldMainSharedFolderLocation = new JTextField();
-			buttonSelectFTPfolderPath = new JButton("Select");
-			buttonSelectFTPfolderPath.setPreferredSize(new Dimension(85, 25));
+			buttonSelectMainfolderPath = new JButton("Select");
+			buttonSelectMainfolderPath.setPreferredSize(new Dimension(85, 25));
 			textFieldMainSharedFolderLocation.setEditable(false);
 			textFieldMainSharedFolderLocation.setBackground(Color.WHITE);
 			locationPanel.add(textFieldMainSharedFolderLocation,
 					BorderLayout.CENTER);
-			locationPanel.add(buttonSelectFTPfolderPath, BorderLayout.EAST);
+			locationPanel.add(buttonSelectMainfolderPath, BorderLayout.EAST);
 			vBox.add(locationPanel);
 		}
 		vBox.add(Box.createVerticalStrut(5));
@@ -265,7 +263,7 @@ public class AdminPanel extends JPanel implements UIConstants {
 			JPanel autoConfigLabelPanel = new JPanel();
 			autoConfigLabelPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
 			JLabel autoConfigLabelLocation = new JLabel(
-					"Repository auto-config url");
+					"Public auto-config url (Anonymous access required)");
 			autoConfigLabelPanel.add(autoConfigLabelLocation);
 			vBox.add(autoConfigLabelPanel);
 		}
@@ -312,7 +310,7 @@ public class AdminPanel extends JPanel implements UIConstants {
 		}
 		vBox.add(Box.createVerticalStrut(3));
 
-		buttonSelectFTPfolderPath.addActionListener(new ActionListener() {
+		buttonSelectMainfolderPath.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
 				buttonSelectMainfolderPathPerformed();
@@ -533,24 +531,24 @@ public class AdminPanel extends JPanel implements UIConstants {
 			}
 
 			// Check available disk space
-			boolean isCompressed = repositoryService
-					.isCompressed(repositoryName);
-			if (isCompressed) {
-				long diskSpace = new File("/").getFreeSpace();
-				long repositorySize = FileUtils.sizeOfDirectory(new File(path));
-				if (diskSpace < repositorySize) {
-					JOptionPane
-							.showMessageDialog(
-									facade.getMainPanel(),
-									"Not enough free space on disk to add compressed pbo files into the repository."
-											+ "\n"
-											+ "Required space: "
-											+ repositorySize,
-									"Build repository",
-									JOptionPane.INFORMATION_MESSAGE);
-					return;
-				}
-			}
+			// boolean isCompressed = repositoryService
+			// .isCompressed(repositoryName);
+			// if (isCompressed) {
+			// long diskSpace = new File(path).getFreeSpace();
+			// long repositorySize = FileUtils.sizeOfDirectory(new File(path));
+			// if (diskSpace < repositorySize) {
+			// JOptionPane
+			// .showMessageDialog(
+			// facade.getMainPanel(),
+			// "Not enough free space on disk to add compressed pbo files into the repository."
+			// + "\n"
+			// + "Required free space: "
+			// + UnitConverter.convertSize(repositorySize) ,
+			// "Build repository",
+			// JOptionPane.INFORMATION_MESSAGE);
+			// return;
+			// }
+			// }
 
 			repositoryBuilder = new RepositoryBuilder(facade, repositoryName,
 					path, this);
@@ -581,17 +579,23 @@ public class AdminPanel extends JPanel implements UIConstants {
 
 	private void buttonCopyAutoConfigPerformed() {
 
-		try {
-			StringSelection ss = new StringSelection(
-					textFieldAutoConfigURL.getText());
-			Toolkit.getDefaultToolkit().getSystemClipboard()
-					.setContents(ss, null);
+		if (textFieldAutoConfigURL.getText().isEmpty()) {
 			JOptionPane.showMessageDialog(facade.getMainPanel(),
-					"Auto-config url copied to clipboard.", "Auto-config",
+					"Auto-config url is empty!", "Auto-config url",
 					JOptionPane.INFORMATION_MESSAGE);
-		} catch (IllegalStateException e) {
-			e.printStackTrace();
-			// Clipboard may not be available (Windows).
+		} else {
+			try {
+				StringSelection ss = new StringSelection(
+						textFieldAutoConfigURL.getText());
+				Toolkit.getDefaultToolkit().getSystemClipboard()
+						.setContents(ss, null);
+				JOptionPane.showMessageDialog(facade.getMainPanel(),
+						"Auto-config url copied to clipboard.", "Auto-config url",
+						JOptionPane.INFORMATION_MESSAGE);
+			} catch (IllegalStateException e) {
+				e.printStackTrace();
+				// Clipboard may not be available (Windows).
+			}
 		}
 	}
 
@@ -676,7 +680,7 @@ public class AdminPanel extends JPanel implements UIConstants {
 	}
 
 	public JButton getButtonSelectRepositoryfolderPath() {
-		return buttonSelectFTPfolderPath;
+		return buttonSelectMainfolderPath;
 	}
 
 	public JButton getButtonCopyAutoConfigURL() {

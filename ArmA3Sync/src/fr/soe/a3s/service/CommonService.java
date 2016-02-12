@@ -14,7 +14,6 @@ import fr.soe.a3s.domain.AutoConfig;
 import fr.soe.a3s.domain.Profile;
 import fr.soe.a3s.domain.configration.FavoriteServer;
 import fr.soe.a3s.domain.repository.Repository;
-import fr.soe.a3s.exception.CheckException;
 import fr.soe.a3s.exception.LoadingException;
 import fr.soe.a3s.exception.WritingException;
 import fr.soe.a3s.main.Version;
@@ -127,7 +126,7 @@ public class CommonService {
 
 		JShellLink link = new JShellLink();
 		String path = JShellLink.getDirectory("desktop") + "/" + fileName;
-		repositoryDAO.writeLog(print, path);
+		commonDAO.writeLog(print, path);
 	}
 
 	public int extractBikeys(String sourceDirectoryPath,
@@ -136,7 +135,7 @@ public class CommonService {
 		return commonDAO.extractBikeys(sourceDirectoryPath,
 				destinationDirectoryPath);
 	}
-	
+
 	public void cancel() {
 		commonDAO.cancel();
 	}

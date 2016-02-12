@@ -11,7 +11,8 @@ import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
 import fr.soe.a3s.constant.ProtocolType;
-import fr.soe.a3s.controller.ObserverCountWithText;
+import fr.soe.a3s.controller.ObserverCount;
+import fr.soe.a3s.controller.ObserverText;
 import fr.soe.a3s.controller.ObserverUpload;
 import fr.soe.a3s.dao.DataAccessConstants;
 import fr.soe.a3s.dto.ProtocolDTO;
@@ -23,9 +24,9 @@ import fr.soe.a3s.exception.CheckException;
 import fr.soe.a3s.exception.LoadingException;
 import fr.soe.a3s.exception.repository.RepositoryException;
 import fr.soe.a3s.exception.repository.SyncFileNotFoundException;
-import fr.soe.a3s.service.AbstractConnexionService;
-import fr.soe.a3s.service.AbstractConnexionServiceFactory;
 import fr.soe.a3s.service.RepositoryService;
+import fr.soe.a3s.service.connection.ConnexionService;
+import fr.soe.a3s.service.connection.ConnexionServiceFactory;
 import fr.soe.a3s.ui.Facade;
 import fr.soe.a3s.ui.UnitConverter;
 import fr.soe.a3s.ui.repositoryEditor.AdminPanel;
@@ -37,9 +38,9 @@ public class RepositoryUploader extends Thread implements DataAccessConstants {
 	private final AdminPanel adminPanel;
 	/* Data */
 	private final String repositoryName;
-	private final String path;
-	private final List<SyncTreeNodeDTO> allLocalFiles = new ArrayList<SyncTreeNodeDTO>();
+	private final String repositoryPath;
 	private final List<SyncTreeNodeDTO> filesToUpload = new ArrayList<SyncTreeNodeDTO>();
+	private final List<SyncTreeNodeDTO> filesToCheck = new ArrayList<SyncTreeNodeDTO>();
 	private final List<SyncTreeNodeDTO> filesToDelete = new ArrayList<SyncTreeNodeDTO>();
 	private long incrementedFilesSize = 0;
 	private int lastIndexFileUploaded = 0;
@@ -49,13 +50,13 @@ public class RepositoryUploader extends Thread implements DataAccessConstants {
 	private boolean canceled = false;
 	/* Service */
 	private final RepositoryService repositoryService = new RepositoryService();
-	private AbstractConnexionService connexionService;
+	private ConnexionService connexionService;
 
 	public RepositoryUploader(Facade facade, String repositoryName,
-			String path, AdminPanel adminPanel) {
+			String repositoryPath, AdminPanel adminPanel) {
 		this.facade = facade;
 		this.repositoryName = repositoryName;
-		this.path = path;
+		this.repositoryPath = repositoryPath;
 		this.adminPanel = adminPanel;
 	}
 
@@ -95,15 +96,14 @@ public class RepositoryUploader extends Thread implements DataAccessConstants {
 			// 2. Read local sync, autoconfig, serverInfo, changelogs
 			repositoryService.readLocalyBuildedRepository(repositoryName);
 
-			// 3. Determine files to upload and remote files to delete, throw
-			// exception if remote sync file can't be obtained
-			connexionService = AbstractConnexionServiceFactory
-					.getRepositoryUploadServiceFromRepository(repositoryName);
-			connexionService
-					.getSyncWithRepositoryUploadProtocole(repositoryName);
+			// 3. Determine files to check, upload and delete, throw
+			connexionService = ConnexionServiceFactory
+					.getServiceForRepositoryUpload(repositoryName);
+			connexionService.getSyncWithUploadProtocole(repositoryName);
 
 			SyncTreeDirectoryDTO remoteSync = repositoryService
-					.getSync(repositoryName);
+					.getSync(repositoryName);// may be
+												// null
 			SyncTreeDirectoryDTO localSync = repositoryService
 					.getLocalSync(repositoryName);
 
@@ -120,7 +120,6 @@ public class RepositoryUploader extends Thread implements DataAccessConstants {
 					String path = iter.next();
 					SyncTreeNodeDTO localNode = mapLocalSync.get(path);
 					filesToUpload.add(localNode);
-					allLocalFiles.add(localNode);
 				}
 			} else {
 				Map<String, SyncTreeNodeDTO> mapRemoteSync = new HashMap<String, SyncTreeNodeDTO>();
@@ -152,8 +151,9 @@ public class RepositoryUploader extends Thread implements DataAccessConstants {
 
 					if (upload) {
 						filesToUpload.add(mapLocalSync.get(path));
+					} else {
+						filesToCheck.add(mapLocalSync.get(path));
 					}
-					allLocalFiles.add(localNode);
 				}
 
 				for (Iterator<String> iter = mapRemoteSync.keySet().iterator(); iter
@@ -169,13 +169,8 @@ public class RepositoryUploader extends Thread implements DataAccessConstants {
 			lastIndexFileUploaded = repositoryService
 					.getLastIndexFileTransfered(repositoryName);
 
-			List<SyncTreeNodeDTO> newAllLocalFiles = new ArrayList<SyncTreeNodeDTO>();
-			for (int i = lastIndexFileUploaded; i < allLocalFiles.size(); i++) {
-				newAllLocalFiles.add(allLocalFiles.get(i));
-			}
-
-			connexionService.getConnexionDAO().addObserverCountWithText(
-					new ObserverCountWithText() {
+			connexionService.getConnexionDAO().addObserverCount(
+					new ObserverCount() {
 						@Override
 						public void update(final int value) {
 							SwingUtilities.invokeLater(new Runnable() {
@@ -188,7 +183,10 @@ public class RepositoryUploader extends Thread implements DataAccessConstants {
 								}
 							});
 						}
+					});
 
+			connexionService.getConnexionDAO().addObserverText(
+					new ObserverText() {
 						@Override
 						public void update(final String text) {
 							SwingUtilities.invokeLater(new Runnable() {
@@ -267,8 +265,8 @@ public class RepositoryUploader extends Thread implements DataAccessConstants {
 						}
 					});
 
-			connexionService.uploadRepository(repositoryName, newAllLocalFiles,
-					filesToUpload, filesToDelete);
+			connexionService.uploadRepository(repositoryName, filesToCheck,
+					filesToUpload, filesToDelete, lastIndexFileUploaded);
 
 			adminPanel.getUploadrogressBar().setIndeterminate(false);
 

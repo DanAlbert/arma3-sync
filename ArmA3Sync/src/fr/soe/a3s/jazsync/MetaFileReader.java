@@ -106,14 +106,19 @@ public class MetaFileReader {
 	 *            String containing metafile
 	 * @return Boolean value notifying whether header ended or not (true = end
 	 *         of header)
+	 * @throws IOException
 	 */
-	private boolean parseHeader(String s) {
+	private boolean parseHeader(String s) throws IOException {
 		String subs;
 		int colonIndex;
 		if (s.equals("")) {
 			return true;
 		}
 		colonIndex = s.indexOf(":");
+		if (colonIndex == -1) {
+			throw new IOException(
+					"Bad metafile content. The file seems to be corrupted.");
+		}
 		subs = s.substring(0, colonIndex);
 		if (subs.equalsIgnoreCase("zsync")) {
 			mf_version = s.substring(colonIndex + 2);
@@ -158,42 +163,32 @@ public class MetaFileReader {
 	}
 
 	/**
-	 * Method reads metafile from file and reads it line by line, sending line
-	 * String to parser.
-	 */
-	private void readMetaFile() {
-		try {
-			BufferedReader in = new BufferedReader(new FileReader(metafile));
-			String s;
-			while ((s = in.readLine()) != null) {
-				if (parseHeader(s)) {
-					break;
-				}
-			}
-			in.close();
-		} catch (IOException e) {
-			System.out.println("IO problem in metafile header reading");
-		}
-	}
-
-	/**
 	 * Method reads metafile from String and reads it line by line, sending line
 	 * String to parser.
 	 * 
 	 * @param s
 	 *            Metafile in String form
+	 * @throws IOException
 	 */
-	private void readMetaFile(String s) {
+	private void readMetaFile(String s) throws IOException {
+
+		if ("".equals(s) || s.equals(null)) {
+			throw new IOException(
+					"Bad metafile content. The file seems to be corrupted.");
+		}
+
+		BufferedReader in = null;
 		try {
-			BufferedReader in = new BufferedReader(new StringReader(s));
+			in = new BufferedReader(new StringReader(s));
 			while ((s = in.readLine()) != null) {
 				if (parseHeader(s)) {
 					break;
 				}
 			}
-			in.close();
-		} catch (IOException e) {
-			System.out.println("IO problem in metafile header reading");
+		} finally {
+			if (in != null) {
+				in.close();
+			}
 		}
 	}
 

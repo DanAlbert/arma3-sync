@@ -2,14 +2,14 @@ package fr.soe.a3s.dto.sync;
 
 import fr.soe.a3s.constant.DownloadStatus;
 
-public class SyncTreeLeafDTO implements SyncTreeNodeDTO {
+public class SyncTreeLeafDTO extends SyncTreeNodeDTOMethods implements
+		SyncTreeNodeDTO {
 
 	private String name;
 	private SyncTreeDirectoryDTO parent;
 	private boolean updated;
 	private boolean selected;
 	private boolean compressed;
-	private boolean deflated;
 	private long size;
 	private long compressedSize;
 	private double complete;
@@ -153,20 +153,20 @@ public class SyncTreeLeafDTO implements SyncTreeNodeDTO {
 		this.sha1 = sha1;
 	}
 
-	@Override
-	public String getRelativePath() {
-		String path = this.name;
-		SyncTreeDirectoryDTO p = this.parent;
-		if (p == null) {
-			return "";
-		} else {
-			while (p != null && !RACINE.equals(p.getName())) {
-				path = p.getName() + "/" + path;
-				p = p.getParent();
-			}
-		}
-		return path;
-	}
+	// @Override
+	// public String getRelativePath() {
+	// String path = this.name;
+	// SyncTreeDirectoryDTO p = this.parent;
+	// if (p == null) {
+	// return "";
+	// } else {
+	// while (p != null && !RACINE.equals(p.getName())) {
+	// path = p.getName() + "/" + path;
+	// p = p.getParent();
+	// }
+	// }
+	// return path;
+	// }
 
 	@Override
 	public DownloadStatus getDownloadStatus() {
@@ -194,11 +194,13 @@ public class SyncTreeLeafDTO implements SyncTreeNodeDTO {
 		this.compressedSize = compressedSize;
 	}
 
-	public boolean isDeflated() {
-		return deflated;
+	@Override
+	public String getRelativePath() {
+		return determinePath(this);
 	}
-
-	public void setDeflated(boolean deflated) {
-		this.deflated = deflated;
+	
+	@Override
+	public String getParentRelativePath() {
+		return determineParentRelativePath(this);
 	}
 }

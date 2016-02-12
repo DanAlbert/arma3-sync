@@ -6,10 +6,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -22,7 +19,6 @@ import javax.swing.ListSelectionModel;
 import javax.swing.border.BevelBorder;
 
 import fr.soe.a3s.constant.DefaultProfileName;
-import fr.soe.a3s.dto.configuration.LauncherOptionsDTO;
 import fr.soe.a3s.exception.ProfileException;
 import fr.soe.a3s.service.ConfigurationService;
 import fr.soe.a3s.service.ProfileService;
@@ -255,7 +251,7 @@ public class ProfilePanel extends JDialog implements UIConstants {
 	}
 
 	private void buttonOKPerformed() {
-		
+
 		String profileName = (String) profilesList.getSelectedValue();
 		if (profileName == null) {
 			JOptionPane.showMessageDialog(this, "You must select a profile.",
@@ -263,11 +259,8 @@ public class ProfilePanel extends JDialog implements UIConstants {
 			return;
 		}
 		configurationService.setProfileName(profileName);
-		facade.getInfoPanel().init();
-		facade.getAddonsPanel().init();
-		facade.getAddonOptionsPanel().init();
-		facade.getLaunchOptionsPanel().init();
 		facade.getMainPanel().updateProfilesMenu();
+		facade.getMainPanel().profileChanged();
 		this.dispose();
 	}
 

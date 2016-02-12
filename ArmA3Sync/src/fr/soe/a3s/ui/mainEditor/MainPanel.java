@@ -57,15 +57,15 @@ import fr.soe.a3s.exception.FtpException;
 import fr.soe.a3s.exception.LoadingException;
 import fr.soe.a3s.exception.WritingException;
 import fr.soe.a3s.exception.repository.RepositoryException;
-import fr.soe.a3s.service.AbstractConnexionService;
-import fr.soe.a3s.service.AbstractConnexionServiceFactory;
 import fr.soe.a3s.service.CommonService;
 import fr.soe.a3s.service.ConfigurationService;
-import fr.soe.a3s.service.FtpService;
 import fr.soe.a3s.service.LaunchService;
 import fr.soe.a3s.service.PreferencesService;
 import fr.soe.a3s.service.ProfileService;
 import fr.soe.a3s.service.RepositoryService;
+import fr.soe.a3s.service.connection.ConnexionService;
+import fr.soe.a3s.service.connection.ConnexionServiceFactory;
+import fr.soe.a3s.service.connection.FtpService;
 import fr.soe.a3s.ui.Facade;
 import fr.soe.a3s.ui.UIConstants;
 import fr.soe.a3s.ui.about.AboutPanel;
@@ -73,6 +73,7 @@ import fr.soe.a3s.ui.autoConfigEditor.AutoConfigExportPanel;
 import fr.soe.a3s.ui.autoConfigEditor.AutoConfigImportPanel;
 import fr.soe.a3s.ui.profileEditor.ProfilePanel;
 import fr.soe.a3s.ui.repositoryEditor.RepositoryPanel;
+import fr.soe.a3s.ui.repositoryEditor.progressDialogs.SynchronizingPanel;
 import fr.soe.a3s.ui.tools.acre2Editor.FirstPageACRE2InstallerPanel;
 import fr.soe.a3s.ui.tools.acreEditor.FirstPageACREInstallerPanel;
 import fr.soe.a3s.ui.tools.aiaEditor.AiaInstallerPanel;
@@ -544,6 +545,9 @@ public class MainPanel extends JFrame implements UIConstants {
 
 		/* Show GUI */
 		setVisible(true);
+
+		/* Check ArmA3 Executable location */
+		showWellcomeDialog();
 	}
 
 	public void initBackGround() {
@@ -553,11 +557,7 @@ public class MainPanel extends JFrame implements UIConstants {
 			public void run() {
 				/* Check for updates */
 				checkForUpdates(false);
-
-				/* Check ArmA3 Executable location */
-				showWellcomeDialog();
-
-				/* Check repositories for update */
+				/* Check repositories for updates */
 				checkRepositories();
 			}
 		});
@@ -819,27 +819,27 @@ public class MainPanel extends JFrame implements UIConstants {
 	}
 
 	private void trayIconPerformed() {
-		if (SystemTray.isSupported()) {
-			tray.remove(trayIcon);
-			this.setState(JFrame.NORMAL);
-			this.setVisible(true);
-			this.toFront();
-		}
+		setToFront();
+	}
+
+	private void launchTrayItemPerformed() {
+		setToFront();
 	}
 
 	private void exitTrayItemPerformed() {
 		if (SystemTray.isSupported()) {
 			tray.remove(trayIcon);
-			menuExitPerformed();
 		}
+		menuExitPerformed();
 	}
 
-	private void launchTrayItemPerformed() {
+	public void setToFront() {
 		if (SystemTray.isSupported()) {
-			this.setVisible(true);
-			this.setState(JFrame.NORMAL);
 			tray.remove(trayIcon);
 		}
+		this.setState(JFrame.NORMAL);
+		this.setVisible(true);
+		this.toFront();
 	}
 
 	public void setToTaskBar() {
@@ -973,11 +973,26 @@ public class MainPanel extends JFrame implements UIConstants {
 		menuItemProfile.setSelected(true);
 		String profileName = menuItemProfile.getText();
 		configurationService.setProfileName(profileName);
+		profileChanged();
+	}
+
+	public void profileChanged() {
 
 		facade.getInfoPanel().init();
 		facade.getAddonsPanel().init();
 		facade.getAddonOptionsPanel().init();
-		facade.getLaunchOptionsPanel().init();
+
+		List<RepositoryDTO> list = repositoryService.getRepositories();
+		final List<String> repositoryNames = new ArrayList<String>();
+		for (final RepositoryDTO repositoryDTO : list) {
+			repositoryNames.add(repositoryDTO.getName());
+		}
+		if (!repositoryNames.isEmpty()) {
+			SynchronizingPanel synchronizingPanel = new SynchronizingPanel(
+					facade);
+			synchronizingPanel.setVisible(true);
+			synchronizingPanel.init(repositoryNames);
+		}
 	}
 
 	public void showWellcomeDialog() {
@@ -994,10 +1009,6 @@ public class MainPanel extends JFrame implements UIConstants {
 		}
 
 		if (show) {
-			try {
-				Thread.sleep(500);
-			} catch (InterruptedException e) {
-			}
 			WellcomePanel wellcomePanel = new WellcomePanel(facade);
 			wellcomePanel.toFront();
 			wellcomePanel.setVisible(true);
@@ -1009,42 +1020,54 @@ public class MainPanel extends JFrame implements UIConstants {
 		System.out.println("Checking repositories...");
 
 		List<RepositoryDTO> list = repositoryService.getRepositories();
+		final List<String> repositoryNames = new ArrayList<String>();
 		for (final RepositoryDTO repositoryDTO : list) {
+			repositoryNames.add(repositoryDTO.getName());
+		}
+		for (String repositoryName : repositoryNames) {
 			try {
-				AbstractConnexionService connexion = AbstractConnexionServiceFactory
-						.getServiceFromRepository(repositoryDTO.getName());
-				connexion.checkRepository(repositoryDTO.getName());
+				ConnexionService connexion = ConnexionServiceFactory
+						.getServiceForRepositoryManagement(repositoryName);
+				connexion.checkRepository(repositoryName);
 			} catch (Exception e) {
 				System.out.println(e.getMessage());
 			}
 		}
+		
+		System.out.println("Checking repositories done.");
 
-		facade.getSyncPanel().init();
-		facade.getOnlinePanel().init();
-		facade.getLaunchPanel().init();
+		SwingUtilities.invokeLater(new Runnable() {
+			@Override
+			public void run() {
+				facade.getAddonsPanel().updateModsetSelection(repositoryNames);
+				facade.getSyncPanel().init();
+				facade.getOnlinePanel().init();
+				facade.getLaunchPanel().init();
+			}
+		});
 
-		List<String> repositoryNames = new ArrayList<String>();
+		List<String> updatedRepositoryNames = new ArrayList<String>();
 		for (final RepositoryDTO repositoryDTO : list) {
 			try {
 				RepositoryStatus repositoryStatus = repositoryService
 						.getRepositoryStatus(repositoryDTO.getName());
 				if (repositoryStatus.equals(RepositoryStatus.UPDATED)
 						&& repositoryDTO.isNotify()) {
-					repositoryNames.add(repositoryDTO.getName());
+					updatedRepositoryNames.add(repositoryDTO.getName());
 				}
 			} catch (RepositoryException e) {
 				e.printStackTrace();
 			}
 		}
 
-		if (!repositoryNames.isEmpty()) {
+		if (!updatedRepositoryNames.isEmpty()) {
 			String message = "The following repositories have been updated:";
 			for (String rep : repositoryNames) {
 				message = message + "\n" + "> " + rep;
 			}
 			InfoUpdatedRepositoryPanel infoUpdatedRepositoryPanel = new InfoUpdatedRepositoryPanel(
 					facade);
-			infoUpdatedRepositoryPanel.init(repositoryNames);
+			infoUpdatedRepositoryPanel.init(updatedRepositoryNames);
 			infoUpdatedRepositoryPanel.setVisible(true);
 		}
 	}
@@ -1241,12 +1264,15 @@ public class MainPanel extends JFrame implements UIConstants {
 
 	public boolean closeRepository(String repositoryName) {
 
+		boolean isCheckingForAddons = repositoryService
+				.isChecking(repositoryName);
 		boolean isDownloading = repositoryService.isDownloading(repositoryName);
 		boolean isUploading = repositoryService.isUploading(repositoryName);
 		boolean isBuilding = repositoryService.isBuilding(repositoryName);
 		boolean isChecking = repositoryService.isChecking(repositoryName);
 
-		if (!isDownloading && !isUploading && !isBuilding && !isChecking) {
+		if (!isCheckingForAddons && !isDownloading && !isUploading
+				&& !isBuilding && !isChecking) {
 			if (mapTabIndexes.get(repositoryName) != null) {
 				tabbedPane.remove(mapTabIndexes.get(repositoryName));
 				mapTabIndexes.remove(repositoryName);
@@ -1259,6 +1285,10 @@ public class MainPanel extends JFrame implements UIConstants {
 				}
 			}
 			return true;
+		} else if (isCheckingForAddons) {
+			JOptionPane.showMessageDialog(facade.getMainPanel(),
+					"Repository can't be closed.\nFiles are being checked.",
+					repositoryName, JOptionPane.INFORMATION_MESSAGE);
 		} else if (isDownloading) {
 			JOptionPane.showMessageDialog(facade.getMainPanel(),
 					"Repository can't be closed.\nFiles are being downloaded.",

@@ -1,69 +1,71 @@
 package fr.soe.a3s.ui.repositoryEditor.progressDialogs;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
+import java.util.ArrayList;
 import java.util.List;
 
+import javax.swing.SwingUtilities;
+
 import fr.soe.a3s.dto.RepositoryDTO;
-import fr.soe.a3s.service.AbstractConnexionService;
-import fr.soe.a3s.service.AbstractConnexionServiceFactory;
 import fr.soe.a3s.service.RepositoryService;
+import fr.soe.a3s.service.connection.ConnexionService;
+import fr.soe.a3s.service.connection.ConnexionServiceFactory;
 import fr.soe.a3s.ui.Facade;
 import fr.soe.a3s.ui.ProgressPanel;
 
 public class SynchronizingPanel extends ProgressPanel {
 
 	private final RepositoryService repositoryService = new RepositoryService();
-	private AbstractConnexionService connexion;
+	private ConnexionService connexion;
+	private Thread t = null;
 
 	public SynchronizingPanel(Facade facade) {
 		super(facade);
-		labelTitle.setText("Checking repositories...");
+		labelTitle.setText("Synchronizing with repositories...");
 	}
 
-	public void init(final String repositoryName) {
+	public void init(final List<String> repositoryNames) {
 
 		facade.getSyncPanel().disableAllButtons();
 		progressBar.setIndeterminate(true);
-		Thread t = new Thread(new Runnable() {
+		t = new Thread(new Runnable() {
 			@Override
 			public void run() {
-				if (repositoryName == null) {
-					List<RepositoryDTO> list = repositoryService
-							.getRepositories();
-					for (final RepositoryDTO repositoryDTO : list) {
-						if (!canceled) {
-							try {
-								connexion = AbstractConnexionServiceFactory
-										.getServiceFromRepository(repositoryDTO
-												.getName());
-								connexion.checkRepository(repositoryDTO
-										.getName());
-								facade.getAddonsPanel().updateModsetSelection(
-										repositoryDTO.getName());
-							} catch (Exception e) {
-							}
-						}
-					}
-				} else {
-					try {
-						connexion = AbstractConnexionServiceFactory
-								.getServiceFromRepository(repositoryName);
-						connexion.checkRepository(repositoryName);
-						facade.getAddonsPanel().updateModsetSelection(
-								repositoryName);
-					} catch (Exception e) {
-					}
+
+				try {
+					t.sleep(500);
+				} catch (InterruptedException e) {
 				}
 
-				facade.getSyncPanel().init();
-				facade.getOnlinePanel().init();
-				facade.getLaunchPanel().init();
-				progressBar.setIndeterminate(false);
-				dispose();
-				facade.getSyncPanel().enableAllButtons();
+				System.out.println("Synchronizing with repositories...");
+
+				for (String repositoryName : repositoryNames) {
+					if (!canceled) {
+						try {
+							connexion = ConnexionServiceFactory
+									.getServiceForRepositoryManagement(repositoryName);
+							connexion.checkRepository(repositoryName);
+						} catch (Exception e) {
+						}
+					}
+				}
+				
+				if (!canceled) {
+					SwingUtilities.invokeLater(new Runnable() {
+						@Override
+						public void run() {
+							facade.getAddonsPanel().updateModsetSelection(
+									repositoryNames);
+							facade.getSyncPanel().init();
+							facade.getOnlinePanel().init();
+							facade.getLaunchPanel().init();
+							System.out.println("Synchronization with repositories done.");
+							terminate();
+						}
+					});
+				}else {
+					System.out.println("Synchronization with repositories canceled.");
+					terminate();
+				}
 			}
 		});
 		t.start();
@@ -71,12 +73,19 @@ public class SynchronizingPanel extends ProgressPanel {
 
 	@Override
 	protected void menuExitPerformed() {
-		
+
 		this.setVisible(false);
 		canceled = true;
 		if (connexion != null) {
 			connexion.cancel();
 		}
-		this.dispose();
+		terminate();
+	}
+
+	private void terminate() {
+
+		progressBar.setIndeterminate(false);
+		dispose();
+		facade.getSyncPanel().enableAllButtons();
 	}
 }

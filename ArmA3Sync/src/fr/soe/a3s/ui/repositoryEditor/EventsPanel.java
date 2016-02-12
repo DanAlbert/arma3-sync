@@ -7,6 +7,8 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.io.File;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -43,7 +45,6 @@ import javax.swing.tree.TreeSelectionModel;
 import fr.soe.a3s.dto.EventDTO;
 import fr.soe.a3s.dto.TreeDirectoryDTO;
 import fr.soe.a3s.dto.TreeNodeDTO;
-import fr.soe.a3s.exception.CheckException;
 import fr.soe.a3s.exception.repository.RepositoryException;
 import fr.soe.a3s.service.RepositoryService;
 import fr.soe.a3s.ui.Facade;
@@ -413,19 +414,31 @@ public class EventsPanel extends JPanel implements UIConstants {
 
 	private void buttonSaveToDiskPerformed() {
 
-		try {
-			repositoryService.saveToDiskEvents(repositoryName);
-			JOptionPane.showMessageDialog(facade.getMainPanel(),
-					"Events informatons have been save to repository.",
-					"Information", JOptionPane.INFORMATION_MESSAGE);
-			facade.getSyncPanel().init();
-			facade.getOnlinePanel().init();
-		} catch (CheckException e) {
-			JOptionPane.showMessageDialog(facade.getMainPanel(),
-					e.getMessage(), "Warning", JOptionPane.WARNING_MESSAGE);
-		} catch (Exception e) {
-			JOptionPane.showMessageDialog(facade.getMainPanel(),
-					e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+		// Repository path must be set
+		String path = repositoryService.getRepositoryPath(repositoryName);
+		if ("".equals(path) || path == null) {
+			String message = "Repository main folder location is missing."
+					+ "\n"
+					+ "Please checkout the Repository Administation panel.";
+			JOptionPane.showMessageDialog(facade.getMainPanel(), message,
+					"Warning", JOptionPane.WARNING_MESSAGE);
+		} else if (!(new File(path)).exists()) {
+			String message = "Repository main folder location: " + path
+					+ " does not exist.";
+			JOptionPane.showMessageDialog(facade.getMainPanel(), message,
+					"Warning", JOptionPane.ERROR_MESSAGE);
+		} else {
+			try {
+				repositoryService.writeEvents(repositoryName);
+				JOptionPane.showMessageDialog(facade.getMainPanel(),
+						"Events informatons have been save to repository.",
+						"Information", JOptionPane.INFORMATION_MESSAGE);
+				facade.getSyncPanel().init();
+				facade.getOnlinePanel().init();
+			} catch (IOException e) {
+				JOptionPane.showMessageDialog(facade.getMainPanel(),
+						e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+			}
 		}
 	}
 

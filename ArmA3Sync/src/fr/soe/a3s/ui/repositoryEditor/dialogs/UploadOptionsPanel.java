@@ -300,8 +300,7 @@ public abstract class UploadOptionsPanel extends JDialog implements UIConstants 
 
 		String test = url.toLowerCase()
 				.replaceAll(ProtocolType.FTP.getPrompt(), "")
-				.replaceAll(ProtocolType.HTTP_WEBDAV.getPrompt(), "")
-				.replaceAll(ProtocolType.HTTPS_WEBDAV.getPrompt(), "");
+				.replaceAll(ProtocolType.HTTP.getPrompt(), "");
 		if (url.length() > test.length()) {
 			int index = url.length() - test.length();
 			url = url.substring(index);

@@ -22,9 +22,9 @@ import fr.soe.a3s.dto.sync.SyncTreeLeafDTO;
 import fr.soe.a3s.dto.sync.SyncTreeNodeDTO;
 import fr.soe.a3s.exception.CheckException;
 import fr.soe.a3s.exception.repository.RepositoryException;
-import fr.soe.a3s.service.AbstractConnexionService;
-import fr.soe.a3s.service.AbstractConnexionServiceFactory;
 import fr.soe.a3s.service.RepositoryService;
+import fr.soe.a3s.service.connection.ConnexionService;
+import fr.soe.a3s.service.connection.ConnexionServiceFactory;
 import fr.soe.a3s.ui.Facade;
 import fr.soe.a3s.ui.FileSizeComputer;
 import fr.soe.a3s.ui.UnitConverter;
@@ -60,7 +60,7 @@ public class AddonsDownloader extends Thread implements DataAccessConstants {
 	private boolean acre2IsUpdated = false;
 	/* Services */
 	private final RepositoryService repositoryService = new RepositoryService();
-	private AbstractConnexionService connexionService;
+	private ConnexionService connexionService;
 
 	public AddonsDownloader(Facade facade, String repositoryName,
 			SyncTreeDirectoryDTO racine, DownloadPanel downloadPanel) {
@@ -130,8 +130,8 @@ public class AddonsDownloader extends Thread implements DataAccessConstants {
 				numberOfConnections = numberOfClientConnections;
 			}
 
-			connexionService = AbstractConnexionServiceFactory
-					.getServiceFromRepositoryMultiConnections(repositoryName,
+			connexionService = ConnexionServiceFactory
+					.getServiceForFilesSynchronization(repositoryName,
 							numberOfConnections);
 
 		} catch (RepositoryException | CheckException e) {
@@ -250,7 +250,7 @@ public class AddonsDownloader extends Thread implements DataAccessConstants {
 				}
 			}
 
-			connexionService.downloadAddons(repositoryName, list);
+			connexionService.synchronize(repositoryName, list);
 
 		} catch (Exception e) {
 			downloadPanel.getProgressBarDownloadSingleAddon().setIndeterminate(
@@ -384,9 +384,11 @@ public class AddonsDownloader extends Thread implements DataAccessConstants {
 		long offset = 0;
 		long countFileSize = 0;
 		for (AbstractConnexionDAO connect : connexionService.getConnexionDAOs()) {
-			speed = speed + connect.getSpeed();
-			offset = offset + connect.getOffset();
-			countFileSize = countFileSize + connect.getCountFileSize();
+			if (connect.isActiveConnection()) {
+				speed = speed + connect.getSpeed();
+				offset = offset + connect.getOffset();
+				countFileSize = countFileSize + connect.getCountFileSize();
+			}
 		}
 		if (speed != 0) {// division by 0
 			downloadPanel.getLabelSpeedValue().setText(

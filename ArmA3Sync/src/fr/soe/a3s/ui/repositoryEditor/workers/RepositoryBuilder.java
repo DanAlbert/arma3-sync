@@ -6,7 +6,8 @@ import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
 import fr.soe.a3s.constant.RepositoryStatus;
-import fr.soe.a3s.controller.ObserverCountWithText;
+import fr.soe.a3s.controller.ObserverCount;
+import fr.soe.a3s.controller.ObserverText;
 import fr.soe.a3s.exception.WritingException;
 import fr.soe.a3s.exception.repository.RepositoryException;
 import fr.soe.a3s.service.RepositoryService;
@@ -48,8 +49,20 @@ public class RepositoryBuilder extends Thread {
 		// Reset upload repository state
 		repositoryService.saveTransfertParameters(repositoryName, 0, 0, false);
 
-		repositoryService.getRepositoryBuilderDAO().addObserverCountWithText(
-				new ObserverCountWithText() {
+		adminPanel.getBuildProgressBar().setIndeterminate(true);
+
+		repositoryService.getRepositoryBuilderDAO().addObserverText(
+				new ObserverText() {
+					@Override
+					public void update(String text) {
+						adminPanel.getBuildProgressBar()
+								.setIndeterminate(false);
+						adminPanel.getBuildProgressBar().setString(text);
+					}
+				});
+
+		repositoryService.getRepositoryBuilderDAO().addObserverCount(
+				new ObserverCount() {
 					@Override
 					public synchronized void update(final int value) {
 						SwingUtilities.invokeLater(new Runnable() {
@@ -59,19 +72,6 @@ public class RepositoryBuilder extends Thread {
 										.setIndeterminate(false);
 								adminPanel.getBuildProgressBar()
 										.setValue(value);
-							}
-						});
-					}
-
-					@Override
-					public synchronized void update(final String text) {
-						SwingUtilities.invokeLater(new Runnable() {
-							@Override
-							public void run() {
-								adminPanel.getBuildProgressBar()
-										.setIndeterminate(false);
-								adminPanel.getBuildProgressBar()
-										.setString(text);
 							}
 						});
 					}

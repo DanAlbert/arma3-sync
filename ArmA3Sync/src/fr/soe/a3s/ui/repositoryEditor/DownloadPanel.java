@@ -98,11 +98,11 @@ public class DownloadPanel extends JPanel implements UIConstants {
 	private JButton buttonCheckForAddonsStart, buttonCheckForAddonsCancel;
 	private JButton buttonDownloadStart, buttonDownloadPause,
 			buttonDownloadCancel, buttonDownloadReport;
+	private JButton buttonSettings;
 	private JComboBox comBoxDestinationFolder;
 	private String repositoryName;
 	private JLabel labelCheckForAddonsStatus;
 	private TreePath arbreTreePath;
-	private JButton buttonAdvancedConfigurationPerformed;
 	private JCheckBox checkBoxSelectAll;
 	private JCheckBox checkBoxExpandAll;
 	private JCheckBox checkBoxUpdated;
@@ -230,14 +230,12 @@ public class DownloadPanel extends JPanel implements UIConstants {
 		{
 			JPanel optionsPanel = new JPanel();
 			optionsPanel.setLayout(new BorderLayout());
-			buttonAdvancedConfigurationPerformed = new JButton(
-					"Advanced configuration");
-			buttonAdvancedConfigurationPerformed.setFocusable(false);
-			ImageIcon addIcon = new ImageIcon(OPTIONS);
-			buttonAdvancedConfigurationPerformed.setIcon(addIcon);
-			optionsPanel.add(buttonAdvancedConfigurationPerformed);
+			buttonSettings = new JButton("Settings");
+			buttonSettings.setFocusable(false);
+			ImageIcon addIcon = new ImageIcon(PREFERENCES);
+			buttonSettings.setIcon(addIcon);
+			optionsPanel.add(buttonSettings);
 			vBox.add(optionsPanel);
-
 		}
 		vBox.add(Box.createVerticalStrut(10));
 		{
@@ -597,13 +595,12 @@ public class DownloadPanel extends JPanel implements UIConstants {
 				buttonCheckForAddonsCancelPerformed();
 			}
 		});
-		buttonAdvancedConfigurationPerformed
-				.addActionListener(new ActionListener() {
-					@Override
-					public void actionPerformed(ActionEvent arg0) {
-						buttonAdvancedConfigurationPerformed();
-					}
-				});
+		buttonSettings.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				buttonSettingsPerformed();
+			}
+		});
 		buttonDownloadStart.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
@@ -639,7 +636,7 @@ public class DownloadPanel extends JPanel implements UIConstants {
 		buttonDownloadStart.setToolTipText("Start/Resume");
 		buttonDownloadPause.setToolTipText("Pause");
 		buttonDownloadCancel.setToolTipText("Cancel");
-		buttonDownloadReport.setToolTipText("Report");
+		buttonDownloadReport.setToolTipText("View download report");
 		checkBoxSelectAll.setToolTipText("Select All");
 		checkBoxExpandAll.setToolTipText("Expand All");
 		checkBoxAutoDiscover
@@ -971,24 +968,17 @@ public class DownloadPanel extends JPanel implements UIConstants {
 		reportPanel.setVisible(true);
 	}
 
-	private void buttonAdvancedConfigurationPerformed() {
-
-		if (racine == null) {
-			JOptionPane.showMessageDialog(facade.getMainPanel(),
-					"Please check for addons first.", "Advanced configuration",
-					JOptionPane.WARNING_MESSAGE);
-			return;
-		}
+	private void buttonSettingsPerformed() {
 
 		String defaultDestinationPath = repositoryService
 				.getDefaultDownloadLocation(repositoryName);
 
 		AdvancedConfigurationPanel2 advancedConfigurationPanel = new AdvancedConfigurationPanel2(
 				facade, repositoryName, this);
-		buttonAdvancedConfigurationPerformed.setEnabled(false);
+		buttonSettings.setEnabled(false);
 		advancedConfigurationPanel.init();
 		advancedConfigurationPanel.setVisible(true);
-		buttonAdvancedConfigurationPerformed.setEnabled(true);
+		buttonSettings.setEnabled(true);
 	}
 
 	private void checkBoxSelectAllPerformed() {
@@ -1301,7 +1291,7 @@ public class DownloadPanel extends JPanel implements UIConstants {
 	}
 
 	public JButton getButtonAdvancedConfiguration() {
-		return buttonAdvancedConfigurationPerformed;
+		return buttonSettings;
 	}
 
 	public RepositoryPanel getRepositoryPanel() {
