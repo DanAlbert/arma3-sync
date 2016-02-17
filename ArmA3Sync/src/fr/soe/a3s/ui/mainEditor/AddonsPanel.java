@@ -857,7 +857,7 @@ public class AddonsPanel extends JPanel implements UIConstants {
 				.getRepositoryNamesForSync();
 		if (!repositoryNames.isEmpty()) {
 			SynchronizingPanel synchronizingPanel = new SynchronizingPanel(
-					facade);
+					facade, false);
 			synchronizingPanel.setVisible(true);
 			synchronizingPanel.init(repositoryNames);
 		}
@@ -991,7 +991,7 @@ public class AddonsPanel extends JPanel implements UIConstants {
 					racine2.removeTreeNode(treeDirectoryDTO);
 					TreeDirectoryDTO newTreeDirectoryDTO = repositoryService
 							.getAddonTreeFromRepository(repositoryName, false);
-					if (newTreeDirectoryDTO !=null){
+					if (newTreeDirectoryDTO != null) {
 						newTreeDirectoryDTO.setName(repositoryName);
 						newTreeDirectoryDTO.setParent(racine2);
 						racine2.addTreeNode(newTreeDirectoryDTO);

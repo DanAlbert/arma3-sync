@@ -81,7 +81,7 @@ public class UploadEventsProgressPanel extends ProgressPanel {
 								"Events informatons have been uploaded to repository.",
 								"Information", JOptionPane.INFORMATION_MESSAGE);
 						SynchronizingPanel synchronizingPanel = new SynchronizingPanel(
-								facade);
+								facade, false);
 						synchronizingPanel.setVisible(true);
 						List<String> repositoryNames = new ArrayList<String>();
 						repositoryNames.add(repositoryName);

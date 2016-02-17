@@ -49,22 +49,18 @@ import javax.swing.plaf.ColorUIResource;
 import net.jimmc.jshortcut.JShellLink;
 import fr.soe.a3s.constant.DefaultProfileName;
 import fr.soe.a3s.constant.MinimizationType;
-import fr.soe.a3s.constant.RepositoryStatus;
 import fr.soe.a3s.domain.configration.LauncherOptions;
 import fr.soe.a3s.dto.RepositoryDTO;
 import fr.soe.a3s.dto.configuration.PreferencesDTO;
 import fr.soe.a3s.exception.FtpException;
 import fr.soe.a3s.exception.LoadingException;
 import fr.soe.a3s.exception.WritingException;
-import fr.soe.a3s.exception.repository.RepositoryException;
 import fr.soe.a3s.service.CommonService;
 import fr.soe.a3s.service.ConfigurationService;
 import fr.soe.a3s.service.LaunchService;
 import fr.soe.a3s.service.PreferencesService;
 import fr.soe.a3s.service.ProfileService;
 import fr.soe.a3s.service.RepositoryService;
-import fr.soe.a3s.service.connection.ConnexionService;
-import fr.soe.a3s.service.connection.ConnexionServiceFactory;
 import fr.soe.a3s.service.connection.FtpService;
 import fr.soe.a3s.ui.Facade;
 import fr.soe.a3s.ui.UIConstants;
@@ -989,7 +985,7 @@ public class MainPanel extends JFrame implements UIConstants {
 		}
 		if (!repositoryNames.isEmpty()) {
 			SynchronizingPanel synchronizingPanel = new SynchronizingPanel(
-					facade);
+					facade, false);
 			synchronizingPanel.setVisible(true);
 			synchronizingPanel.init(repositoryNames);
 		}
@@ -1017,59 +1013,16 @@ public class MainPanel extends JFrame implements UIConstants {
 
 	private void checkRepositories() {
 
-		System.out.println("Checking repositories...");
-
 		List<RepositoryDTO> list = repositoryService.getRepositories();
 		final List<String> repositoryNames = new ArrayList<String>();
 		for (final RepositoryDTO repositoryDTO : list) {
 			repositoryNames.add(repositoryDTO.getName());
 		}
-		for (String repositoryName : repositoryNames) {
-			try {
-				ConnexionService connexion = ConnexionServiceFactory
-						.getServiceForRepositoryManagement(repositoryName);
-				connexion.checkRepository(repositoryName);
-			} catch (Exception e) {
-				System.out.println(e.getMessage());
-			}
-		}
-		
-		System.out.println("Checking repositories done.");
 
-		SwingUtilities.invokeLater(new Runnable() {
-			@Override
-			public void run() {
-				facade.getAddonsPanel().updateModsetSelection(repositoryNames);
-				facade.getSyncPanel().init();
-				facade.getOnlinePanel().init();
-				facade.getLaunchPanel().init();
-			}
-		});
-
-		List<String> updatedRepositoryNames = new ArrayList<String>();
-		for (final RepositoryDTO repositoryDTO : list) {
-			try {
-				RepositoryStatus repositoryStatus = repositoryService
-						.getRepositoryStatus(repositoryDTO.getName());
-				if (repositoryStatus.equals(RepositoryStatus.UPDATED)
-						&& repositoryDTO.isNotify()) {
-					updatedRepositoryNames.add(repositoryDTO.getName());
-				}
-			} catch (RepositoryException e) {
-				e.printStackTrace();
-			}
-		}
-
-		if (!updatedRepositoryNames.isEmpty()) {
-			String message = "The following repositories have been updated:";
-			for (String rep : repositoryNames) {
-				message = message + "\n" + "> " + rep;
-			}
-			InfoUpdatedRepositoryPanel infoUpdatedRepositoryPanel = new InfoUpdatedRepositoryPanel(
-					facade);
-			infoUpdatedRepositoryPanel.init(updatedRepositoryNames);
-			infoUpdatedRepositoryPanel.setVisible(true);
-		}
+		SynchronizingPanel synchronizingPanel = new SynchronizingPanel(facade,
+				true);
+		synchronizingPanel.init(repositoryNames);
+		synchronizingPanel.setVisible(true);
 	}
 
 	public void openRepository(final String repositoryName, String eventName,
