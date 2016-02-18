@@ -292,6 +292,9 @@ public class ArmA3Sync implements DataAccessConstants {
 			if (osName.contains("Windows")) {
 				javax.swing.UIManager
 						.setLookAndFeel("com.sun.java.swing.plaf.windows.WindowsLookAndFeel");
+			} else if (osName.contains("Mac")) {
+				javax.swing.UIManager
+						.setLookAndFeel("com.sun.java.swing.plaf.mac.MacLookAndFeel");
 			} else {
 				Font fontMenu = UIManager.getFont("Menu.font");
 				Font fontMenuA3S = new Font(fontMenu.getName(), Font.PLAIN, 12);
@@ -361,60 +364,63 @@ public class ArmA3Sync implements DataAccessConstants {
 				UIManager.put("List.font", new FontUIResource(listAreaA3S));
 			}
 
-			PreferencesService preferencesService = new PreferencesService();
-			preferencesService.read();
-			LookAndFeel lookAndFeel = preferencesService.getPreferences()
-					.getLookAndFeel();
+			try {
+				PreferencesService preferencesService = new PreferencesService();
+				preferencesService.read();
+				LookAndFeel lookAndFeel = preferencesService.getPreferences()
+						.getLookAndFeel();
+				if (!lookAndFeel.equals(LookAndFeel.LAF_DEFAULT)) {
+					Properties props = new Properties();
+					props.put("logoString", "");
+					props.put("menuOpaque", "on");
+					props.put("textAntiAliasing", "on");
+					props.put("windowDecoration", "on");
 
-			if (!lookAndFeel.equals(LookAndFeel.LAF_DEFAULT)) {
-				Properties props = new Properties();
-				props.put("logoString", "");
-				props.put("menuOpaque", "on");
-				props.put("textAntiAliasing", "on");
-				props.put("windowDecoration", "on");
+					{
+						Font font = UIManager.getFont("Label.font");
+						String fontName = font.getFontName();
+						int sytle = font.getStyle();
+						int size = font.getSize();
+						props.put("userTextFont",
+								fontName + " " + Integer.toString(sytle) + " "
+										+ Integer.toString(size));
+						props.put("subTextFont",
+								fontName + " " + Integer.toString(sytle) + " "
+										+ Integer.toString(size));
 
-				{
-					Font font = UIManager.getFont("Label.font");
-					String fontName = font.getFontName();
-					int sytle = font.getStyle();
-					int size = font.getSize();
-					props.put("userTextFont",
-							fontName + " " + Integer.toString(sytle) + " "
-									+ Integer.toString(size));
-					props.put("subTextFont",
-							fontName + " " + Integer.toString(sytle) + " "
-									+ Integer.toString(size));
+						font = UIManager.getFont("Button.font");
+						fontName = font.getFontName();
+						sytle = font.getStyle();
+						size = font.getSize();
+						props.put("controlTextFont",
+								fontName + " " + Integer.toString(sytle) + " "
+										+ Integer.toString(size));
 
-					font = UIManager.getFont("Button.font");
-					fontName = font.getFontName();
-					sytle = font.getStyle();
-					size = font.getSize();
-					props.put("controlTextFont",
-							fontName + " " + Integer.toString(sytle) + " "
-									+ Integer.toString(size));
+						font = UIManager.getFont("Menu.font");
+						fontName = font.getFontName();
+						sytle = font.getStyle();
+						size = font.getSize();
+						props.put("menuTextFont",
+								fontName + " " + Integer.toString(sytle) + " "
+										+ Integer.toString(size));
+					}
 
-					font = UIManager.getFont("Menu.font");
-					fontName = font.getFontName();
-					sytle = font.getStyle();
-					size = font.getSize();
-					props.put("menuTextFont",
-							fontName + " " + Integer.toString(sytle) + " "
-									+ Integer.toString(size));
+					if (lookAndFeel.equals(LookAndFeel.LAF_ALUMINIUM)) {
+						AluminiumLookAndFeel.setCurrentTheme(props);
+						UIManager.setLookAndFeel(new AluminiumLookAndFeel());
+					} else if (lookAndFeel.equals(LookAndFeel.LAF_GRAPHITE)) {
+						GraphiteLookAndFeel.setCurrentTheme(props);
+						UIManager.setLookAndFeel(new GraphiteLookAndFeel());
+					} else if (lookAndFeel.equals(LookAndFeel.LAF_HIFI)) {
+						HiFiLookAndFeel.setCurrentTheme(props);
+						UIManager.setLookAndFeel(new HiFiLookAndFeel());
+					} else if (lookAndFeel.equals(LookAndFeel.LAF_NOIRE)) {
+						NoireLookAndFeel.setCurrentTheme(props);
+						UIManager.setLookAndFeel(new NoireLookAndFeel());
+					}
 				}
-
-				if (lookAndFeel.equals(LookAndFeel.LAF_ALUMINIUM)) {
-					AluminiumLookAndFeel.setCurrentTheme(props);
-					UIManager.setLookAndFeel(new AluminiumLookAndFeel());
-				} else if (lookAndFeel.equals(LookAndFeel.LAF_GRAPHITE)) {
-					GraphiteLookAndFeel.setCurrentTheme(props);
-					UIManager.setLookAndFeel(new GraphiteLookAndFeel());
-				} else if (lookAndFeel.equals(LookAndFeel.LAF_HIFI)) {
-					HiFiLookAndFeel.setCurrentTheme(props);
-					UIManager.setLookAndFeel(new HiFiLookAndFeel());
-				} else if (lookAndFeel.equals(LookAndFeel.LAF_NOIRE)) {
-					NoireLookAndFeel.setCurrentTheme(props);
-					UIManager.setLookAndFeel(new NoireLookAndFeel());
-				}
+			} catch (Exception e) {
+				e.printStackTrace();
 			}
 		} catch (Exception e) {
 			e.printStackTrace();

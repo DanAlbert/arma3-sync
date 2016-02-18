@@ -9,7 +9,7 @@ public interface UIConstants {
 
 	int DEFAULT_HEIGHT = 665;
 
-	int DEFAULT_WIDTH = 565;
+	int DEFAULT_WIDTH = 570;
 
 	Image ICON = Toolkit
 			.getDefaultToolkit()

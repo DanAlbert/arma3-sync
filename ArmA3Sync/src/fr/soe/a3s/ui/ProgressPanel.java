@@ -26,7 +26,7 @@ public abstract class ProgressPanel extends JDialog implements UIConstants {
 
 		this.facade = facade;
 		this.setResizable(false);
-		this.setSize(200, 120);
+		this.setSize(220, 120);
 		setIconImage(ICON);
 		this.setLocation(
 				(int) facade.getMainPanel().getLocation().getX()
@@ -57,12 +57,12 @@ public abstract class ProgressPanel extends JDialog implements UIConstants {
 		{
 			labelTitle = new JLabel();
 			centerPanel.add(labelTitle, BorderLayout.CENTER);
-			labelTitle.setBounds(0, 9, 180, 28);
+			labelTitle.setBounds(0, 9, 200, 28);
 		}
 		{
 			progressBar = new JProgressBar();
 			centerPanel.add(progressBar);
-			progressBar.setBounds(0, 36, 174, 16);
+			progressBar.setBounds(0, 36, 192, 16);
 		}
 		getRootPane().setDefaultButton(buttonCancel);
 
