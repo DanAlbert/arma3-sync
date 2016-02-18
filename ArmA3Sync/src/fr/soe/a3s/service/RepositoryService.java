@@ -2,8 +2,6 @@ package fr.soe.a3s.service;
 
 import java.io.File;
 import java.io.IOException;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
 import java.text.CharacterIterator;
 import java.text.StringCharacterIterator;
 import java.util.ArrayList;
@@ -11,10 +9,8 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
-
-import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.NoSuchPaddingException;
 
 import fr.soe.a3s.constant.ProtocolType;
 import fr.soe.a3s.constant.RepositoryStatus;
@@ -69,17 +65,25 @@ public class RepositoryService extends ObjectDTOtransformer implements
 	public void readAll() throws LoadingException {
 
 		try {
-			List<String> repositoriesFailedToLoad = repositoryDAO.readAll();
+			Map<String, Exception> repositoriesFailedToLoad = repositoryDAO
+					.readAll();
 
 			if (!repositoriesFailedToLoad.isEmpty()) {
-				String message = "Failded to load repository:";
-				for (String name : repositoriesFailedToLoad) {
-					message = message + "\n" + " - " + name;
+				String message = "Failded to load repositories:";
+				for (Iterator<String> iter = repositoriesFailedToLoad.keySet()
+						.iterator(); iter.hasNext();) {
+					String repositoryName = iter.next();
+					Exception e = repositoriesFailedToLoad.get(repositoryName);
+					message = message + "\n" + " - " + repositoryName + ": "
+							+ e.getMessage();
 				}
 				throw new LoadingException(message);
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
+			String message = "Failded to load repositories." + "\n"
+					+ e.getMessage();
+			throw new LoadingException(message);
 		}
 	}
 
@@ -96,14 +100,10 @@ public class RepositoryService extends ObjectDTOtransformer implements
 
 		try {
 			repositoryDAO.write(repositoryName);
-		} catch (IOException e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 			throw new WritingException("Failed to write repository "
 					+ repositoryName + "\n" + e.getMessage());
-		} catch (InvalidKeyException | NoSuchAlgorithmException
-				| NoSuchPaddingException | IllegalBlockSizeException e) {
-			e.printStackTrace();
-			throw new RuntimeException(e);
 		}
 	}
 
@@ -324,8 +324,8 @@ public class RepositoryService extends ObjectDTOtransformer implements
 				repository.getDefaultDownloadLocation(), noAutoDiscover);
 
 		// 2. Compute SHA1 for local files on disk
-		repositorySHA1Processor
-				.init(leafsList, repository.getMapFilesForSync(),true);
+		repositorySHA1Processor.init(leafsList,
+				repository.getMapFilesForSync(), true);
 		repositorySHA1Processor.run();
 
 		// 4. Determine new or updated files

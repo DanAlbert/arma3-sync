@@ -8,10 +8,9 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
@@ -74,14 +73,14 @@ public class RepositoryDAO implements DataAccessConstants {
 		}
 	}
 
-	public List<String> readAll() throws InvalidKeyException,
+	public Map<String, Exception> readAll() throws InvalidKeyException,
 			NoSuchAlgorithmException, NoSuchPaddingException {
 
 		Cipher cipher = EncryptionProvider.getDecryptionCipher();
 
 		File directory = new File(REPOSITORY_FOLDER_PATH);
 		File[] subfiles = directory.listFiles();
-		List<String> repositoriesFailedToLoad = new ArrayList<String>();
+		Map<String, Exception> repositoriesFailedToLoad = new TreeMap<String, Exception>();
 		mapRepositories.clear();
 		if (subfiles != null) {
 			for (File file : subfiles) {
@@ -100,8 +99,8 @@ public class RepositoryDAO implements DataAccessConstants {
 									repository);
 						}
 					} catch (Exception e) {
-						// e.printStackTrace();
-						repositoriesFailedToLoad.add(file.getName());
+						e.printStackTrace();
+						repositoriesFailedToLoad.put(file.getName(), e);
 					}
 				}
 			}
