@@ -68,25 +68,18 @@ public class UploadEventsProgressPanel extends ProgressPanel {
 				try {
 					connexion = ConnexionServiceFactory
 							.getServiceForRepositoryUpload(repositoryName);
-					boolean response = connexion.upLoadEvents(repositoryName);
+					connexion.upLoadEvents(repositoryName);
 					setVisible(false);
-					if (response == false) {
-						JOptionPane.showMessageDialog(
-								facade.getMainPanel(),
-								"Failed to upload events informations. \n Please check upload options and server permissions.",
-								"Information", JOptionPane.INFORMATION_MESSAGE);
-					} else {
-						JOptionPane.showMessageDialog(
-								facade.getMainPanel(),
-								"Events informatons have been uploaded to repository.",
-								"Information", JOptionPane.INFORMATION_MESSAGE);
-						SynchronizingPanel synchronizingPanel = new SynchronizingPanel(
-								facade, false);
-						synchronizingPanel.setVisible(true);
-						List<String> repositoryNames = new ArrayList<String>();
-						repositoryNames.add(repositoryName);
-						synchronizingPanel.init(repositoryNames);
-					}
+					JOptionPane.showMessageDialog(
+							facade.getMainPanel(),
+							"Events informatons have been uploaded to repository.",
+							"Information", JOptionPane.INFORMATION_MESSAGE);
+					SynchronizingPanel synchronizingPanel = new SynchronizingPanel(
+							facade, false);
+					synchronizingPanel.setVisible(true);
+					List<String> repositoryNames = new ArrayList<String>();
+					repositoryNames.add(repositoryName);
+					synchronizingPanel.init(repositoryNames);
 				} catch (RepositoryException e) {
 					setVisible(false);
 					JOptionPane.showMessageDialog(facade.getMainPanel(),
@@ -94,8 +87,10 @@ public class UploadEventsProgressPanel extends ProgressPanel {
 				} catch (Exception e) {
 					if (!canceled) {
 						setVisible(false);
-						JOptionPane.showMessageDialog(facade.getMainPanel(),
-								e.getMessage(), "Error",
+						JOptionPane.showMessageDialog(
+								facade.getMainPanel(),
+								"Failed to upload events informations. \n Please check upload options and server permissions."
+										+ "\n" + e.getMessage(), "Error",
 								JOptionPane.ERROR_MESSAGE);
 					}
 				} finally {
