@@ -283,8 +283,8 @@ public class FtpService extends AbstractConnexionService implements
 		try {
 			ftpDAOPool.get(0).connectToRepository(repository.getName(),
 					repository.getUploadProtocole());
-			response = ftpDAOPool.get(0).uploadEvents(repository.getEvents(),
-					repository.getUploadProtocole());
+			ftpDAOPool.get(0).uploadEvents(repository.getEvents(),
+					repository.getUploadProtocole().getRemotePath());
 		} finally {
 			ftpDAOPool.get(0).disconnect();
 		}

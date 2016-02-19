@@ -479,36 +479,6 @@ public class FtpDAO extends AbstractConnexionDAO {
 		return downloadedFile;
 	}
 
-	public boolean uploadEvents(Events events, AbstractProtocole protocole)
-			throws IOException {
-
-		boolean response = false;
-		ObjectOutputStream oos = null;
-		InputStream uis = null;
-		try {
-			String remotePath = protocole.getRemotePath() + A3S_FOlDER_PATH;
-			boolean ok = ftpClient.changeWorkingDirectory(remotePath);
-			if (ok) {
-				ByteArrayOutputStream baos = new ByteArrayOutputStream();
-				oos = new ObjectOutputStream(new GZIPOutputStream(baos));
-				oos.writeObject(events);
-				oos.flush();
-				oos.close();
-				uis = new ByteArrayInputStream(baos.toByteArray());
-				response = ftpClient.storeFile(EVENTS, uis);
-				ftpClient.noop();
-			}
-		} finally {
-			if (uis != null) {
-				uis.close();
-			}
-			if (oos != null) {
-				oos.close();
-			}
-		}
-		return response;
-	}
-
 	public String downloadXMLupdateFile(boolean devMode) throws IOException,
 			DocumentException, FtpException {
 
