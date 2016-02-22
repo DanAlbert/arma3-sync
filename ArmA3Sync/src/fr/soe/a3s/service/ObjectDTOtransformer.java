@@ -153,6 +153,8 @@ public class ObjectDTOtransformer {
 				treedDirectoryDTO2.setName(treeDirectory2.getName());
 				treedDirectoryDTO2
 						.setModsetType(treeDirectory2.getModsetType());
+				treedDirectoryDTO2.setModsetRepositoryName(treeDirectory2
+						.getModsetRepositoryName());
 				treedDirectoryDTO2.setSelected(treeDirectory2.isSelected());
 				treedDirectoryDTO2.setParent(treeDirectoryDTO);
 				treeDirectoryDTO.addTreeNode(treedDirectoryDTO2);
@@ -187,6 +189,8 @@ public class ObjectDTOtransformer {
 						treeDirectoryDTO2.getName(), treeDirectory);
 				treedDirectory2
 						.setModsetType(treeDirectoryDTO2.getModsetType());
+				treedDirectory2.setModsetRepositoryName(treeDirectoryDTO2
+						.getModsetRepositoryName());
 				treedDirectory2.setSelected(treeDirectoryDTO2.isSelected());
 				treeDirectory.addTreeNode(treedDirectory2);
 				transformDTO2TreeDirectory(treeDirectoryDTO2, treedDirectory2);
@@ -226,8 +230,8 @@ public class ObjectDTOtransformer {
 		// Repository upload protocole
 		ProtocolDTO repositoryUploadProtocoleDTO = new ProtocolDTO();
 		if (repository.getUploadProtocole() != null) {
-			repositoryUploadProtocoleDTO.setUrl(repository
-					.getUploadProtocole().getUrl());
+			repositoryUploadProtocoleDTO.setUrl(repository.getUploadProtocole()
+					.getUrl());
 			repositoryUploadProtocoleDTO.setLogin(repository
 					.getUploadProtocole().getLogin());
 			repositoryUploadProtocoleDTO.setPassword(repository

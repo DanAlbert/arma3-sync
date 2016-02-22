@@ -49,8 +49,11 @@ import javax.swing.plaf.ColorUIResource;
 import net.jimmc.jshortcut.JShellLink;
 import fr.soe.a3s.constant.DefaultProfileName;
 import fr.soe.a3s.constant.MinimizationType;
+import fr.soe.a3s.constant.ModsetType;
 import fr.soe.a3s.domain.configration.LauncherOptions;
 import fr.soe.a3s.dto.RepositoryDTO;
+import fr.soe.a3s.dto.TreeDirectoryDTO;
+import fr.soe.a3s.dto.TreeNodeDTO;
 import fr.soe.a3s.dto.configuration.PreferencesDTO;
 import fr.soe.a3s.exception.FtpException;
 import fr.soe.a3s.exception.LoadingException;
@@ -978,11 +981,33 @@ public class MainPanel extends JFrame implements UIConstants {
 		facade.getAddonsPanel().init();
 		facade.getAddonOptionsPanel().init();
 
-		List<RepositoryDTO> list = repositoryService.getRepositories();
 		final List<String> repositoryNames = new ArrayList<String>();
-		for (final RepositoryDTO repositoryDTO : list) {
-			repositoryNames.add(repositoryDTO.getName());
+
+		TreeDirectoryDTO parent = profileService.getAddonGroupsTree();
+		if (parent != null) {
+			for (TreeNodeDTO node : parent.getList()) {
+				if (node instanceof TreeDirectoryDTO) {
+					TreeDirectoryDTO directory = (TreeDirectoryDTO) node;
+					if (directory.getModsetType().equals(ModsetType.REPOSITORY)) {
+						String repositoryName = directory
+								.getModsetRepositoryName();
+						if (repositoryName != null) {
+							repositoryNames.add(repositoryName);
+						} else {
+							repositoryNames.add(directory.getName());
+						}
+					} else if (directory.getModsetType().equals(
+							ModsetType.EVENT)) {
+						String repositoryName = directory
+								.getModsetRepositoryName();
+						if (repositoryName != null) {
+							repositoryNames.add(repositoryName);
+						}
+					}
+				}
+			}
 		}
+
 		if (!repositoryNames.isEmpty()) {
 			SynchronizingPanel synchronizingPanel = new SynchronizingPanel(
 					facade, false);

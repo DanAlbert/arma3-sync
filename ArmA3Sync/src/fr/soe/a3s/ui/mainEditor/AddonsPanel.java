@@ -881,6 +881,7 @@ public class AddonsPanel extends JPanel implements UIConstants {
 					}
 					directory.setName(repositoryName);
 					directory.setModsetType(ModsetType.REPOSITORY);
+					directory.setModsetRepositoryName(repositoryName);
 					directory.setParent(racine2);
 					racine2.addTreeNode(directory);
 				}
@@ -916,6 +917,7 @@ public class AddonsPanel extends JPanel implements UIConstants {
 			TreeDirectoryDTO directory = new TreeDirectoryDTO();
 			directory.setName(eventDTO.getName());
 			directory.setModsetType(ModsetType.EVENT);
+			directory.setModsetRepositoryName(eventDTO.getRepositoryName());
 			directory.setParent(racine2);
 			racine2.addTreeNode(directory);
 			for (Iterator<String> iter = eventDTO.getAddonNames().keySet()
@@ -979,9 +981,15 @@ public class AddonsPanel extends JPanel implements UIConstants {
 				/* Repository modsets */
 				TreeDirectoryDTO treeDirectoryDTO = null;
 				for (TreeNodeDTO node : racine2.getList()) {
-					if (node.getName().equals(repositoryName)) {
-						treeDirectoryDTO = (TreeDirectoryDTO) node;
-						break;
+					if (node instanceof TreeDirectoryDTO) {
+						TreeDirectoryDTO directory = (TreeDirectoryDTO) node;
+						if (directory.getModsetType().equals(
+								ModsetType.REPOSITORY)) {
+							if (directory.getName().equals(repositoryName)) {
+								treeDirectoryDTO = (TreeDirectoryDTO) node;
+								break;
+							}
+						}
 					}
 				}
 
@@ -994,6 +1002,10 @@ public class AddonsPanel extends JPanel implements UIConstants {
 					if (newTreeDirectoryDTO != null) {
 						newTreeDirectoryDTO.setName(repositoryName);
 						newTreeDirectoryDTO.setParent(racine2);
+						newTreeDirectoryDTO
+								.setModsetType(ModsetType.REPOSITORY);
+						newTreeDirectoryDTO
+								.setModsetRepositoryName(repositoryName);
 						racine2.addTreeNode(newTreeDirectoryDTO);
 						setSelectedPaths(newTreeDirectoryDTO, selectdAddonPaths);
 					}
@@ -1007,9 +1019,16 @@ public class AddonsPanel extends JPanel implements UIConstants {
 					for (EventDTO eventDTO : eventDTOs) {
 						treeDirectoryDTO = null;
 						for (TreeNodeDTO node : racine2.getList()) {
-							if (node.getName().equals(eventDTO.getName())) {
-								treeDirectoryDTO = (TreeDirectoryDTO) node;
-								break;
+							if (node instanceof TreeDirectoryDTO) {
+								TreeDirectoryDTO directory = (TreeDirectoryDTO) node;
+								if (directory.getModsetType().equals(
+										ModsetType.EVENT)) {
+									if (directory.getName().equals(
+											repositoryName)) {
+										treeDirectoryDTO = (TreeDirectoryDTO) node;
+										break;
+									}
+								}
 							}
 						}
 
@@ -1021,6 +1040,10 @@ public class AddonsPanel extends JPanel implements UIConstants {
 
 							TreeDirectoryDTO newTreeDirectoryDTO = new TreeDirectoryDTO();
 							newTreeDirectoryDTO.setName(eventDTO.getName());
+							newTreeDirectoryDTO.setModsetType(ModsetType.EVENT);
+							newTreeDirectoryDTO
+									.setModsetRepositoryName(eventDTO
+											.getRepositoryName());
 							newTreeDirectoryDTO.setParent(racine2);
 							racine2.addTreeNode(newTreeDirectoryDTO);
 

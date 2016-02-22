@@ -13,9 +13,10 @@ public class TreeDirectoryDTO implements TreeNodeDTO {
 	private boolean missing = false;
 	private boolean optional = false;
 	private ModsetType modsetType;
+	private String modsetRepositoryName;
 	private TreeDirectoryDTO parent;
 
-	private List<TreeNodeDTO> list = new ArrayList<TreeNodeDTO>();
+	private final List<TreeNodeDTO> list = new ArrayList<TreeNodeDTO>();
 
 	@Override
 	public String getName() {
@@ -91,6 +92,7 @@ public class TreeDirectoryDTO implements TreeNodeDTO {
 		return list;
 	}
 
+	@Override
 	public String toString() {
 		return name;
 	}
@@ -100,6 +102,7 @@ public class TreeDirectoryDTO implements TreeNodeDTO {
 		missing = value;
 	}
 
+	@Override
 	public boolean isMissing() {
 		return missing;
 	}
@@ -120,5 +123,13 @@ public class TreeDirectoryDTO implements TreeNodeDTO {
 
 	public void setModsetType(ModsetType modsetType) {
 		this.modsetType = modsetType;
+	}
+
+	public String getModsetRepositoryName() {
+		return modsetRepositoryName;
+	}
+
+	public void setModsetRepositoryName(String modsetRepositoryName) {
+		this.modsetRepositoryName = modsetRepositoryName;
 	}
 }

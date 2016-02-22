@@ -16,10 +16,11 @@ public class TreeDirectory implements TreeNode, Serializable {
 	private String name;
 	private boolean selected = false;
 	private TreeDirectory parent;
-	private List<TreeNode> list = new ArrayList<TreeNode>();
+	private final List<TreeNode> list = new ArrayList<TreeNode>();
 	private boolean marked = false;
 	private boolean optional = false;
 	private ModsetType modsetType;
+	private String modsetRepositoryName;
 
 	public TreeDirectory(String name, TreeDirectory parent) {
 		this.name = name;
@@ -65,6 +66,7 @@ public class TreeDirectory implements TreeNode, Serializable {
 		return list;
 	}
 
+	@Override
 	public String toString() {
 		return name;
 	}
@@ -107,6 +109,7 @@ public class TreeDirectory implements TreeNode, Serializable {
 		this.name = name;
 	}
 
+	@Override
 	public String getName() {
 		return name;
 	}
@@ -127,5 +130,13 @@ public class TreeDirectory implements TreeNode, Serializable {
 
 	public void setModsetType(ModsetType modsetType) {
 		this.modsetType = modsetType;
+	}
+
+	public String getModsetRepositoryName() {
+		return modsetRepositoryName;
+	}
+
+	public void setModsetRepositoryName(String modsetRepositoryName) {
+		this.modsetRepositoryName = modsetRepositoryName;
 	}
 }
