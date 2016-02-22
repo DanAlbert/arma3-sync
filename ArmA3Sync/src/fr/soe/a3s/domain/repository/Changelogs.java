@@ -15,5 +15,4 @@ public class Changelogs implements Serializable {
 	public List<Changelog> getList() {
 		return list;
 	}
-
 }

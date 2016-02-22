@@ -11,6 +11,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 
 import fr.soe.a3s.constant.ProtocolType;
 import fr.soe.a3s.constant.RepositoryStatus;
@@ -1355,11 +1356,37 @@ public class RepositoryService extends ObjectDTOtransformer implements
 		} else if (serverInfo != null) {
 			if (repository.getRevision() == serverInfo.getRevision()) {
 				return RepositoryStatus.OK;
-			} else if (repository.getRevision() != serverInfo.getRevision()) {
+			} else if (repository.getRevision() < serverInfo.getRevision()) {
 				if (serverInfo.isRepositoryContentUpdated()) {
 					return RepositoryStatus.UPDATED;
 				} else {
-					return RepositoryStatus.OK;
+					Changelogs changelogs = repository.getChangelogs();
+					if (changelogs != null) {
+						List<Changelog> list = changelogs.getList();
+						Map<Integer, Boolean> map = new TreeMap<Integer, Boolean>();
+						for (Changelog changelog : list) {
+							map.put(changelog.getRevision(),
+									changelog.isContentUpdated());
+						}
+						boolean change = false;
+						if (map.containsKey(repository.getRevision())) {
+							for (Iterator<Integer> iter = map.keySet()
+									.iterator(); iter.hasNext();) {
+								int revision = iter.next();
+								if (revision > repository.getRevision()) {
+									change = map.get(revision);
+									if (change) {
+										break;
+									}
+								}
+							}
+							if (change) {
+								return RepositoryStatus.UPDATED;
+							} else {
+								return RepositoryStatus.OK;
+							}
+						}
+					}
 				}
 			}
 		}

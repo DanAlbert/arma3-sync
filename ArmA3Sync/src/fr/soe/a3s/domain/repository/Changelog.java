@@ -11,12 +11,13 @@ public class Changelog implements Serializable {
 	 * 
 	 */
 	private static final long serialVersionUID = 749128678979864247L;
-	private int revision;
-	private Date buildDate;
-	private List<String> newAddons = new ArrayList<String>();
-	private List<String> updatedAddons = new ArrayList<String>();
-	private List<String> deletedAddons = new ArrayList<String>();
-	private List<String> addons = new ArrayList<String>();
+	private int revision = 0;
+	private Date buildDate = null;
+	private boolean contentUpdated = false;
+	private final List<String> newAddons = new ArrayList<String>();
+	private final List<String> updatedAddons = new ArrayList<String>();
+	private final List<String> deletedAddons = new ArrayList<String>();
+	private final List<String> addons = new ArrayList<String>();
 
 	public int getRevision() {
 		return revision;
@@ -24,6 +25,14 @@ public class Changelog implements Serializable {
 
 	public void setRevision(int revision) {
 		this.revision = revision;
+	}
+
+	public boolean isContentUpdated() {
+		return contentUpdated;
+	}
+
+	public void setContentUpdated(boolean contentUpdated) {
+		this.contentUpdated = contentUpdated;
 	}
 
 	public Date getBuildDate() {
@@ -49,5 +58,4 @@ public class Changelog implements Serializable {
 	public List<String> getAddons() {
 		return addons;
 	}
-
 }

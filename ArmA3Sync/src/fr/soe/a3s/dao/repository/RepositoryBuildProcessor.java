@@ -169,6 +169,7 @@ public class RepositoryBuildProcessor implements DataAccessConstants,
 			changelogs.getList().add(changelog);
 			changelog.setRevision(revision);
 			changelog.setBuildDate(new Date());
+			changelog.setContentUpdated(contentUpdated);
 			getAddonsByName(sync, changelog.getAddons());
 			if (revision == 1) {
 				for (String stg : changelog.getAddons()) {
@@ -184,6 +185,7 @@ public class RepositoryBuildProcessor implements DataAccessConstants,
 			}
 			changelog.setRevision(revision);
 			changelog.setBuildDate(new Date());
+			changelog.setContentUpdated(contentUpdated);
 			getAddonsByName(sync, changelog.getAddons());
 			Changelog previousChangelog = changelogs.getList().get(
 					changelogs.getList().size() - 2);
@@ -497,7 +499,7 @@ public class RepositoryBuildProcessor implements DataAccessConstants,
 						compute = true;
 					} else if (!zsyncFile.exists()) {
 						compute = true;
-					}else if (zsyncFile.length()==0){
+					} else if (zsyncFile.length() == 0) {
 						compute = true;
 					}
 
