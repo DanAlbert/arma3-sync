@@ -37,7 +37,7 @@ public class SynchronizingPanel extends ProgressPanel {
 			public void run() {
 
 				try {
-					t.sleep(1000);
+					t.sleep(500);
 				} catch (InterruptedException e) {
 				}
 
