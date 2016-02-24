@@ -798,7 +798,9 @@ public class FtpDAO extends AbstractConnexionDAO {
 			uis = new ByteArrayInputStream(baos.toByteArray());
 			boolean ok = ftpClient.storeFile(SYNC, uis);
 			if (!ok) {
-				throw new IOException("Failed to upload /.a3s/sync file.");
+				int code = ftpClient.getReplyCode();
+				throw new IOException("Failed to upload /.a3s/sync." + "\n"
+						+ "Server returned error code " + code);
 			}
 			ftpClient.noop();
 		} finally {
@@ -831,7 +833,9 @@ public class FtpDAO extends AbstractConnexionDAO {
 			uis = new ByteArrayInputStream(baos.toByteArray());
 			boolean ok = ftpClient.storeFile(SERVERINFO, uis);
 			if (!ok) {
-				throw new IOException("Failed to upload /.a3s/serverInfo file.");
+				int code = ftpClient.getReplyCode();
+				throw new IOException("Failed to upload /.a3s/serverInfo."
+						+ "\n" + "Server returned error code " + code);
 			}
 			ftpClient.noop();
 		} finally {
@@ -864,7 +868,9 @@ public class FtpDAO extends AbstractConnexionDAO {
 			uis = new ByteArrayInputStream(baos.toByteArray());
 			boolean ok = ftpClient.storeFile(CHANGELOGS, uis);
 			if (!ok) {
-				throw new IOException("Failed to upload /.a3s/changelogs file.");
+				int code = ftpClient.getReplyCode();
+				throw new IOException("Failed to upload /.a3s/changelogs."
+						+ "\n" + "Server returned error code " + code);
 			}
 			ftpClient.noop();
 		} finally {
@@ -897,7 +903,9 @@ public class FtpDAO extends AbstractConnexionDAO {
 			uis = new ByteArrayInputStream(baos.toByteArray());
 			boolean ok = ftpClient.storeFile(AUTOCONFIG, uis);
 			if (!ok) {
-				throw new IOException("Failed to upload /.a3s/autoconfig file.");
+				int code = ftpClient.getReplyCode();
+				throw new IOException("Failed to upload /.a3s/autoconfig."
+						+ "\n" + "Server returned error code " + code);
 			}
 			ftpClient.noop();
 		} finally {
@@ -930,7 +938,9 @@ public class FtpDAO extends AbstractConnexionDAO {
 			uis = new ByteArrayInputStream(baos.toByteArray());
 			boolean ok = ftpClient.storeFile(EVENTS, uis);
 			if (!ok) {
-				throw new IOException("Failed to upload /.a3s/events file.");
+				int code = ftpClient.getReplyCode();
+				throw new IOException("Failed to upload /.a3s/events." + "\n"
+						+ "Server returned error code " + code);
 			}
 			ftpClient.noop();
 		} finally {
