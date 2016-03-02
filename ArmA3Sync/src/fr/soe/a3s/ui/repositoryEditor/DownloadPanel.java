@@ -931,6 +931,12 @@ public class DownloadPanel extends JPanel implements UIConstants {
 					.getSelectedItem();
 			repositoryService.setDefaultDownloadLocation(repositoryName,
 					defaultDownloadLocation);
+			List<String> list = profileService.getAddonSearchDirectoryPaths();
+			if (!list.contains(defaultDownloadLocation)) {
+				profileService
+						.addAddonSearchDirectoryPath(defaultDownloadLocation);
+				facade.getAddonOptionsPanel().updateAddonSearchDirectories();
+			}
 		}
 
 		addonsDownloader = new AddonsDownloader(facade, repositoryName, racine,
