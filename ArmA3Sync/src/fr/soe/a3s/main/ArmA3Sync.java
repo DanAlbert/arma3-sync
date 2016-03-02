@@ -74,25 +74,21 @@ public class ArmA3Sync implements DataAccessConstants {
 
 		File profilesFolder = new File(PROFILES_FOLDER_PATH);
 		profilesFolder.mkdir();
-		profilesFolder.setWritable(true);
 		boolean profilesOK = Files.isWritable(FileSystems.getDefault().getPath(
 				profilesFolder.getAbsolutePath()));
 		//
 		File configurationFolder = new File(CONFIGURATION_FOLDER_PATH);
 		configurationFolder.mkdirs();
-		configurationFolder.setWritable(true);
 		boolean configurationOK = Files.isWritable(FileSystems.getDefault()
 				.getPath(configurationFolder.getAbsolutePath()));
 		//
 		File ftpFolder = new File(REPOSITORY_FOLDER_PATH);
 		ftpFolder.mkdirs();
-		ftpFolder.setWritable(true);
 		boolean ftpOK = Files.isWritable(FileSystems.getDefault().getPath(
 				ftpFolder.getAbsolutePath()));
 		//
 		File tempFolder = new File(TEMP_FOLDER_PATH);
 		tempFolder.mkdirs();
-		tempFolder.setWritable(true);
 		boolean tempOK = Files.isWritable(FileSystems.getDefault().getPath(
 				tempFolder.getAbsolutePath()));
 

@@ -90,7 +90,7 @@ public class AddonsDownloader extends Thread implements DataAccessConstants {
 			getFiles(node);
 		}
 
-		// Return if update files list is empoty
+		// Return if update files list is empty
 		if (this.listFilesToUpdate.size() == 0) {
 			finish();
 			initDownloadPanelForEndDownload();
@@ -98,7 +98,7 @@ public class AddonsDownloader extends Thread implements DataAccessConstants {
 			return;
 		}
 
-		// Determine @TFAR/@ACRE/@ACRE2 updates
+		// Determine @TFAR/@ACRE2 updates
 		determineTFARandACREupdates();
 
 		// Determine files variables
@@ -250,6 +250,7 @@ public class AddonsDownloader extends Thread implements DataAccessConstants {
 				}
 			}
 
+			// Synchronize
 			connexionService.synchronize(repositoryName, list);
 
 		} catch (Exception e) {
