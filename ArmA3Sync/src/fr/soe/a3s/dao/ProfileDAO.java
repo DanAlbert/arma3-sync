@@ -3,7 +3,6 @@ package fr.soe.a3s.dao;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
@@ -66,26 +65,34 @@ public class ProfileDAO implements DataAccessConstants {
 		File backup = null;
 
 		if (profilesFolder.exists()) {
-			try {
-				backup = new File(profilesFolder.getCanonicalPath() + ".backup");
-				if (backup.exists())
-					FileAccessMethods.deleteDirectory(backup);
-				profilesFolder.renameTo(backup);
-			} catch (IOException e) {
-				e.printStackTrace();
-				// cancel here before it gets even worse
+			// try {
+			backup = new File(profilesFolder.getAbsolutePath() + ".backup");
+			if (backup.exists()) {
+				boolean ok = FileAccessMethods.deleteDirectory(backup);
+				if (!ok) {
+					throw new WritingException(
+							"Failed to create a backup while saving profiles."
+									+ "\n"
+									+ " Reason: Write access is denied on "
+									+ backup.getPath());
+				}
+			}
+
+			boolean ok = profilesFolder.renameTo(backup);
+			if (!ok) {
 				throw new WritingException(
-						"Failed to create a backup while saving profiles. Reason: "
-								+ e.getMessage());
+						"Failed to create a backup while saving profiles."
+								+ "\n" + " Reason: Write access is denied on "
+								+ profilesFolder.getPath());
 			}
 		}
 
 		profilesFolder.mkdirs();
 
 		String error = null;
+		ObjectOutputStream fWo = null;
 		try {
 			// write all, or nothing at all (better be save)
-
 			for (Profile profile : mapProfiles.values()) {
 				// XXX: are there really null values in the map?
 				if (profile == null)
@@ -97,12 +104,16 @@ public class ProfileDAO implements DataAccessConstants {
 				/*
 				 * Write
 				 */
-				ObjectOutputStream fWo = new ObjectOutputStream(
-						new GZIPOutputStream(new FileOutputStream(profileFile)));
+				fWo = new ObjectOutputStream(new GZIPOutputStream(
+						new FileOutputStream(profileFile)));
 				fWo.writeObject(profile);
 				fWo.close();
 			}
 
+			// don't need the backup anymore
+			if (backup != null && backup.exists()) {
+				FileAccessMethods.deleteDirectory(backup);
+			}
 		} catch (Throwable e) {
 			e.printStackTrace();
 			error = "Failed to save profile(s).\n\tReason: " + e.getMessage()
@@ -115,13 +126,8 @@ public class ProfileDAO implements DataAccessConstants {
 				// recover from backup
 				backup.renameTo(profilesFolder);
 			}
-
 			// forward error message
 			throw new WritingException(error);
-		} finally {
-			// don't need the backup anymore
-			if (backup != null && backup.exists())
-				FileAccessMethods.deleteDirectory(backup);
 		}
 	}
 }

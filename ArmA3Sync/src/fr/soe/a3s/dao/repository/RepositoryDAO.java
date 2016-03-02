@@ -29,6 +29,7 @@ import fr.soe.a3s.domain.repository.Events;
 import fr.soe.a3s.domain.repository.Repository;
 import fr.soe.a3s.domain.repository.ServerInfo;
 import fr.soe.a3s.domain.repository.SyncTreeDirectory;
+import fr.soe.a3s.exception.WritingException;
 
 public class RepositoryDAO implements DataAccessConstants {
 
@@ -108,24 +109,61 @@ public class RepositoryDAO implements DataAccessConstants {
 		return repositoriesFailedToLoad;
 	}
 
-	public void write(String repositoryName) throws IOException,
-			IllegalBlockSizeException, InvalidKeyException,
-			NoSuchAlgorithmException, NoSuchPaddingException {
+	public void write(String repositoryName) throws IllegalBlockSizeException,
+			InvalidKeyException, NoSuchAlgorithmException,
+			NoSuchPaddingException, WritingException {
 
 		Cipher cipher = EncryptionProvider.getEncryptionCipher();
+
+		File repositoryFolder = new File(REPOSITORY_FOLDER_PATH);
+		repositoryFolder.mkdirs();
 
 		Repository repository = mapRepositories.get(repositoryName);
 		if (repository != null) {
 			String concatName = repository.getName().replaceAll(" ", "");
-			SealedObject sealedObject = new SealedObject(repository, cipher);
-			String filePath = REPOSITORY_FOLDER_PATH + "/" + concatName
-					+ REPOSITORY_EXTENSION;
-			ObjectOutputStream fWo = new ObjectOutputStream(
-					new GZIPOutputStream(new FileOutputStream(filePath)));
-			if (sealedObject != null) {
-				fWo.writeObject(sealedObject);
+			String repositoryFilePath = REPOSITORY_FOLDER_PATH + "/"
+					+ concatName + REPOSITORY_EXTENSION;
+			File repositoryFile = new File(repositoryFilePath);
+			File backup = new File(repositoryFile.getAbsolutePath() + ".backup");
+
+			if (backup.exists()) {
+				boolean ok = FileAccessMethods.deleteFile(backup);
+				if (!ok) {
+					throw new WritingException(
+							"Failed to create a backup while saving repository."
+									+ "\n"
+									+ " Reason: Write access is denied on "
+									+ backup.getPath());
+				}
 			}
-			fWo.close();
+
+			boolean ok = repositoryFile.renameTo(backup);
+			if (!ok) {
+				throw new WritingException(
+						"Failed to create a backup while saving repository."
+								+ "\n" + " Reason: Write access is denied on "
+								+ repositoryFile.getPath());
+			}
+
+			ObjectOutputStream fWo = null;
+			try {
+				SealedObject sealedObject = new SealedObject(repository, cipher);
+				fWo = new ObjectOutputStream(new GZIPOutputStream(
+						new FileOutputStream(repositoryFilePath)));
+				if (sealedObject != null) {
+					fWo.writeObject(sealedObject);
+				}
+				fWo.close();
+				FileAccessMethods.deleteFile(backup);
+			} catch (Throwable e) {
+				e.printStackTrace();
+				File newRepositoryFile = new File(repositoryFilePath);
+				if (newRepositoryFile.exists()) {
+					FileAccessMethods.deleteFile(newRepositoryFile);
+				}
+				backup.renameTo(repositoryFile);
+				throw new WritingException(e.getMessage());
+			}
 		}
 	}
 
