@@ -1044,10 +1044,13 @@ public class MainPanel extends JFrame implements UIConstants {
 			repositoryNames.add(repositoryDTO.getName());
 		}
 
-		SynchronizingPanel synchronizingPanel = new SynchronizingPanel(facade,
-				true);
-		synchronizingPanel.init(repositoryNames);
-		synchronizingPanel.setVisible(true);
+		// Show progress panel if not empty repositories
+		if (!repositoryNames.isEmpty()) {
+			SynchronizingPanel synchronizingPanel = new SynchronizingPanel(
+					facade, true);
+			synchronizingPanel.setVisible(true);
+			synchronizingPanel.init(repositoryNames);
+		}
 	}
 
 	public void openRepository(final String repositoryName, String eventName,

@@ -17,31 +17,28 @@ import javax.swing.JCheckBox;
 import javax.swing.JDialog;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.SwingUtilities;
 import javax.swing.border.BevelBorder;
 
 import fr.soe.a3s.dto.EventDTO;
 import fr.soe.a3s.dto.RepositoryDTO;
 import fr.soe.a3s.exception.repository.RepositoryException;
 import fr.soe.a3s.service.RepositoryService;
-import fr.soe.a3s.service.connection.ConnexionServiceFactory;
 import fr.soe.a3s.ui.CheckBoxList;
 import fr.soe.a3s.ui.Facade;
 import fr.soe.a3s.ui.UIConstants;
-import fr.soe.a3s.ui.repositoryEditor.progressDialogs.SynchronizingPanel;
 
 public class ModdsetsSelectionPanel extends JDialog implements UIConstants {
 
-	private Facade facade;
+	private final Facade facade;
 	private JButton buttonOK;
 	private JButton buttonCancel;
 	private CheckBoxList listEvents;
 	private CheckBoxList listRepositories;
 	private JScrollPane scrollPane1, scrollPane2;
-	private RepositoryService repositoryService = new RepositoryService();
-	private List<EventDTO> eventDTOs = new ArrayList<EventDTO>();
+	private final RepositoryService repositoryService = new RepositoryService();
+	private final List<EventDTO> eventDTOs = new ArrayList<EventDTO>();
 	private List<RepositoryDTO> repositoryDTOs = new ArrayList<RepositoryDTO>();
-	private List<String> repositoryNamesForSync = new ArrayList<String>();
+	private final List<String> repositoryNamesForSync = new ArrayList<String>();
 
 	public ModdsetsSelectionPanel(Facade facade) {
 		super(facade.getMainPanel(), "Modsets", true);
@@ -154,7 +151,6 @@ public class ModdsetsSelectionPanel extends JDialog implements UIConstants {
 						.getName());
 				if (list != null) {
 					for (EventDTO eventDTO : list) {
-						eventDTO.setRepositoryName(repositoryDTO.getName());
 						eventDTOs.add(eventDTO);
 					}
 				}
@@ -213,7 +209,7 @@ public class ModdsetsSelectionPanel extends JDialog implements UIConstants {
 						.createGroupFromEvents(selectedEventDTOs);
 			}
 		}
-		
+
 		// Check remote content of selected repositories
 		{
 			for (RepositoryDTO repositoryDTO : selectedRepositoryDTOs) {
@@ -223,7 +219,7 @@ public class ModdsetsSelectionPanel extends JDialog implements UIConstants {
 				repositoryNamesForSync.add(eventDTO.getRepositoryName());
 			}
 		}
-		
+
 		this.dispose();
 	}
 

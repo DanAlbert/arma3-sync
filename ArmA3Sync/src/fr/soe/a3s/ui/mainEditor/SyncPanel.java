@@ -415,14 +415,16 @@ public class SyncPanel extends JPanel implements UIConstants {
 	}
 
 	private void buttonSyncPerformed() {
-		SynchronizingPanel synchronizingPanel = new SynchronizingPanel(facade,
-				false);
-		synchronizingPanel.setVisible(true);
+
 		List<String> repositoryNames = new ArrayList<String>();
 		for (final RepositoryDTO repositoryDTO : repositoryService
 				.getRepositories()) {
 			repositoryNames.add(repositoryDTO.getName());
 		}
+
+		SynchronizingPanel synchronizingPanel = new SynchronizingPanel(facade,
+				false);
+		synchronizingPanel.setVisible(true);
 		synchronizingPanel.init(repositoryNames);
 	}
 

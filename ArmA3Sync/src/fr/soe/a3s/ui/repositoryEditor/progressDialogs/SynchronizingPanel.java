@@ -37,72 +37,83 @@ public class SynchronizingPanel extends ProgressPanel {
 			public void run() {
 
 				try {
-					t.sleep(500);
+					t.sleep(200);
 				} catch (InterruptedException e) {
 				}
 
 				System.out.println("Synchronizing with repositories...");
 
-				for (String repositoryName : repositoryNames) {
-					if (!canceled) {
-						try {
-							connexion = ConnexionServiceFactory
-									.getServiceForRepositoryManagement(repositoryName);
-							connexion.checkRepository(repositoryName);
-						} catch (Exception e) {
+				if (repositoryNames.isEmpty()) {
+					System.out.println("No repository to synchronize with.");
+				} else {
+					for (String repositoryName : repositoryNames) {
+						if (!canceled) {
+							try {
+								connexion = ConnexionServiceFactory
+										.getServiceForRepositoryManagement(repositoryName);
+								connexion.checkRepository(repositoryName);
+							} catch (Exception e) {
+							}
 						}
 					}
-				}
 
-				if (!canceled) {
-					SwingUtilities.invokeLater(new Runnable() {
-						@Override
-						public void run() {
-							facade.getAddonsPanel().updateModsetSelection(
-									repositoryNames);
-							facade.getSyncPanel().init();
-							facade.getOnlinePanel().init();
-							facade.getLaunchPanel().init();
-							if (withNotification) {
-								List<String> updatedRepositoryNames = new ArrayList<String>();
-								for (String repositoryName : repositoryNames) {
-									try {
-										RepositoryStatus repositoryStatus = repositoryService
-												.getRepositoryStatus(repositoryName);
-										RepositoryDTO repositoryDTO = repositoryService
-												.getRepository(repositoryName);
-										if (repositoryStatus
-												.equals(RepositoryStatus.UPDATED)
-												&& repositoryDTO.isNotify()) {
-											updatedRepositoryNames
-													.add(repositoryName);
-										}
-									} catch (RepositoryException e) {
-										e.printStackTrace();
-									}
-								}
-
-								if (!updatedRepositoryNames.isEmpty()) {
-									String message = "The following repositories have been updated:";
-									for (String rep : repositoryNames) {
-										message = message + "\n" + "> " + rep;
-									}
-									InfoUpdatedRepositoryPanel infoUpdatedRepositoryPanel = new InfoUpdatedRepositoryPanel(
-											facade);
-									infoUpdatedRepositoryPanel
-											.init(updatedRepositoryNames);
-									infoUpdatedRepositoryPanel.setVisible(true);
-								}
-							}
-							System.out
-									.println("Synchronization with repositories done.");
-							terminate();
+					if (!canceled) {
+						labelTitle.setText("Synchronizing addon groups...");
+						try {
+							t.sleep(1000);
+						} catch (InterruptedException e) {
 						}
-					});
-				} else {
-					System.out
-							.println("Synchronization with repositories canceled.");
-					terminate();
+						SwingUtilities.invokeLater(new Runnable() {
+							@Override
+							public void run() {
+								facade.getAddonsPanel().updateModsetSelection(
+										repositoryNames);
+								facade.getSyncPanel().init();
+								facade.getOnlinePanel().init();
+								facade.getLaunchPanel().init();
+								if (withNotification) {
+									List<String> updatedRepositoryNames = new ArrayList<String>();
+									for (String repositoryName : repositoryNames) {
+										try {
+											RepositoryStatus repositoryStatus = repositoryService
+													.getRepositoryStatus(repositoryName);
+											RepositoryDTO repositoryDTO = repositoryService
+													.getRepository(repositoryName);
+											if (repositoryStatus
+													.equals(RepositoryStatus.UPDATED)
+													&& repositoryDTO.isNotify()) {
+												updatedRepositoryNames
+														.add(repositoryName);
+											}
+										} catch (RepositoryException e) {
+											e.printStackTrace();
+										}
+									}
+
+									if (!updatedRepositoryNames.isEmpty()) {
+										String message = "The following repositories have been updated:";
+										for (String rep : repositoryNames) {
+											message = message + "\n" + "> "
+													+ rep;
+										}
+										InfoUpdatedRepositoryPanel infoUpdatedRepositoryPanel = new InfoUpdatedRepositoryPanel(
+												facade);
+										infoUpdatedRepositoryPanel
+												.init(updatedRepositoryNames);
+										infoUpdatedRepositoryPanel
+												.setVisible(true);
+									}
+								}
+								System.out
+										.println("Synchronization with repositories done.");
+								terminate();
+							}
+						});
+					} else {
+						System.out
+								.println("Synchronization with repositories canceled.");
+						terminate();
+					}
 				}
 			}
 		});

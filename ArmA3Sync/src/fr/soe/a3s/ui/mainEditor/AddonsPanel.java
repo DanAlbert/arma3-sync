@@ -986,7 +986,7 @@ public class AddonsPanel extends JPanel implements UIConstants {
 						if (directory.getModsetType().equals(
 								ModsetType.REPOSITORY)) {
 							if (directory.getName().equals(repositoryName)) {
-								treeDirectoryDTO = (TreeDirectoryDTO) node;
+								treeDirectoryDTO = directory;
 								break;
 							}
 						}
@@ -1024,9 +1024,22 @@ public class AddonsPanel extends JPanel implements UIConstants {
 								if (directory.getModsetType().equals(
 										ModsetType.EVENT)) {
 									if (directory.getName().equals(
-											repositoryName)) {
-										treeDirectoryDTO = (TreeDirectoryDTO) node;
-										break;
+											eventDTO.getName())) {
+										if (directory.getModsetRepositoryName() != null) {
+											if (directory
+													.getModsetRepositoryName()
+													.equals(eventDTO
+															.getRepositoryName())) {
+												treeDirectoryDTO = directory;
+												break;
+											}
+										} else {
+											directory
+													.setModsetRepositoryName(eventDTO
+															.getRepositoryName());
+											treeDirectoryDTO = directory;
+											break;
+										}
 									}
 								}
 							}
@@ -1057,7 +1070,6 @@ public class AddonsPanel extends JPanel implements UIConstants {
 								leaf.setName(name);
 								leaf.setOptional(optional);
 								leaf.setParent(newTreeDirectoryDTO);
-								// leaf.setSelected(true);
 								newTreeDirectoryDTO.addTreeNode(leaf);
 							}
 							setSelectedPaths(newTreeDirectoryDTO,

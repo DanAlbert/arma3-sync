@@ -795,6 +795,7 @@ public class RepositoryService extends ObjectDTOtransformer implements
 				List<EventDTO> eventDTOs = new ArrayList<EventDTO>();
 				for (Event event : list) {
 					EventDTO eventDTO = transformEvent2DTO(event);
+					eventDTO.setRepositoryName(repositoryName);
 					// Ensure no duplicate
 					boolean contains = false;
 					for (EventDTO evt : eventDTOs) {

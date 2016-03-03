@@ -54,6 +54,7 @@ import fr.soe.a3s.service.connection.ConnexionService;
 import fr.soe.a3s.service.connection.ConnexionServiceFactory;
 import fr.soe.a3s.ui.Facade;
 import fr.soe.a3s.ui.UIConstants;
+import fr.soe.a3s.ui.repositoryEditor.progressDialogs.SynchronizingPanel;
 
 /**
  * This code was edited or generated using CloudGarden's Jigloo SWT/Swing GUI
@@ -368,7 +369,6 @@ public class EditRepositoryPanel extends JDialog implements UIConstants,
 	public void init() {
 
 		this.setTitle("New repository");
-		this.labelConnection.setText("(Anonymous access required)");
 		this.textFieldHost.setText(ProtocolType.FTP.getPrompt());
 		this.textFieldPort.setText(ProtocolType.FTP.getDefaultPort());
 	}
@@ -376,7 +376,6 @@ public class EditRepositoryPanel extends JDialog implements UIConstants,
 	public void init(String repositoryName) {
 
 		this.setTitle("Edit repository");
-		this.labelConnection.setText("(Anonymous access required)");
 		this.textFieldHost.setText(ProtocolType.FTP.getPrompt());
 		this.textFieldPort.setText(ProtocolType.FTP.getDefaultPort());
 
@@ -667,7 +666,13 @@ public class EditRepositoryPanel extends JDialog implements UIConstants,
 		}
 
 		this.dispose();
-		facade.getSyncPanel().init();
+
+		List<String> repositoryNames = new ArrayList<String>();
+		repositoryNames.add(name);
+		SynchronizingPanel synchronizingPanel = new SynchronizingPanel(facade,
+				false);
+		synchronizingPanel.setVisible(true);
+		synchronizingPanel.init(repositoryNames);
 	}
 
 	private void checkBoxAnonymousPerformed() {

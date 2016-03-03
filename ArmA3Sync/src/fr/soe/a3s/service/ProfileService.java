@@ -20,7 +20,6 @@ import fr.soe.a3s.dto.TreeNodeDTO;
 import fr.soe.a3s.dto.configuration.LauncherOptionsDTO;
 import fr.soe.a3s.exception.LoadingException;
 import fr.soe.a3s.exception.ProfileException;
-import fr.soe.a3s.exception.WritingException;
 
 public class ProfileService extends ObjectDTOtransformer {
 
@@ -37,10 +36,6 @@ public class ProfileService extends ObjectDTOtransformer {
 			}
 			throw new LoadingException(message);
 		}
-	}
-
-	public void writeAll() throws WritingException {
-		profileDAO.writeProfiles();
 	}
 
 	public void setAdditionalParameters(String additionalParameters)
@@ -149,6 +144,10 @@ public class ProfileService extends ObjectDTOtransformer {
 						treeDirectory2.getName(), duplicateTreeDirectory);
 				duplicateTreedDirectory2.setSelected(treeDirectory2
 						.isSelected());
+				duplicateTreedDirectory2.setModsetType(treeDirectory2
+						.getModsetType());
+				duplicateTreedDirectory2.setModsetRepositoryName(treeDirectory2
+						.getModsetRepositoryName());
 				duplicateTreeDirectory.addTreeNode(duplicateTreedDirectory2);
 				duplicateTree(treeDirectory2, duplicateTreedDirectory2);
 			}
@@ -159,6 +158,7 @@ public class ProfileService extends ObjectDTOtransformer {
 		TreeLeaf duplicateTreeLeaf = new TreeLeaf();
 		duplicateTreeLeaf.setName(treeLeaf.getName());
 		duplicateTreeLeaf.setSelected(treeLeaf.isSelected());
+		duplicateTreeLeaf.setOptional(treeLeaf.isOptional());
 		return duplicateTreeLeaf;
 	}
 
