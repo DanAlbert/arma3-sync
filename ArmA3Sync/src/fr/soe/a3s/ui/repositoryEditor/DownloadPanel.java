@@ -1005,6 +1005,12 @@ public class DownloadPanel extends JPanel implements UIConstants {
 		refreshViewArbre();
 	}
 
+	public void selectAll() {
+
+		checkBoxSelectAll.setSelected(true);
+		checkBoxSelectAllPerformed();
+	}
+
 	private void checkBoxExpandAllPerformed() {
 
 		if (racine == null) {

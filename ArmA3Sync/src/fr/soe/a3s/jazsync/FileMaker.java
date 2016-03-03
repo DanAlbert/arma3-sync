@@ -49,6 +49,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
+import fr.soe.a3s.dao.DataAccessConstants;
 import fr.soe.a3s.dao.FileAccessMethods;
 import fr.soe.a3s.dao.connection.DataRange;
 import fr.soe.a3s.dao.connection.MyHttpConnection;
@@ -222,7 +223,7 @@ public class FileMaker {
 		FileOutputStream fos = null;
 
 		File partFile = new File(targetFile.getParentFile() + "/"
-				+ targetFile.getName() + ".part");
+				+ targetFile.getName() + DataAccessConstants.PART_EXTENSION);
 
 		try {
 			double a = 10;

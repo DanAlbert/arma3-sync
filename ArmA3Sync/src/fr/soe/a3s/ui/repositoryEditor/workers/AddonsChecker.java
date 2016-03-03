@@ -157,10 +157,15 @@ public class AddonsChecker extends Thread {
 				// 5. Update download panel tree
 				if (eventName != null) {
 					setEventAddonSelection();
+					downloadPanel.updateAddons(parent);
+					downloadPanel.selectAll();
 				} else if (update) {
-					selectAllDescending(parent);
+					downloadPanel.updateAddons(parent);
+					downloadPanel.selectAll();
+				} else {
+					downloadPanel.updateAddons(parent);
 				}
-				downloadPanel.updateAddons(parent);
+
 				// 6. Update Events panel content
 				downloadPanel.getRepositoryPanel().getEventsPanel()
 						.init(repositoryName);
@@ -316,14 +321,7 @@ public class AddonsChecker extends Thread {
 					newDirectory.setParent(newSyncTreeDirectoryDTO);
 					newDirectory.setMarkAsAddon(true);
 					boolean optional = addonNames.get(nodeDTO.getName());
-					if (optional) {
-						newDirectory.setOptional(true);
-						newDirectory.setSelected(false);
-					} else {
-						newDirectory.setOptional(false);
-						newDirectory.setSelected(true);
-						selectAllAscending(newDirectory);
-					}
+					newDirectory.setOptional(optional);
 					newSyncTreeDirectoryDTO.setHidden(directoryDTO.isHidden());
 					newSyncTreeDirectoryDTO.addTreeNode(newDirectory);
 					fill(directoryDTO, newDirectory);
@@ -431,14 +429,7 @@ public class AddonsChecker extends Thread {
 							folder.setParent(newUserconfig);
 							boolean optional = userconfigFolderNames.get(d
 									.getName());
-							if (optional) {
-								folder.setOptional(true);
-								folder.setSelected(false);
-							} else {
-								folder.setOptional(false);
-								folder.setSelected(true);
-								selectAllAscending(newUserconfig);
-							}
+							folder.setOptional(optional);
 							newUserconfig.addTreeNode(folder);
 							folder.setHidden(((SyncTreeDirectoryDTO) d)
 									.isHidden());
@@ -462,14 +453,7 @@ public class AddonsChecker extends Thread {
 							leaf.setSize(((SyncTreeLeafDTO) d).getSize());
 							boolean optional = userconfigFolderNames.get(d
 									.getName());
-							if (optional) {
-								leaf.setOptional(true);
-								leaf.setSelected(false);
-							} else {
-								leaf.setOptional(false);
-								leaf.setSelected(true);
-								selectAllAscending(newUserconfig);
-							}
+							leaf.setOptional(optional);
 							newUserconfig.addTreeNode(leaf);
 							if (leaf.isUpdated() || leaf.isDeleted()) {
 								newUserconfig.setChanged(true);
@@ -477,24 +461,6 @@ public class AddonsChecker extends Thread {
 						}
 					}
 				}
-			}
-		}
-	}
-
-	private void selectAllAscending(SyncTreeNodeDTO syncTreeNodeDTO) {
-		if (syncTreeNodeDTO != null) {
-			syncTreeNodeDTO.setSelected(true);
-			SyncTreeNodeDTO parent = syncTreeNodeDTO.getParent();
-			selectAllAscending(parent);
-		}
-	}
-
-	private void selectAllDescending(SyncTreeNodeDTO syncTreeNodeDTO) {
-		syncTreeNodeDTO.setSelected(true);
-		if (!syncTreeNodeDTO.isLeaf()) {
-			SyncTreeDirectoryDTO syncTreeDirectoryDTO = (SyncTreeDirectoryDTO) syncTreeNodeDTO;
-			for (SyncTreeNodeDTO t : syncTreeDirectoryDTO.getList()) {
-				selectAllDescending(t);
 			}
 		}
 	}
