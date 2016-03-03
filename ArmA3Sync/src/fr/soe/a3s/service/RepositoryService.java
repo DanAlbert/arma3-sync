@@ -492,23 +492,19 @@ public class RepositoryService extends ObjectDTOtransformer implements
 
 		if (!node.isLeaf()) {
 			SyncTreeDirectory directory = (SyncTreeDirectory) node;
-			SyncTreeNode parent = directory.getParent();
-			if (parent == null) {
-				for (SyncTreeNode n : directory.getList()) {
-					determineExtraLocalFilesToDelete(n, defaultDestinationPath,
-							exactMatch);
-				}
-			}
 
 			if (!directory.isHidden()) {
-				File file = new File(directory.getDestinationPath() + "/"
-						+ directory.getName());
-				if (directory.getParent() == null && exactMatch) {
-					file = new File(defaultDestinationPath);
+				File[] subFiles = null;
+				if (directory.getParent() != null) {
+					File file = new File(directory.getDestinationPath() + "/"
+							+ directory.getName());
+					subFiles = file.listFiles();
+				} else if (directory.getParent() == null && exactMatch) {
+					File file = new File(defaultDestinationPath);
+					subFiles = file.listFiles();
 				}
 
 				// folder must exists locally and remotely
-				File[] subFiles = file.listFiles();
 				if (subFiles != null) {
 					List<String> listNames = new ArrayList<String>();
 					for (SyncTreeNode n : directory.getList()) {
