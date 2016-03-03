@@ -130,19 +130,22 @@ public class RepositoryDAO implements DataAccessConstants {
 				boolean ok = FileAccessMethods.deleteFile(backup);
 				if (!ok) {
 					throw new WritingException(
-							"Failed to create a backup while saving repository."
+							"Failed to create a backup file while saving repository."
 									+ "\n"
-									+ " Reason: Write access is denied on "
+									+ " Reason:Write access permission denied on "
 									+ backup.getPath());
 				}
 			}
 
-			boolean ok = repositoryFile.renameTo(backup);
-			if (!ok) {
-				throw new WritingException(
-						"Failed to create a backup while saving repository."
-								+ "\n" + " Reason: Write access is denied on "
-								+ repositoryFile.getPath());
+			if (repositoryFile.exists()) {
+				boolean ok = repositoryFile.renameTo(backup);
+				if (!ok) {
+					throw new WritingException(
+							"Failed to create a backup file while saving repository."
+									+ "\n"
+									+ " Reason: Write access permission denied on "
+									+ repositoryFile.getPath());
+				}
 			}
 
 			ObjectOutputStream fWo = null;

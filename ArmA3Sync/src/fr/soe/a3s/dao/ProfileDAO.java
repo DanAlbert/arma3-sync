@@ -65,15 +65,15 @@ public class ProfileDAO implements DataAccessConstants {
 		File backup = null;
 
 		if (profilesFolder.exists()) {
-			// try {
+
 			backup = new File(profilesFolder.getAbsolutePath() + ".backup");
 			if (backup.exists()) {
 				boolean ok = FileAccessMethods.deleteDirectory(backup);
 				if (!ok) {
 					throw new WritingException(
-							"Failed to create a backup while saving profiles."
+							"Failed to create a backup file while saving profiles."
 									+ "\n"
-									+ " Reason: Write access is denied on "
+									+ " Reason: Write access permission denied on "
 									+ backup.getPath());
 				}
 			}
@@ -81,7 +81,7 @@ public class ProfileDAO implements DataAccessConstants {
 			boolean ok = profilesFolder.renameTo(backup);
 			if (!ok) {
 				throw new WritingException(
-						"Failed to create a backup while saving profiles."
+						"Failed to create a backup file while saving profiles."
 								+ "\n" + " Reason: Write access is denied on "
 								+ profilesFolder.getPath());
 			}
