@@ -82,6 +82,7 @@ public class RepositoryService extends ObjectDTOtransformer implements
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
+
 			String message = "Failded to load repositories." + "\n"
 					+ e.getMessage();
 			throw new LoadingException(message);
