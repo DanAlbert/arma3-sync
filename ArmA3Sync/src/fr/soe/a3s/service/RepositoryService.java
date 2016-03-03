@@ -337,7 +337,7 @@ public class RepositoryService extends ObjectDTOtransformer implements
 		determineHiddenFiles(nodesList, hiddenFolderPaths);
 
 		// 6. Determine extra local files to delete
-		determineExtraLocalFilesToDelete(nodesList,
+		determineExtraLocalFilesToDelete(parent,
 				repository.getDefaultDownloadLocation(), exactMatch);
 
 		SyncTreeDirectoryDTO parentDTO = new SyncTreeDirectoryDTO();
@@ -427,7 +427,7 @@ public class RepositoryService extends ObjectDTOtransformer implements
 				String relativePath = directory.getName();
 
 				while (parent != null) {
-					if (!parent.getName().equals("racine")) {
+					if (!parent.getName().equals(SyncTreeNode.RACINE)) {
 						relativePath = parent.getName() + "/" + relativePath;
 					}
 					parent = parent.getParent();
@@ -487,60 +487,69 @@ public class RepositoryService extends ObjectDTOtransformer implements
 		return result.toString();
 	}
 
-	private void determineExtraLocalFilesToDelete(List<SyncTreeNode> nodesList,
+	private void determineExtraLocalFilesToDelete(SyncTreeNode node,
 			String defaultDestinationPath, boolean exactMatch) {
 
-		for (SyncTreeNode node : nodesList) {
-			if (!node.isLeaf()) {
-				SyncTreeDirectory directory = (SyncTreeDirectory) node;
+		if (!node.isLeaf()) {
+			SyncTreeDirectory directory = (SyncTreeDirectory) node;
+			SyncTreeNode parent = directory.getParent();
+			if (parent == null) {
+				for (SyncTreeNode n : directory.getList()) {
+					determineExtraLocalFilesToDelete(n, defaultDestinationPath,
+							exactMatch);
+				}
+			}
 
-				if (!directory.isHidden()) {
-					File file = new File(directory.getDestinationPath() + "/"
-							+ directory.getName());
-					if (directory.getParent() == null && exactMatch) {
-						file = new File(defaultDestinationPath);
+			if (!directory.isHidden()) {
+				File file = new File(directory.getDestinationPath() + "/"
+						+ directory.getName());
+				if (directory.getParent() == null && exactMatch) {
+					file = new File(defaultDestinationPath);
+				}
+
+				// folder must exists locally and remotely
+				File[] subFiles = file.listFiles();
+				if (subFiles != null) {
+					List<String> listNames = new ArrayList<String>();
+					for (SyncTreeNode n : directory.getList()) {
+						listNames.add(n.getName().toLowerCase());
 					}
-
-					// folder must exists locally and remotely
-					File[] subFiles = file.listFiles();
-					if (subFiles != null) {
-						List<String> listNames = new ArrayList<String>();
-						for (SyncTreeNode n : directory.getList()) {
-							listNames.add(n.getName().toLowerCase());
-						}
-						for (File f : subFiles) {
-							if (!listNames.contains(f.getName().toLowerCase())) {
-								if (f.isDirectory()) {
-									SyncTreeDirectory d = new SyncTreeDirectory(
-											f.getName(), directory);
-									directory.addTreeNode(d);
-									d.setDeleted(true);
-									if (directory.getDestinationPath() == null) {
-										d.setDestinationPath(defaultDestinationPath);
-									} else {
-										d.setDestinationPath(directory
-												.getDestinationPath()
-												+ "/"
-												+ directory.getName());
-									}
-								} else if (!f.getName()
-										.contains(PART_EXTENSION)) {
-									SyncTreeLeaf l = new SyncTreeLeaf(
-											f.getName(), directory);
-									directory.addTreeNode(l);
-									l.setDeleted(true);
-									if (directory.getDestinationPath() == null) {
-										l.setDestinationPath(defaultDestinationPath);
-									} else {
-										l.setDestinationPath(directory
-												.getDestinationPath()
-												+ "/"
-												+ directory.getName());
-									}
+					for (File f : subFiles) {
+						if (!listNames.contains(f.getName().toLowerCase())) {
+							if (f.isDirectory()) {
+								SyncTreeDirectory d = new SyncTreeDirectory(
+										f.getName(), directory);
+								directory.addTreeNode(d);
+								d.setDeleted(true);
+								if (directory.getDestinationPath() == null) {
+									d.setDestinationPath(defaultDestinationPath);
+								} else {
+									d.setDestinationPath(directory
+											.getDestinationPath()
+											+ "/"
+											+ directory.getName());
+								}
+							} else if (!f.getName().contains(PART_EXTENSION)
+									&& !f.getName().contains(PBO_ZIP_EXTENSION)) {
+								SyncTreeLeaf l = new SyncTreeLeaf(f.getName(),
+										directory);
+								directory.addTreeNode(l);
+								l.setDeleted(true);
+								if (directory.getDestinationPath() == null) {
+									l.setDestinationPath(defaultDestinationPath);
+								} else {
+									l.setDestinationPath(directory
+											.getDestinationPath()
+											+ "/"
+											+ directory.getName());
 								}
 							}
 						}
 					}
+				}
+				for (SyncTreeNode n : directory.getList()) {
+					determineExtraLocalFilesToDelete(n, defaultDestinationPath,
+							exactMatch);
 				}
 			}
 		}
