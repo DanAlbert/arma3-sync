@@ -638,11 +638,6 @@ public class RepositoryService extends ObjectDTOtransformer implements
 			if (serverInfo != null) {
 				repository.setRevision(serverInfo.getRevision());
 			}
-			try {
-				write(repositoryName);
-			} catch (WritingException e) {
-				e.printStackTrace();
-			}
 		}
 	}
 
@@ -651,10 +646,6 @@ public class RepositoryService extends ObjectDTOtransformer implements
 		Repository repository = repositoryDAO.getMap().get(repositoryName);
 		if (repository != null) {
 			repository.setNotify(notify);
-			try {
-				write(repositoryName);
-			} catch (WritingException e) {
-			}
 		}
 	}
 
@@ -1358,9 +1349,7 @@ public class RepositoryService extends ObjectDTOtransformer implements
 
 		ServerInfo serverInfo = repository.getServerInfo();
 
-		if (repository.isOutOfSynk()) {
-			return RepositoryStatus.OUTOFSYNC;
-		} else if (serverInfo != null) {
+		if (serverInfo != null) {
 			if (repository.getRevision() == serverInfo.getRevision()) {
 				return RepositoryStatus.OK;
 			} else if (repository.getRevision() < serverInfo.getRevision()) {

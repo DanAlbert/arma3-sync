@@ -451,7 +451,7 @@ public class FirstPageTFARInstallerPanel extends WizardPanel {
 		String message = "";
 
 		String osName = System.getProperty("os.name");
-		if (!osName.contains("Windows")) {
+		if (!osName.contains("Windows")){
 			message = "This feature is not supported for your system";
 			JOptionPane.showMessageDialog(this, message, "TFAR installer",
 					JOptionPane.WARNING_MESSAGE);

@@ -54,7 +54,7 @@ import fr.soe.a3s.service.connection.ConnexionService;
 import fr.soe.a3s.service.connection.ConnexionServiceFactory;
 import fr.soe.a3s.ui.Facade;
 import fr.soe.a3s.ui.UIConstants;
-import fr.soe.a3s.ui.repositoryEditor.progressDialogs.SynchronizingPanel;
+import fr.soe.a3s.ui.repositoryEditor.progressDialogs.ProgressSynchronizationPanel;
 
 /**
  * This code was edited or generated using CloudGarden's Jigloo SWT/Swing GUI
@@ -669,8 +669,7 @@ public class EditRepositoryPanel extends JDialog implements UIConstants,
 
 		List<String> repositoryNames = new ArrayList<String>();
 		repositoryNames.add(name);
-		SynchronizingPanel synchronizingPanel = new SynchronizingPanel(facade,
-				false);
+		ProgressSynchronizationPanel synchronizingPanel = new ProgressSynchronizationPanel(facade);
 		synchronizingPanel.setVisible(true);
 		synchronizingPanel.init(repositoryNames);
 	}

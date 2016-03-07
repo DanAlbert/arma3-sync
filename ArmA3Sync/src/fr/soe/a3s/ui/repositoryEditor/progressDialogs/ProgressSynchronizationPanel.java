@@ -15,17 +15,15 @@ import fr.soe.a3s.ui.Facade;
 import fr.soe.a3s.ui.ProgressPanel;
 import fr.soe.a3s.ui.mainEditor.InfoUpdatedRepositoryPanel;
 
-public class SynchronizingPanel extends ProgressPanel {
+public class ProgressSynchronizationPanel extends ProgressPanel {
 
 	private final RepositoryService repositoryService = new RepositoryService();
-	private ConnexionService connexion;
+	private ConnexionService connexion =  null;
 	private Thread t = null;
-	private boolean withNotification = false;
 
-	public SynchronizingPanel(Facade facade, boolean withNotification) {
+	public ProgressSynchronizationPanel(Facade facade) {
 		super(facade);
 		labelTitle.setText("Synchronizing with repositories...");
-		this.withNotification = withNotification;
 	}
 
 	public void init(final List<String> repositoryNames) {
@@ -35,14 +33,6 @@ public class SynchronizingPanel extends ProgressPanel {
 		t = new Thread(new Runnable() {
 			@Override
 			public void run() {
-
-				try {
-					t.sleep(200);
-				} catch (InterruptedException e) {
-				}
-
-				System.out.println("Synchronizing with repositories...");
-
 				if (repositoryNames.isEmpty()) {
 					System.out.println("No repository to synchronize with.");
 				} else {
@@ -56,64 +46,22 @@ public class SynchronizingPanel extends ProgressPanel {
 							}
 						}
 					}
-
 					if (!canceled) {
-						labelTitle.setText("Synchronizing addon groups...");
-						try {
-							t.sleep(1000);
-						} catch (InterruptedException e) {
-						}
 						SwingUtilities.invokeLater(new Runnable() {
 							@Override
 							public void run() {
-								facade.getAddonsPanel().updateModsetSelection(
-										repositoryNames);
 								facade.getSyncPanel().init();
 								facade.getOnlinePanel().init();
 								facade.getLaunchPanel().init();
-								if (withNotification) {
-									List<String> updatedRepositoryNames = new ArrayList<String>();
-									for (String repositoryName : repositoryNames) {
-										try {
-											RepositoryStatus repositoryStatus = repositoryService
-													.getRepositoryStatus(repositoryName);
-											RepositoryDTO repositoryDTO = repositoryService
-													.getRepository(repositoryName);
-											if (repositoryStatus
-													.equals(RepositoryStatus.UPDATED)
-													&& repositoryDTO.isNotify()) {
-												updatedRepositoryNames
-														.add(repositoryName);
-											}
-										} catch (RepositoryException e) {
-											e.printStackTrace();
-										}
-									}
-
-									if (!updatedRepositoryNames.isEmpty()) {
-										String message = "The following repositories have been updated:";
-										for (String rep : repositoryNames) {
-											message = message + "\n" + "> "
-													+ rep;
-										}
-										InfoUpdatedRepositoryPanel infoUpdatedRepositoryPanel = new InfoUpdatedRepositoryPanel(
-												facade);
-										infoUpdatedRepositoryPanel
-												.init(updatedRepositoryNames);
-										infoUpdatedRepositoryPanel
-												.setVisible(true);
-									}
-								}
 								System.out
 										.println("Synchronization with repositories done.");
-								terminate();
 							}
 						});
 					} else {
 						System.out
 								.println("Synchronization with repositories canceled.");
-						terminate();
 					}
+					terminate();
 				}
 			}
 		});
