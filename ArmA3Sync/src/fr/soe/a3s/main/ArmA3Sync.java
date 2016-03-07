@@ -222,7 +222,7 @@ public class ArmA3Sync implements DataAccessConstants {
 						mainPanel = new MainPanel(facade);
 						mainPanel.drawGUI();
 						mainPanel.init();
-						mainPanel.initBackGround();
+					    mainPanel.initBackGround();
 					} catch (Exception e) {
 						ErrorLogDialog dialog = new ErrorLogDialog(facade, e);
 						dialog.show();
