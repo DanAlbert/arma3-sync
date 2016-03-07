@@ -26,6 +26,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
 import javax.swing.border.BevelBorder;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
@@ -43,9 +44,10 @@ import fr.soe.a3s.exception.repository.RepositoryNotFoundException;
 import fr.soe.a3s.service.RepositoryService;
 import fr.soe.a3s.ui.Facade;
 import fr.soe.a3s.ui.UIConstants;
+import fr.soe.a3s.ui.repositoryEditor.RepositoryPanel;
 import fr.soe.a3s.ui.repositoryEditor.dialogs.EditRepositoryPanel;
-import fr.soe.a3s.ui.repositoryEditor.progressDialogs.ConnectionPanel;
-import fr.soe.a3s.ui.repositoryEditor.progressDialogs.SynchronizingPanel;
+import fr.soe.a3s.ui.repositoryEditor.progressDialogs.ProgressConnectionAsAdminPanel;
+import fr.soe.a3s.ui.repositoryEditor.progressDialogs.ProgressSynchronizationPanel;
 
 /**
  * This code was edited or generated using CloudGarden's Jigloo SWT/Swing GUI
@@ -76,6 +78,7 @@ public class SyncPanel extends JPanel implements UIConstants {
 
 	/* Services */
 	private final RepositoryService repositoryService = new RepositoryService();
+	private JButton buttonAdmin;
 
 	public SyncPanel(final Facade facade) {
 		this.facade = facade;
@@ -150,6 +153,10 @@ public class SyncPanel extends JPanel implements UIConstants {
 				ImageIcon syncIcon = new ImageIcon(REFRESH);
 				buttonSync1.setIcon(syncIcon);
 				vertBox.add(buttonSync1);
+				buttonAdmin = new JButton("");
+				ImageIcon adminIcon = new ImageIcon(ADMIN);
+				buttonAdmin.setIcon(adminIcon);
+				vertBox.add(buttonAdmin);
 				buttonConnectToRepository = new JButton("");
 				ImageIcon joinIcon = new ImageIcon(CONNECT);
 				buttonConnectToRepository.setIcon(joinIcon);
@@ -217,10 +224,16 @@ public class SyncPanel extends JPanel implements UIConstants {
 				buttonSyncPerformed();
 			}
 		});
+		buttonAdmin.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				buttonConnectAsAdminPerformed();
+			}
+		});
 		buttonConnectToRepository.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
-				buttonConnectPerformed();
+				buttonConnectToRepositoryPerformed();
 			}
 		});
 		buttonCheckEvent.addActionListener(new ActionListener() {
@@ -229,15 +242,6 @@ public class SyncPanel extends JPanel implements UIConstants {
 				buttonCheckEventPerformed();
 			}
 		});
-		// tableRepositories.addMouseListener(new MouseAdapter() {
-		// public void mouseClicked(MouseEvent e) {
-		// if (isModifying) {
-		// return;
-		// } else if (e.getClickCount() >= 2) {
-		// connectToRepository();
-		// }
-		// }
-		// });
 		model.addTableModelListener(new TableModelListener() {
 			@Override
 			public void tableChanged(TableModelEvent arg0) {
@@ -268,13 +272,14 @@ public class SyncPanel extends JPanel implements UIConstants {
 
 	private void setContextualHelp() {
 
-		buttonNew.setToolTipText("Add a new repsository");
-		buttonEdit.setToolTipText("Edit selected repository");
-		buttonRemove.setToolTipText("Remove selected repository");
-		buttonSync1.setToolTipText("Refresh");
-		buttonConnectToRepository.setToolTipText("Connect to repository");
-		buttonCheckEvent.setToolTipText("Check event");
-		buttonSync2.setToolTipText("Refresh");
+		buttonNew.setToolTipText("Add repository");
+		buttonEdit.setToolTipText("Edit repository");
+		buttonRemove.setToolTipText("Remove repository");
+		buttonSync1.setToolTipText("Update repositories status");
+		buttonAdmin.setToolTipText("Administrate repository");
+		buttonConnectToRepository.setToolTipText("Synchronyse with repository");
+		buttonSync2.setToolTipText("Update events list");
+		buttonCheckEvent.setToolTipText("Synchronyse with repository");
 	}
 
 	public void init() {
@@ -422,17 +427,13 @@ public class SyncPanel extends JPanel implements UIConstants {
 			repositoryNames.add(repositoryDTO.getName());
 		}
 
-		SynchronizingPanel synchronizingPanel = new SynchronizingPanel(facade,
-				false);
+		ProgressSynchronizationPanel synchronizingPanel = new ProgressSynchronizationPanel(
+				facade);
 		synchronizingPanel.setVisible(true);
 		synchronizingPanel.init(repositoryNames);
 	}
 
-	private void buttonConnectPerformed() {
-		connectToRepository();
-	}
-
-	private void connectToRepository() {
+	private void buttonConnectAsAdminPerformed() {
 
 		if (isModifying) {
 			return;
@@ -445,18 +446,37 @@ public class SyncPanel extends JPanel implements UIConstants {
 					JOptionPane.INFORMATION_MESSAGE);
 			return;
 		}
-		String repositoryName = null;
-		try {
-			repositoryName = (String) model.getValueAt(index, 0);
-		} catch (Exception e) {
-			// e.printStackTrace();
+
+		String repositoryName = (String) model.getValueAt(index, 0);
+		if (repositoryName != null) {
+			ProgressConnectionAsAdminPanel progressConnectionAsAdminPanel = new ProgressConnectionAsAdminPanel(
+					facade, repositoryName);
+			progressConnectionAsAdminPanel.setVisible(true);
+			progressConnectionAsAdminPanel.init();
+		}
+	}
+
+	private void buttonConnectToRepositoryPerformed() {
+
+		if (isModifying) {
+			return;
 		}
 
+		int index = tableRepositories.getSelectedRow();
+		if (index == -1 || index > tableRepositories.getRowCount()) {
+			JOptionPane.showMessageDialog(facade.getMainPanel(),
+					"Please select a repository.", "Information",
+					JOptionPane.INFORMATION_MESSAGE);
+			return;
+		}
+
+		String repositoryName = (String) model.getValueAt(index, 0);
 		if (repositoryName != null) {
-			ConnectionPanel connectionPanel = new ConnectionPanel(facade,
-					repositoryName, null);
-			connectionPanel.setVisible(true);
-			connectionPanel.init();
+			RepositoryPanel repositoryPanel = facade.getMainPanel()
+					.openRepository(repositoryName);
+			if (repositoryPanel != null) {
+				repositoryPanel.download(repositoryName, null);
+			}
 		}
 	}
 
@@ -470,10 +490,12 @@ public class SyncPanel extends JPanel implements UIConstants {
 				EventDTO eventDTO = iter2.next();
 				if (index == j) {
 					String repositoryName = mapEvents.get(eventDTO);
-					ConnectionPanel connectionPanel = new ConnectionPanel(
-							facade, repositoryName, eventDTO.getName());
-					connectionPanel.setVisible(true);
-					connectionPanel.init();
+					RepositoryPanel repositoryPanel = facade.getMainPanel()
+							.openRepository(repositoryName);
+					if (repositoryPanel != null) {
+						repositoryPanel.download(repositoryName,
+								eventDTO.getName());
+					}
 					break;
 				}
 				j++;
@@ -491,6 +513,7 @@ public class SyncPanel extends JPanel implements UIConstants {
 		buttonEdit.setEnabled(true);
 		buttonRemove.setEnabled(true);
 		buttonSync1.setEnabled(true);
+		buttonAdmin.setEnabled(true);
 		buttonConnectToRepository.setEnabled(true);
 		buttonSync2.setEnabled(true);
 		buttonCheckEvent.setEnabled(true);
@@ -502,6 +525,7 @@ public class SyncPanel extends JPanel implements UIConstants {
 		buttonEdit.setEnabled(false);
 		buttonRemove.setEnabled(false);
 		buttonSync1.setEnabled(false);
+		buttonAdmin.setEnabled(false);
 		buttonConnectToRepository.setEnabled(false);
 		buttonSync2.setEnabled(false);
 		buttonCheckEvent.setEnabled(false);
@@ -604,9 +628,6 @@ public class SyncPanel extends JPanel implements UIConstants {
 				c.setForeground(new Color(45, 125, 45));
 			} else if (value.toString().equals(
 					RepositoryStatus.UPDATED.getDescription())) {
-				c.setForeground(Color.RED);
-			} else if (value.toString().equals(
-					RepositoryStatus.OUTOFSYNC.getDescription())) {
 				c.setForeground(Color.RED);
 			} else {
 				c.setForeground(Color.BLACK);

@@ -17,11 +17,11 @@ import fr.soe.a3s.ui.UIConstants;
 public class RepositoryPanel extends JPanel implements UIConstants {
 
 	private final Facade facade;
-	private final JButton buttonRepository, buttonDownload, buttonEvents;
+	private JButton buttonRepository, buttonDownload, buttonEvents;
 	private final JPanel centerPanel;
-	private final AdminPanel adminPanel;
-	private final DownloadPanel downloadPanel;
-	private final EventsPanel eventsPanel;
+	private AdminPanel adminPanel;
+	private DownloadPanel downloadPanel;
+	private EventsPanel eventsPanel;
 
 	public RepositoryPanel(Facade facade) {
 		this.facade = facade;
@@ -60,19 +60,18 @@ public class RepositoryPanel extends JPanel implements UIConstants {
 		ImageIcon eventsIcon = new ImageIcon(EVENTS);
 		buttonEvents.setIcon(eventsIcon);
 		vertBox2.add(buttonEvents);
-
 		this.add(vertBox2, BorderLayout.EAST);
 
+		buttonDownload.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				buttonDownloadPerformed();
+			}
+		});
 		buttonRepository.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
 				buttonRepositoryPerformed();
-			}
-		});
-		buttonDownload.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				buttonDownloadPerformed();
 			}
 		});
 		buttonEvents.addActionListener(new ActionListener() {
@@ -81,25 +80,41 @@ public class RepositoryPanel extends JPanel implements UIConstants {
 				buttonEventsPerformed();
 			}
 		});
+
 		setContextualHelp();
 	}
 
 	private void setContextualHelp() {
-		buttonRepository.setToolTipText("Repository");
 		buttonDownload.setToolTipText("Download");
+		buttonRepository.setToolTipText("Repository");
 		buttonEvents.setToolTipText("Events");
 	}
 
-	public void init(String repositoryName, String eventName, boolean update) {
-		if (eventName != null) {
-			downloadPanel.init(repositoryName, eventName, update);
-			buttonRepository.setVisible(false);
-			buttonEvents.setVisible(false);
-		} else {
-			adminPanel.init(repositoryName);
-			downloadPanel.init(repositoryName, eventName, update);
-			eventsPanel.init(repositoryName);
-		}
+	public void admin(String repositoryName) {
+
+		buttonDownload.setVisible(false);
+		buttonRepository.setVisible(true);
+		buttonEvents.setVisible(true);
+		adminPanel.init(repositoryName);
+		eventsPanel.init(repositoryName);
+		CardLayout cl = (CardLayout) centerPanel.getLayout();
+		cl.first(centerPanel);
+		cl.next(centerPanel);
+		getRootPane().setDefaultButton(buttonRepository);
+		buttonRepository.requestFocus();
+	}
+
+	public void download(String repositoryName, String eventName) {
+
+		buttonDownload.setVisible(true);
+		buttonRepository.setVisible(false);
+		buttonEvents.setVisible(false);
+		downloadPanel.init(repositoryName, eventName);
+		CardLayout cl = (CardLayout) centerPanel.getLayout();
+		cl.first(centerPanel);
+		getRootPane().setDefaultButton(buttonDownload);
+		buttonDownload.requestFocus();
+		downloadPanel.checkForAddons();
 	}
 
 	private void buttonDownloadPerformed() {
@@ -116,6 +131,7 @@ public class RepositoryPanel extends JPanel implements UIConstants {
 	private void buttonEventsPerformed() {
 		CardLayout cl = (CardLayout) centerPanel.getLayout();
 		cl.last(centerPanel);
+		this.revalidate();
 	}
 
 	public AdminPanel getAdminPanel() {

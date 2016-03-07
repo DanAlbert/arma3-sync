@@ -265,9 +265,9 @@ public class LaunchPanel extends JPanel implements UIConstants {
 
 			// Check selected addons
 			facade.getAddonsPanel().updateAvailableAddons();
+			facade.getAddonsPanel().updateAddonGroups();
 			String message = launchService.checkSelectedAddons();
 			if (message != null) {
-				facade.getAddonsPanel().expandAddonGroups();
 				throw new LaunchException(message);
 			}
 

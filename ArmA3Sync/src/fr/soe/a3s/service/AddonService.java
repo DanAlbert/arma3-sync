@@ -2,6 +2,8 @@ package fr.soe.a3s.service;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 
@@ -30,155 +32,151 @@ public class AddonService {
 			excludedFolderList.add(tab1[i].toString());
 		}
 	}
-	private static TreeDirectory availableAddonsTreeInstance = null;
 
 	private TreeDirectory getAvailableAddonsTreeInstance() {
 
-		if (availableAddonsTreeInstance == null) {
+		List<String> list = new ArrayList<String>();
 
-			List<String> list = new ArrayList<String>();
+		String profileName = configurationDAO.getConfiguration()
+				.getProfileName();
+		Profile profile = profileDAO.getMap().get(profileName);
+		if (profile != null) {
+			Iterator iter = profile.getAddonSearchDirectories().iterator();
+			while (iter.hasNext()) {
+				list.add((String) iter.next());
+			}
+		}
 
-			String profileName = configurationDAO.getConfiguration()
-					.getProfileName();
-			Profile profile = profileDAO.getMap().get(profileName);
-			if (profile != null) {
-				Iterator iter = profile.getAddonSearchDirectories().iterator();
-				while (iter.hasNext()) {
-					list.add((String) iter.next());
-				}
+		List<String> newList = new ArrayList<String>();
+
+		for (int i = 0; i < list.size(); i++) {
+			String ipath = list.get(i);
+			String ipathForCompare = ipath;
+
+			if (!new File(ipath).exists()) {
+				continue;
 			}
 
-			List<String> newList = new ArrayList<String>();
+			String osName = System.getProperty("os.name");
+			if (osName.contains("Windows")) {
+				ipathForCompare = ipath.toLowerCase();
+			}
+			String pathToKeep = ipath;
 
-			for (int i = 0; i < list.size(); i++) {
-				String ipath = list.get(i);
-				String ipathForCompare = ipath;
+			File iparentFile = new File(ipath).getParentFile();
 
-				if (!new File(ipath).exists()) {
+			if (iparentFile == null) {
+				continue;
+			} else if (!iparentFile.exists()) {
+				continue;
+			}
+
+			for (int j = 0; j < list.size(); j++) {
+				String jpath = list.get(j);
+
+				if (!new File(jpath).exists()) {
 					continue;
 				}
 
-				String osName = System.getProperty("os.name");
+				String jpathForCompare = jpath;
 				if (osName.contains("Windows")) {
-					ipathForCompare = ipath.toLowerCase();
-				}
-				String pathToKeep = ipath;
-
-				File iparentFile = new File(ipath).getParentFile();
-
-				if (iparentFile == null) {
-					continue;
-				} else if (!iparentFile.exists()) {
-					continue;
+					jpathForCompare = jpath.toLowerCase();
 				}
 
-				for (int j = 0; j < list.size(); j++) {
-					String jpath = list.get(j);
+				File jparentFile = new File(jpath).getParentFile();
 
-					if (!new File(jpath).exists()) {
-						continue;
-					}
+				if (jparentFile == null) {
+					continue;
+				} else if (!jparentFile.exists()) {
+					continue;
+				}
 
-					String jpathForCompare = jpath;
-					if (osName.contains("Windows")) {
-						jpathForCompare = jpath.toLowerCase();
-					}
-
-					File jparentFile = new File(jpath).getParentFile();
-
-					if (jparentFile == null) {
-						continue;
-					} else if (!jparentFile.exists()) {
-						continue;
-					}
-
-					if (!iparentFile.getAbsolutePath().equals(
-							jparentFile.getAbsolutePath())) {
-						if (ipathForCompare.contains(jpathForCompare)
-								|| jpathForCompare.contains(ipathForCompare)) {
-							if (jpath.length() < pathToKeep.length()) {
-								pathToKeep = jpath;
-							}
+				if (!iparentFile.getAbsolutePath().equals(
+						jparentFile.getAbsolutePath())) {
+					if (ipathForCompare.contains(jpathForCompare)
+							|| jpathForCompare.contains(ipathForCompare)) {
+						if (jpath.length() < pathToKeep.length()) {
+							pathToKeep = jpath;
 						}
 					}
 				}
+			}
 
-				if (!newList.contains(pathToKeep)) {
-					newList.add(pathToKeep);
+			if (!newList.contains(pathToKeep)) {
+				newList.add(pathToKeep);
+			}
+		}
+
+		addonDAO.getMap().clear();
+		TreeDirectory racine = new TreeDirectory("racine1", null);
+
+		if (newList.size() == 1) {
+			File file = new File(newList.get(0));
+			if (file.exists()) {
+				File[] subfiles = file.listFiles();
+				if (subfiles != null) {
+					for (File f : subfiles) {
+						generateTree(f, racine);
+					}
+				}
+			}
+		} else {
+			boolean sameNameFound = false;
+			List<String> directoryNames = new ArrayList<String>();
+			for (String path : newList) {
+				File file = new File(path);
+				if (file.exists()) {
+					if (!directoryNames.contains(file.getName())) {
+						directoryNames.add(file.getName());
+					} else {
+						sameNameFound = true;
+						break;
+					}
 				}
 			}
 
-			addonDAO.getMap().clear();
-			TreeDirectory racine = new TreeDirectory("racine1", null);
-
-			if (newList.size() == 1) {
-				File file = new File(newList.get(0));
-				if (file.exists()) {
-					File[] subfiles = file.listFiles();
-					if (subfiles != null) {
-						for (File f : subfiles) {
-							generateTree(f, racine);
+			if (sameNameFound) {
+				for (String path : newList) {
+					File file = new File(path);
+					if (file.exists()) {
+						TreeDirectory treeDirectory = new TreeDirectory(
+								file.getAbsolutePath(), racine);
+						racine.addTreeNode(treeDirectory);
+						File[] subfiles = file.listFiles();
+						if (subfiles != null) {
+							for (File f : subfiles) {
+								generateTree(f, treeDirectory);
+							}
 						}
 					}
 				}
 			} else {
-				boolean sameNameFound = false;
-				List<String> directoryNames = new ArrayList<String>();
 				for (String path : newList) {
 					File file = new File(path);
 					if (file.exists()) {
-						if (!directoryNames.contains(file.getName())) {
-							directoryNames.add(file.getName());
-						} else {
-							sameNameFound = true;
-							break;
-						}
-					}
-				}
-
-				if (sameNameFound) {
-					for (String path : newList) {
-						File file = new File(path);
-						if (file.exists()) {
-							TreeDirectory treeDirectory = new TreeDirectory(
-									file.getAbsolutePath(), racine);
-							racine.addTreeNode(treeDirectory);
-							File[] subfiles = file.listFiles();
-							if (subfiles != null) {
-								for (File f : subfiles) {
-									generateTree(f, treeDirectory);
-								}
-							}
-						}
-					}
-				} else {
-					for (String path : newList) {
-						File file = new File(path);
-						if (file.exists()) {
-							TreeDirectory treeDirectory = new TreeDirectory(
-									file.getName(), racine);
-							racine.addTreeNode(treeDirectory);
-							File[] subfiles = file.listFiles();
-							if (subfiles != null) {
-								for (File f : subfiles) {
-									generateTree(f, treeDirectory);
-								}
+						TreeDirectory treeDirectory = new TreeDirectory(
+								file.getName(), racine);
+						racine.addTreeNode(treeDirectory);
+						File[] subfiles = file.listFiles();
+						if (subfiles != null) {
+							for (File f : subfiles) {
+								generateTree(f, treeDirectory);
 							}
 						}
 					}
 				}
 			}
-
-			// keep marked directory, change terminal directory to leaf
-			TreeDirectory racineCleaned = new TreeDirectory("racine1", null);
-
-			for (TreeNode directory : racine.getList()) {
-				TreeDirectory d = (TreeDirectory) directory;
-				cleanTree(d, racineCleaned);
-			}
-			availableAddonsTreeInstance = racineCleaned;
 		}
-		return availableAddonsTreeInstance;
+
+		// keep marked directory, change terminal directory to leaf
+		TreeDirectory availableAddonsTree = new TreeDirectory("racine1", null);
+
+		for (TreeNode directory : racine.getList()) {
+			TreeDirectory d = (TreeDirectory) directory;
+			cleanTree(d, availableAddonsTree);
+		}
+
+		return availableAddonsTree;
 	}
 
 	public TreeDirectoryDTO getAvailableAddonsTree() {
@@ -188,19 +186,22 @@ public class AddonService {
 		treeDirectoryDTO.setName("racine1");
 		treeDirectoryDTO.setParent(null);
 		transformTreeDirectory2DTO(treeDirectory, treeDirectoryDTO);
+		return treeDirectoryDTO;
+	}
 
-		boolean isTreeMode = configurationDAO.getConfiguration()
-				.isViewModeTree();
+	public TreeDirectoryDTO getAvailableAddonsList() {
 
-		if (!isTreeMode) {
-			TreeDirectoryDTO newTreeDirectoryDTO = new TreeDirectoryDTO();
-			newTreeDirectoryDTO.setName("racine1");
-			newTreeDirectoryDTO.setParent(null);
-			generateTreeList(treeDirectoryDTO, newTreeDirectoryDTO);
-			return newTreeDirectoryDTO;
-		} else {
-			return treeDirectoryDTO;
-		}
+		TreeDirectory treeDirectory = getAvailableAddonsTreeInstance();
+		TreeDirectoryDTO treeDirectoryDTO = new TreeDirectoryDTO();
+		treeDirectoryDTO.setName("racine1");
+		treeDirectoryDTO.setParent(null);
+		transformTreeDirectory2DTO(treeDirectory, treeDirectoryDTO);
+
+		TreeDirectoryDTO newTreeDirectoryDTO = new TreeDirectoryDTO();
+		newTreeDirectoryDTO.setName("racine1");
+		newTreeDirectoryDTO.setParent(null);
+		generateTreeList(treeDirectoryDTO, newTreeDirectoryDTO);
+		return newTreeDirectoryDTO;
 	}
 
 	private void generateTreeList(TreeDirectoryDTO treeDirectoryDTO,
@@ -230,19 +231,6 @@ public class AddonService {
 
 		if (file.isDirectory()
 				&& (!excludedFolderList.contains(file.getName()))) {
-
-			/* Check if directory already exists in the Tree */
-			/*
-			 * TreeDirectory treeDirectory = null; boolean found = false; for
-			 * (TreeNode n : node.getList()) { if
-			 * (n.getName().equals(file.getName()) && !n.isLeaf()) { found =
-			 * true; } }
-			 * 
-			 * if (found) { treeDirectory = new TreeDirectory(file.getName() +
-			 * "*", node); node.addTreeNode(treeDirectory); } else {
-			 * treeDirectory = new TreeDirectory(file.getName(), node);
-			 * node.addTreeNode(treeDirectory); }
-			 */
 
 			TreeDirectory treeDirectory = new TreeDirectory(file.getName(),
 					node);
@@ -319,8 +307,50 @@ public class AddonService {
 		}
 	}
 
-	public void resetAvailableAddonTree() {
-		availableAddonsTreeInstance = null;
+	public List<String> getAddonsByPriorityList() {
+
+		TreeDirectoryDTO availableAddonsList = getAvailableAddonsList();
+		List<String> availableAddonsByName = new ArrayList<String>();
+		for (TreeNodeDTO node:availableAddonsList.getList()){
+			availableAddonsByName.add(node.getName());
+		}
+		Collections.sort( availableAddonsByName, new SortIgnoreCase());
+
+		String profileName = configurationDAO.getConfiguration()
+				.getProfileName();
+		Profile profile = profileDAO.getMap().get(profileName);
+		if (profile != null) {
+			List<String> addonNamesByPriority = profile.getAddonNamesByPriority();
+			if (availableAddonsByName.isEmpty()){
+				addonNamesByPriority.clear();
+			}else {
+				Iterator iter = availableAddonsByName.iterator();
+				while (iter.hasNext()) {
+					String name = (String) iter.next();
+					if (!addonNamesByPriority.contains(name)) {
+						addonNamesByPriority.add(name);
+					}
+				}
+				List<String> addonNamesToRemove = new ArrayList<String>();
+				for (String stg : addonNamesByPriority) {
+					if (!availableAddonsByName.contains(stg)) {
+						addonNamesToRemove.add(stg);
+					}
+				}
+				addonNamesByPriority.removeAll(addonNamesToRemove);
+			}
+			return addonNamesByPriority;
+		}
+		return null;
+	}
+	
+	private class SortIgnoreCase implements Comparator<Object> {
+		@Override
+		public int compare(Object o1, Object o2) {
+			String s1 = (String) o1;
+			String s2 = (String) o2;
+			return s1.toLowerCase().compareTo(s2.toLowerCase());
+		}
 	}
 
 	public String getACREinstallationFolder() {

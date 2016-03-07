@@ -521,7 +521,6 @@ public class DownloadPanel extends JPanel implements UIConstants {
 			@Override
 			public void valueChanged(TreeSelectionEvent arg0) {
 				arbreTreePath = arbre.getSelectionPath();
-				// System.out.println(arbreTreePath);
 			}
 		});
 		arbre.addMouseListener(new MouseAdapter() {
@@ -559,12 +558,6 @@ public class DownloadPanel extends JPanel implements UIConstants {
 				if (evt.getKeyCode() == evt.VK_SPACE) {
 					addonSelectionPerformed();
 				}
-			}
-		});
-		comBoxDestinationFolder.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				comBoxDestinationFolderPerformed();
 			}
 		});
 		comBoxDestinationFolder.addPopupMenuListener(new PopupMenuListener() {
@@ -645,11 +638,10 @@ public class DownloadPanel extends JPanel implements UIConstants {
 				.setToolTipText("Exact match repository content against default destination folder");
 	}
 
-	public void init(String repositoryName, String eventName, boolean update) {
+	public void init(String repositoryName, String eventName) {
 
 		this.repositoryName = repositoryName;
 		this.eventName = eventName;
-		this.update = update;
 
 		defaultFolderDestinationSelection();
 		updateAutoDiscoverSelection();
@@ -843,14 +835,6 @@ public class DownloadPanel extends JPanel implements UIConstants {
 		repositoryService.setReport(repositoryName, null);
 	}
 
-	private void comBoxDestinationFolderPerformed() {
-
-		String defaultDownloadLocation = (String) comBoxDestinationFolder
-				.getSelectedItem();
-		repositoryService.setDefaultDownloadLocation(repositoryName,
-				defaultDownloadLocation);
-	}
-
 	private void buttonCheckForAddonsStartPerformed() {
 
 		if (comBoxDestinationFolder.getSelectedItem() == null) {
@@ -859,29 +843,43 @@ public class DownloadPanel extends JPanel implements UIConstants {
 							facade.getMainPanel(),
 							"A default destination folder must be set. \n Please checkout Addon Options panel.",
 							"Download", JOptionPane.WARNING_MESSAGE);
-			return;
 		} else {
 			String defaultDownloadLocation = (String) comBoxDestinationFolder
 					.getSelectedItem();
 			repositoryService.setDefaultDownloadLocation(repositoryName,
 					defaultDownloadLocation);
+
+			// Show partial file transfer warning message
+			showPartialFileTransferWarningMessage = true;
+
+			// Lock user action on addons tree
+			arbre.setEnabled(false);
+			// Check addons repository
+			addonsChecker = new AddonsChecker(facade, repositoryName,
+					eventName, showPartialFileTransferWarningMessage, this);
+			addonsChecker.start();
 		}
-
-		// Show partial file transfer warning message
-		showPartialFileTransferWarningMessage = true;
-
-		// Run AddonsChecker
-		checkForAddons();
 	}
 
 	public void checkForAddons() {
 
-		// Lock user action on addons tree
-		arbre.setEnabled(false);
-		// Check addons repository
-		addonsChecker = new AddonsChecker(facade, repositoryName, eventName,
-				update, showPartialFileTransferWarningMessage, this);
-		addonsChecker.start();
+		if (comBoxDestinationFolder.getSelectedItem() == null) {
+			System.out.println("Can't check for Addons on repository: "
+					+ repositoryName + "\n"
+					+ "Default destination folder is null.");
+		} else {
+			String defaultDownloadLocation = (String) comBoxDestinationFolder
+					.getSelectedItem();
+			repositoryService.setDefaultDownloadLocation(repositoryName,
+					defaultDownloadLocation);
+
+			// Lock user action on addons tree
+			arbre.setEnabled(false);
+			// Check addons repository
+			addonsChecker = new AddonsChecker(facade, repositoryName,
+					eventName, showPartialFileTransferWarningMessage, this);
+			addonsChecker.start();
+		}
 	}
 
 	private void buttonCheckForAddonsCancelPerformed() {

@@ -56,7 +56,8 @@ import fr.soe.a3s.ui.mainEditor.tree.AddonTreeModel;
 import fr.soe.a3s.ui.mainEditor.tree.CheckTreeCellRenderer;
 import fr.soe.a3s.ui.mainEditor.tree.MyRenderer2;
 import fr.soe.a3s.ui.mainEditor.tree.TreeDnD;
-import fr.soe.a3s.ui.repositoryEditor.progressDialogs.SynchronizingPanel;
+import fr.soe.a3s.ui.repositoryEditor.progressDialogs.ProgressModsetSelectionPanel;
+import fr.soe.a3s.ui.repositoryEditor.progressDialogs.ProgressSynchronizationPanel;
 
 /**
  * This code was edited or generated using CloudGarden's Jigloo SWT/Swing GUI
@@ -389,8 +390,6 @@ public class AddonsPanel extends JPanel implements UIConstants {
 
 	public void init() {
 
-		addonService.resetAvailableAddonTree();
-
 		/* View Mode */
 		boolean isViewTreeMode = configurationService.isViewModeTree();
 		if (isViewTreeMode) {
@@ -406,16 +405,17 @@ public class AddonsPanel extends JPanel implements UIConstants {
 
 		/* Display addon groups */
 		updateAddonGroups();
-
-		/* Expand */
-		expandAddonGroups();
-
 	}
 
 	public void updateAvailableAddons() {
 
 		arbre1.removeAll();
-		racine1 = addonService.getAvailableAddonsTree();
+		boolean isViewTreeMode = configurationService.isViewModeTree();
+		if (isViewTreeMode) {
+			racine1 = addonService.getAvailableAddonsTree();
+		} else {
+			racine1 = addonService.getAvailableAddonsList();
+		}
 		addonTreeModel1 = new AddonTreeModel(racine1);
 		arbre1.setModel(addonTreeModel1);
 		int numberRowShown = arbre1.getRowCount();
@@ -432,6 +432,7 @@ public class AddonsPanel extends JPanel implements UIConstants {
 		addonTreeModel2 = new AddonTreeModel(racine2);
 		arbre2.setModel(addonTreeModel2);
 		highlightMissingAddons();
+		expandAddonGroups();
 		refreshViewArbre2();
 		arbre2.setEnabled(true);
 	}
@@ -727,16 +728,6 @@ public class AddonsPanel extends JPanel implements UIConstants {
 		arbre2.setPreferredSize(arbre2.getPreferredScrollableViewportSize());
 		addonGroupsPanelScrollPane.updateUI();
 		arbre2.setSelectionPath(null);
-
-		// if (arbre2TreePath == null) {
-		// return;
-		// }
-
-		// TreeNodeDTO treeNodeDTO = (TreeNodeDTO) arbre2
-		// .getLastSelectedPathComponent();
-		// if (!treeNodeDTO.isLeaf()) {
-		// treeNodeDTO.setSelected(!treeNodeDTO.isSelected());
-		// }
 	}
 
 	private void onArbre2Collapsed(TreePath path) {
@@ -745,15 +736,6 @@ public class AddonsPanel extends JPanel implements UIConstants {
 		arbre2.setPreferredSize(arbre2.getPreferredScrollableViewportSize());
 		addonGroupsPanelScrollPane.updateUI();
 		arbre2.setSelectionPath(null);
-
-		// if (arbre2TreePath == null) {
-		// return;
-		// }
-		// TreeNodeDTO treeNodeDTO = (TreeNodeDTO) arbre2
-		// .getLastSelectedPathComponent();
-		// if (!treeNodeDTO.isLeaf()) {
-		// treeNodeDTO.setSelected(!treeNodeDTO.isSelected());
-		// }
 	}
 
 	private void selectAllAscending(TreeNodeDTO treeNodeDTO) {
@@ -809,11 +791,8 @@ public class AddonsPanel extends JPanel implements UIConstants {
 	}
 
 	private void buttonRefreshPerformed() {
-		addonService.resetAvailableAddonTree();
 		updateAvailableAddons();
 		updateAddonGroups();
-		highlightMissingAddons();
-		expandAddonGroups();
 		facade.getLaunchOptionsPanel().updateRunParameters();
 	}
 
@@ -856,10 +835,10 @@ public class AddonsPanel extends JPanel implements UIConstants {
 		final List<String> repositoryNames = modsetsSelectionPanel
 				.getRepositoryNamesForSync();
 		if (!repositoryNames.isEmpty()) {
-			SynchronizingPanel synchronizingPanel = new SynchronizingPanel(
-					facade, false);
-			synchronizingPanel.setVisible(true);
-			synchronizingPanel.init(repositoryNames);
+			ProgressModsetSelectionPanel progressModsetSelectionPanel = new ProgressModsetSelectionPanel(
+					facade);
+			progressModsetSelectionPanel.setVisible(true);
+			progressModsetSelectionPanel.init(repositoryNames);
 		}
 	}
 
@@ -892,9 +871,6 @@ public class AddonsPanel extends JPanel implements UIConstants {
 
 		saveAddonGroups();
 		updateAddonGroups();
-		highlightMissingAddons();
-		refreshViewArbre2();
-		expandAddonGroups();
 
 		facade.getAddonOptionsPanel().updateAddonPriorities();
 		facade.getLaunchOptionsPanel().updateRunParameters();
@@ -934,9 +910,6 @@ public class AddonsPanel extends JPanel implements UIConstants {
 
 		saveAddonGroups();
 		updateAddonGroups();
-		highlightMissingAddons();
-		refreshViewArbre2();
-		expandAddonGroups();
 		facade.getAddonOptionsPanel().updateAddonPriorities();
 		facade.getLaunchOptionsPanel().updateRunParameters();
 	}
@@ -974,6 +947,13 @@ public class AddonsPanel extends JPanel implements UIConstants {
 		return checkBoxTree;
 	}
 
+	public void updateModsetSelection(String repositoryName) {
+
+		List<String> list = new ArrayList<String>();
+		list.add(repositoryName);
+		updateModsetSelection(list);
+	}
+
 	public void updateModsetSelection(List<String> repositoryNames) {
 
 		for (String repositoryName : repositoryNames) {
@@ -983,11 +963,13 @@ public class AddonsPanel extends JPanel implements UIConstants {
 				for (TreeNodeDTO node : racine2.getList()) {
 					if (node instanceof TreeDirectoryDTO) {
 						TreeDirectoryDTO directory = (TreeDirectoryDTO) node;
-						if (directory.getModsetType().equals(
-								ModsetType.REPOSITORY)) {
-							if (directory.getName().equals(repositoryName)) {
-								treeDirectoryDTO = directory;
-								break;
+						if (directory.getModsetType()!=null){
+							if (directory.getModsetType().equals(
+									ModsetType.REPOSITORY)) {
+								if (directory.getName().equals(repositoryName)) {
+									treeDirectoryDTO = directory;
+									break;
+								}
 							}
 						}
 					}
@@ -1021,24 +1003,26 @@ public class AddonsPanel extends JPanel implements UIConstants {
 						for (TreeNodeDTO node : racine2.getList()) {
 							if (node instanceof TreeDirectoryDTO) {
 								TreeDirectoryDTO directory = (TreeDirectoryDTO) node;
-								if (directory.getModsetType().equals(
-										ModsetType.EVENT)) {
-									if (directory.getName().equals(
-											eventDTO.getName())) {
-										if (directory.getModsetRepositoryName() != null) {
-											if (directory
-													.getModsetRepositoryName()
-													.equals(eventDTO
-															.getRepositoryName())) {
+								if (directory.getModsetType()!=null){
+									if (directory.getModsetType().equals(
+											ModsetType.EVENT)) {
+										if (directory.getName().equals(
+												eventDTO.getName())) {
+											if (directory.getModsetRepositoryName() != null) {
+												if (directory
+														.getModsetRepositoryName()
+														.equals(eventDTO
+																.getRepositoryName())) {
+													treeDirectoryDTO = directory;
+													break;
+												}
+											} else {
+												directory
+														.setModsetRepositoryName(eventDTO
+																.getRepositoryName());
 												treeDirectoryDTO = directory;
 												break;
 											}
-										} else {
-											directory
-													.setModsetRepositoryName(eventDTO
-															.getRepositoryName());
-											treeDirectoryDTO = directory;
-											break;
 										}
 									}
 								}
@@ -1084,9 +1068,6 @@ public class AddonsPanel extends JPanel implements UIConstants {
 
 		saveAddonGroups();
 		updateAddonGroups();
-		highlightMissingAddons();
-		refreshViewArbre2();
-		expandAddonGroups();
 		facade.getAddonOptionsPanel().updateAddonPriorities();
 		facade.getLaunchOptionsPanel().updateRunParameters();
 	}
@@ -1100,9 +1081,6 @@ public class AddonsPanel extends JPanel implements UIConstants {
 				selectAllDescending(treeDirectoryDTO);
 				saveAddonGroups();
 				updateAddonGroups();
-				highlightMissingAddons();
-				refreshViewArbre2();
-				expandAddonGroups();
 				facade.getAddonOptionsPanel().updateAddonPriorities();
 				facade.getLaunchOptionsPanel().updateRunParameters();
 				break;

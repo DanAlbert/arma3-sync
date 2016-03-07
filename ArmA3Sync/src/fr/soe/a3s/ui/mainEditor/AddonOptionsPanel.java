@@ -246,7 +246,7 @@ public class AddonOptionsPanel extends JPanel implements UIConstants {
 				if (!contains) {
 					profileService.addAddonSearchDirectoryPath(path);
 					updateAddonSearchDirectories();
-					addonService.resetAvailableAddonTree();
+					updateAddonPriorities();
 					facade.getAddonsPanel().updateAvailableAddons();
 					facade.getAddonsPanel().updateAddonGroups();
 					facade.getLaunchOptionsPanel().updateRunParameters();
@@ -262,7 +262,7 @@ public class AddonOptionsPanel extends JPanel implements UIConstants {
 		if (path != null) {
 			profileService.removeAddonSearchDirectoryPath(path);
 			updateAddonSearchDirectories();
-			addonService.resetAvailableAddonTree();
+			updateAddonPriorities();
 			facade.getAddonsPanel().updateAvailableAddons();
 			facade.getAddonsPanel().updateAddonGroups();
 			facade.getLaunchOptionsPanel().updateRunParameters();
@@ -296,7 +296,7 @@ public class AddonOptionsPanel extends JPanel implements UIConstants {
 
 		directoryList2.setEnabled(false);
 		directoryList2.removeAll();
-		List<String> list = profileService.getAddonNamesByPriority();
+		List<String> list = addonService.getAddonsByPriorityList();
 		if (list != null) {
 			String[] addonNames = new String[list.size()];
 			for (int i = 0; i < list.size(); i++) {
@@ -320,7 +320,6 @@ public class AddonOptionsPanel extends JPanel implements UIConstants {
 		if (index != -1) {
 			profileService.upDirectoryPriority(index);
 			this.updateAddonSearchDirectories();
-			addonService.resetAvailableAddonTree();
 			facade.getAddonsPanel().updateAvailableAddons();
 			if (index == 0) {
 				directoryList1.setSelectedIndex(index);
@@ -344,7 +343,6 @@ public class AddonOptionsPanel extends JPanel implements UIConstants {
 		if (index != -1) {
 			profileService.downDirectoryPriority(index);
 			this.updateAddonSearchDirectories();
-			addonService.resetAvailableAddonTree();
 			facade.getAddonsPanel().updateAvailableAddons();
 			if (index == directoryList1.getModel().getSize() - 1) {
 				directoryList1.setSelectedIndex(index);

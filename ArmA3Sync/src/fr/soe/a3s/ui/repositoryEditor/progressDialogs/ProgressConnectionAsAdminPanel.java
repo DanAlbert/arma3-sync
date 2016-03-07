@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
 
 import fr.soe.a3s.exception.repository.RepositoryException;
 import fr.soe.a3s.service.RepositoryService;
@@ -12,6 +13,7 @@ import fr.soe.a3s.service.connection.ConnexionService;
 import fr.soe.a3s.service.connection.ConnexionServiceFactory;
 import fr.soe.a3s.ui.Facade;
 import fr.soe.a3s.ui.ProgressPanel;
+import fr.soe.a3s.ui.repositoryEditor.RepositoryPanel;
 import fr.soe.a3s.ui.repositoryEditor.errorDialogs.UnexpectedErrorDialog;
 
 /**
@@ -24,19 +26,16 @@ import fr.soe.a3s.ui.repositoryEditor.errorDialogs.UnexpectedErrorDialog;
  * PURCHASED FOR THIS MACHINE, SO JIGLOO OR THIS CODE CANNOT BE USED LEGALLY FOR
  * ANY CORPORATE OR COMMERCIAL PURPOSE.
  */
-public class ConnectionPanel extends ProgressPanel {
+public class ProgressConnectionAsAdminPanel extends ProgressPanel {
 
 	private ConnexionService connexion;
 	private final String repositoryName;
-	private final String eventName;
 	/* Services */
 	private final RepositoryService repositoryService = new RepositoryService();
 
-	public ConnectionPanel(Facade facade, String repositoryName,
-			String eventName) {
+	public ProgressConnectionAsAdminPanel(Facade facade, String repositoryName) {
 		super(facade);
 		this.repositoryName = repositoryName;
-		this.eventName = eventName;
 		labelTitle.setText("Connecting to repository...");
 	}
 
@@ -72,14 +71,14 @@ public class ConnectionPanel extends ProgressPanel {
 						JOptionPane.showMessageDialog(facade.getMainPanel(),
 								e.getMessage(), "Repository",
 								JOptionPane.ERROR_MESSAGE);
-					} else if (!canceled && e instanceof IOException) {
-						System.out.println(e.getMessage());
-						JOptionPane.showMessageDialog(facade.getMainPanel(),
-								e.getMessage(), "Repository",
-								JOptionPane.WARNING_MESSAGE);
-					} else {
-						e.printStackTrace();
-						if (!canceled) {
+					} else if (!canceled) {
+						if (e instanceof IOException) {
+							System.out.println(e.getMessage());
+							JOptionPane.showMessageDialog(
+									facade.getMainPanel(), e.getMessage(),
+									"Repository", JOptionPane.WARNING_MESSAGE);
+						} else {
+							e.printStackTrace();
 							UnexpectedErrorDialog dialog = new UnexpectedErrorDialog(
 									facade, "Repository", e, repositoryName);
 							dialog.show();
@@ -87,13 +86,6 @@ public class ConnectionPanel extends ProgressPanel {
 					}
 					setVisible(true);
 				} finally {
-					List<String> repositoryNames = new ArrayList<String>();
-					repositoryNames.add(repositoryName);
-					facade.getAddonsPanel().updateModsetSelection(
-							repositoryNames);
-					facade.getSyncPanel().init();
-					facade.getOnlinePanel().init();
-					facade.getLaunchPanel().init();
 					terminate();
 				}
 			}
@@ -117,6 +109,10 @@ public class ConnectionPanel extends ProgressPanel {
 		progressBar.setIndeterminate(false);
 		facade.getSyncPanel().enableAllButtons();
 		this.dispose();
-		facade.getMainPanel().openRepository(repositoryName, eventName, false);
+		RepositoryPanel repositoryPanel = facade.getMainPanel().openRepository(
+				repositoryName);
+		if (repositoryPanel != null) {
+			repositoryPanel.admin(repositoryName);
+		}
 	}
 }

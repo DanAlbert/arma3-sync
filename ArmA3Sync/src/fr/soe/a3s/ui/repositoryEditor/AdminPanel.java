@@ -369,7 +369,6 @@ public class AdminPanel extends JPanel implements UIConstants {
 			}
 		});
 		setContextualHelp();
-
 	}
 
 	private void setContextualHelp() {
@@ -416,12 +415,7 @@ public class AdminPanel extends JPanel implements UIConstants {
 
 	public void updateRepositoryStatus(RepositoryStatus repositoryStatus) {
 
-		if (repositoryStatus.equals(RepositoryStatus.OUTOFSYNC)) {
-			labelStatusValue.setText(RepositoryStatus.OUTOFSYNC
-					.getDescription());
-			labelStatusValue.setFont(new Font("Tohama", Font.BOLD, 11));
-			labelStatusValue.setForeground(Color.RED);
-		} else if (repositoryStatus.equals(RepositoryStatus.OK)) {
+		if (repositoryStatus.equals(RepositoryStatus.OK)) {
 			labelStatusValue.setText(RepositoryStatus.OK.getDescription());
 			labelStatusValue.setFont(new Font("Tohama", Font.BOLD, 11));
 			labelStatusValue.setForeground(new Color(45, 125, 45));
@@ -590,8 +584,8 @@ public class AdminPanel extends JPanel implements UIConstants {
 				Toolkit.getDefaultToolkit().getSystemClipboard()
 						.setContents(ss, null);
 				JOptionPane.showMessageDialog(facade.getMainPanel(),
-						"Auto-config url copied to clipboard.", "Auto-config url",
-						JOptionPane.INFORMATION_MESSAGE);
+						"Auto-config url copied to clipboard.",
+						"Auto-config url", JOptionPane.INFORMATION_MESSAGE);
 			} catch (IllegalStateException e) {
 				e.printStackTrace();
 				// Clipboard may not be available (Windows).

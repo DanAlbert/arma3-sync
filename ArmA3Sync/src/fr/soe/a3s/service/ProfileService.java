@@ -338,67 +338,6 @@ public class ProfileService extends ObjectDTOtransformer {
 		setAddonGroupsTree(targetTreeDirectoryDTO);
 	}
 
-	public List<String> getAddonNamesByPriority() {
-
-		String profileName = configurationDAO.getConfiguration()
-				.getProfileName();
-
-		Profile profile = profileDAO.getMap().get(profileName);
-		if (profile != null) {
-			List<String> list = profile.getAddonNamesByPriority();
-			TreeDirectory treeDirectory = profile.getTree();
-			List<String> extractedAddonNames = new ArrayList<String>();
-			getAddonsByName(treeDirectory, extractedAddonNames);
-			// Alphabetic order ignore case
-			Collections.sort(extractedAddonNames, new SortIgnoreCase());
-			if (list.isEmpty()) {
-				list.addAll(extractedAddonNames);
-				return list;
-			} else {
-				Iterator iter = extractedAddonNames.iterator();
-				while (iter.hasNext()) {
-					String name = (String) iter.next();
-					if (!list.contains(name)) {
-						list.add(name);
-					}
-				}
-				List<String> addonNamesToRemove = new ArrayList<String>();
-				for (String stg : list) {
-					if (!extractedAddonNames.contains(stg)) {
-						addonNamesToRemove.add(stg);
-					}
-				}
-				list.removeAll(addonNamesToRemove);
-				return list;
-			}
-		}
-		return null;
-	}
-
-	private void getAddonsByName(TreeNode treendNode, List<String> list) {
-
-		if (treendNode.isLeaf()) {
-			TreeLeaf treeLeaf = (TreeLeaf) treendNode;
-			if (!list.contains(treeLeaf.getName())) {
-				list.add(treeLeaf.getName());
-			}
-		} else {
-			TreeDirectory treeDirectory = (TreeDirectory) treendNode;
-			for (TreeNode node : treeDirectory.getList()) {
-				getAddonsByName(node, list);
-			}
-		}
-	}
-
-	private class SortIgnoreCase implements Comparator<Object> {
-		@Override
-		public int compare(Object o1, Object o2) {
-			String s1 = (String) o1;
-			String s2 = (String) o2;
-			return s1.toLowerCase().compareTo(s2.toLowerCase());
-		}
-	}
-
 	public void resetAddonPriority() {
 
 		String profileName = configurationDAO.getConfiguration()
@@ -406,13 +345,7 @@ public class ProfileService extends ObjectDTOtransformer {
 
 		Profile profile = profileDAO.getMap().get(profileName);
 		if (profile != null) {
-			TreeDirectory treeDirectory = profile.getTree();
-			List<String> extractedAddonNames = new ArrayList<String>();
-			getAddonsByName(treeDirectory, extractedAddonNames);
-			// Alphabetic order ignore case
-			Collections.sort(extractedAddonNames, new SortIgnoreCase());
 			profile.getAddonNamesByPriority().clear();
-			profile.getAddonNamesByPriority().addAll(extractedAddonNames);
 		}
 	}
 

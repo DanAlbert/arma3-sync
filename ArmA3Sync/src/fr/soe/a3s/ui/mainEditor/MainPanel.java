@@ -50,20 +50,25 @@ import net.jimmc.jshortcut.JShellLink;
 import fr.soe.a3s.constant.DefaultProfileName;
 import fr.soe.a3s.constant.MinimizationType;
 import fr.soe.a3s.constant.ModsetType;
+import fr.soe.a3s.constant.RepositoryStatus;
 import fr.soe.a3s.domain.configration.LauncherOptions;
 import fr.soe.a3s.dto.RepositoryDTO;
 import fr.soe.a3s.dto.TreeDirectoryDTO;
 import fr.soe.a3s.dto.TreeNodeDTO;
 import fr.soe.a3s.dto.configuration.PreferencesDTO;
+import fr.soe.a3s.exception.CheckException;
 import fr.soe.a3s.exception.FtpException;
 import fr.soe.a3s.exception.LoadingException;
 import fr.soe.a3s.exception.WritingException;
+import fr.soe.a3s.exception.repository.RepositoryException;
 import fr.soe.a3s.service.CommonService;
 import fr.soe.a3s.service.ConfigurationService;
 import fr.soe.a3s.service.LaunchService;
 import fr.soe.a3s.service.PreferencesService;
 import fr.soe.a3s.service.ProfileService;
 import fr.soe.a3s.service.RepositoryService;
+import fr.soe.a3s.service.connection.ConnexionService;
+import fr.soe.a3s.service.connection.ConnexionServiceFactory;
 import fr.soe.a3s.service.connection.FtpService;
 import fr.soe.a3s.ui.Facade;
 import fr.soe.a3s.ui.UIConstants;
@@ -72,7 +77,7 @@ import fr.soe.a3s.ui.autoConfigEditor.AutoConfigExportPanel;
 import fr.soe.a3s.ui.autoConfigEditor.AutoConfigImportPanel;
 import fr.soe.a3s.ui.profileEditor.ProfilePanel;
 import fr.soe.a3s.ui.repositoryEditor.RepositoryPanel;
-import fr.soe.a3s.ui.repositoryEditor.progressDialogs.SynchronizingPanel;
+import fr.soe.a3s.ui.repositoryEditor.progressDialogs.ProgressSynchronizationPanel;
 import fr.soe.a3s.ui.tools.acre2Editor.FirstPageACRE2InstallerPanel;
 import fr.soe.a3s.ui.tools.acreEditor.FirstPageACREInstallerPanel;
 import fr.soe.a3s.ui.tools.aiaEditor.AiaInstallerPanel;
@@ -977,43 +982,14 @@ public class MainPanel extends JFrame implements UIConstants {
 
 	public void profileChanged() {
 
-		facade.getInfoPanel().init();
-		facade.getAddonsPanel().init();
-		facade.getAddonOptionsPanel().init();
-
-		final List<String> repositoryNames = new ArrayList<String>();
-
-		TreeDirectoryDTO parent = profileService.getAddonGroupsTree();
-		if (parent != null) {
-			for (TreeNodeDTO node : parent.getList()) {
-				if (node instanceof TreeDirectoryDTO) {
-					TreeDirectoryDTO directory = (TreeDirectoryDTO) node;
-					if (directory.getModsetType().equals(ModsetType.REPOSITORY)) {
-						String repositoryName = directory
-								.getModsetRepositoryName();
-						if (repositoryName != null) {
-							repositoryNames.add(repositoryName);
-						} else {
-							repositoryNames.add(directory.getName());
-						}
-					} else if (directory.getModsetType().equals(
-							ModsetType.EVENT)) {
-						String repositoryName = directory
-								.getModsetRepositoryName();
-						if (repositoryName != null) {
-							repositoryNames.add(repositoryName);
-						}
-					}
-				}
+		SwingUtilities.invokeLater(new Runnable() {
+			@Override
+			public void run() {
+				facade.getInfoPanel().init();
+				facade.getAddonsPanel().init();
+				facade.getAddonOptionsPanel().init();
 			}
-		}
-
-		if (!repositoryNames.isEmpty()) {
-			SynchronizingPanel synchronizingPanel = new SynchronizingPanel(
-					facade, false);
-			synchronizingPanel.setVisible(true);
-			synchronizingPanel.init(repositoryNames);
-		}
+		});
 	}
 
 	public void showWellcomeDialog() {
@@ -1044,35 +1020,74 @@ public class MainPanel extends JFrame implements UIConstants {
 			repositoryNames.add(repositoryDTO.getName());
 		}
 
-		// Show progress panel if not empty repositories
-		if (!repositoryNames.isEmpty()) {
-			SynchronizingPanel synchronizingPanel = new SynchronizingPanel(
-					facade, true);
-			synchronizingPanel.setVisible(true);
-			synchronizingPanel.init(repositoryNames);
+		System.out.println("Checking repositories...");
+
+		for (final String repositoryName : repositoryNames) {
+			try {
+				ConnexionService connexion = ConnexionServiceFactory
+						.getServiceForRepositoryManagement(repositoryName);
+				connexion.checkRepository(repositoryName);
+			} catch (Exception e) {
+			}
+		}
+
+		System.out.println("Checking repositories done.");
+
+		SwingUtilities.invokeLater(new Runnable() {
+			@Override
+			public void run() {
+				facade.getSyncPanel().init();
+				facade.getOnlinePanel().init();
+				facade.getLaunchPanel().init();
+			}
+		});
+
+		List<String> updatedRepositoryNames = new ArrayList<String>();
+		for (String repositoryName : repositoryNames) {
+			try {
+				RepositoryStatus repositoryStatus = repositoryService
+						.getRepositoryStatus(repositoryName);
+				RepositoryDTO repositoryDTO = repositoryService
+						.getRepository(repositoryName);
+				if (repositoryStatus.equals(RepositoryStatus.UPDATED)
+						&& repositoryDTO.isNotify()) {
+					updatedRepositoryNames.add(repositoryName);
+				}
+			} catch (RepositoryException e) {
+			}
+		}
+
+		if (!updatedRepositoryNames.isEmpty()) {
+			String message = "The following repositories have been updated:";
+			for (String rep : repositoryNames) {
+				message = message + "\n" + "> " + rep;
+			}
+			InfoUpdatedRepositoryPanel infoUpdatedRepositoryPanel = new InfoUpdatedRepositoryPanel(
+					facade);
+			infoUpdatedRepositoryPanel.init(updatedRepositoryNames);
+			infoUpdatedRepositoryPanel.setVisible(true);
 		}
 	}
 
-	public void openRepository(final String repositoryName, String eventName,
-			boolean update) {
+	public RepositoryPanel openRepository(final String repositoryName) {
 
 		String title = repositoryName;
-
+		RepositoryPanel newRepositoryPanel = null;
 		if (!mapTabIndexes.containsKey(title)) {
-			RepositoryPanel repositoryPanel = new RepositoryPanel(facade);
-			if (update) {
-				// Repository status changed to ok
-				repositoryService.updateRepositoryRevision(repositoryName);
-				repositoryService.setOutOfSync(repositoryName, false);
-				repositoryPanel.init(repositoryName, null, true);
-				repositoryPanel.getDownloadPanel().checkForAddons();
-			} else if (eventName != null) {
-				repositoryPanel.init(repositoryName, eventName, false);
-				repositoryPanel.getDownloadPanel().checkForAddons();
-			} else {
-				repositoryPanel.init(repositoryName, null, false);
-			}
-			addClosableTab(repositoryPanel, repositoryName);
+			newRepositoryPanel = new RepositoryPanel(facade);
+			// if (update) {
+			// // Repository status changed to ok
+			// repositoryService.updateRepositoryRevision(repositoryName);
+			// repositoryService.setOutOfSync(repositoryName, false);
+			// repositoryPanel.init(repositoryName, null, true);
+			// repositoryPanel.getDownloadPanel().checkForAddons();
+			// } else if (eventName != null) {
+			// repositoryPanel.init(repositoryName, eventName, false);
+			// repositoryPanel.getDownloadPanel().checkForAddons();
+			// } else {
+			// repositoryPanel.init(repositoryName, null, false);
+			// }
+			addClosableTab(newRepositoryPanel, repositoryName);
 			final int index = tabbedPane.getTabCount() - 1;
 			mapTabIndexes.put(title, index);
 			SwingUtilities.invokeLater(new Runnable() {
@@ -1090,6 +1105,7 @@ public class MainPanel extends JFrame implements UIConstants {
 				}
 			});
 		}
+		return newRepositoryPanel;
 	}
 
 	public void addClosableTab(final JComponent c, final String title) {

@@ -28,6 +28,7 @@ import fr.soe.a3s.ui.Facade;
 import fr.soe.a3s.ui.repositoryEditor.DownloadPanel;
 import fr.soe.a3s.ui.repositoryEditor.errorDialogs.HeaderErrorDialog;
 import fr.soe.a3s.ui.repositoryEditor.errorDialogs.UnexpectedErrorDialog;
+import fr.soe.a3s.ui.repositoryEditor.progressDialogs.ProgressModsetSelectionPanel;
 
 public class AddonsChecker extends Thread {
 
@@ -39,7 +40,6 @@ public class AddonsChecker extends Thread {
 	private SyncTreeDirectoryDTO parent;
 	/* Tests */
 	private boolean found = false;
-	private boolean update = false;
 	private boolean canceled = false;
 	private boolean showPartialFileTransferWarningMessage = false;
 	/* Services */
@@ -48,13 +48,11 @@ public class AddonsChecker extends Thread {
 	private ConnexionService connexionService;
 
 	public AddonsChecker(Facade facade, String repositoryName,
-			String eventName, boolean update,
-			boolean showPartialFileTransferWarningMessage,
+			String eventName, boolean showPartialFileTransferWarningMessage,
 			DownloadPanel downloadPanel) {
 		this.facade = facade;
 		this.repositoryName = repositoryName;
 		this.eventName = eventName;
-		this.update = update;
 		this.showPartialFileTransferWarningMessage = showPartialFileTransferWarningMessage;
 		this.downloadPanel = downloadPanel;
 	}
@@ -119,15 +117,12 @@ public class AddonsChecker extends Thread {
 
 			parent = repositoryService.checkForAddons(repositoryName);
 
-			repositoryService.write(repositoryName);
-
 			downloadPanel.getProgressBarCheckForAddons()
 					.setIndeterminate(false);
 
 			// 3. Determine file completion, slower with http/zsync!
 			downloadPanel.getProgressBarCheckForAddons().setMinimum(0);
 			downloadPanel.getProgressBarCheckForAddons().setMaximum(100);
-			downloadPanel.getButtonCheckForAddonsCancel().setEnabled(true);
 
 			connexionService.getConnexionDAO().addObserverCount(
 					new ObserverCount() {
@@ -146,39 +141,19 @@ public class AddonsChecker extends Thread {
 
 			String header = connexionService.determineFilesCompletion(
 					repositoryName, parent);
+			
+			// 4. Update online panel and launch panel
+			facade.getOnlinePanel().init();
+			facade.getLaunchPanel().init();
 
 			if (!canceled) {
-				// 4. Reset adddons groups
-				addonService.resetAvailableAddonTree();
-				facade.getAddonsPanel().updateAvailableAddons();
-				facade.getAddonsPanel().updateAddonGroups();
-				facade.getAddonsPanel().expandAddonGroups();
-				facade.getAddonOptionsPanel().updateAddonPriorities();
 				// 5. Update download panel tree
 				if (eventName != null) {
-					setEventAddonSelection();
-					downloadPanel.updateAddons(parent);
-					downloadPanel.selectAll();
-				} else if (update) {
-					downloadPanel.updateAddons(parent);
-					downloadPanel.selectAll();
-				} else {
-					downloadPanel.updateAddons(parent);
+					extractAddonSelectionForEventName();
 				}
+				downloadPanel.updateAddons(parent);
 
-				// 6. Update Events panel content
-				downloadPanel.getRepositoryPanel().getEventsPanel()
-						.init(repositoryName);
-				// 7. Update modset selection
-				List<String> repositoryNames = new ArrayList<String>();
-				repositoryNames.add(repositoryName);
-				facade.getAddonsPanel().updateModsetSelection(repositoryNames);
-				// 8. Update repository status, save repository status to disk
-				repositoryService.updateRepositoryRevision(repositoryName);
-				repositoryService.setOutOfSync(repositoryName, false);
-				facade.getSyncPanel().init();
-				repositoryService.write(repositoryName);
-
+				// 6. Display messages
 				downloadPanel.getLabelCheckForAddonsStatus().setText(
 						"Finished!");
 
@@ -189,19 +164,22 @@ public class AddonsChecker extends Thread {
 					downloadPanel
 							.setShowPartialFileTransferWarningMessage(false);
 				}
+
+				// 7. Save SHA1 computation on disk
+				repositoryService.write(repositoryName);
 			}
 		} catch (Exception e) {
 			downloadPanel.getProgressBarCheckForAddons()
 					.setIndeterminate(false);
-			if (!canceled) {
+			if (e instanceof RepositoryException
+					|| e instanceof WritingException) {
+				JOptionPane.showMessageDialog(facade.getMainPanel(),
+						e.getMessage(), "Check for Addons",
+						JOptionPane.ERROR_MESSAGE);
+			} else if (!canceled) {
 				e.printStackTrace();
-				if (e instanceof RepositoryException
-						|| e instanceof RemoteRepositoryException) {
-					JOptionPane.showMessageDialog(facade.getMainPanel(),
-							e.getMessage(), "Check for Addons",
-							JOptionPane.ERROR_MESSAGE);
-				} else if (e instanceof IOException
-						| e instanceof WritingException) {
+				if (e instanceof RemoteRepositoryException
+						|| e instanceof IOException) {
 					JOptionPane.showMessageDialog(facade.getMainPanel(),
 							e.getMessage(), "Check for Addons",
 							JOptionPane.ERROR_MESSAGE);
@@ -210,8 +188,8 @@ public class AddonsChecker extends Thread {
 							facade, "Check for Addons", e, repositoryName);
 					dialog.show();
 				}
+				downloadPanel.updateAddons(null);
 			}
-			downloadPanel.updateAddons(null);
 		} finally {
 			if (connexionService != null) {
 				connexionService.cancel();
@@ -241,7 +219,6 @@ public class AddonsChecker extends Thread {
 		downloadPanel.getProgressBarCheckForAddons().setIndeterminate(false);
 		downloadPanel.getComBoxDestinationFolder().setEnabled(true);
 		downloadPanel.getButtonCheckForAddonsStart().setEnabled(true);
-		downloadPanel.getButtonCheckForAddonsCancel().setEnabled(true);
 		downloadPanel.getButtonAdvancedConfiguration().setEnabled(true);
 		downloadPanel.getButtonDownloadStart().setEnabled(true);
 		downloadPanel.getButtonDownloadPause().setEnabled(true);
@@ -277,7 +254,7 @@ public class AddonsChecker extends Thread {
 		terminate();
 	}
 
-	private void setEventAddonSelection() throws RepositoryException {
+	private void extractAddonSelectionForEventName() throws RepositoryException {
 
 		List<EventDTO> eventDTOs = repositoryService
 				.getEvents(this.repositoryName);

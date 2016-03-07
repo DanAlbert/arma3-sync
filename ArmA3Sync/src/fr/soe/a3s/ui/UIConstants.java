@@ -44,8 +44,12 @@ public interface UIConstants {
 	Image DELETE = Toolkit
 			.getDefaultToolkit()
 			.getImage(
-					java.lang.ClassLoader
-							.getSystemResource("resources/pictures/system/delete16x16.png"));
+					java.lang.ClassLoader.getSystemResource("resources/pictures/system/delete16x16.png"));
+	
+	Image ADMIN = Toolkit
+			.getDefaultToolkit()
+			.getImage(
+					java.lang.ClassLoader.getSystemResource("resources/pictures/system/admin16x16.png"));
 
 	Image REPORT = Toolkit
 			.getDefaultToolkit()

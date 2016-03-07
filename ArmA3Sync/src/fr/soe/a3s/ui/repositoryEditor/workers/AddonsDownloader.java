@@ -22,6 +22,7 @@ import fr.soe.a3s.dto.sync.SyncTreeLeafDTO;
 import fr.soe.a3s.dto.sync.SyncTreeNodeDTO;
 import fr.soe.a3s.exception.CheckException;
 import fr.soe.a3s.exception.repository.RepositoryException;
+import fr.soe.a3s.service.AddonService;
 import fr.soe.a3s.service.RepositoryService;
 import fr.soe.a3s.service.connection.ConnexionService;
 import fr.soe.a3s.service.connection.ConnexionServiceFactory;
@@ -61,6 +62,7 @@ public class AddonsDownloader extends Thread implements DataAccessConstants {
 	/* Services */
 	private final RepositoryService repositoryService = new RepositoryService();
 	private ConnexionService connexionService;
+	private AddonService addonService = new AddonService();
 
 	public AddonsDownloader(Facade facade, String repositoryName,
 			SyncTreeDirectoryDTO racine, DownloadPanel downloadPanel) {
@@ -92,7 +94,7 @@ public class AddonsDownloader extends Thread implements DataAccessConstants {
 
 		// Return if update files list is empty
 		if (this.listFilesToUpdate.size() == 0) {
-			finish();
+			finish(null,null);
 			initDownloadPanelForEndDownload();
 			terminate();
 			return;
@@ -181,12 +183,12 @@ public class AddonsDownloader extends Thread implements DataAccessConstants {
 
 					@Override
 					public void updateEnd() {
-						finish();
+						finish(null,null);
 					}
 
 					@Override
 					public void updateEndWithErrors(List<Exception> errors) {
-						finishWithErrors("Download finished with errors:",
+						finish("Download finished with errors:",
 								errors);
 					}
 
@@ -219,12 +221,12 @@ public class AddonsDownloader extends Thread implements DataAccessConstants {
 
 						@Override
 						public void end() {
-							finish();
+							finish(null,null);
 						}
 
 						@Override
 						public void endWithError(List<Exception> errors) {
-							finishWithErrors("Download finished with errors:",
+							finish("Download finished with errors:",
 									errors);
 						}
 					});
@@ -256,13 +258,12 @@ public class AddonsDownloader extends Thread implements DataAccessConstants {
 		} catch (Exception e) {
 			downloadPanel.getProgressBarDownloadSingleAddon().setIndeterminate(
 					false);
-			if (!canceled) {
+			if (e instanceof RepositoryException) {
+				JOptionPane.showMessageDialog(facade.getMainPanel(),
+						e.getMessage(), "Download", JOptionPane.ERROR_MESSAGE);
+			} else if (!canceled) {
 				e.printStackTrace();
-				if (e instanceof RepositoryException) {
-					JOptionPane.showMessageDialog(facade.getMainPanel(),
-							e.getMessage(), "Download",
-							JOptionPane.ERROR_MESSAGE);
-				} else if (e instanceof IOException) {
+				if (e instanceof IOException) {
 					JOptionPane.showMessageDialog(facade.getMainPanel(),
 							e.getMessage(), "Download",
 							JOptionPane.ERROR_MESSAGE);
@@ -274,10 +275,9 @@ public class AddonsDownloader extends Thread implements DataAccessConstants {
 				if (connexionService != null) {
 					connexionService.cancel();
 				}
-				downloadPanel.checkForAddons();
-				initDownloadPanelForEndDownload();
-				terminate();
 			}
+			initDownloadPanelForEndDownload();
+			terminate();
 		}
 	}
 
@@ -441,18 +441,14 @@ public class AddonsDownloader extends Thread implements DataAccessConstants {
 			}
 		});
 	}
-
-	private void finish() {
-
-		String message = "Download finished successfully.";
-
-		System.out.println(message);
-
+	
+	private void finish(String message, List<Exception> errors) {
+		
 		/* Cancel all connections */
 		if (connexionService != null) {
 			connexionService.cancel();
 		}
-
+		
 		/* Update UI */
 		downloadPanel.getProgressBarDownloadSingleAddon().setIndeterminate(
 				false);
@@ -462,95 +458,73 @@ public class AddonsDownloader extends Thread implements DataAccessConstants {
 				UnitConverter.convertSpeed(0));
 		downloadPanel.getLabelRemainingTimeValue().setText(
 				UnitConverter.convertTime(0));
-
+		
 		/* Delete extra files */
 		downloadPanel.getLabelDownloadStatus().setText(
 				"Deleting extra files...");
 		deleteExtraFiles();
-
+		
+		/* Update available addons */
+		facade.getAddonsPanel().updateAvailableAddons();
+		
+		/* Update modset selection */
+		facade.getAddonsPanel().updateModsetSelection(repositoryName);
+		
+		/* Update repository status */
+		repositoryService.updateRepositoryRevision(repositoryName);
+		facade.getSyncPanel().init();
+		
 		/* Generate download report */
-		String report = generateReport(message);
-		repositoryService.setReport(repositoryName, report);
+		if (errors==null){
+			String report = generateReport("Download finished successfully.");
+			repositoryService.setReport(repositoryName, report);
+		}else {
+			String report = generateReport(message, errors);
+			repositoryService.setReport(repositoryName, report);
+		}
 
-		/* End Messages */
-		downloadPanel.getLabelDownloadStatus().setText("Finished!");
-		JOptionPane.showMessageDialog(facade.getMainPanel(),
-				"Download is finished.", "Download",
-				JOptionPane.INFORMATION_MESSAGE);
-
-		/* Check for TFAR Update */
-		if (tfarIsUpdated) {
-			int response = JOptionPane.showConfirmDialog(facade.getMainPanel(),
-					"TFAR files have changed. Proceed with TFAR installer?",
-					"TFAR installer", JOptionPane.OK_CANCEL_OPTION);
-			if (response == 0) {
-				FirstPageTFARInstallerPanel firstPage = new FirstPageTFARInstallerPanel(
-						facade);
-				firstPage.init();
-				firstPage.setVisible(true);
+		/* End Message */
+		if (errors==null){
+			downloadPanel.getLabelDownloadStatus().setText("Finished!");
+			JOptionPane.showMessageDialog(facade.getMainPanel(),
+					"Download is finished.", "Download",
+					JOptionPane.INFORMATION_MESSAGE);
+		}else {
+			downloadPanel.getLabelDownloadStatus().setText("Error!");
+			downloadPanel.showDownloadReport();
+		}
+		
+		/* Check for TFAR and ACRE2 Update */
+		if (errors==null){
+			if (tfarIsUpdated) {
+				int response = JOptionPane.showConfirmDialog(facade.getMainPanel(),
+						"TFAR files have changed. Proceed with TFAR installer?",
+						"TFAR installer", JOptionPane.OK_CANCEL_OPTION);
+				if (response == 0) {
+					FirstPageTFARInstallerPanel firstPage = new FirstPageTFARInstallerPanel(
+							facade);
+					firstPage.init();
+					firstPage.setVisible(true);
+				}
+			}
+			if (acre2IsUpdated) {
+				int response = JOptionPane
+						.showConfirmDialog(
+								facade.getMainPanel(),
+								"ACRE 2 files have changed. Proceed with ACRE 2 installer?",
+								"ACRE 2 installer", JOptionPane.OK_CANCEL_OPTION);
+				if (response == 0) {
+					FirstPageACRE2InstallerPanel firstPage = new FirstPageACRE2InstallerPanel(
+							facade);
+					firstPage.init();
+					firstPage.setVisible(true);
+				}
 			}
 		}
 
-		/* Check for ACRE 2 Update */
-		if (acre2IsUpdated) {
-			int response = JOptionPane
-					.showConfirmDialog(
-							facade.getMainPanel(),
-							"ACRE 2 files have changed. Proceed with ACRE 2 installer?",
-							"ACRE 2 installer", JOptionPane.OK_CANCEL_OPTION);
-			if (response == 0) {
-				FirstPageACRE2InstallerPanel firstPage = new FirstPageACRE2InstallerPanel(
-						facade);
-				firstPage.init();
-				firstPage.setVisible(true);
-			}
-		}
-
+		/* */
 		initDownloadPanelForEndDownload();
-
-		/* Check for Addons */
 		downloadPanel.checkForAddons();
-
-		terminate();
-	}
-
-	private void finishWithErrors(String message, List<Exception> errors) {
-
-		System.out.println(message);
-
-		/* Cancel all connections */
-		if (connexionService != null) {
-			connexionService.cancel();
-		}
-
-		/* Update UI */
-		downloadPanel.getProgressBarDownloadSingleAddon().setIndeterminate(
-				false);
-		downloadPanel.getProgressBarDownloadAddons().setValue(100);
-		downloadPanel.getProgressBarDownloadSingleAddon().setValue(100);
-		downloadPanel.getLabelSpeedValue().setText(
-				UnitConverter.convertSpeed(0));
-		downloadPanel.getLabelRemainingTimeValue().setText(
-				UnitConverter.convertTime(0));
-
-		/* Delete extra files */
-		downloadPanel.getLabelDownloadStatus().setText(
-				"Deleting extra files...");
-		deleteExtraFiles();
-
-		/* Generate download report */
-		String report = generateReport(message, errors);
-		repositoryService.setReport(repositoryName, report);
-
-		/* End Messages */
-		downloadPanel.getLabelDownloadStatus().setText("Error!");
-		downloadPanel.showDownloadReport();
-
-		initDownloadPanelForEndDownload();
-
-		/* Check for Addons */
-		downloadPanel.checkForAddons();
-
 		terminate();
 	}
 
@@ -568,7 +542,7 @@ public class AddonsDownloader extends Thread implements DataAccessConstants {
 				connexionService.cancel();
 			}
 
-			finishWithErrors(message, errors);
+			finish(message, errors);
 		}
 	}
 
@@ -586,7 +560,7 @@ public class AddonsDownloader extends Thread implements DataAccessConstants {
 				connexionService.cancel();
 			}
 
-			finishWithErrors(message, errors);
+			finish(message, errors);
 		}
 	}
 

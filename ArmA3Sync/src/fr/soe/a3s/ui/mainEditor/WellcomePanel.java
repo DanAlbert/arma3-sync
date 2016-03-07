@@ -136,10 +136,8 @@ public class WellcomePanel extends JDialog implements UIConstants {
 
 		this.dispose();
 		facade.getAddonOptionsPanel().updateAddonSearchDirectories();
-		addonService.resetAvailableAddonTree();
 		facade.getAddonsPanel().updateAvailableAddons();
 		facade.getAddonsPanel().updateAddonGroups();
-		facade.getAddonsPanel().expandAddonGroups();
 		facade.getLaunchOptionsPanel().init();
 	}
 

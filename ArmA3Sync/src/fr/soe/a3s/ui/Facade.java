@@ -13,7 +13,7 @@ import fr.soe.a3s.ui.mainEditor.OnlinePanel;
 import fr.soe.a3s.ui.mainEditor.PreferencesPanel;
 import fr.soe.a3s.ui.mainEditor.SyncPanel;
 import fr.soe.a3s.ui.profileEditor.ProfilePanel;
-import fr.soe.a3s.ui.repositoryEditor.progressDialogs.ConnectionPanel;
+import fr.soe.a3s.ui.repositoryEditor.progressDialogs.ProgressConnectionAsAdminPanel;
 import fr.soe.a3s.ui.tools.acre2Editor.FirstPageACRE2InstallerPanel;
 import fr.soe.a3s.ui.tools.acreEditor.FirstPageACREInstallerPanel;
 import fr.soe.a3s.ui.tools.tfarEditor.FirstPageTFARInstallerPanel;
@@ -35,7 +35,7 @@ public class Facade {
 	private SyncPanel syncPanel;
 	private ExternalApplicationsEditionPanel externalApplicationsEditionPanel;
 	private PreferencesPanel preferencesPanel;
-	private ConnectionPanel connectiongPanel;
+	private ProgressConnectionAsAdminPanel connectiongPanel;
 	private FirstPageACREInstallerPanel firstPageACREInstallerPanel;
 	private FirstPageACRE2InstallerPanel firstPageACRE2InstallerPanel;
 	private FirstPageTFARInstallerPanel firstPageTFARInstallerPanel;
@@ -147,11 +147,11 @@ public class Facade {
 		this.preferencesPanel = preferencesPanel;
 	}
 
-	public void setConnectiongPanel(ConnectionPanel connectiongPanel) {
+	public void setConnectiongPanel(ProgressConnectionAsAdminPanel connectiongPanel) {
 		this.connectiongPanel = connectiongPanel;
 	}
 
-	public ConnectionPanel getConnectiongPanel() {
+	public ProgressConnectionAsAdminPanel getConnectiongPanel() {
 		return connectiongPanel;
 	}
 

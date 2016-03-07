@@ -2,7 +2,6 @@ package fr.soe.a3s.ui.mainEditor;
 
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
-import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.List;
@@ -13,12 +12,12 @@ import javax.swing.JDialog;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
 import javax.swing.border.BevelBorder;
 
 import fr.soe.a3s.service.RepositoryService;
 import fr.soe.a3s.ui.Facade;
 import fr.soe.a3s.ui.UIConstants;
+import fr.soe.a3s.ui.repositoryEditor.RepositoryPanel;
 
 public class InfoUpdatedRepositoryPanel extends JDialog implements UIConstants {
 
@@ -105,11 +104,19 @@ public class InfoUpdatedRepositoryPanel extends JDialog implements UIConstants {
 	}
 
 	private void buttonUpdateNowPerformed() {
+		
 		int index = list.getSelectedIndex();
-		if (index !=-1){
+		if (index != -1) {
 			this.dispose();
-			String repositoryName = (String) list.getModel().getElementAt(index);
-			facade.getMainPanel().openRepository(repositoryName, null,true);
+			String repositoryName = (String) list.getModel()
+					.getElementAt(index);
+			if (repositoryName != null) {
+				RepositoryPanel repositoryPanel = facade.getMainPanel()
+						.openRepository(repositoryName);
+				if (repositoryPanel != null) {
+					repositoryPanel.download(repositoryName, null);
+				}
+			}
 		}
 	}
 
