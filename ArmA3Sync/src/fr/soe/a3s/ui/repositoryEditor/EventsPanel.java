@@ -55,7 +55,7 @@ import fr.soe.a3s.ui.mainEditor.tree.MyRenderer2;
 import fr.soe.a3s.ui.repositoryEditor.dialogs.UploadEventsOptionsPanel;
 import fr.soe.a3s.ui.repositoryEditor.events.EventAddPanel;
 import fr.soe.a3s.ui.repositoryEditor.events.EventRenamePanel;
-import fr.soe.a3s.ui.repositoryEditor.progressDialogs.UploadEventsProgressPanel;
+import fr.soe.a3s.ui.repositoryEditor.progressDialogs.ProgressUploadEventsPanel;
 import fr.soe.a3s.ui.repositoryEditor.tree.AddonSyncTreeModel;
 
 public class EventsPanel extends JPanel implements UIConstants {
@@ -406,7 +406,7 @@ public class EventsPanel extends JPanel implements UIConstants {
 
 	private void uploadInformations() {
 
-		UploadEventsProgressPanel uploadPanel = new UploadEventsProgressPanel(
+		ProgressUploadEventsPanel uploadPanel = new ProgressUploadEventsPanel(
 				facade, repositoryName);
 		uploadPanel.setVisible(true);
 		uploadPanel.init();

@@ -16,7 +16,7 @@ import fr.soe.a3s.service.connection.ConnexionServiceFactory;
 import fr.soe.a3s.ui.Facade;
 import fr.soe.a3s.ui.ProgressPanel;
 
-public class UploadEventsProgressPanel extends ProgressPanel {
+public class ProgressUploadEventsPanel extends ProgressPanel {
 
 	private ConnexionService connexion;
 	private final String repositoryName;
@@ -24,7 +24,7 @@ public class UploadEventsProgressPanel extends ProgressPanel {
 	/* Service */
 	private final RepositoryService repositoryService = new RepositoryService();
 
-	public UploadEventsProgressPanel(Facade facade, String repositoryName) {
+	public ProgressUploadEventsPanel(Facade facade, String repositoryName) {
 		super(facade);
 		this.repositoryName = repositoryName;
 		labelTitle.setText("Uploading events informations...");
