@@ -1,5 +1,6 @@
 package fr.soe.a3s.service.connection;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -242,8 +243,6 @@ public class HttpService extends AbstractConnexionService implements
 
 		List<SyncTreeLeafDTO> list = parent.getDeepSearchLeafsList();
 
-		httpDAOPool.get(0).setTotalCount(list.size());
-
 		// Check if server supports partial file transfer
 		String header = null;
 		if (!noPartialFileTransfer) {
@@ -255,49 +254,58 @@ public class HttpService extends AbstractConnexionService implements
 			noPartialFileTransfer = true;
 		}
 
+		List<SyncTreeLeafDTO> list2 = new ArrayList<SyncTreeLeafDTO>();
+
 		for (SyncTreeLeafDTO leaf : list) {
+			if (leaf.isUpdated()) {
+				if (isCompressedPboFilesOnly) {
+					leaf.setComplete(0);
+				} else if (noPartialFileTransfer) {
+					leaf.setComplete(0);
+				} else {
+					final String rootDestinationPath = repository
+							.getDefaultDownloadLocation();
+					String destinationPath = null;
+					String remotePath = repository.getProtocol().getRemotePath();
+					String path = leaf.getParentRelativePath();
+					if (leaf.getDestinationPath() != null) {
+						destinationPath = leaf.getDestinationPath();
+						if (!path.isEmpty()) {
+							remotePath = remotePath + "/" + path;
+						}
+					} else {
+						destinationPath = rootDestinationPath;
+						if (!path.isEmpty()) {
+							destinationPath = rootDestinationPath + "/" + path;
+							remotePath = remotePath + "/" + path;
+						}
+					}
+
+					leaf.setDestinationPath(destinationPath);
+					leaf.setRemotePath(remotePath);
+					
+					File targetFile = new File(destinationPath + "/" + leaf.getName());
+					if (!targetFile.exists()){
+						leaf.setComplete(0);
+					}else {
+						list2.add(leaf);
+					}
+				}
+			} else {
+				leaf.setComplete(100);
+			}
+		}
+
+		httpDAOPool.get(0).setTotalCount(list2.size());
+		
+		for (SyncTreeLeafDTO leaf : list2) {
 			if (httpDAOPool.get(0).isCanceled()) {
 				break;
 			} else {
-				if (leaf.isUpdated()) {
-					if (isCompressedPboFilesOnly) {
-						leaf.setComplete(0);
-					} else if (noPartialFileTransfer) {
-						leaf.setComplete(0);
-					} else {
-						final String rootDestinationPath = repository
-								.getDefaultDownloadLocation();
-
-						String destinationPath = null;
-						String remotePath = repository.getProtocol()
-								.getRemotePath();
-						String path = leaf.getParentRelativePath();
-						if (leaf.getDestinationPath() != null) {
-							destinationPath = leaf.getDestinationPath();
-							if (!path.isEmpty()) {
-								remotePath = remotePath + "/" + path;
-							}
-						} else {
-							destinationPath = rootDestinationPath;
-							if (!path.isEmpty()) {
-								destinationPath = rootDestinationPath + "/"
-										+ path;
-								remotePath = remotePath + "/" + path;
-							}
-						}
-
-						leaf.setDestinationPath(destinationPath);
-						leaf.setRemotePath(remotePath);
-
-						double complete = httpDAOPool.get(0).getFileCompletion(
-								leaf.getRemotePath(),
-								leaf.getDestinationPath(), leaf,
-								repository.getProtocol());
-						leaf.setComplete(complete);
-					}
-				} else {
-					leaf.setComplete(100);
-				}
+				double complete = httpDAOPool.get(0).getFileCompletion(
+						leaf.getRemotePath(), leaf.getDestinationPath(), leaf,
+						repository.getProtocol());
+				leaf.setComplete(complete);
 			}
 		}
 
