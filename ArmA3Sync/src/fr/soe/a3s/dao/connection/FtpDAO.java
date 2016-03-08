@@ -72,7 +72,7 @@ public class FtpDAO extends AbstractConnexionDAO {
 
 		ftpClient.connect(hostname, Integer.parseInt(port));
 		isLoged = ftpClient.login(login, password);
-		ftpClient.setFileType(FTP.BINARY_FILE_TYPE);
+		ftpClient.setFileType(FTP.BINARY_FILE_TYPE);// binary transfer
 		ftpClient.enterLocalPassiveMode();// passive mode
 		int reply = ftpClient.getReplyCode();
 
