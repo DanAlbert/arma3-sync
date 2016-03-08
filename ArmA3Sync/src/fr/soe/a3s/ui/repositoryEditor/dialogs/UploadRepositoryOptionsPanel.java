@@ -16,7 +16,7 @@ public class UploadRepositoryOptionsPanel extends UploadOptionsPanel {
 
 	public UploadRepositoryOptionsPanel(Facade facade) {
 		super(facade);
-		this.setSize(405, 350);
+		this.setSize(405, 340);
 		this.setLocation(
 				(int) facade.getMainPanel().getLocation().getX()
 						+ facade.getMainPanel().getWidth() / 2

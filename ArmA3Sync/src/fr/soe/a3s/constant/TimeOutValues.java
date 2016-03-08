@@ -2,7 +2,7 @@ package fr.soe.a3s.constant;
 
 public enum TimeOutValues {
 
-	CONNECTION_TIME_OUT(60000), READ_TIME_OUT(60000);
+	CONNECTION_TIME_OUT(300000), READ_TIME_OUT(300000);
 
 	private int value;
 

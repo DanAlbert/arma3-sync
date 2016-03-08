@@ -51,13 +51,13 @@ public abstract class AbstractConnexionDAO implements DataAccessConstants,
 	protected double maximumClientDownloadSpeed = 0;
 
 	protected static final String UNKNOWN_HOST = "Host name cannot be reached."
-			+ "\n" + "Checkout the connection settings, DNS and firewall.";
+			+ "\n" + "Please checkout the connection settings, DNS and firewall.";
 	protected static final String CONNECTION_TIME_OUT_REACHED = "ArmA3Sync closed connection: Connection timeout reached."
-			+ "\n" + "Checkout the connection advanced settings.";
+			+ "\n" + "Please checkout the connection settings.";
 	protected static final String READ_TIME_OUT_REACHED = "ArmA3Sync closed connection: Read timeout reached."
-			+ "\n" + "Checkout the connection advanced settings.";
+			+ "\n" + "Please checkout the connection settings.";
 	protected static final String TIME_OUT_REACHED = "ArmA3Sync closed connection: Connection or Read timeout reached."
-			+ "\n" + "Checkout the connection advanced settings.";
+			+ "\n" + "Please checkout the connection settings.";
 	protected static final String CONNECTION_FAILED = "Connection failed.";
 	public static final String WRONG_LOGIN_PASSWORD = "login or password wrong or missing";
 

@@ -52,12 +52,20 @@ public abstract class AbstractProtocole implements Serializable {
 		return connectionTimeOut;
 	}
 
+	public void setConnectionTimeOut(String connectionTimeOut) {
+		this.connectionTimeOut = connectionTimeOut;
+	}
+
 	public String getReadTimeOut() {
 		if (readTimeOut == null) {
 			readTimeOut = Integer.toString(TimeOutValues.READ_TIME_OUT
 					.getValue());
 		}
 		return readTimeOut;
+	}
+
+	public void setReadTimeOut(String readTimeOut) {
+		this.readTimeOut = readTimeOut;
 	}
 
 	public String getHostname() {

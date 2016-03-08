@@ -70,7 +70,7 @@ public class EditRepositoryPanel extends JDialog implements UIConstants,
 		DataAccessConstants {
 
 	private final Facade facade;
-	private JButton buttonOK, buttonCancel, buttonAdvanced;
+	private JButton buttonOK, buttonCancel;
 	private JLabel labelRepositoryName;
 	private JLabel labelPort;
 	private JLabel labelConnection;
@@ -94,7 +94,6 @@ public class EditRepositoryPanel extends JDialog implements UIConstants,
 	private JComboBox comboBoxProtocol;
 	private final JPopupMenu popup;
 	private final JMenuItem menuItemPaste;
-	private final AdvancedConnectionPanel repositoryAdvancedPanel;
 
 	/* Service */
 	private final RepositoryService repositoryService = new RepositoryService();
@@ -119,13 +118,11 @@ public class EditRepositoryPanel extends JDialog implements UIConstants,
 		this.setLayout(new BorderLayout());
 		{
 			JPanel controlPanel = new JPanel();
-			buttonAdvanced = new JButton("Advanced");
 			buttonOK = new JButton("OK");
 			buttonCancel = new JButton("Cancel");
 			buttonOK.setPreferredSize(buttonCancel.getPreferredSize());
 			FlowLayout flowLayout = new FlowLayout(FlowLayout.RIGHT);
 			controlPanel.setLayout(flowLayout);
-			controlPanel.add(buttonAdvanced);
 			controlPanel.add(buttonOK);
 			controlPanel.add(buttonCancel);
 			this.add(controlPanel, BorderLayout.SOUTH);
@@ -272,19 +269,6 @@ public class EditRepositoryPanel extends JDialog implements UIConstants,
 			vertBox.add(connectionPanel);
 			vertBox.add(Box.createVerticalStrut(5));
 			connectionPanel.setPreferredSize(new java.awt.Dimension(384, 71));
-			// vertBox.add(protocolePanel);
-			// {
-			// ComboBoxModel comboBoxEncryptionModel = new DefaultComboBoxModel(
-			// new String[] {
-			// EncryptionMode.NO_ENCRYPTION.getDescription(),
-			// EncryptionMode.EXPLICIT_SSL.getDescription(),
-			// EncryptionMode.IMPLICIT_SSL.getDescription() });
-			// comboBoxEncryption = new JComboBox();
-			// protocolePanel.add(comboBoxEncryption);
-			// comboBoxEncryption.setModel(comboBoxEncryptionModel);
-			// comboBoxEncryption.setBounds(123, 24, 146, 25);
-			// }
-			// protocolePanel.setPreferredSize(new java.awt.Dimension(384, 20));
 			centerPanel.add(vertBox);
 		}
 
@@ -301,10 +285,6 @@ public class EditRepositoryPanel extends JDialog implements UIConstants,
 		menuItemPaste.setActionCommand("Paste");
 		popup.add(menuItemPaste);
 
-		repositoryAdvancedPanel = new AdvancedConnectionPanel(facade);
-		repositoryAdvancedPanel.init();
-		repositoryAdvancedPanel.setVisible(false);
-
 		textFieldAutoConfigUrl.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseReleased(MouseEvent e) {
@@ -319,12 +299,6 @@ public class EditRepositoryPanel extends JDialog implements UIConstants,
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
 				buttonImportPerformed();
-			}
-		});
-		buttonAdvanced.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				buttonAdvancedPerformed();
 			}
 		});
 		buttonOK.addActionListener(new ActionListener() {
@@ -345,12 +319,6 @@ public class EditRepositoryPanel extends JDialog implements UIConstants,
 				checkBoxAnonymousPerformed();
 			}
 		});
-		// comboBoxEncryption.addActionListener(new ActionListener() {
-		// @Override
-		// public void actionPerformed(ActionEvent arg0) {
-		// comboBoxEncryptionPerformed();
-		// }
-		// });
 		comboBoxProtocol.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
@@ -403,10 +371,6 @@ public class EditRepositoryPanel extends JDialog implements UIConstants,
 			textFieldHost.setCaretPosition(0);
 			textFieldPort.setCaretPosition(0);
 			textFieldPort.setCaretPosition(0);
-			repositoryAdvancedPanel.getTextFiledReadTimeout().setText(
-					protocoleDTO.getReadTimeOut());
-			repositoryAdvancedPanel.getTextFiledConnectionTimeout().setText(
-					protocoleDTO.getConnectionTimeOut());
 		} catch (RepositoryException e) {
 			e.printStackTrace();
 			JOptionPane.showMessageDialog(facade.getMainPanel(),
@@ -543,10 +507,6 @@ public class EditRepositoryPanel extends JDialog implements UIConstants,
 		t.start();
 	}
 
-	private void buttonAdvancedPerformed() {
-		repositoryAdvancedPanel.setVisible(true);
-	}
-
 	private void buttonOKPerformed() {
 
 		String name = textFieldRepositoryName.getText().trim();
@@ -636,26 +596,20 @@ public class EditRepositoryPanel extends JDialog implements UIConstants,
 
 		assert (protocole != null);
 
-		String connectionTimeOut = repositoryAdvancedPanel
-				.getTextFiledConnectionTimeout().getText().trim();
-		String readTimeOut = repositoryAdvancedPanel.getTextFiledReadTimeout()
-				.getText().trim();
-
 		try {
 			if (initialRepositoryName != null) {// Edit Repository
 				if (initialRepositoryName.equals(name)) {
 					repositoryService.setRepository(initialRepositoryName, url,
-							port, login, pass, protocole, connectionTimeOut,
-							readTimeOut);
+							port, login, pass, protocole);
 				} else {
 					repositoryService.renameRepository(initialRepositoryName,
 							name);
 					repositoryService.setRepository(name, url, port, login,
-							pass, protocole, connectionTimeOut, readTimeOut);
+							pass, protocole);
 				}
 			} else {// New Repository
 				repositoryService.createRepository(name, url, port, login,
-						pass, protocole, connectionTimeOut, readTimeOut);
+						pass, protocole);
 			}
 			repositoryService.write(name);
 		} catch (RepositoryNotFoundException | CheckException

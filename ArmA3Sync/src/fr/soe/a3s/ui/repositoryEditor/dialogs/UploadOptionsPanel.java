@@ -61,12 +61,10 @@ public abstract class UploadOptionsPanel extends JDialog implements UIConstants 
 	private char[] password;
 	private JComboBox comboBoxProtocol;
 	protected Box vertBox;
-	private final AdvancedConnectionPanel repositoryAdvancedPanel;
 	/* Service */
 	protected final RepositoryService repositoryService = new RepositoryService();
 	// Data
 	protected String repositoryName;
-	private AbstractButton buttonAdvanced;
 
 	public UploadOptionsPanel(Facade facade) {
 		super(facade.getMainPanel(), "Upload options", true);
@@ -76,13 +74,11 @@ public abstract class UploadOptionsPanel extends JDialog implements UIConstants 
 		this.setLayout(new BorderLayout());
 		{
 			JPanel controlPanel = new JPanel();
-			buttonAdvanced = new JButton("Advanced");
 			buttonOK = new JButton("OK");
 			buttonCancel = new JButton("Cancel");
 			buttonOK.setPreferredSize(buttonCancel.getPreferredSize());
 			FlowLayout flowLayout = new FlowLayout(FlowLayout.RIGHT);
 			controlPanel.setLayout(flowLayout);
-			controlPanel.add(buttonAdvanced);
 			controlPanel.add(buttonOK);
 			controlPanel.add(buttonCancel);
 			this.add(controlPanel, BorderLayout.SOUTH);
@@ -186,16 +182,6 @@ public abstract class UploadOptionsPanel extends JDialog implements UIConstants 
 			centerPanel.add(vertBox);
 		}
 
-		repositoryAdvancedPanel = new AdvancedConnectionPanel(facade);
-		repositoryAdvancedPanel.init();
-		repositoryAdvancedPanel.setVisible(false);
-
-		buttonAdvanced.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				buttonAdvancedPerformed();
-			}
-		});
 		buttonOK.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
@@ -273,10 +259,6 @@ public abstract class UploadOptionsPanel extends JDialog implements UIConstants 
 					passwordField.setText("");
 					passwordField.setEnabled(false);
 				}
-				repositoryAdvancedPanel.getTextFiledReadTimeout().setText(
-						uploadProtocolDTO.getReadTimeOut());
-				repositoryAdvancedPanel.getTextFiledConnectionTimeout()
-						.setText(uploadProtocolDTO.getConnectionTimeOut());
 			}
 			textFieldHost.setCaretPosition(0);
 			textFieldPort.setCaretPosition(0);
@@ -286,10 +268,6 @@ public abstract class UploadOptionsPanel extends JDialog implements UIConstants 
 			JOptionPane.showMessageDialog(facade.getMainPanel(),
 					e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
 		}
-	}
-
-	private void buttonAdvancedPerformed() {
-		repositoryAdvancedPanel.setVisible(true);
 	}
 
 	protected abstract void buttonOKPerformed();
@@ -318,17 +296,10 @@ public abstract class UploadOptionsPanel extends JDialog implements UIConstants 
 
 		assert (protocol != null);
 
-		String connectionTimeOut = repositoryAdvancedPanel
-				.getTextFiledConnectionTimeout().getText().trim();
-		String readTimeOut = repositoryAdvancedPanel.getTextFiledReadTimeout()
-				.getText().trim();
-
 		try {
 			// Set Upload protocol
-			repositoryService
-					.setRepositoryUploadProtocole(repositoryName, url, port,
-							login, pass, protocol, connectionTimeOut,
-							readTimeOut);
+			repositoryService.setRepositoryUploadProtocole(repositoryName, url,
+					port, login, pass, protocol, "0", "0");
 			return true;
 		} catch (Exception e) {
 			JOptionPane.showMessageDialog(this, e.getMessage(), "Error",

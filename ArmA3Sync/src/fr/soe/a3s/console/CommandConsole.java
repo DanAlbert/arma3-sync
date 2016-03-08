@@ -320,52 +320,6 @@ public class CommandConsole extends CommandGeneral {
 			}
 		} while (folderLocationIsWrong);
 
-		// Connection Timeout
-		boolean connectionTimeOutIsWrong = false;
-		String connectionTimeOut = "";
-		do {
-			System.out
-					.print("Enter connection timeout in milliseconds (default 60000, >0): ");
-			connectionTimeOut = c.nextLine();
-			if (connectionTimeOut.isEmpty()) {
-				connectionTimeOut = Integer
-						.toString(TimeOutValues.CONNECTION_TIME_OUT.getValue());
-			} else {
-				try {
-					int time = Integer.parseInt(connectionTimeOut);
-					connectionTimeOutIsWrong = false;
-					if (time == 0) {
-						connectionTimeOutIsWrong = true;
-					}
-				} catch (NumberFormatException e) {
-					connectionTimeOutIsWrong = true;
-				}
-			}
-		} while (connectionTimeOutIsWrong);
-
-		// Read time out
-		boolean readTimeOutIsWrong = false;
-		String readTimeOut = "";
-		do {
-			System.out
-					.print("Enter read timeout in milliseconds (default 60000, >0): ");
-			readTimeOut = c.nextLine();
-			if (readTimeOut.isEmpty()) {
-				readTimeOut = Integer.toString(TimeOutValues.READ_TIME_OUT
-						.getValue());
-			} else {
-				try {
-					int time = Integer.parseInt(readTimeOut);
-					readTimeOutIsWrong = false;
-					if (time == 0) {
-						readTimeOutIsWrong = true;
-					}
-				} catch (NumberFormatException e) {
-					readTimeOutIsWrong = true;
-				}
-			}
-		} while (readTimeOutIsWrong);
-
 		/* Proceed with command */
 
 		ProtocolType protocole = ProtocolType.getEnum(protocol);
@@ -373,7 +327,9 @@ public class CommandConsole extends CommandGeneral {
 		RepositoryService repositoryService = new RepositoryService();
 		try {
 			repositoryService.createRepository(name, url, port, login,
-					password, protocole, connectionTimeOut, readTimeOut);
+					password, protocole);
+			repositoryService.setConnectionTimeout(name,"0");
+			repositoryService.setReadTimeout(name,"0");
 			if (!path.isEmpty()) {
 				repositoryService.setRepositoryPath(name, path);
 			}

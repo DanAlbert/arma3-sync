@@ -7,18 +7,6 @@ public class Http extends AbstractProtocole {
 	private static final long serialVersionUID = -20L;
 
 	public Http(String url, String port, String login, String password,
-			String connectionTimeOut, String readTimeOut,
-			ProtocolType protocolType) {
-		this.login = login;
-		this.password = password;
-		this.url = url;
-		this.port = port;
-		this.connectionTimeOut = connectionTimeOut;
-		this.readTimeOut = readTimeOut;
-		this.protocolType = protocolType;
-	}
-
-	public Http(String url, String port, String login, String password,
 			ProtocolType protocolType) {
 		this.login = login;
 		this.password = password;

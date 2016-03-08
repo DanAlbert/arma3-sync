@@ -110,16 +110,15 @@ public class RepositoryService extends ObjectDTOtransformer implements
 	}
 
 	public void createRepository(String name, String url, String port,
-			String login, String password, ProtocolType protocolType,
-			String connectionTimeOut, String readTimeOut) throws CheckException {
+			String login, String password, ProtocolType protocolType)
+			throws CheckException {
 
 		if (name == null || "".equals(name)) {
 			throw new CheckException("Repository name can't be empty.");
 		}
 
 		AbstractProtocole protocole = AbstractProtocoleFactory.getProtocol(url,
-				port, login, password, connectionTimeOut, readTimeOut,
-				protocolType);
+				port, login, password, protocolType);
 		if (protocole == null) {
 			throw new CheckException("Protocol not supported yet.");
 		}
@@ -131,16 +130,15 @@ public class RepositoryService extends ObjectDTOtransformer implements
 	}
 
 	public void setRepository(String name, String url, String port,
-			String login, String password, ProtocolType protocolType,
-			String connectionTimeOut, String readTimeOut) throws CheckException {
+			String login, String password, ProtocolType protocolType)
+			throws CheckException {
 
 		if (name == null || "".equals(name)) {
 			throw new CheckException("Repository name can't be empty.");
 		}
 
 		AbstractProtocole protocole = AbstractProtocoleFactory.getProtocol(url,
-				port, login, password, connectionTimeOut, readTimeOut,
-				protocolType);
+				port, login, password, protocolType);
 		if (protocole == null) {
 			throw new CheckException("Protocol not supported yet.");
 		}
@@ -1255,8 +1253,9 @@ public class RepositoryService extends ObjectDTOtransformer implements
 		}
 
 		AbstractProtocole abstractProtocole = AbstractProtocoleFactory
-				.getProtocol(url, port, login, password, connectionTimeOut,
-						readTimeOut, protocolType);
+				.getProtocol(url, port, login, password, protocolType);
+		abstractProtocole.setConnectionTimeOut(connectionTimeOut);
+		abstractProtocole.setReadTimeOut(readTimeOut);
 
 		if (abstractProtocole == null) {
 			throw new CheckException("Upload protocol not supported.");
@@ -1449,6 +1448,23 @@ public class RepositoryService extends ObjectDTOtransformer implements
 		Repository repository = repositoryDAO.getMap().get(repositoryName);
 		if (repository != null) {
 			repository.setMaximumClientDownloadSpeed(value);
+		}
+	}
+	
+	public void setConnectionTimeout(String repositoryName,
+			String connectionTimeout) {
+		
+		Repository repository = repositoryDAO.getMap().get(repositoryName);
+		if (repository != null) {
+			repository.getProtocol().setConnectionTimeOut(connectionTimeout);
+		}
+	}
+	
+	public void setReadTimeout(String repositoryName, String readTimeout) {
+		
+		Repository repository = repositoryDAO.getMap().get(repositoryName);
+		if (repository != null) {
+			repository.getProtocol().setReadTimeOut(readTimeout);
 		}
 	}
 
