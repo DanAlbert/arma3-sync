@@ -94,43 +94,5 @@ public class ConnectionUploadProcessor extends AbstractConnectionProcessor {
 				}
 			}
 		}
-
-		// // Set upload total size
-		// ftpDAOPool.get(0).updateObserverUploadTotalSize(totalFilesSize);
-		//
-		// // Upload file
-		// ftpDAOPool.get(0).updateObserverCountWithText("Uploading files...");
-		//
-		// try {
-		// String repositoryRemotePath = repository
-		// .getRepositoryUploadProtocole().getRemotePath();
-		//
-		// // Reconnect
-		// ftpDAOPool.get(0).connectToRepository(repository.getName(),
-		// repository.getRepositoryUploadProtocole());
-		//
-		// for (Iterator<List<RemoteFile>> iter = mapFtpFilesToUpload.values()
-		// .iterator(); iter.hasNext();) {
-		// List<RemoteFile> list = iter.next();
-		// for (RemoteFile remoteFile : list) {
-		// if (ftpDAOPool.get(0).isCanceled()) {
-		// return;
-		// } else {
-		// String relativePath = remoteFile
-		// .getParentDirectoryRelativePath();
-		// String fileName = remoteFile.getFilename();
-		// ftpDAOPool.get(0).updateObserverCountWithText(
-		// "Uploading file: " + relativePath + "/"
-		// + fileName);
-		// boolean ok = ftpDAOPool.get(0).uploadFile(remoteFile,
-		// repositoryPath, repositoryRemotePath);
-		// if (!ok) {
-		// throw new IOException("Failed to upload file: "
-		// + relativePath + "/" + fileName);
-		// }
-		// }
-		// }
-		// ftpDAOPool.get(0).updateObserverUploadLastIndexFileUploaded();
-		// }
 	}
 }
