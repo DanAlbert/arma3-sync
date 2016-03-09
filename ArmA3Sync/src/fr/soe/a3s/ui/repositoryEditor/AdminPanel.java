@@ -153,6 +153,7 @@ public class AdminPanel extends JPanel implements UIConstants {
 		{
 			labelChangelog = new JLabel("Changelog: ");
 			buttonView = new JButton("View");
+			buttonView.setFocusable(false);
 			Box hBox = Box.createHorizontalBox();
 			hBox.add(labelChangelog);
 			hBox.add(buttonView);

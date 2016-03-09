@@ -89,10 +89,7 @@ public class AddonsChecker extends Thread {
 			 * for SHA1 comparisons - serverinfo: file completion with zsync -
 			 * events: synchronization against select eventName, may be null
 			 */
-
-			connexionService.getSync(repositoryName);
-			connexionService.getServerInfo(repositoryName);
-			connexionService.getEvents(repositoryName);
+			connexionService.checkRepository(repositoryName);
 
 			if (repositoryService.getSync(repositoryName) == null) {
 				throw new RemoteSyncFileNotFoundException();
