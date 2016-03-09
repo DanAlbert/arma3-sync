@@ -188,6 +188,7 @@ public class WellcomePanel extends JDialog implements UIConstants {
 					profileService.addAddonSearchDirectoryPath(parentPath);
 					facade.getAddonOptionsPanel()
 							.updateAddonSearchDirectories();
+					facade.getAddonOptionsPanel().updateAddonPriorities();
 				}
 			}
 			textField.setText(path);
