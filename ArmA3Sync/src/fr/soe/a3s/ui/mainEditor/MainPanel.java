@@ -27,6 +27,10 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
@@ -1021,14 +1025,32 @@ public class MainPanel extends JFrame implements UIConstants {
 		}
 
 		System.out.println("Checking repositories...");
-
+		List<Callable<Integer>> callables = new ArrayList<Callable<Integer>>();
 		for (final String repositoryName : repositoryNames) {
-			try {
-				ConnexionService connexion = ConnexionServiceFactory
-						.getServiceForRepositoryManagement(repositoryName);
-				connexion.checkRepository(repositoryName);
-			} catch (Exception e) {
-			}
+			Callable<Integer> c = new Callable<Integer>() {
+				@Override
+				public Integer call() {
+					try {
+						ConnexionService connexion = ConnexionServiceFactory
+								.getServiceForRepositoryManagement(repositoryName);
+						connexion.checkRepository(repositoryName);
+					} catch (Exception e) {
+						System.out.println("Error when checking repository "
+								+ repositoryName + ": " + e.getMessage());
+					}
+					return 0;
+				}
+			};
+			callables.add(c);
+		}
+
+		ExecutorService executor = Executors.newFixedThreadPool(Runtime
+				.getRuntime().availableProcessors());
+		try {
+			executor.invokeAll(callables);
+		} catch (InterruptedException e) {
+			System.out
+					.println("Checking repositories has been anormaly interrupted.");
 		}
 
 		System.out.println("Checking repositories done.");

@@ -2,6 +2,9 @@ package fr.soe.a3s.ui.repositoryEditor.progressDialogs;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import javax.swing.SwingUtilities;
 
@@ -18,7 +21,7 @@ import fr.soe.a3s.ui.mainEditor.InfoUpdatedRepositoryPanel;
 public class ProgressSynchronizationPanel extends ProgressPanel {
 
 	private final RepositoryService repositoryService = new RepositoryService();
-	private ConnexionService connexion =  null;
+	private ConnexionService connexion = null;
 	private Thread t = null;
 
 	public ProgressSynchronizationPanel(Facade facade) {
@@ -36,16 +39,41 @@ public class ProgressSynchronizationPanel extends ProgressPanel {
 				if (repositoryNames.isEmpty()) {
 					System.out.println("No repository to synchronize with.");
 				} else {
-					for (String repositoryName : repositoryNames) {
-						if (!canceled) {
-							try {
-								connexion = ConnexionServiceFactory
-										.getServiceForRepositoryManagement(repositoryName);
-								connexion.checkRepository(repositoryName);
-							} catch (Exception e) {
+					List<Callable<Integer>> callables = new ArrayList<Callable<Integer>>();
+					for (final String repositoryName : repositoryNames) {
+						Callable<Integer> c = new Callable<Integer>() {
+							@Override
+							public Integer call() {
+								try {
+									if (!canceled) {
+										connexion = ConnexionServiceFactory
+												.getServiceForRepositoryManagement(repositoryName);
+										connexion
+												.checkRepository(repositoryName);
+									}
+								} catch (Exception e) {
+									System.out
+											.println("Error when checking repository "
+													+ repositoryName
+													+ ": "
+													+ e.getMessage());
+								}
+								return 0;
 							}
-						}
+						};
+						callables.add(c);
 					}
+
+					ExecutorService executor = Executors
+							.newFixedThreadPool(Runtime.getRuntime()
+									.availableProcessors());
+					try {
+						executor.invokeAll(callables);
+					} catch (InterruptedException e) {
+						System.out
+								.println("Synchronizing with repositories has been anormaly interrupted.");
+					}
+
 					if (!canceled) {
 						SwingUtilities.invokeLater(new Runnable() {
 							@Override
