@@ -464,15 +464,9 @@ public class AddonsDownloader extends Thread implements DataAccessConstants {
 				"Deleting extra files...");
 		deleteExtraFiles();
 		
-		/* Update available addons */
+		/* Update available addons and addon groups */
 		facade.getAddonsPanel().updateAvailableAddons();
-		
-		/* Update modset selection */
-		facade.getAddonsPanel().updateModsetSelection(repositoryName);
-		
-		/* Update repository status */
-		repositoryService.updateRepositoryRevision(repositoryName);
-		facade.getSyncPanel().init();
+		facade.getAddonsPanel().updateAddonGroups();
 		
 		/* Generate download report */
 		if (errors==null){

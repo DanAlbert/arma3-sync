@@ -16,6 +16,7 @@ import fr.soe.a3s.dto.sync.SyncTreeLeafDTO;
 import fr.soe.a3s.dto.sync.SyncTreeNodeDTO;
 import fr.soe.a3s.exception.CheckException;
 import fr.soe.a3s.exception.WritingException;
+import fr.soe.a3s.exception.remote.RemoteEventsFileNotFoundException;
 import fr.soe.a3s.exception.remote.RemoteRepositoryException;
 import fr.soe.a3s.exception.remote.RemoteServerInfoFileNotFoundException;
 import fr.soe.a3s.exception.remote.RemoteSyncFileNotFoundException;
@@ -83,10 +84,15 @@ public class AddonsChecker extends Thread {
 		}
 
 		try {
-			// 1. Try to retrieve the remote repository sync file and serverInfo
-			// (required for determining file completion with zsync)
+			/*
+			 * 1. Try to retrieve the remote repository: - sync file: required
+			 * for SHA1 comparisons - serverinfo: file completion with zsync -
+			 * events: synchronization against select eventName, may be null
+			 */
+
 			connexionService.getSync(repositoryName);
 			connexionService.getServerInfo(repositoryName);
+			connexionService.getEvents(repositoryName);
 
 			if (repositoryService.getSync(repositoryName) == null) {
 				throw new RemoteSyncFileNotFoundException();
@@ -94,6 +100,11 @@ public class AddonsChecker extends Thread {
 
 			if (repositoryService.getServerInfo(repositoryName) == null) {
 				throw new RemoteServerInfoFileNotFoundException();
+			}
+
+			if (repositoryService.getEvents(repositoryName) == null
+					&& eventName != null) {
+				throw new RemoteEventsFileNotFoundException();
 			}
 
 			// 2. Compare remote and local files SHA1
@@ -141,19 +152,31 @@ public class AddonsChecker extends Thread {
 
 			String header = connexionService.determineFilesCompletion(
 					repositoryName, parent);
-			
-			// 4. Update online panel and launch panel
-			facade.getOnlinePanel().init();
-			facade.getLaunchPanel().init();
+
+			// 4. Update modset selection
+			facade.getAddonsPanel().updateModsetSelection(repositoryName);
+
+			// 5. Update repository status
+			repositoryService.updateRepositoryRevision(repositoryName);
+
+			// 6. Update online panel and launch panel
+			SwingUtilities.invokeLater(new Runnable() {
+				@Override
+				public void run() {
+					facade.getSyncPanel().init();
+					facade.getOnlinePanel().init();
+					facade.getLaunchPanel().init();
+				}
+			});
 
 			if (!canceled) {
-				// 5. Update download panel tree
+				// 7. Update download panel tree
 				if (eventName != null) {
 					extractAddonSelectionForEventName();
 				}
 				downloadPanel.updateAddons(parent);
 
-				// 6. Display messages
+				// 8. Display messages
 				downloadPanel.getLabelCheckForAddonsStatus().setText(
 						"Finished!");
 
@@ -165,7 +188,7 @@ public class AddonsChecker extends Thread {
 							.setShowPartialFileTransferWarningMessage(false);
 				}
 
-				// 7. Save SHA1 computation on disk
+				// 9. Save SHA1 computation on disk
 				repositoryService.write(repositoryName);
 			}
 		} catch (Exception e) {
@@ -282,85 +305,25 @@ public class AddonsChecker extends Thread {
 		parent = newRacine;
 	}
 
-	private void refineAddons(SyncTreeDirectoryDTO oldSyncTreeDirectoryDTO,
-			SyncTreeDirectoryDTO newSyncTreeDirectoryDTO,
-			Map<String, Boolean> addonNames) {
+	private void refineAddons(SyncTreeDirectoryDTO oldRacine,
+			SyncTreeDirectoryDTO newRacine, Map<String, Boolean> addonNames) {
 
-		for (SyncTreeNodeDTO nodeDTO : oldSyncTreeDirectoryDTO.getList()) {
+		for (SyncTreeNodeDTO nodeDTO : oldRacine.getList()) {
 			if (!nodeDTO.isLeaf()) {
 				SyncTreeDirectoryDTO directoryDTO = (SyncTreeDirectoryDTO) nodeDTO;
 				if (directoryDTO.isMarkAsAddon()
 						&& addonNames.containsKey(nodeDTO.getName())) {
-					SyncTreeDirectoryDTO newDirectory = new SyncTreeDirectoryDTO();
-					newDirectory.setName(directoryDTO.getName());
-					newDirectory.setDestinationPath(directoryDTO
-							.getDestinationPath());
-					newDirectory.setParent(newSyncTreeDirectoryDTO);
-					newDirectory.setMarkAsAddon(true);
-					boolean optional = addonNames.get(nodeDTO.getName());
-					newDirectory.setOptional(optional);
-					newSyncTreeDirectoryDTO.setHidden(directoryDTO.isHidden());
-					newSyncTreeDirectoryDTO.addTreeNode(newDirectory);
-					fill(directoryDTO, newDirectory);
+					newRacine.addTreeNode(directoryDTO);
+					directoryDTO.setOptional(addonNames.get(nodeDTO.getName()));
 				} else if (!directoryDTO.isMarkAsAddon()) {
 					found = false;
 					seek(directoryDTO, addonNames);
 					if (found) {
-						SyncTreeDirectoryDTO newDirectory = new SyncTreeDirectoryDTO();
-						newDirectory.setName(directoryDTO.getName());
-						newSyncTreeDirectoryDTO.addTreeNode(newDirectory);
-						newDirectory.setParent(newSyncTreeDirectoryDTO);
-						refineAddons(directoryDTO, newDirectory, addonNames);
+						newRacine.addTreeNode(directoryDTO);
+						directoryDTO.setOptional(addonNames.get(nodeDTO
+								.getName()));
 					}
 				}
-			}
-		}
-	}
-
-	private void fill(SyncTreeDirectoryDTO directoryDTO,
-			SyncTreeDirectoryDTO newDirectoryDTO) {
-
-		for (SyncTreeNodeDTO nodeDTO : directoryDTO.getList()) {
-			if (nodeDTO.isLeaf()) {
-				SyncTreeLeafDTO leafDTO = (SyncTreeLeafDTO) nodeDTO;
-				SyncTreeLeafDTO newLeafDTO = new SyncTreeLeafDTO();
-				newLeafDTO.setName(leafDTO.getName());
-				newLeafDTO.setParent(newDirectoryDTO);
-				newLeafDTO.setDeleted(leafDTO.isDeleted());
-				newLeafDTO.setUpdated(leafDTO.isUpdated());
-				newLeafDTO.setSelected(newDirectoryDTO.isSelected());
-				newLeafDTO.setSize(leafDTO.getSize());
-				newLeafDTO.setDestinationPath(leafDTO.getDestinationPath());
-				newDirectoryDTO.addTreeNode(newLeafDTO);
-				if (newLeafDTO.isUpdated() || newLeafDTO.isDeleted()) {
-					SyncTreeDirectoryDTO parent = newLeafDTO.getParent();
-					while (parent != null) {
-						parent.setChanged(true);
-						parent = parent.getParent();
-					}
-				}
-			} else {
-				SyncTreeDirectoryDTO dDTO = (SyncTreeDirectoryDTO) nodeDTO;
-				SyncTreeDirectoryDTO newdDTO = new SyncTreeDirectoryDTO();
-				newdDTO.setName(dDTO.getName());
-				newdDTO.setParent(newDirectoryDTO);
-				newdDTO.setUpdated(dDTO.isUpdated());
-				newdDTO.setDeleted(dDTO.isDeleted());
-				newdDTO.setChanged(dDTO.isChanged());
-				newdDTO.setSelected(newDirectoryDTO.isSelected());
-				newdDTO.setDestinationPath(dDTO.getDestinationPath());
-				newdDTO.setMarkAsAddon(dDTO.isMarkAsAddon());
-				newdDTO.setHidden(dDTO.isHidden());
-				newDirectoryDTO.addTreeNode(newdDTO);
-				if (newdDTO.isUpdated() || newdDTO.isDeleted()
-						|| newdDTO.isChanged()) {
-					SyncTreeDirectoryDTO parent = newdDTO.getParent();
-					while (parent != null) {
-						parent.setChanged(true);
-						parent = parent.getParent();
-					}
-				}
-				fill(dDTO, newdDTO);
 			}
 		}
 	}
@@ -381,62 +344,30 @@ public class AddonsChecker extends Thread {
 		}
 	}
 
-	private void refineUserconfig(SyncTreeDirectoryDTO oldSyncTreeDirectoryDTO,
-			SyncTreeDirectoryDTO newSyncTreeDirectoryDTO,
+	private void refineUserconfig(SyncTreeDirectoryDTO oldRacine,
+			SyncTreeDirectoryDTO newRacine,
 			Map<String, Boolean> userconfigFolderNames) {
 
-		for (SyncTreeNodeDTO nodeDTO : oldSyncTreeDirectoryDTO.getList()) {
+		SyncTreeDirectoryDTO userconfigNode = null;
+
+		for (SyncTreeNodeDTO nodeDTO : oldRacine.getList()) {
 			if (!nodeDTO.isLeaf()
 					&& nodeDTO.getName().toLowerCase().equals("userconfig")) {
-				SyncTreeDirectoryDTO userconfig = (SyncTreeDirectoryDTO) nodeDTO;
-				SyncTreeDirectoryDTO newUserconfig = new SyncTreeDirectoryDTO();
-				newUserconfig.setName(userconfig.getName());
-				newUserconfig.setDestinationPath(userconfig
-						.getDestinationPath());
-				newUserconfig.setParent(newSyncTreeDirectoryDTO);
-				newUserconfig.setHidden(userconfig.isHidden());
-				newSyncTreeDirectoryDTO.addTreeNode(newUserconfig);
+				userconfigNode = (SyncTreeDirectoryDTO) nodeDTO;
+				break;
+			}
+		}
 
-				for (SyncTreeNodeDTO d : userconfig.getList()) {
-					if (userconfigFolderNames.containsKey(d.getName())) {
-						if (!d.isLeaf()) {
-							SyncTreeDirectoryDTO folder = new SyncTreeDirectoryDTO();
-							folder.setName(d.getName());
-							folder.setDestinationPath(d.getDestinationPath());
-							folder.setParent(newUserconfig);
-							boolean optional = userconfigFolderNames.get(d
-									.getName());
-							folder.setOptional(optional);
-							newUserconfig.addTreeNode(folder);
-							folder.setHidden(((SyncTreeDirectoryDTO) d)
-									.isHidden());
-							folder.setUpdated(d.isUpdated());
-							folder.setDeleted(d.isDeleted());
-							folder.setChanged(((SyncTreeDirectoryDTO) d)
-									.isChanged());
-							if (folder.isUpdated() || folder.isDeleted()
-									|| folder.isChanged()) {
-								newUserconfig.setChanged(true);
-							}
-							fill((SyncTreeDirectoryDTO) d, folder);
-						} else {
-							SyncTreeLeafDTO leaf = new SyncTreeLeafDTO();
-							leaf.setName(d.getName());
-							leaf.setDestinationPath(d.getDestinationPath());
-							leaf.setParent(newSyncTreeDirectoryDTO);
-							leaf.setDeleted(d.isDeleted());
-							leaf.setUpdated(d.isUpdated());
-							leaf.setSelected(d.isSelected());
-							leaf.setSize(((SyncTreeLeafDTO) d).getSize());
-							boolean optional = userconfigFolderNames.get(d
-									.getName());
-							leaf.setOptional(optional);
-							newUserconfig.addTreeNode(leaf);
-							if (leaf.isUpdated() || leaf.isDeleted()) {
-								newUserconfig.setChanged(true);
-							}
-						}
-					}
+		if (userconfigNode != null) {
+			SyncTreeDirectoryDTO newUserconfigNode = new SyncTreeDirectoryDTO();
+			newUserconfigNode.setName(userconfigNode.getName());
+			newRacine.addTreeNode(newUserconfigNode);
+			for (SyncTreeNodeDTO nodeDTO : userconfigNode.getList()) {
+				if (!nodeDTO.isLeaf()
+						&& userconfigFolderNames.containsKey(nodeDTO.getName())) {
+					newUserconfigNode.addTreeNode(nodeDTO);
+					nodeDTO.setOptional(userconfigFolderNames
+							.get(nodeDTO.getName()));
 				}
 			}
 		}
