@@ -94,8 +94,6 @@ public class RepositoryBuilder extends Thread {
 				// Init views
 				this.adminPanel.init(repositoryName);
 				this.facade.getSyncPanel().init();
-				this.adminPanel
-						.updateRepositoryStatus(RepositoryStatus.UPDATED);
 				this.adminPanel.getRepositoryPanel().getEventsPanel()
 						.init(repositoryName);// update addons list
 			}
@@ -107,6 +105,7 @@ public class RepositoryBuilder extends Thread {
 			adminPanel.getBuildProgressBar().setIndeterminate(false);
 			if (!canceled) {
 				e.printStackTrace();
+				this.adminPanel.updateRepositoryStatus(RepositoryStatus.ERROR);
 				if (e instanceof RepositoryException) {
 					JOptionPane.showMessageDialog(facade.getMainPanel(),
 							e.getMessage(), "Build repository",

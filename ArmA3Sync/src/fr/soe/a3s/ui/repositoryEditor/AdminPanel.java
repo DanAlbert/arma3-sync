@@ -423,6 +423,10 @@ public class AdminPanel extends JPanel implements UIConstants {
 			labelStatusValue.setText(RepositoryStatus.UPDATED.getDescription());
 			labelStatusValue.setFont(new Font("Tohama", Font.BOLD, 11));
 			labelStatusValue.setForeground(Color.RED);
+		} else if (repositoryStatus.equals(RepositoryStatus.ERROR)) {
+			labelStatusValue.setText(RepositoryStatus.UPDATED.getDescription());
+			labelStatusValue.setFont(new Font("Tohama", Font.BOLD, 11));
+			labelStatusValue.setForeground(Color.RED);
 		} else {
 			labelStatusValue.setText(RepositoryStatus.INDETERMINATED
 					.getDescription());
