@@ -311,14 +311,17 @@ public class AddonsChecker extends Thread {
 				if (directoryDTO.isMarkAsAddon()
 						&& addonNames.containsKey(nodeDTO.getName())) {
 					newRacine.addTreeNode(directoryDTO);
+					directoryDTO.setParent(newRacine);
 					directoryDTO.setOptional(addonNames.get(nodeDTO.getName()));
 				} else if (!directoryDTO.isMarkAsAddon()) {
 					found = false;
 					seek(directoryDTO, addonNames);
 					if (found) {
-						newRacine.addTreeNode(directoryDTO);
-						directoryDTO.setOptional(addonNames.get(nodeDTO
-								.getName()));
+						SyncTreeDirectoryDTO newDirectory = new SyncTreeDirectoryDTO();
+						newDirectory.setName(directoryDTO.getName());
+						newRacine.addTreeNode(newDirectory);
+						newDirectory.setParent(newRacine);
+						refineAddons(directoryDTO, newDirectory, addonNames);
 					}
 				}
 			}
@@ -334,6 +337,8 @@ public class AddonsChecker extends Thread {
 				if (directoryDTO.isMarkAsAddon()
 						&& addonNames.containsKey(nodeDTO.getName())) {
 					found = true;
+					directoryDTO.setOptional(addonNames.get(nodeDTO
+							.getName()));
 				} else {
 					seek(directoryDTO, addonNames);
 				}

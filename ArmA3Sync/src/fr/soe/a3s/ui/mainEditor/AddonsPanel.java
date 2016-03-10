@@ -793,6 +793,7 @@ public class AddonsPanel extends JPanel implements UIConstants {
 	private void buttonRefreshPerformed() {
 		updateAvailableAddons();
 		updateAddonGroups();
+		facade.getAddonOptionsPanel().updateAddonPriorities();
 		facade.getLaunchOptionsPanel().updateRunParameters();
 	}
 
