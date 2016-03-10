@@ -307,7 +307,7 @@ public class CommandConsole extends CommandGeneral {
 		String path = "";
 		boolean folderLocationIsWrong = true;
 		do {
-			System.out.print("Enter root shared folder path: ");
+			System.out.print("Enter main folder location (leave blank to pass): ");
 			path = c.nextLine();
 			if (path.isEmpty()) {
 				folderLocationIsWrong = false;
@@ -385,7 +385,7 @@ public class CommandConsole extends CommandGeneral {
 				boolean folderLocationIsWrong = true;
 				do {
 					System.out
-							.print("Enter root shared folder path (leave blank to pass): ");
+							.print("Enter repository main folder location: ");
 					path = c.nextLine();
 					if (path.isEmpty()) {
 						folderLocationIsWrong = true;
