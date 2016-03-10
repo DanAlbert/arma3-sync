@@ -483,7 +483,7 @@ public class SyncPanel extends JPanel implements UIConstants {
 	private void buttonCheckEventPerformed() {
 
 		int index = listEvents.getSelectedIndex();
-		if (index != -1 && !(index > listEvents.getVisibleRowCount())) {
+		if (index != -1 && !(index >= mapEvents.size())) {
 			int j = 0;
 			for (Iterator<EventDTO> iter2 = mapEvents.keySet().iterator(); iter2
 					.hasNext();) {
