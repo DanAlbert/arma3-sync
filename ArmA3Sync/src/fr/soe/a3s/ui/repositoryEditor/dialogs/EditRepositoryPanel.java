@@ -621,11 +621,9 @@ public class EditRepositoryPanel extends JDialog implements UIConstants,
 
 		this.dispose();
 
-		List<String> repositoryNames = new ArrayList<String>();
-		repositoryNames.add(name);
 		ProgressSynchronizationPanel synchronizingPanel = new ProgressSynchronizationPanel(facade);
 		synchronizingPanel.setVisible(true);
-		synchronizingPanel.init(repositoryNames);
+		synchronizingPanel.init(name);
 	}
 
 	private void checkBoxAnonymousPerformed() {

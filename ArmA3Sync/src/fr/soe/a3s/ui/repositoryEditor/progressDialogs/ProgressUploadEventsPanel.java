@@ -77,9 +77,7 @@ public class ProgressUploadEventsPanel extends ProgressPanel {
 					ProgressSynchronizationPanel synchronizingPanel = new ProgressSynchronizationPanel(
 							facade);
 					synchronizingPanel.setVisible(true);
-					List<String> repositoryNames = new ArrayList<String>();
-					repositoryNames.add(repositoryName);
-					synchronizingPanel.init(repositoryNames);
+					synchronizingPanel.init(repositoryName);
 				} catch (RepositoryException e) {
 					setVisible(false);
 					JOptionPane.showMessageDialog(facade.getMainPanel(),

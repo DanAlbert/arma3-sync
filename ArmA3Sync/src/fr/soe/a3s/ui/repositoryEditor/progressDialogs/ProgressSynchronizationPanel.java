@@ -1,11 +1,13 @@
 package fr.soe.a3s.ui.repositoryEditor.progressDialogs;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
 import fr.soe.a3s.constant.RepositoryStatus;
@@ -17,6 +19,7 @@ import fr.soe.a3s.service.connection.ConnexionServiceFactory;
 import fr.soe.a3s.ui.Facade;
 import fr.soe.a3s.ui.ProgressPanel;
 import fr.soe.a3s.ui.mainEditor.InfoUpdatedRepositoryPanel;
+import fr.soe.a3s.ui.repositoryEditor.errorDialogs.UnexpectedErrorDialog;
 
 public class ProgressSynchronizationPanel extends ProgressPanel {
 
@@ -27,6 +30,60 @@ public class ProgressSynchronizationPanel extends ProgressPanel {
 	public ProgressSynchronizationPanel(Facade facade) {
 		super(facade);
 		labelTitle.setText("Synchronizing with repositories...");
+	}
+	
+	public void init(final String repositoryName){
+		
+		facade.getSyncPanel().disableAllButtons();
+		progressBar.setIndeterminate(true);
+		t = new Thread(new Runnable() {
+			@Override
+			public void run() {
+				try {
+					connexion = ConnexionServiceFactory
+							.getServiceForRepositoryManagement(repositoryName);
+					connexion.checkRepository(repositoryName);
+				} catch (Exception e) {
+					setVisible(false);
+					if (e instanceof RepositoryException) {
+						JOptionPane.showMessageDialog(facade.getMainPanel(),
+								e.getMessage(), "Repository",
+								JOptionPane.ERROR_MESSAGE);
+					} else if (!canceled) {
+						if (e instanceof IOException) {
+							System.out.println(e.getMessage());
+							JOptionPane.showMessageDialog(
+									facade.getMainPanel(), e.getMessage(),
+									"Repository", JOptionPane.WARNING_MESSAGE);
+						} else {
+							e.printStackTrace();
+							UnexpectedErrorDialog dialog = new UnexpectedErrorDialog(
+									facade, "Repository", e, repositoryName);
+							dialog.show();
+						}
+					}
+					setVisible(true);
+				}
+				
+				if (!canceled) {
+					SwingUtilities.invokeLater(new Runnable() {
+						@Override
+						public void run() {
+							facade.getSyncPanel().init();
+							facade.getOnlinePanel().init();
+							facade.getLaunchPanel().init();
+							System.out
+									.println("Synchronization with repositories done.");
+						}
+					});
+				} else {
+					System.out
+							.println("Synchronization with repositories canceled.");
+				}
+				terminate();
+			}
+		});
+		t.start();
 	}
 
 	public void init(final List<String> repositoryNames) {
