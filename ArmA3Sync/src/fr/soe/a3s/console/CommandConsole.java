@@ -687,6 +687,8 @@ public class CommandConsole extends CommandGeneral {
 		repositoryService.setExactMatch(exactMath, repositoryName);
 		repositoryService.setDefaultDownloadLocation(repositoryName,
 				destinationFolderPath);
+		repositoryService.setConnectionTimeout(repositoryName,"0");
+		repositoryService.setReadTimeout(repositoryName, "0");
 
 		super.syncRepository(repositoryName, false);
 	}

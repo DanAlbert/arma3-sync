@@ -81,6 +81,8 @@ public class CommandLine extends CommandGeneral {
 				destinationFolderPath);
 		repositoryService.setExactMatch(Boolean.parseBoolean(withExactMath),
 				repositoryName);
+		repositoryService.setConnectionTimeout(repositoryName,"0");
+		repositoryService.setReadTimeout(repositoryName, "0");
 
 		super.syncRepository(repositoryName, true);
 	}
