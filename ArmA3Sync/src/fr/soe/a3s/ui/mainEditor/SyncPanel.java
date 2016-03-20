@@ -132,7 +132,9 @@ public class SyncPanel extends JPanel implements UIConstants {
 				col2.setCellRenderer(renderer);
 
 				JTableHeader header = tableRepositories.getTableHeader();
-				header.setDefaultRenderer(new HeaderRenderer(tableRepositories));
+				if (header!=null){
+					header.setDefaultRenderer(new HeaderRenderer(tableRepositories));
+				}
 			}
 			{
 				Box vertBox = Box.createVerticalBox();
