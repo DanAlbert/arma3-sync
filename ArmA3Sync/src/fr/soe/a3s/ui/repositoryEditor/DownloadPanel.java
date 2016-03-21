@@ -121,9 +121,10 @@ public class DownloadPanel extends JPanel implements UIConstants {
 	private int totalFilesSelected;
 	private int totalFilesUpdated;
 	private int totalFilesDeleted;
-	private boolean update = false;
+	private final boolean update = false;
 	private String eventName = null;
 	private boolean showPartialFileTransferWarningMessage = false;
+	private boolean performModsetsSynchronization = false;
 
 	/* Services */
 	private final RepositoryService repositoryService = new RepositoryService();
@@ -846,6 +847,8 @@ public class DownloadPanel extends JPanel implements UIConstants {
 		} else {
 			// Show partial file transfer warning message
 			showPartialFileTransferWarningMessage = true;
+			// Do not perform modsets synchronization
+			performModsetsSynchronization = false;
 			checkForAddons();
 		}
 	}
@@ -866,7 +869,8 @@ public class DownloadPanel extends JPanel implements UIConstants {
 			arbre.setEnabled(false);
 			// Check addons repository
 			addonsChecker = new AddonsChecker(facade, repositoryName,
-					eventName, showPartialFileTransferWarningMessage, this);
+					eventName, showPartialFileTransferWarningMessage,
+					performModsetsSynchronization, this);
 			addonsChecker.start();
 		}
 	}
@@ -1215,10 +1219,14 @@ public class DownloadPanel extends JPanel implements UIConstants {
 		jSplitPane.setBorder(null);
 	}
 
-	/* Getters */
+	/* Getters and Setters */
 
 	public void setShowPartialFileTransferWarningMessage(boolean value) {
 		this.showPartialFileTransferWarningMessage = value;
+	}
+
+	public void setPerformModsetsSynchronization(boolean value) {
+		this.performModsetsSynchronization = value;
 	}
 
 	public JButton getButtonCheckForAddonsStart() {

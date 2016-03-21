@@ -1,5 +1,6 @@
 package fr.soe.a3s.ui.repositoryEditor.progressDialogs;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.SwingUtilities;
@@ -9,14 +10,21 @@ import fr.soe.a3s.service.connection.ConnexionServiceFactory;
 import fr.soe.a3s.ui.Facade;
 import fr.soe.a3s.ui.ProgressPanel;
 
-public class ProgressModsetSelectionPanel extends ProgressPanel {
+public class ProgressModsetsSynchronizationPanel extends ProgressPanel {
 
 	private ConnexionService connexion = null;
 	private Thread t = null;
 
-	public ProgressModsetSelectionPanel(Facade facade) {
+	public ProgressModsetsSynchronizationPanel(Facade facade) {
 		super(facade);
 		labelTitle.setText("Synchronizing modsets...");
+	}
+
+	public void init(String repositoryName) {
+
+		List<String> list = new ArrayList<String>();
+		list.add(repositoryName);
+		init(list);
 	}
 
 	public void init(final List<String> repositoryNames) {
@@ -35,10 +43,10 @@ public class ProgressModsetSelectionPanel extends ProgressPanel {
 						}
 					}
 				}
-				
+
 				if (!canceled) {
 					try {
-						t.sleep(500);
+						t.sleep(1000);
 					} catch (InterruptedException e) {
 					}
 					SwingUtilities.invokeLater(new Runnable() {

@@ -56,7 +56,7 @@ import fr.soe.a3s.ui.mainEditor.tree.AddonTreeModel;
 import fr.soe.a3s.ui.mainEditor.tree.CheckTreeCellRenderer;
 import fr.soe.a3s.ui.mainEditor.tree.MyRenderer2;
 import fr.soe.a3s.ui.mainEditor.tree.TreeDnD;
-import fr.soe.a3s.ui.repositoryEditor.progressDialogs.ProgressModsetSelectionPanel;
+import fr.soe.a3s.ui.repositoryEditor.progressDialogs.ProgressModsetsSynchronizationPanel;
 import fr.soe.a3s.ui.repositoryEditor.progressDialogs.ProgressSynchronizationPanel;
 
 /**
@@ -837,7 +837,7 @@ public class AddonsPanel extends JPanel implements UIConstants {
 		final List<String> repositoryNames = modsetsSelectionPanel
 				.getRepositoryNamesForSync();
 		if (!repositoryNames.isEmpty()) {
-			ProgressModsetSelectionPanel progressModsetSelectionPanel = new ProgressModsetSelectionPanel(
+			ProgressModsetsSynchronizationPanel progressModsetSelectionPanel = new ProgressModsetsSynchronizationPanel(
 					facade);
 			progressModsetSelectionPanel.setVisible(true);
 			progressModsetSelectionPanel.init(repositoryNames);

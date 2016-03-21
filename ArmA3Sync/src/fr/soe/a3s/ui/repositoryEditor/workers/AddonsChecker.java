@@ -1,7 +1,6 @@
 package fr.soe.a3s.ui.repositoryEditor.workers;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -12,7 +11,6 @@ import javax.swing.SwingUtilities;
 import fr.soe.a3s.controller.ObserverCount;
 import fr.soe.a3s.dto.EventDTO;
 import fr.soe.a3s.dto.sync.SyncTreeDirectoryDTO;
-import fr.soe.a3s.dto.sync.SyncTreeLeafDTO;
 import fr.soe.a3s.dto.sync.SyncTreeNodeDTO;
 import fr.soe.a3s.exception.CheckException;
 import fr.soe.a3s.exception.WritingException;
@@ -29,7 +27,7 @@ import fr.soe.a3s.ui.Facade;
 import fr.soe.a3s.ui.repositoryEditor.DownloadPanel;
 import fr.soe.a3s.ui.repositoryEditor.errorDialogs.HeaderErrorDialog;
 import fr.soe.a3s.ui.repositoryEditor.errorDialogs.UnexpectedErrorDialog;
-import fr.soe.a3s.ui.repositoryEditor.progressDialogs.ProgressModsetSelectionPanel;
+import fr.soe.a3s.ui.repositoryEditor.progressDialogs.ProgressModsetsSynchronizationPanel;
 
 public class AddonsChecker extends Thread {
 
@@ -43,6 +41,8 @@ public class AddonsChecker extends Thread {
 	private boolean found = false;
 	private boolean canceled = false;
 	private boolean showPartialFileTransferWarningMessage = false;
+	private boolean performModsetsSynchronization = false;
+
 	/* Services */
 	private final RepositoryService repositoryService = new RepositoryService();
 	private final AddonService addonService = new AddonService();
@@ -50,11 +50,12 @@ public class AddonsChecker extends Thread {
 
 	public AddonsChecker(Facade facade, String repositoryName,
 			String eventName, boolean showPartialFileTransferWarningMessage,
-			DownloadPanel downloadPanel) {
+			boolean performModsetsSynchronization, DownloadPanel downloadPanel) {
 		this.facade = facade;
 		this.repositoryName = repositoryName;
 		this.eventName = eventName;
 		this.showPartialFileTransferWarningMessage = showPartialFileTransferWarningMessage;
+		this.performModsetsSynchronization = performModsetsSynchronization;
 		this.downloadPanel = downloadPanel;
 	}
 
@@ -152,7 +153,7 @@ public class AddonsChecker extends Thread {
 
 			// 4. Update repository status
 			repositoryService.updateRepositoryRevision(repositoryName);
-			
+
 			// 5. Update online panel and launch panel
 			SwingUtilities.invokeLater(new Runnable() {
 				@Override
@@ -162,12 +163,17 @@ public class AddonsChecker extends Thread {
 					facade.getLaunchPanel().init();
 				}
 			});
-			
+
 			if (!canceled) {
-				
+
 				// 6. Update modset selection
-				facade.getAddonsPanel().updateModsetSelection(repositoryName);
-				
+				if (performModsetsSynchronization) {
+					ProgressModsetsSynchronizationPanel progressModsetSelectionPanel = new ProgressModsetsSynchronizationPanel(
+							facade);
+					progressModsetSelectionPanel.setVisible(true);
+					progressModsetSelectionPanel.init(repositoryName);
+				}
+
 				// 7. Update download panel tree
 				if (eventName != null) {
 					extractAddonSelectionForEventName();
@@ -338,8 +344,7 @@ public class AddonsChecker extends Thread {
 				if (directoryDTO.isMarkAsAddon()
 						&& addonNames.containsKey(nodeDTO.getName())) {
 					found = true;
-					directoryDTO.setOptional(addonNames.get(nodeDTO
-							.getName()));
+					directoryDTO.setOptional(addonNames.get(nodeDTO.getName()));
 				} else {
 					seek(directoryDTO, addonNames);
 				}
@@ -369,8 +374,8 @@ public class AddonsChecker extends Thread {
 				if (!nodeDTO.isLeaf()
 						&& userconfigFolderNames.containsKey(nodeDTO.getName())) {
 					newUserconfigNode.addTreeNode(nodeDTO);
-					nodeDTO.setOptional(userconfigFolderNames
-							.get(nodeDTO.getName()));
+					nodeDTO.setOptional(userconfigFolderNames.get(nodeDTO
+							.getName()));
 				}
 			}
 		}

@@ -62,7 +62,7 @@ public class AddonsDownloader extends Thread implements DataAccessConstants {
 	/* Services */
 	private final RepositoryService repositoryService = new RepositoryService();
 	private ConnexionService connexionService;
-	private AddonService addonService = new AddonService();
+	private final AddonService addonService = new AddonService();
 
 	public AddonsDownloader(Facade facade, String repositoryName,
 			SyncTreeDirectoryDTO racine, DownloadPanel downloadPanel) {
@@ -94,7 +94,7 @@ public class AddonsDownloader extends Thread implements DataAccessConstants {
 
 		// Return if update files list is empty
 		if (this.listFilesToUpdate.size() == 0) {
-			finish(null,null);
+			finish(null, null);
 			initDownloadPanelForEndDownload();
 			terminate();
 			return;
@@ -183,13 +183,12 @@ public class AddonsDownloader extends Thread implements DataAccessConstants {
 
 					@Override
 					public void updateEnd() {
-						finish(null,null);
+						finish(null, null);
 					}
 
 					@Override
 					public void updateEndWithErrors(List<Exception> errors) {
-						finish("Download finished with errors:",
-								errors);
+						finish("Download finished with errors:", errors);
 					}
 
 					@Override
@@ -221,13 +220,12 @@ public class AddonsDownloader extends Thread implements DataAccessConstants {
 
 						@Override
 						public void end() {
-							finish(null,null);
+							finish(null, null);
 						}
 
 						@Override
 						public void endWithError(List<Exception> errors) {
-							finish("Download finished with errors:",
-									errors);
+							finish("Download finished with errors:", errors);
 						}
 					});
 
@@ -441,14 +439,14 @@ public class AddonsDownloader extends Thread implements DataAccessConstants {
 			}
 		});
 	}
-	
+
 	private void finish(String message, List<Exception> errors) {
-		
+
 		/* Cancel all connections */
 		if (connexionService != null) {
 			connexionService.cancel();
 		}
-		
+
 		/* Update UI */
 		downloadPanel.getProgressBarDownloadSingleAddon().setIndeterminate(
 				false);
@@ -458,42 +456,44 @@ public class AddonsDownloader extends Thread implements DataAccessConstants {
 				UnitConverter.convertSpeed(0));
 		downloadPanel.getLabelRemainingTimeValue().setText(
 				UnitConverter.convertTime(0));
-		
+
 		/* Delete extra files */
 		downloadPanel.getLabelDownloadStatus().setText(
 				"Deleting extra files...");
 		deleteExtraFiles();
-		
+
 		/* Update available addons and addon groups */
 		facade.getAddonsPanel().updateAvailableAddons();
 		facade.getAddonsPanel().updateAddonGroups();
-		
+
 		/* Generate download report */
-		if (errors==null){
+		if (errors == null) {
 			String report = generateReport("Download finished successfully.");
 			repositoryService.setReport(repositoryName, report);
-		}else {
+		} else {
 			String report = generateReport(message, errors);
 			repositoryService.setReport(repositoryName, report);
 		}
 
 		/* End Message */
-		if (errors==null){
+		if (errors == null) {
 			downloadPanel.getLabelDownloadStatus().setText("Finished!");
 			JOptionPane.showMessageDialog(facade.getMainPanel(),
 					"Download is finished.", "Download",
 					JOptionPane.INFORMATION_MESSAGE);
-		}else {
+		} else {
 			downloadPanel.getLabelDownloadStatus().setText("Error!");
 			downloadPanel.showDownloadReport();
 		}
-		
+
 		/* Check for TFAR and ACRE2 Update */
-		if (errors==null){
+		if (errors == null) {
 			if (tfarIsUpdated) {
-				int response = JOptionPane.showConfirmDialog(facade.getMainPanel(),
-						"TFAR files have changed. Proceed with TFAR installer?",
-						"TFAR installer", JOptionPane.OK_CANCEL_OPTION);
+				int response = JOptionPane
+						.showConfirmDialog(
+								facade.getMainPanel(),
+								"TFAR files have changed. Proceed with TFAR installer?",
+								"TFAR installer", JOptionPane.OK_CANCEL_OPTION);
 				if (response == 0) {
 					FirstPageTFARInstallerPanel firstPage = new FirstPageTFARInstallerPanel(
 							facade);
@@ -506,7 +506,8 @@ public class AddonsDownloader extends Thread implements DataAccessConstants {
 						.showConfirmDialog(
 								facade.getMainPanel(),
 								"ACRE 2 files have changed. Proceed with ACRE 2 installer?",
-								"ACRE 2 installer", JOptionPane.OK_CANCEL_OPTION);
+								"ACRE 2 installer",
+								JOptionPane.OK_CANCEL_OPTION);
 				if (response == 0) {
 					FirstPageACRE2InstallerPanel firstPage = new FirstPageACRE2InstallerPanel(
 							facade);
@@ -518,6 +519,7 @@ public class AddonsDownloader extends Thread implements DataAccessConstants {
 
 		/* */
 		initDownloadPanelForEndDownload();
+		downloadPanel.setPerformModsetsSynchronization(true);
 		downloadPanel.checkForAddons();
 		terminate();
 	}
