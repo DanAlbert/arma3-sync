@@ -12,7 +12,7 @@ import java.io.IOException;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
-import javax.swing.JFrame;
+import javax.swing.JDialog;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -25,7 +25,7 @@ import fr.soe.a3s.ui.Facade;
 import fr.soe.a3s.ui.UIConstants;
 import fr.soe.a3s.ui.repositoryEditor.DownloadPanel;
 
-public class ReportPanel extends JFrame implements UIConstants,
+public class ReportPanel extends JDialog implements UIConstants,
 		DataAccessConstants {
 
 	private final Facade facade;
@@ -45,6 +45,7 @@ public class ReportPanel extends JFrame implements UIConstants,
 		this.downloadPanel = downloadPanel;
 		this.repositoryName = repositoryName;
 		this.setTitle("Download");
+		this.setModal(true);
 		setIconImage(ICON);
 
 		this.setLayout(new BorderLayout());
