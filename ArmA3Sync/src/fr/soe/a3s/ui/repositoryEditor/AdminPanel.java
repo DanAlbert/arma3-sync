@@ -391,9 +391,7 @@ public class AdminPanel extends JPanel implements UIConstants {
 						+ repositoryDTO.getAutoConfigURL());
 			}
 
-			RepositoryStatus repositoryStatus = repositoryService
-					.getRepositoryStatus(repositoryName);
-			updateRepositoryStatus(repositoryStatus);
+			updateRepositoryStatus(RepositoryStatus.INDETERMINATED);
 
 			ServerInfoDTO serverInfoDTO = repositoryService
 					.getServerInfo(repositoryName);
@@ -416,11 +414,7 @@ public class AdminPanel extends JPanel implements UIConstants {
 
 	public void updateRepositoryStatus(RepositoryStatus repositoryStatus) {
 
-		if (repositoryStatus.equals(RepositoryStatus.OK)) {
-			labelStatusValue.setText(RepositoryStatus.OK.getDescription());
-			labelStatusValue.setFont(new Font("Tohama", Font.BOLD, 11));
-			labelStatusValue.setForeground(new Color(45, 125, 45));
-		} else if (repositoryStatus.equals(RepositoryStatus.UPDATED)) {
+		if (repositoryStatus.equals(RepositoryStatus.UPDATED)) {
 			labelStatusValue.setText(RepositoryStatus.UPDATED.getDescription());
 			labelStatusValue.setFont(new Font("Tohama", Font.BOLD, 11));
 			labelStatusValue.setForeground(Color.RED);
@@ -429,8 +423,6 @@ public class AdminPanel extends JPanel implements UIConstants {
 			labelStatusValue.setFont(new Font("Tohama", Font.BOLD, 11));
 			labelStatusValue.setForeground(Color.RED);
 		} else {
-			labelStatusValue.setText(RepositoryStatus.INDETERMINATED
-					.getDescription());
 			labelStatusValue.setText(RepositoryStatus.INDETERMINATED
 					.getDescription());
 		}

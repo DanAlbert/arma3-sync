@@ -94,6 +94,8 @@ public class RepositoryBuilder extends Thread {
 				// Init views
 				this.adminPanel.init(repositoryName);
 				this.facade.getSyncPanel().init();
+				this.adminPanel
+						.updateRepositoryStatus(RepositoryStatus.UPDATED);
 				this.adminPanel.getRepositoryPanel().getEventsPanel()
 						.init(repositoryName);// update addons list
 			}
