@@ -168,10 +168,10 @@ public class AddonsChecker extends Thread {
 
 				// 6. Update modset selection
 				if (performModsetsSynchronization) {
-					ProgressModsetsSynchronizationPanel progressModsetSelectionPanel = new ProgressModsetsSynchronizationPanel(
+					ProgressModsetsSynchronizationPanel progressModsetsSynchronizationPanel = new ProgressModsetsSynchronizationPanel(
 							facade);
-					progressModsetSelectionPanel.setVisible(true);
-					progressModsetSelectionPanel.init(repositoryName);
+					progressModsetsSynchronizationPanel.setVisible(true);
+					progressModsetsSynchronizationPanel.init(repositoryName);
 				}
 
 				// 7. Update download panel tree

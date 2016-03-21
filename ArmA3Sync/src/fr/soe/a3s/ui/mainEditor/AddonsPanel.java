@@ -38,6 +38,7 @@ import javax.swing.tree.TreeSelectionModel;
 
 import fr.soe.a3s.constant.ModsetType;
 import fr.soe.a3s.dto.EventDTO;
+import fr.soe.a3s.dto.RepositoryDTO;
 import fr.soe.a3s.dto.TreeDirectoryDTO;
 import fr.soe.a3s.dto.TreeLeafDTO;
 import fr.soe.a3s.dto.TreeNodeDTO;
@@ -56,8 +57,7 @@ import fr.soe.a3s.ui.mainEditor.tree.AddonTreeModel;
 import fr.soe.a3s.ui.mainEditor.tree.CheckTreeCellRenderer;
 import fr.soe.a3s.ui.mainEditor.tree.MyRenderer2;
 import fr.soe.a3s.ui.mainEditor.tree.TreeDnD;
-import fr.soe.a3s.ui.repositoryEditor.progressDialogs.ProgressModsetsSynchronizationPanel;
-import fr.soe.a3s.ui.repositoryEditor.progressDialogs.ProgressSynchronizationPanel;
+import fr.soe.a3s.ui.repositoryEditor.progressDialogs.ProgressModsetsSelectionPanel;
 
 /**
  * This code was edited or generated using CloudGarden's Jigloo SWT/Swing GUI
@@ -821,7 +821,7 @@ public class AddonsPanel extends JPanel implements UIConstants {
 			for (TreeNodeDTO child : racine2.getList()) {
 				paths.add(rootPath.pathByAddingChild(child));
 			}
-			
+
 			for (TreePath treePath : paths) {
 				arbre2.collapsePath(treePath);
 			}
@@ -830,18 +830,17 @@ public class AddonsPanel extends JPanel implements UIConstants {
 
 	private void buttonModsetsPerformed() {
 
-		ModdsetsSelectionPanel modsetsSelectionPanel = new ModdsetsSelectionPanel(
-				facade);
-		modsetsSelectionPanel.init();
-		modsetsSelectionPanel.setVisible(true);
-		final List<String> repositoryNames = modsetsSelectionPanel
-				.getRepositoryNamesForSync();
-		if (!repositoryNames.isEmpty()) {
-			ProgressModsetsSynchronizationPanel progressModsetSelectionPanel = new ProgressModsetsSynchronizationPanel(
-					facade);
-			progressModsetSelectionPanel.setVisible(true);
-			progressModsetSelectionPanel.init(repositoryNames);
+		List<RepositoryDTO> repositoryDTOs = repositoryService
+				.getRepositories();
+		final List<String> repositoryNames = new ArrayList<String>();
+		for (RepositoryDTO repositoryDTO : repositoryDTOs) {
+			repositoryNames.add(repositoryDTO.getName());
 		}
+
+		ProgressModsetsSelectionPanel progressModsetSelectionPanel = new ProgressModsetsSelectionPanel(
+				facade);
+		progressModsetSelectionPanel.setVisible(true);
+		progressModsetSelectionPanel.init(repositoryNames);
 	}
 
 	public void createGroupFromRepository(List<String> repositoryNames) {
@@ -965,7 +964,7 @@ public class AddonsPanel extends JPanel implements UIConstants {
 				for (TreeNodeDTO node : racine2.getList()) {
 					if (node instanceof TreeDirectoryDTO) {
 						TreeDirectoryDTO directory = (TreeDirectoryDTO) node;
-						if (directory.getModsetType()!=null){
+						if (directory.getModsetType() != null) {
 							if (directory.getModsetType().equals(
 									ModsetType.REPOSITORY)) {
 								if (directory.getName().equals(repositoryName)) {
@@ -1005,12 +1004,13 @@ public class AddonsPanel extends JPanel implements UIConstants {
 						for (TreeNodeDTO node : racine2.getList()) {
 							if (node instanceof TreeDirectoryDTO) {
 								TreeDirectoryDTO directory = (TreeDirectoryDTO) node;
-								if (directory.getModsetType()!=null){
+								if (directory.getModsetType() != null) {
 									if (directory.getModsetType().equals(
 											ModsetType.EVENT)) {
 										if (directory.getName().equals(
 												eventDTO.getName())) {
-											if (directory.getModsetRepositoryName() != null) {
+											if (directory
+													.getModsetRepositoryName() != null) {
 												if (directory
 														.getModsetRepositoryName()
 														.equals(eventDTO

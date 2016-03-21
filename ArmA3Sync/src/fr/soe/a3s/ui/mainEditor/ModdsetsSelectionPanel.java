@@ -220,6 +220,8 @@ public class ModdsetsSelectionPanel extends JDialog implements UIConstants {
 			}
 		}
 
+		facade.getAddonsPanel().updateModsetSelection(repositoryNamesForSync);
+
 		this.dispose();
 	}
 

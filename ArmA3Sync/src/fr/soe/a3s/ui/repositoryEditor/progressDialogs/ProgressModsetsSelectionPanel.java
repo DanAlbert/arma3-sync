@@ -1,33 +1,38 @@
 package fr.soe.a3s.ui.repositoryEditor.progressDialogs;
 
+import java.util.List;
+
 import fr.soe.a3s.service.connection.ConnexionService;
 import fr.soe.a3s.service.connection.ConnexionServiceFactory;
 import fr.soe.a3s.ui.Facade;
 import fr.soe.a3s.ui.ProgressPanel;
+import fr.soe.a3s.ui.mainEditor.ModdsetsSelectionPanel;
 
-public class ProgressModsetsSynchronizationPanel extends ProgressPanel {
+public class ProgressModsetsSelectionPanel extends ProgressPanel {
 
 	private ConnexionService connexion = null;
 	private Thread t = null;
-	private String repositoryName = null;
 
-	public ProgressModsetsSynchronizationPanel(Facade facade) {
+	public ProgressModsetsSelectionPanel(Facade facade) {
 		super(facade);
 		labelTitle.setText("Synchronizing modsets...");
 	}
 
-	public void init(final String repositoryName) {
+	public void init(final List<String> repositoryNames) {
 
-		this.repositoryName = repositoryName;
 		progressBar.setIndeterminate(true);
 		t = new Thread(new Runnable() {
 			@Override
 			public void run() {
-				try {
-					connexion = ConnexionServiceFactory
-							.getServiceForRepositoryManagement(repositoryName);
-					connexion.checkRepository(repositoryName);
-				} catch (Exception e) {
+				for (String repositoryName : repositoryNames) {
+					if (!canceled) {
+						try {
+							connexion = ConnexionServiceFactory
+									.getServiceForRepositoryManagement(repositoryName);
+							connexion.checkRepository(repositoryName);
+						} catch (Exception e) {
+						}
+					}
 				}
 
 				if (!canceled) {
@@ -35,13 +40,16 @@ public class ProgressModsetsSynchronizationPanel extends ProgressPanel {
 						t.sleep(1000);
 					} catch (InterruptedException e) {
 					}
-					terminate();
-				} else {
-					exit();
 				}
+				terminate();
 			}
 		});
 		t.start();
+	}
+
+	@Override
+	protected void menuExitPerformed() {
+		exit();
 	}
 
 	private void exit() {
@@ -55,14 +63,12 @@ public class ProgressModsetsSynchronizationPanel extends ProgressPanel {
 		dispose();
 	}
 
-	@Override
-	protected void menuExitPerformed() {
-		exit();
-	}
-
 	private void terminate() {
 
 		exit();
-		facade.getAddonsPanel().updateModsetSelection(repositoryName);
+		ModdsetsSelectionPanel modsetsSelectionPanel = new ModdsetsSelectionPanel(
+				facade);
+		modsetsSelectionPanel.init();
+		modsetsSelectionPanel.setVisible(true);
 	}
 }
