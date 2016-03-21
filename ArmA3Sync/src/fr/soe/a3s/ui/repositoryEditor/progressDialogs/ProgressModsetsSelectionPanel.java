@@ -37,7 +37,7 @@ public class ProgressModsetsSelectionPanel extends ProgressPanel {
 
 				if (!canceled) {
 					try {
-						t.sleep(1000);
+						t.sleep(500);
 					} catch (InterruptedException e) {
 					}
 				}
