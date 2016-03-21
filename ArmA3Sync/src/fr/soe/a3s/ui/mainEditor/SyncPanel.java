@@ -26,7 +26,6 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
-import javax.swing.SwingUtilities;
 import javax.swing.border.BevelBorder;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
@@ -132,8 +131,9 @@ public class SyncPanel extends JPanel implements UIConstants {
 				col2.setCellRenderer(renderer);
 
 				JTableHeader header = tableRepositories.getTableHeader();
-				if (header!=null){
-					header.setDefaultRenderer(new HeaderRenderer(tableRepositories));
+				if (header != null) {
+					header.setDefaultRenderer(new HeaderRenderer(
+							tableRepositories));
 				}
 			}
 			{
@@ -253,7 +253,7 @@ public class SyncPanel extends JPanel implements UIConstants {
 					int index = tableRepositories.getSelectedRow();
 					try {
 						if (index != -1
-								&& !(index > tableRepositories.getRowCount())) {
+								&& !(index >= tableRepositories.getRowCount())) {
 							String name = (String) model.getValueAt(index, 0);
 							boolean notify = (Boolean) model.getValueAt(index,
 									1);
@@ -400,7 +400,7 @@ public class SyncPanel extends JPanel implements UIConstants {
 		}
 
 		int index = tableRepositories.getSelectedRow();
-		if (index == -1 || index > tableRepositories.getRowCount()) {
+		if (index == -1 || index >= tableRepositories.getRowCount()) {
 			JOptionPane.showMessageDialog(facade.getMainPanel(),
 					"Please select a repository.", "Information",
 					JOptionPane.INFORMATION_MESSAGE);
@@ -442,7 +442,7 @@ public class SyncPanel extends JPanel implements UIConstants {
 		}
 
 		int index = tableRepositories.getSelectedRow();
-		if (index == -1 || index > tableRepositories.getRowCount()) {
+		if (index == -1 || index >= tableRepositories.getRowCount()) {
 			JOptionPane.showMessageDialog(facade.getMainPanel(),
 					"Please select a repository.", "Information",
 					JOptionPane.INFORMATION_MESSAGE);
@@ -465,7 +465,7 @@ public class SyncPanel extends JPanel implements UIConstants {
 		}
 
 		int index = tableRepositories.getSelectedRow();
-		if (index == -1 || index > tableRepositories.getRowCount()) {
+		if (index == -1 || index >= tableRepositories.getRowCount()) {
 			JOptionPane.showMessageDialog(facade.getMainPanel(),
 					"Please select a repository.", "Information",
 					JOptionPane.INFORMATION_MESSAGE);
