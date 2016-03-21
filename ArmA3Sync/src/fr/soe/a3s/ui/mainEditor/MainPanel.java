@@ -586,7 +586,7 @@ public class MainPanel extends JFrame implements UIConstants {
 
 	private void menuItemRenameGroupPerformed() {
 		tabbedPane.setSelectedIndex(0);
-		facade.getAddonsPanel().renamePormed();
+		facade.getAddonsPanel().renamePerformed();
 	}
 
 	private void menuItemRemoveGroupPerformed() {
