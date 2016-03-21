@@ -59,6 +59,7 @@ public class RepositoryBuildProcessor implements DataAccessConstants,
 	/** Variables for observableText and observableCount Interface */
 	private ObserverText observerText;
 	private ObserverCount observerCount;
+
 	/** Cancel build */
 	private boolean canceled = false;
 	private final IOException ex = null;
@@ -212,16 +213,17 @@ public class RepositoryBuildProcessor implements DataAccessConstants,
 								.get(addonName);
 						SyncTreeDirectory oldSyncDirectory = mapOldSync
 								.get(addonName);
-						Collections.sort(leafsList);
+						List<SyncTreeLeaf> newLeafsList = syncDirectory
+								.getDeepSearchLeafsList();
+						Collections.sort(newLeafsList);
 						List<SyncTreeLeaf> oldLeafsList = oldSyncDirectory
 								.getDeepSearchLeafsList();
-						Collections.sort(oldSyncDirectory
-								.getDeepSearchLeafsList());
-						if (leafsList.size() != oldLeafsList.size()) {
+						Collections.sort(oldLeafsList);
+						if (newLeafsList.size() != oldLeafsList.size()) {
 							changelog.getUpdatedAddons().add(addonName);
 						} else {
-							for (int i = 0; i < leafsList.size(); i++) {
-								if (!leafsList.get(i).getSha1()
+							for (int i = 0; i < newLeafsList.size(); i++) {
+								if (!newLeafsList.get(i).getSha1()
 										.equals(oldLeafsList.get(i).getSha1())) {
 									changelog.getUpdatedAddons().add(addonName);
 									break;
