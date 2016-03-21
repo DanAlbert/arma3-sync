@@ -594,7 +594,7 @@ public class AddonsPanel extends JPanel implements UIConstants {
 		} else if (evt.getActionCommand().equals("Duplicate")) {
 			duplicatePerformed();
 		} else if (evt.getActionCommand().equals("Rename")) {
-			renamePormed();
+			renamePerformed();
 		} else if (evt.getActionCommand().equals("Remove")) {
 			removePerformed();
 		}
@@ -645,7 +645,7 @@ public class AddonsPanel extends JPanel implements UIConstants {
 		}
 	}
 
-	public void renamePormed() {
+	public void renamePerformed() {
 
 		TreeNodeDTO[] nodes = getSelectedNode();
 		if (nodes == null) {
