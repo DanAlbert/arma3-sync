@@ -259,7 +259,7 @@ public class OnlinePanel extends JPanel implements UIConstants {
 
 		int index = tableServers.getSelectedRow();
 
-		if (index == -1) {
+		if (index == -1 || index >= tableServers.getRowCount()) {
 			return;
 		}
 

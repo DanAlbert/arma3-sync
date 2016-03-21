@@ -13,7 +13,6 @@ import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
-import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -32,15 +31,14 @@ import fr.soe.a3s.service.ConfigurationService;
 import fr.soe.a3s.ui.Facade;
 import fr.soe.a3s.ui.UIConstants;
 
-
 public class ExternalApplicationsPanel extends JPanel implements UIConstants {
 
-	private Facade facade;
-	private JButton buttonAdd, buttonDelete,buttonEdit, buttonEnable;
-	private JTable tableApplications;
-	private MyTableModel model;
-	private JScrollPane jScrollPane1;
-	private ConfigurationService configurationService = new ConfigurationService();
+	private final Facade facade;
+	private final JButton buttonAdd, buttonDelete, buttonEdit, buttonEnable;
+	private final JTable tableApplications;
+	private final MyTableModel model;
+	private final JScrollPane jScrollPane1;
+	private final ConfigurationService configurationService = new ConfigurationService();
 	private static final String ENABLE_TEXT = "YES";
 	private static final String DISABLE_TEXT = "NO";
 
@@ -78,7 +76,7 @@ public class ExternalApplicationsPanel extends JPanel implements UIConstants {
 		MyTableCellRenderer renderer = new MyTableCellRenderer();
 		renderer.setHorizontalAlignment(SwingConstants.CENTER);
 		col0.setCellRenderer(renderer);
-		
+
 		JTableHeader header = tableApplications.getTableHeader();
 		header.setDefaultRenderer(new HeaderRenderer(tableApplications));
 
@@ -130,11 +128,12 @@ public class ExternalApplicationsPanel extends JPanel implements UIConstants {
 	}
 
 	private void setContextualHelp() {
-		
+
 		buttonAdd.setToolTipText("Add a new application");
 		buttonEdit.setToolTipText("Edit");
 		buttonDelete.setToolTipText("Delete");
-		buttonEnable.setToolTipText("Set the selected application to run at game launch");
+		buttonEnable
+				.setToolTipText("Set the selected application to run at game launch");
 	}
 
 	public void init() {
@@ -159,8 +158,8 @@ public class ExternalApplicationsPanel extends JPanel implements UIConstants {
 			i++;
 		}
 	}
-	
-	private void refresh(){
+
+	private void refresh() {
 		init();
 		model.fireTableDataChanged();
 		jScrollPane1.updateUI();
@@ -186,31 +185,31 @@ public class ExternalApplicationsPanel extends JPanel implements UIConstants {
 
 		int index = tableApplications.getSelectedRow();
 
-		if (index == -1) {
+		if (index == -1 || index >= tableApplications.getRowCount()) {
 			return;
 		}
-		
+
 		List<ExternalApplicationDTO> list = configurationService
 				.getExternalApplications();
 		list.remove(index);
 		configurationService.saveExternalApps(list);
 		refresh();
-		if (index!=0){
-			tableApplications.setRowSelectionInterval(index-1, index-1);
+		if (index != 0) {
+			tableApplications.setRowSelectionInterval(index - 1, index - 1);
 		}
 	}
-	
+
 	private void buttonEditPerformed() {
-		
+
 		int index = tableApplications.getSelectedRow();
 
-		if (index == -1) {
+		if (index == -1 || index >= tableApplications.getRowCount()) {
 			return;
 		}
 
 		String value = (String) model.getValueAt(index, 0);
 		boolean active = false;
-		if (value.equals(ENABLE_TEXT)){
+		if (value.equals(ENABLE_TEXT)) {
 			active = true;
 		}
 		String description = (String) model.getValueAt(index, 1);
@@ -239,10 +238,10 @@ public class ExternalApplicationsPanel extends JPanel implements UIConstants {
 
 		int index = tableApplications.getSelectedRow();
 
-		if (index == -1) {
+		if (index == -1 || index >= tableApplications.getRowCount()) {
 			return;
 		}
-		
+
 		List<ExternalApplicationDTO> list = configurationService
 				.getExternalApplications();
 		ExternalApplicationDTO externalApplicationDTO = list.get(index);
@@ -258,22 +257,26 @@ public class ExternalApplicationsPanel extends JPanel implements UIConstants {
 	}
 
 	class MyTableModel extends AbstractTableModel {
-		private String[] columnNames = { "Active", "Description",
+		private final String[] columnNames = { "Active", "Description",
 				".exe/.bat/.sh Path", "Parameters" };
 		private Object[][] data = {};
 
+		@Override
 		public int getColumnCount() {
 			return columnNames.length;
 		}
 
+		@Override
 		public int getRowCount() {
 			return data.length;
 		}
 
+		@Override
 		public String getColumnName(int col) {
 			return columnNames[col];
 		}
 
+		@Override
 		public Object getValueAt(int row, int col) {
 			return data[row][col];
 		}
@@ -283,6 +286,7 @@ public class ExternalApplicationsPanel extends JPanel implements UIConstants {
 		 * each cell. If we didn't implement this method, then the last column
 		 * would contain text ("true"/"false"), rather than a check box.
 		 */
+		@Override
 		public Class getColumnClass(int c) {
 			return getValueAt(0, c).getClass();
 		}
@@ -290,6 +294,7 @@ public class ExternalApplicationsPanel extends JPanel implements UIConstants {
 		/*
 		 * Don't need to implement this method unless your table's editable.
 		 */
+		@Override
 		public boolean isCellEditable(int row, int col) {
 			// Note that the data/cell address is constant,
 			// no matter where the cell appears onscreen.
@@ -300,9 +305,10 @@ public class ExternalApplicationsPanel extends JPanel implements UIConstants {
 		 * Don't need to implement this method unless your table's data can
 		 * change.
 		 */
+		@Override
 		public void setValueAt(Object value, int row, int col) {
 			if (value instanceof Integer) {
-				value = (String) Integer.toString((Integer) value);
+				value = Integer.toString((Integer) value);
 			} else if (value instanceof Boolean) {
 				boolean enabled = (Boolean) value;
 				if (enabled) {
@@ -331,6 +337,7 @@ public class ExternalApplicationsPanel extends JPanel implements UIConstants {
 
 	class MyTableCellRenderer extends DefaultTableCellRenderer {
 
+		@Override
 		public Component getTableCellRendererComponent(JTable table,
 				Object value, boolean isSelected, boolean hasFocus, int row,
 				int col) {
@@ -347,7 +354,7 @@ public class ExternalApplicationsPanel extends JPanel implements UIConstants {
 			return c;
 		}
 	}
-	
+
 	class HeaderRenderer implements TableCellRenderer {
 
 		DefaultTableCellRenderer renderer;
