@@ -821,6 +821,7 @@ public class AddonsPanel extends JPanel implements UIConstants {
 			for (TreeNodeDTO child : racine2.getList()) {
 				paths.add(rootPath.pathByAddingChild(child));
 			}
+			
 			for (TreePath treePath : paths) {
 				arbre2.collapsePath(treePath);
 			}

@@ -150,13 +150,10 @@ public class AddonsChecker extends Thread {
 			String header = connexionService.determineFilesCompletion(
 					repositoryName, parent);
 
-			// 4. Update modset selection
-			facade.getAddonsPanel().updateModsetSelection(repositoryName);
-
-			// 5. Update repository status
+			// 4. Update repository status
 			repositoryService.updateRepositoryRevision(repositoryName);
-
-			// 6. Update online panel and launch panel
+			
+			// 5. Update online panel and launch panel
 			SwingUtilities.invokeLater(new Runnable() {
 				@Override
 				public void run() {
@@ -165,8 +162,12 @@ public class AddonsChecker extends Thread {
 					facade.getLaunchPanel().init();
 				}
 			});
-
+			
 			if (!canceled) {
+				
+				// 6. Update modset selection
+				facade.getAddonsPanel().updateModsetSelection(repositoryName);
+				
 				// 7. Update download panel tree
 				if (eventName != null) {
 					extractAddonSelectionForEventName();

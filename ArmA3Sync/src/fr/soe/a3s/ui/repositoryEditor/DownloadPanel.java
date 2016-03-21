@@ -844,20 +844,9 @@ public class DownloadPanel extends JPanel implements UIConstants {
 							"A default destination folder must be set. \n Please checkout Addon Options panel.",
 							"Download", JOptionPane.WARNING_MESSAGE);
 		} else {
-			String defaultDownloadLocation = (String) comBoxDestinationFolder
-					.getSelectedItem();
-			repositoryService.setDefaultDownloadLocation(repositoryName,
-					defaultDownloadLocation);
-
 			// Show partial file transfer warning message
 			showPartialFileTransferWarningMessage = true;
-
-			// Lock user action on addons tree
-			arbre.setEnabled(false);
-			// Check addons repository
-			addonsChecker = new AddonsChecker(facade, repositoryName,
-					eventName, showPartialFileTransferWarningMessage, this);
-			addonsChecker.start();
+			checkForAddons();
 		}
 	}
 
