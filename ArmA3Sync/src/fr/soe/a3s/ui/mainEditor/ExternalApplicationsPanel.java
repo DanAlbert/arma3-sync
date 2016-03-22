@@ -78,7 +78,9 @@ public class ExternalApplicationsPanel extends JPanel implements UIConstants {
 		col0.setCellRenderer(renderer);
 
 		JTableHeader header = tableApplications.getTableHeader();
-		header.setDefaultRenderer(new HeaderRenderer(tableApplications));
+		if (header != null) {
+			header.setDefaultRenderer(new HeaderRenderer(tableApplications));
+		}
 
 		Box vertBox2 = Box.createVerticalBox();
 		vertBox2.add(Box.createVerticalStrut(25));
