@@ -32,6 +32,7 @@ import fr.soe.a3sUpdater.service.Service;
  */
 public class Updater extends JFrame implements ActionListener, UIConstants {
 
+	private final Facade facade;
 	private JTextArea jTextAreaUpdating;
 	private JProgressBar progressBar;
 	private JButton buttonCancel;
@@ -41,7 +42,8 @@ public class Updater extends JFrame implements ActionListener, UIConstants {
 	private JTextArea jTextArea1;
 	private ImagePanel jPanel2;
 	private JPanel jPanel1;
-	private Facade facade;
+	// Services
+	private final Service service = new Service();;
 
 	public Updater(Facade facade) {
 
@@ -122,11 +124,13 @@ public class Updater extends JFrame implements ActionListener, UIConstants {
 		}
 		// Add Listeners
 		addWindowListener(new WindowAdapter() {
+			@Override
 			public void windowClosing(WindowEvent e) {
 				menuExitPerformed();
 			}
 		});
 		buttonCancel.addActionListener(new ActionListener() {
+			@Override
 			public void actionPerformed(ActionEvent e) {
 				menuExitPerformed();
 			}
@@ -134,10 +138,9 @@ public class Updater extends JFrame implements ActionListener, UIConstants {
 	}
 
 	public void init() {
-		Service service = new Service();
+
 		try {
 			String version = service.getVersion();
-
 			if (version == null) {
 				JOptionPane.showMessageDialog(this,
 						"Can't determine current version of the application.\n Please run "
@@ -155,6 +158,7 @@ public class Updater extends JFrame implements ActionListener, UIConstants {
 			jTextAreaAction.setText("Downloading files...");
 			System.out.println("Downloading files...");
 			service.getFtpDAO().getDos().addObservateur(new Observateur() {
+				@Override
 				public void update(int value) {
 					progressBar.setValue(value);
 				}
@@ -169,20 +173,19 @@ public class Updater extends JFrame implements ActionListener, UIConstants {
 
 			this.dispose();
 
-//			String command = "java -jar -Djava.net.preferIPv4Stack=true -Xms256m -Xmx256m -Dsun.java2d.d3d=false "
-//					+ TARGET_APPLICATION_NAME + ".jar";
-			String command = "ArmA3Sync.exe";
-
-			if (facade.isDevMode()) {
-				command = command + " -dev";
-			}
-			try {
-				Runtime.getRuntime().exec(command);
-			} catch (IOException ex) {
-				ex.printStackTrace();
-			} finally {
-				service.clean();
-				System.exit(0);
+			if (System.getProperty("os.name").toLowerCase().contains("Windows")) {
+				String command = "ArmA3Sync.exe";
+				if (facade.isDevMode()) {
+					command = command + " -dev";
+				}
+				try {
+					Runtime.getRuntime().exec(command);
+				} catch (IOException ex) {
+					ex.printStackTrace();
+				} finally {
+					service.clean();
+					System.exit(0);
+				}
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -195,6 +198,7 @@ public class Updater extends JFrame implements ActionListener, UIConstants {
 		}
 	}
 
+	@Override
 	public void actionPerformed(ActionEvent e) {
 		if (e.getSource() == buttonCancel) {
 			menuExitPerformed();
@@ -209,6 +213,7 @@ public class Updater extends JFrame implements ActionListener, UIConstants {
 			this.image = image;
 		}
 
+		@Override
 		public void paintComponent(Graphics g) {
 			super.paintComponent(g); // paint background
 			if (image != null) { // there is a picture: draw it

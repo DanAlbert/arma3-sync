@@ -22,14 +22,13 @@ public class Service implements DataAccessConstants {
 	private String version = "";
 	private String zipFileName = "";
 	private FTPClient ftpClient;
-	
 
 	public String getVersion() throws XmlException {
 		try {
 			String version = xmlDAO.getVersion();
-			if (version == null){
+			if (version == null) {
 				return null;
-			}else {
+			} else {
 				this.version = version;
 			}
 			getZipFileName();
@@ -50,8 +49,9 @@ public class Service implements DataAccessConstants {
 		long size = 0;
 		try {
 			ftpClient = new FTPClient();
-			ftpClient.connect(UPDTATE_REPOSITORY_ADRESS,UPDTATE_REPOSITORY_PORT) ;
-			ftpClient.login(UPDTATE_REPOSITORY_LOGIN,UPDTATE_REPOSITORY_PASS);
+			ftpClient.connect(UPDTATE_REPOSITORY_ADRESS,
+					UPDTATE_REPOSITORY_PORT);
+			ftpClient.login(UPDTATE_REPOSITORY_LOGIN, UPDTATE_REPOSITORY_PASS);
 			ftpClient.setFileType(FTP.BINARY_FILE_TYPE);// binary transfert mode
 			ftpClient.enterLocalPassiveMode();// passive mode
 
@@ -62,62 +62,58 @@ public class Service implements DataAccessConstants {
 			} else {
 				System.out.println("Connection Failed");
 				ftpClient.disconnect();
-				throw new FtpException(
-						"Fail to connect to remote repository.");
+				throw new FtpException("Fail to connect to remote repository.");
 			}
 
 		} catch (Exception e1) {
 			e1.printStackTrace();
 			throw new FtpException("Fail to connect to remote repository.");
 		}
-		
+
 		try {
-			size = ftpDAO.getFtpFileSize(zipFileName, ftpClient,devMode);
-			if (size==0){
-				throw new FinderException("Can't find update file on repository.");
+			size = ftpDAO.getFtpFileSize(zipFileName, ftpClient, devMode);
+			if (size == 0) {
+				throw new FinderException(
+						"Can't find update file on repository.");
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
 			throw new FinderException("Can't find update file on repository.");
-		} 
+		}
 		return size;
 	}
 
 	public void setDownload() throws WritingException {
 		try {
 			ftpDAO.setDownload(zipFileName);
-		} catch (Exception e) {
+		} catch (IOException e) {
 			e.printStackTrace();
 			throw new WritingException("Can't write files on disk.");
 		}
 	}
 
-	public void download(boolean devMode) throws FtpException {
+	public void download(boolean devMode) throws Exception {
 
-		try {
-			ftpClient.setFileType(FTP.BINARY_FILE_TYPE);// binary transfert mode
-			ftpClient.enterLocalPassiveMode();// passive mode
-			int reply = ftpClient.getReplyCode();
-			if (FTPReply.isPositiveCompletion(reply)) {
-				System.out.println("Connected Success");
-			} else {
-				System.out.println("Connection Failed");
-				ftpClient.disconnect();
-				throw new FtpException(
-						"Fail to connect to remote repository.");
-			}
-			ftpDAO.download(zipFileName, ftpClient,devMode);
-
-		} catch (Exception e) {
-			e.printStackTrace();
-			throw new FtpException("Fail to download update!");
+		ftpClient.setFileType(FTP.BINARY_FILE_TYPE);// binary transfert mode
+		ftpClient.enterLocalPassiveMode();// passive mode
+		int reply = ftpClient.getReplyCode();
+		if (FTPReply.isPositiveCompletion(reply)) {
+			System.out.println("Connected Success");
+		} else {
+			System.out.println("Connection Failed");
+			ftpClient.disconnect();
+			throw new Exception("Fail to connect to remote repository.");
+		}
+		boolean found = ftpDAO.download(zipFileName, ftpClient, devMode);
+		if (!found) {
+			throw new Exception("Update file not found.");
 		}
 	}
 
 	public FtpDAO getFtpDAO() {
 		return ftpDAO;
 	}
-	
+
 	public void install() throws WritingException {
 		try {
 			ftpDAO.install();

@@ -21,70 +21,95 @@ public class FtpDAO implements DataAccessConstants {
 	private File folderUpdate = null;
 	private File zipFile = null;
 
-	public long getFtpFileSize(String zipFileName, FTPClient ftpClient, boolean devMode)throws IOException {
+	public long getFtpFileSize(String zipFileName, FTPClient ftpClient,
+			boolean devMode) throws IOException {
 
 		long size = 0;
-		if (devMode){
+		if (devMode) {
 			ftpClient.changeWorkingDirectory(UPDATE_REPOSITORY_DEV);
-		}else {
+		} else {
 			ftpClient.changeWorkingDirectory(UPDATE_REPOSITORY);
 		}
 		System.out.println(zipFileName);
 		FTPFile[] ftpFiles = ftpClient.listFiles(zipFileName);
-		if (ftpFiles.length!=0) {
+		if (ftpFiles.length != 0) {
 			size = ftpFiles[0].getSize();
 		}
 		return size;
 	}
 
 	public void setDownload(String zipFileName) throws IOException {
+
 		folderUpdate = new File("update");
 		folderUpdate.mkdir();
-		zipFile = new File(folderUpdate.getAbsolutePath() + "/" + zipFileName);
-		fos = new FileOutputStream(zipFile);
-		dos = new DownloadCountingOutputStream(fos);
+		if (!folderUpdate.exists()) {
+			throw new IOException();
+		} else {
+			zipFile = new File(folderUpdate.getAbsolutePath() + "/"
+					+ zipFileName);
+			fos = new FileOutputStream(zipFile);
+			dos = new DownloadCountingOutputStream(fos);
+		}
 	}
 
-	public void download(String zipFileName, FTPClient ftpClient,boolean devMode)
-			throws IOException {
-		
-		if (devMode){
-			ftpClient.changeWorkingDirectory(UPDATE_REPOSITORY_DEV);
-		}else {
-			ftpClient.changeWorkingDirectory(UPDATE_REPOSITORY);
+	public boolean download(String zipFileName, FTPClient ftpClient,
+			boolean devMode) throws IOException {
+
+		boolean ok = false;
+		if (devMode) {
+			ok = ftpClient.changeWorkingDirectory(UPDATE_REPOSITORY_DEV);
+		} else {
+			ok = ftpClient.changeWorkingDirectory(UPDATE_REPOSITORY);
 		}
-		ftpClient.retrieveFile(zipFileName, dos);
-		dos.close();
-		fos.close();
+		if (ok) {
+			try {
+				ok = ftpClient.retrieveFile(zipFileName, dos);
+			} finally {
+				if (dos != null) {
+					dos.close();
+				}
+				if (fos != null) {
+					fos.close();
+				}
+			}
+		}
+		return ok;
 	}
 
 	public DownloadCountingOutputStream getDos() {
 		return dos;
 	}
-	
+
 	public void removeDirectory(String path) {
 		File file = new File(path);
 		deleteDirectory(file);
 	}
-	
+
 	public void install() throws IOException {
-		
-		extractToFolder(zipFile, folderUpdate);
-		File f = new File(folderUpdate + "/"+ zipFile.getName().replaceAll(".zip", ""));
-		f.mkdir();
-		File sourceLocation = new File(f.getAbsolutePath()); 
-		File targetLocation = new File(System.getProperty("user.dir"));
-		copyDirectory(sourceLocation,targetLocation);
+
+		if (zipFile.exists()) {
+			extractToFolder(zipFile, folderUpdate);
+			File f = new File(folderUpdate + "/"
+					+ zipFile.getName().replaceAll(".zip", ""));
+			f.mkdir();
+			if (f.exists()) {
+				File sourceLocation = new File(f.getAbsolutePath());
+				File targetLocation = new File(System.getProperty("user.dir"));
+				copyDirectory(sourceLocation, targetLocation);
+			} else {
+				throw new IOException();
+			}
+		}
 	}
-	
-	public void clean(){
-		if (folderUpdate!=null){
+
+	public void clean() {
+		if (folderUpdate != null) {
 			deleteDirectory(folderUpdate);
 		}
 	}
-	
-	//Business methods
-	
+
+	// Business methods
+
 	private void extractToFolder(File zipFile, File folder) throws IOException {
 
 		// création de la ZipInputStream qui va servir à lire les données du
