@@ -36,9 +36,8 @@ public class ProgressModsetsSynchronizationPanel extends ProgressPanel {
 					} catch (InterruptedException e) {
 					}
 					terminate();
-				} else {
-					exit();
 				}
+				exit();
 			}
 		});
 		t.start();
@@ -61,8 +60,6 @@ public class ProgressModsetsSynchronizationPanel extends ProgressPanel {
 	}
 
 	private void terminate() {
-
-		exit();
 		facade.getAddonsPanel().updateModsetSelection(repositoryName);
 	}
 }

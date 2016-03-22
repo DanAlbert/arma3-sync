@@ -41,6 +41,7 @@ public class ProgressModsetsSelectionPanel extends ProgressPanel {
 					} catch (InterruptedException e) {
 					}
 				}
+				exit();
 				terminate();
 			}
 		});
@@ -65,7 +66,6 @@ public class ProgressModsetsSelectionPanel extends ProgressPanel {
 
 	private void terminate() {
 
-		exit();
 		ModdsetsSelectionPanel modsetsSelectionPanel = new ModdsetsSelectionPanel(
 				facade);
 		modsetsSelectionPanel.init();
