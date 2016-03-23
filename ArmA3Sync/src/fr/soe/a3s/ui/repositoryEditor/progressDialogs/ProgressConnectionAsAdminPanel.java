@@ -1,11 +1,8 @@
 package fr.soe.a3s.ui.repositoryEditor.progressDialogs;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 import javax.swing.JOptionPane;
-import javax.swing.SwingUtilities;
 
 import fr.soe.a3s.exception.repository.RepositoryException;
 import fr.soe.a3s.service.RepositoryService;
@@ -51,19 +48,24 @@ public class ProgressConnectionAsAdminPanel extends ProgressPanel {
 							+ repositoryName);
 					connexion = ConnexionServiceFactory
 							.getServiceForRepositoryManagement(repositoryName);
-					connexion.checkRepository(repositoryName);
+					connexion.getSync(repositoryName);
+					connexion.getServerInfo(repositoryName);
+					connexion.getChangelogs(repositoryName);
+					connexion.getEvents(repositoryName);
+					// do not retrieve autoconfig file => erase online servers
+					// conf
 
+					if (repositoryService.getSync(repositoryName) == null) {
+						System.out.println("Remote file Sync not found.");
+					}
 					if (repositoryService.getServerInfo(repositoryName) == null) {
-						System.out.println("ServerInfo not found.");
+						System.out.println("Remote file ServerInfo not found.");
 					}
 					if (repositoryService.getChangelogs(repositoryName) == null) {
-						System.out.println("Changelogs not found.");
-					}
-					if (repositoryService.getAutoconfig(repositoryName) == null) {
-						System.out.println("Autoconfig not found.");
+						System.out.println("Remote file Changelogs not found.");
 					}
 					if (repositoryService.getEvents(repositoryName) == null) {
-						System.out.println("Events not found.");
+						System.out.println("Remote file Events not found.");
 					}
 				} catch (Exception e) {
 					setVisible(false);
