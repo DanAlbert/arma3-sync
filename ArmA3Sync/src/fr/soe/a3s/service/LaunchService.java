@@ -118,6 +118,15 @@ public class LaunchService {
 		}
 	}
 
+	public boolean isArmA3ServerRunning() {
+		if (!launcherDAO.isApplicationRunning(GameExecutables.WIN_SERVER
+				.getDescription())) {
+			return false;
+		} else {
+			return true;
+		}
+	}
+
 	private boolean isSteamRunning() {
 		if (!launcherDAO.isApplicationRunning(GameExecutables.STEAM
 				.getDescription())) {

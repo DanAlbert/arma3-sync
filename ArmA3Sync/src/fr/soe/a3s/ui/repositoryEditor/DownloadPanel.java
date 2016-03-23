@@ -898,7 +898,8 @@ public class DownloadPanel extends JPanel implements UIConstants {
 		}
 
 		LaunchService launchService = new LaunchService();
-		if (launchService.isArmA3Running()) {
+		if (launchService.isArmA3Running()
+				|| launchService.isArmA3ServerRunning()) {
 			int ok = JOptionPane
 					.showConfirmDialog(
 							facade.getMainPanel(),
