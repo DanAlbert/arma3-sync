@@ -28,7 +28,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
-import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -53,14 +52,10 @@ import javax.swing.plaf.ColorUIResource;
 import net.jimmc.jshortcut.JShellLink;
 import fr.soe.a3s.constant.DefaultProfileName;
 import fr.soe.a3s.constant.MinimizationType;
-import fr.soe.a3s.constant.ModsetType;
 import fr.soe.a3s.constant.RepositoryStatus;
 import fr.soe.a3s.domain.configration.LauncherOptions;
 import fr.soe.a3s.dto.RepositoryDTO;
-import fr.soe.a3s.dto.TreeDirectoryDTO;
-import fr.soe.a3s.dto.TreeNodeDTO;
 import fr.soe.a3s.dto.configuration.PreferencesDTO;
-import fr.soe.a3s.exception.CheckException;
 import fr.soe.a3s.exception.FtpException;
 import fr.soe.a3s.exception.LoadingException;
 import fr.soe.a3s.exception.WritingException;
@@ -81,7 +76,6 @@ import fr.soe.a3s.ui.autoConfigEditor.AutoConfigExportPanel;
 import fr.soe.a3s.ui.autoConfigEditor.AutoConfigImportPanel;
 import fr.soe.a3s.ui.profileEditor.ProfilePanel;
 import fr.soe.a3s.ui.repositoryEditor.RepositoryPanel;
-import fr.soe.a3s.ui.repositoryEditor.progressDialogs.ProgressSynchronizationPanel;
 import fr.soe.a3s.ui.tools.acre2Editor.FirstPageACRE2InstallerPanel;
 import fr.soe.a3s.ui.tools.acreEditor.FirstPageACREInstallerPanel;
 import fr.soe.a3s.ui.tools.aiaEditor.AiaInstallerPanel;
@@ -1097,18 +1091,6 @@ public class MainPanel extends JFrame implements UIConstants {
 		RepositoryPanel newRepositoryPanel = null;
 		if (!mapTabIndexes.containsKey(title)) {
 			newRepositoryPanel = new RepositoryPanel(facade);
-			// if (update) {
-			// // Repository status changed to ok
-			// repositoryService.updateRepositoryRevision(repositoryName);
-			// repositoryService.setOutOfSync(repositoryName, false);
-			// repositoryPanel.init(repositoryName, null, true);
-			// repositoryPanel.getDownloadPanel().checkForAddons();
-			// } else if (eventName != null) {
-			// repositoryPanel.init(repositoryName, eventName, false);
-			// repositoryPanel.getDownloadPanel().checkForAddons();
-			// } else {
-			// repositoryPanel.init(repositoryName, null, false);
-			// }
 			addClosableTab(newRepositoryPanel, repositoryName);
 			final int index = tabbedPane.getTabCount() - 1;
 			mapTabIndexes.put(title, index);
