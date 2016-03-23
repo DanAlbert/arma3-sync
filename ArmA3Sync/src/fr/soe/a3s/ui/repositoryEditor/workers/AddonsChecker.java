@@ -42,7 +42,6 @@ public class AddonsChecker extends Thread {
 	private boolean canceled = false;
 	private boolean showPartialFileTransferWarningMessage = false;
 	private boolean performModsetsSynchronization = false;
-
 	/* Services */
 	private final RepositoryService repositoryService = new RepositoryService();
 	private final AddonService addonService = new AddonService();
