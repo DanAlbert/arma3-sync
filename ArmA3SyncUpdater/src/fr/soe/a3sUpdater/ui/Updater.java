@@ -173,7 +173,7 @@ public class Updater extends JFrame implements ActionListener, UIConstants {
 
 			this.dispose();
 
-			if (System.getProperty("os.name").toLowerCase().contains("Windows")) {
+			if (System.getProperty("os.name").toLowerCase().contains("windows")) {
 				String command = "ArmA3Sync.exe";
 				if (facade.isDevMode()) {
 					command = command + " -dev";
