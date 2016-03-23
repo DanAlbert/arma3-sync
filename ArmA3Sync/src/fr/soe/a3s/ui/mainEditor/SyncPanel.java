@@ -274,14 +274,14 @@ public class SyncPanel extends JPanel implements UIConstants {
 
 	private void setContextualHelp() {
 
-		buttonNew.setToolTipText("Add repository");
+		buttonNew.setToolTipText("Add a new repository");
 		buttonEdit.setToolTipText("Edit repository");
 		buttonRemove.setToolTipText("Remove repository");
 		buttonSync1.setToolTipText("Update repositories status");
 		buttonAdmin.setToolTipText("Administrate repository");
-		buttonConnectToRepository.setToolTipText("Synchronyse with repository");
+		buttonConnectToRepository.setToolTipText("Connect to repository");
 		buttonSync2.setToolTipText("Update events list");
-		buttonCheckEvent.setToolTipText("Synchronyse with repository");
+		buttonCheckEvent.setToolTipText("Connect to repository");
 	}
 
 	public void init() {
