@@ -86,9 +86,10 @@ public class AddonsChecker extends Thread {
 
 		try {
 			/*
-			 * 1. Try to retrieve the remote repository: - sync file: required
-			 * for SHA1 comparisons - serverinfo: file completion with zsync -
-			 * events: synchronization with selected eventName, may be null
+			 * 1. Check repository: Retrieve sync file: SHA1 comparisons -
+			 * Retrieve serverInfo file: file completion with zsync, set nb
+			 * connections, hidden files - Retrieve events file: synchronization
+			 * with selected eventName, may be null
 			 */
 			connexionService.checkRepository(repositoryName);
 
