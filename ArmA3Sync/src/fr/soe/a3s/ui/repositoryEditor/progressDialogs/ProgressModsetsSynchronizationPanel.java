@@ -13,7 +13,7 @@ public class ProgressModsetsSynchronizationPanel extends ProgressPanel {
 
 	public ProgressModsetsSynchronizationPanel(Facade facade) {
 		super(facade);
-		labelTitle.setText("Synchronizing modsets...");
+		labelTitle.setText("Synchronizing Addon groups...");
 	}
 
 	public void init(final String repositoryName) {
