@@ -522,6 +522,7 @@ public class RepositoryBuildProcessor implements DataAccessConstants,
 	}
 
 	public void cancel() {
+
 		this.canceled = true;
 		if (repositorySHA1Processor != null) {
 			repositorySHA1Processor.cancel();
