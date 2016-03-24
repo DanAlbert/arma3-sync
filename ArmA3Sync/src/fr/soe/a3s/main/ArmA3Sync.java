@@ -290,8 +290,6 @@ public class ArmA3Sync implements DataAccessConstants {
 				javax.swing.UIManager
 						.setLookAndFeel("com.sun.java.swing.plaf.windows.WindowsLookAndFeel");
 				changeFont = false;
-			} else {
-				changeFont = true;
 			}
 
 			if (changeFont) {
