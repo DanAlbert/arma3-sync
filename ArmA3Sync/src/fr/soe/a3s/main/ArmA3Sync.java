@@ -222,7 +222,7 @@ public class ArmA3Sync implements DataAccessConstants {
 						mainPanel = new MainPanel(facade);
 						mainPanel.drawGUI();
 						mainPanel.init();
-					    mainPanel.initBackGround();
+						mainPanel.initBackGround();
 					} catch (Exception e) {
 						ErrorLogDialog dialog = new ErrorLogDialog(facade, e);
 						dialog.show();
@@ -285,13 +285,16 @@ public class ArmA3Sync implements DataAccessConstants {
 
 		try {
 			String osName = System.getProperty("os.name");
-			if (osName.contains("Windows")) {
+			boolean changeFont = true;
+			if (osName.toLowerCase().contains("windows")) {
 				javax.swing.UIManager
 						.setLookAndFeel("com.sun.java.swing.plaf.windows.WindowsLookAndFeel");
-			} else if (osName.contains("Mac")) {
-				javax.swing.UIManager
-						.setLookAndFeel("com.sun.java.swing.plaf.mac.MacLookAndFeel");
+				changeFont = false;
 			} else {
+				changeFont = true;
+			}
+
+			if (changeFont) {
 				Font fontMenu = UIManager.getFont("Menu.font");
 				Font fontMenuA3S = new Font(fontMenu.getName(), Font.PLAIN, 12);
 				javax.swing.UIManager.put("Menu.font", new FontUIResource(
