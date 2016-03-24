@@ -93,7 +93,11 @@ public class RepositoryBuildProcessor implements DataAccessConstants,
 		/* Remove .a3s folder */
 		File folderA3S = new File(repository.getPath() + "/.a3s");
 		if (folderA3S.exists()) {
-			FileAccessMethods.deleteDirectory(folderA3S);
+			boolean deleted = FileAccessMethods.deleteDirectory(folderA3S);
+			if (!deleted) {
+				throw new IOException("Failed to delete .a3s folder." + "\n"
+						+ "Permission denied.");
+			}
 		}
 
 		/* Generate new Sync */
@@ -310,6 +314,10 @@ public class RepositoryBuildProcessor implements DataAccessConstants,
 		/* Write files */
 		File folder = new File(repository.getPath() + "/.a3s");
 		folder.mkdir();
+		if (!folder.exists()) {
+			throw new IOException("Failed to create .a3s folder." + "\n"
+					+ "Permission denied.");
+		}
 
 		// Write Sync file
 		File syncFile = new File(repository.getPath() + SYNC_FILE_PATH);
