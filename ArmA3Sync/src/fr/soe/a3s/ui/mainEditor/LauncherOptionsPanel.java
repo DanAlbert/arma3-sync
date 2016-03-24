@@ -20,7 +20,6 @@ import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
@@ -29,7 +28,6 @@ import javax.swing.border.BevelBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
-import fr.soe.a3s.constant.GameExecutables;
 import fr.soe.a3s.constant.MaxMemoryValues;
 import fr.soe.a3s.dto.configuration.LauncherOptionsDTO;
 import fr.soe.a3s.exception.ProfileException;
@@ -529,7 +527,7 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener,
 		checkBoxEnableHT.setToolTipText("Use all hyper-threaded cpu cores");
 		checkBoxNoSplashScreen.setToolTipText("Disables splash screens");
 		checkBoxDefaultWorld.setToolTipText("No world loaded at game startup");
-		checkBoxNoLogs.setToolTipText("Do no write errors into RPT file");
+		checkBoxNoLogs.setToolTipText("Do not write errors into RPT file");
 		checkBoxAutoRestart.setToolTipText("Auto-restart game/server");
 		checkBoxMalloc.setToolTipText("Sets memory allocator");
 		comboBoxMalloc.setToolTipText("Sets memory allocator");
