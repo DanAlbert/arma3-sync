@@ -717,14 +717,14 @@ public class FtpDAO extends AbstractConnexionDAO {
 					if (!ftpClient.makeDirectory(dir)) {
 						throw new IOException(
 								"Unable to create remote directory "
-										+ remotePath + "/" + dirTree + "\n"
+										+ remotePath + dirTree + "\n"
 										+ "Server returned FTP error: "
 										+ ftpClient.getReplyString());
 					}
 					if (!ftpClient.changeWorkingDirectory(dir)) {
 						throw new IOException(
 								"Unable to change into newly created remote directory "
-										+ remotePath + "/" + dirTree + "\n"
+										+ remotePath + dirTree + "\n"
 										+ "Server returned FTP error: "
 										+ ftpClient.getReplyString());
 					}
