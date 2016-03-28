@@ -130,10 +130,17 @@ public class SyncPanel extends JPanel implements UIConstants {
 				renderer.setHorizontalAlignment(SwingConstants.CENTER);
 				col2.setCellRenderer(renderer);
 
-				JTableHeader header = tableRepositories.getTableHeader();
-				if (header != null) {
-					header.setDefaultRenderer(new HeaderRenderer(
-							tableRepositories));
+				/*
+				 * http://bugs.java.com/view_bug.do?bug_id=6429812
+				 */
+				String osName = System.getProperty("os.name");
+				boolean changeFont = true;
+				if (!osName.toLowerCase().contains("windows server")) {
+					JTableHeader header = tableRepositories.getTableHeader();
+					if (header != null) {
+						header.setDefaultRenderer(new HeaderRenderer(
+								tableRepositories));
+					}
 				}
 			}
 			{

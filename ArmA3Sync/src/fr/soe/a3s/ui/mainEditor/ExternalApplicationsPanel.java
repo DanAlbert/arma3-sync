@@ -30,6 +30,7 @@ import fr.soe.a3s.dto.configuration.ExternalApplicationDTO;
 import fr.soe.a3s.service.ConfigurationService;
 import fr.soe.a3s.ui.Facade;
 import fr.soe.a3s.ui.UIConstants;
+import fr.soe.a3s.ui.mainEditor.SyncPanel.HeaderRenderer;
 
 public class ExternalApplicationsPanel extends JPanel implements UIConstants {
 
@@ -76,10 +77,17 @@ public class ExternalApplicationsPanel extends JPanel implements UIConstants {
 		MyTableCellRenderer renderer = new MyTableCellRenderer();
 		renderer.setHorizontalAlignment(SwingConstants.CENTER);
 		col0.setCellRenderer(renderer);
-
-		JTableHeader header = tableApplications.getTableHeader();
-		if (header != null) {
-			header.setDefaultRenderer(new HeaderRenderer(tableApplications));
+		
+		/*
+		 * http://bugs.java.com/view_bug.do?bug_id=6429812
+		 */
+		String osName = System.getProperty("os.name");
+		boolean changeFont = true;
+		if (!osName.toLowerCase().contains("windows server")) {
+			JTableHeader header = tableApplications.getTableHeader();
+			if (header != null) {
+				header.setDefaultRenderer(new HeaderRenderer(tableApplications));
+			}
 		}
 
 		Box vertBox2 = Box.createVerticalBox();
