@@ -369,12 +369,30 @@ public class LaunchService {
 		List<String> listAddonNamesByPriority = profile
 				.getAddonNamesByPriority();
 		TreeDirectory racine = profile.getTree();
+
 		Set<String> selectedAddonNames = new TreeSet<String>();
 		getSelectedAddonNames(racine, selectedAddonNames);
-		List<String> runListAddonNames = new ArrayList<String>();
-		for (String name : listAddonNamesByPriority) {
-			if (selectedAddonNames.contains(name)) {
-				runListAddonNames.add(name);
+
+		// Lowercase
+		List<String> listAddonNamesByPriorityToLowerCase = new ArrayList<String>();
+		for (String key : listAddonNamesByPriority) {
+			listAddonNamesByPriorityToLowerCase.add(key.toLowerCase());
+		}
+		Set<String> selectedAddonNamesToLowerCase = new TreeSet<String>();
+		for (String key : selectedAddonNames) {
+			selectedAddonNamesToLowerCase.add(key.toLowerCase());
+		}
+
+		List<String> runListAddonNamesToLowerCase = new ArrayList<String>();
+		for (String name : listAddonNamesByPriorityToLowerCase) {
+			if (selectedAddonNamesToLowerCase.contains(name)) {
+				runListAddonNamesToLowerCase.add(name);
+			}
+		}
+
+		for (String name : selectedAddonNamesToLowerCase) {
+			if (!runListAddonNamesToLowerCase.contains(name)) {
+				runListAddonNamesToLowerCase.add(name);
 			}
 		}
 
@@ -383,8 +401,8 @@ public class LaunchService {
 		 * setting the path later
 		 */
 		List<Addon> addons = new ArrayList<Addon>();
-		for (String name : runListAddonNames) {
-			Addon addon = addonDAO.getMap().get(name.toLowerCase());
+		for (String name : runListAddonNamesToLowerCase) {
+			Addon addon = addonDAO.getMap().get(name);
 			if (addon != null) {// may happen if addon is not present into
 				// available addons list
 				Addon clone = new Addon(addon.getName(), addon.getPath());
