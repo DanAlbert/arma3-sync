@@ -285,7 +285,7 @@ public class ArmA3Sync implements DataAccessConstants {
 
 		try {
 			String osName = System.getProperty("os.name");
-			System.out.println("os name = " + osName);
+			System.out.println("os Name = " + osName);
 			boolean changeFont = true;
 			if (osName.toLowerCase().contains("windows")) {
 				javax.swing.UIManager
