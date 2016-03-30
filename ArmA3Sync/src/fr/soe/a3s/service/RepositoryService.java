@@ -1277,11 +1277,13 @@ public class RepositoryService extends ObjectDTOtransformer implements
 		ServerInfo serverInfo = repositoryDAO.readServerInfo(repositoryName);
 		Changelogs changelogs = repositoryDAO.readChangelogs(repositoryName);
 		AutoConfig autoConfig = repositoryDAO.readAutoConfig(repositoryName);
+		Events events = repositoryDAO.readEvents(repositoryName);
 
 		repository.setLocalSync(sync);// null if not found
 		repository.setLocalServerInfo(serverInfo);// null if not found
 		repository.setLocalChangelogs(changelogs);// null if not found
 		repository.setLocalAutoConfig(autoConfig);// null if not found
+		repository.setLocalEvents(events);// null if not found 
 
 		if (sync == null) {
 			throw new SyncFileNotFoundException(repositoryName);
