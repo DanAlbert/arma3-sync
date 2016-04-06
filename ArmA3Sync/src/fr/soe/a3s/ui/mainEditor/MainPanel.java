@@ -986,6 +986,7 @@ public class MainPanel extends JFrame implements UIConstants {
 				facade.getInfoPanel().init();
 				facade.getAddonsPanel().init();
 				facade.getAddonOptionsPanel().init();
+				facade.getLaunchOptionsPanel().init();
 			}
 		});
 	}

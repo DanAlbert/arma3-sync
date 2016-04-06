@@ -538,11 +538,8 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener,
 		/* Launcher options Automatically updates Run Parameters */
 		updateOptions();
 
-		/* Additional Parameters */
-		String additionalParameters = profileService.getAdditionalParameters();
-		if (additionalParameters != null) {
-			additionalParametersTextArea.setText(additionalParameters);
-		}
+		/* Additional Run Parameters */
+		updateAdditionalRunParameters();
 	}
 
 	/* Components selection */
@@ -884,6 +881,16 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener,
 					comboBoxMalloc.setSelectedIndex(0);
 				}
 			}
+		}
+	}
+
+	private void updateAdditionalRunParameters() {
+
+		String additionalParameters = profileService.getAdditionalParameters();
+		if (additionalParameters != null) {
+			additionalParametersTextArea.setText(additionalParameters);
+		} else {
+			additionalParametersTextArea.setText("");
 		}
 	}
 
