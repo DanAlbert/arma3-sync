@@ -359,9 +359,8 @@ public class ProfileService extends ObjectDTOtransformer {
 			List<String> list = profile.getAddonNamesByPriority();
 			if (index != 0 && !(index > list.size() - 1)) {
 				String name = list.get(index);
-				String nextName = list.get(0);
-				list.set(index, nextName);
-				list.set(0, name);
+				list.remove(index);
+				list.add(0, name);
 			}
 		}
 	}
