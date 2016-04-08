@@ -153,12 +153,17 @@ public class HttpService extends AbstractConnexionService implements
 	public void checkRepository(String repositoryName)
 			throws RepositoryException, IOException {
 
-		System.out.println("Checking repository: " + repositoryName);
-
 		Repository repository = repositoryDAO.getMap().get(repositoryName);
 		if (repository == null) {
 			throw new RepositoryNotFoundException(repositoryName);
 		}
+
+		System.out.println("Checking repository: " + repositoryName
+				+ " on url: "
+				+ repository.getProtocol().getProtocolType().getPrompt()
+				+ repository.getProtocol().getHostname() + ":"
+				+ repository.getProtocol().getPort()
+				+ repository.getProtocol().getRemotePath());
 
 		/* Sync */
 		if (!httpDAOPool.get(0).isCanceled()) {
@@ -199,6 +204,12 @@ public class HttpService extends AbstractConnexionService implements
 	@Override
 	public AutoConfigDTO importAutoConfig(AbstractProtocole protocol)
 			throws IOException {
+
+		System.out.println("Importing autoconfig from url: "
+				+ protocol.getProtocolType().getPrompt()
+				+ protocol.getHostname() + ":" + protocol.getPort()
+				+ protocol.getRemotePath() + "/"
+				+ DataAccessConstants.AUTOCONFIG);
 
 		AutoConfigDTO autoConfigDTO = null;
 		try {
@@ -266,7 +277,8 @@ public class HttpService extends AbstractConnexionService implements
 					final String rootDestinationPath = repository
 							.getDefaultDownloadLocation();
 					String destinationPath = null;
-					String remotePath = repository.getProtocol().getRemotePath();
+					String remotePath = repository.getProtocol()
+							.getRemotePath();
 					String path = leaf.getParentRelativePath();
 					if (leaf.getDestinationPath() != null) {
 						destinationPath = leaf.getDestinationPath();
@@ -283,11 +295,12 @@ public class HttpService extends AbstractConnexionService implements
 
 					leaf.setDestinationPath(destinationPath);
 					leaf.setRemotePath(remotePath);
-					
-					File targetFile = new File(destinationPath + "/" + leaf.getName());
-					if (!targetFile.exists()){
+
+					File targetFile = new File(destinationPath + "/"
+							+ leaf.getName());
+					if (!targetFile.exists()) {
 						leaf.setComplete(0);
-					}else {
+					} else {
 						list2.add(leaf);
 					}
 				}
@@ -297,7 +310,7 @@ public class HttpService extends AbstractConnexionService implements
 		}
 
 		httpDAOPool.get(0).setTotalCount(list2.size());
-		
+
 		for (SyncTreeLeafDTO leaf : list2) {
 			if (httpDAOPool.get(0).isCanceled()) {
 				break;
@@ -325,6 +338,13 @@ public class HttpService extends AbstractConnexionService implements
 			throw new RepositoryNotFoundException(repositoryName);
 		}
 
+		System.out.println("Downloading from repository: " + repositoryName
+				+ " on url: "
+				+ repository.getProtocol().getProtocolType().getPrompt()
+				+ repository.getProtocol().getHostname() + ":"
+				+ repository.getProtocol().getPort()
+				+ repository.getProtocol().getRemotePath());
+
 		List<AbstractConnexionDAO> connectionDAOs = new ArrayList<AbstractConnexionDAO>();
 		for (HttpDAO httpDAO : httpDAOPool) {
 			connectionDAOs.add(httpDAO);
@@ -349,6 +369,13 @@ public class HttpService extends AbstractConnexionService implements
 
 		assert (repository.getSync() != null);
 		assert (repository.getServerInfo() != null);
+
+		System.out.println("Checking repository content: " + repositoryName
+				+ " on url: "
+				+ repository.getProtocol().getProtocolType().getPrompt()
+				+ repository.getProtocol().getHostname() + ":"
+				+ repository.getProtocol().getPort()
+				+ repository.getProtocol().getRemotePath());
 
 		SyncTreeDirectory parent = repository.getSync();
 

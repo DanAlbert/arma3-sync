@@ -10,15 +10,12 @@ import java.util.concurrent.Executors;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
-import fr.soe.a3s.constant.RepositoryStatus;
-import fr.soe.a3s.dto.RepositoryDTO;
 import fr.soe.a3s.exception.repository.RepositoryException;
 import fr.soe.a3s.service.RepositoryService;
 import fr.soe.a3s.service.connection.ConnexionService;
 import fr.soe.a3s.service.connection.ConnexionServiceFactory;
 import fr.soe.a3s.ui.Facade;
 import fr.soe.a3s.ui.ProgressPanel;
-import fr.soe.a3s.ui.mainEditor.InfoUpdatedRepositoryPanel;
 import fr.soe.a3s.ui.repositoryEditor.errorDialogs.UnexpectedErrorDialog;
 
 public class ProgressSynchronizationPanel extends ProgressPanel {
@@ -31,9 +28,11 @@ public class ProgressSynchronizationPanel extends ProgressPanel {
 		super(facade);
 		labelTitle.setText("Synchronizing with repositories...");
 	}
-	
-	public void init(final String repositoryName){
-		
+
+	public void init(final String repositoryName) {
+
+		System.out
+				.println("Synchronization with repository: " + repositoryName);
 		facade.getSyncPanel().disableAllButtons();
 		progressBar.setIndeterminate(true);
 		t = new Thread(new Runnable() {
@@ -64,7 +63,7 @@ public class ProgressSynchronizationPanel extends ProgressPanel {
 					}
 					setVisible(true);
 				}
-				
+
 				if (!canceled) {
 					SwingUtilities.invokeLater(new Runnable() {
 						@Override
@@ -73,7 +72,7 @@ public class ProgressSynchronizationPanel extends ProgressPanel {
 							facade.getOnlinePanel().init();
 							facade.getLaunchPanel().init();
 							System.out
-									.println("Synchronization with repositories done.");
+									.println("Synchronization with repository done.");
 						}
 					});
 				} else {
@@ -88,6 +87,7 @@ public class ProgressSynchronizationPanel extends ProgressPanel {
 
 	public void init(final List<String> repositoryNames) {
 
+		System.out.println("Synchronization with repositories...");
 		facade.getSyncPanel().disableAllButtons();
 		progressBar.setIndeterminate(true);
 		t = new Thread(new Runnable() {

@@ -50,7 +50,8 @@ public class RepositoryChecker extends Thread implements DataAccessConstants {
 	@Override
 	public void run() {
 
-		System.out.println("Starting checking repository: " + repositoryName);
+		System.out.println("Starting checking repository content: "
+				+ repositoryName);
 
 		// Init AdminPanel for start checking
 		initAdminPanelForStartCheck();

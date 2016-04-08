@@ -167,12 +167,17 @@ public class FtpService extends AbstractConnexionService implements
 	public void checkRepository(String repositoryName)
 			throws RepositoryException, IOException {
 
-		System.out.println("Checking repository: " + repositoryName);
-
 		Repository repository = repositoryDAO.getMap().get(repositoryName);
 		if (repository == null) {
 			throw new RepositoryNotFoundException(repositoryName);
 		}
+
+		System.out.println("Checking repository: " + repositoryName
+				+ " on url: "
+				+ repository.getProtocol().getProtocolType().getPrompt()
+				+ repository.getProtocol().getHostname() + ":"
+				+ repository.getProtocol().getPort()
+				+ repository.getProtocol().getRemotePath());
 
 		/* Sync */
 		if (!ftpDAOPool.get(0).isCanceled()) {
@@ -213,6 +218,12 @@ public class FtpService extends AbstractConnexionService implements
 	@Override
 	public AutoConfigDTO importAutoConfig(AbstractProtocole protocol)
 			throws IOException {
+
+		System.out.println("Importing autoconfig from url: "
+				+ protocol.getProtocolType().getPrompt()
+				+ protocol.getHostname() + ":" + protocol.getPort()
+				+ protocol.getRemotePath() + "/"
+				+ DataAccessConstants.AUTOCONFIG);
 
 		AutoConfigDTO autoConfigDTO = null;
 		try {
@@ -257,6 +268,13 @@ public class FtpService extends AbstractConnexionService implements
 		if (repository == null) {
 			throw new RepositoryNotFoundException(repositoryName);
 		}
+
+		System.out.println("Downloading from repository: " + repositoryName
+				+ " on url: "
+				+ repository.getProtocol().getProtocolType().getPrompt()
+				+ repository.getProtocol().getHostname() + ":"
+				+ repository.getProtocol().getPort()
+				+ repository.getProtocol().getRemotePath());
 
 		List<AbstractConnexionDAO> connectionDAOs = new ArrayList<AbstractConnexionDAO>();
 		for (FtpDAO ftpDAO : ftpDAOPool) {
@@ -304,6 +322,13 @@ public class FtpService extends AbstractConnexionService implements
 
 		assert (repository.getSync() != null);
 		assert (repository.getServerInfo() != null);
+
+		System.out.println("Checking repository content: " + repositoryName
+				+ " on url: "
+				+ repository.getProtocol().getProtocolType().getPrompt()
+				+ repository.getProtocol().getHostname() + ":"
+				+ repository.getProtocol().getPort()
+				+ repository.getProtocol().getRemotePath());
 
 		SyncTreeDirectory parent = repository.getSync();
 
@@ -365,6 +390,13 @@ public class FtpService extends AbstractConnexionService implements
 		if (repository == null) {
 			throw new RepositoryNotFoundException(repositoryName);
 		}
+
+		System.out.println("Uploading repository: " + repositoryName
+				+ " on url: "
+				+ repository.getUploadProtocole().getProtocolType().getPrompt()
+				+ repository.getUploadProtocole().getHostname() + ":"
+				+ repository.getUploadProtocole().getPort()
+				+ repository.getUploadProtocole().getRemotePath());
 
 		try {
 			// Connect

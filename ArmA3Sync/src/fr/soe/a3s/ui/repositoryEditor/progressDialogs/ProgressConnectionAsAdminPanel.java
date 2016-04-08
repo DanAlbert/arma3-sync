@@ -38,14 +38,14 @@ public class ProgressConnectionAsAdminPanel extends ProgressPanel {
 
 	public void init() {
 
+		System.out.println("Connecting as admin to repository: "
+				+ repositoryName);
 		facade.getSyncPanel().disableAllButtons();
 		progressBar.setIndeterminate(true);
 		Thread t = new Thread(new Runnable() {
 			@Override
 			public void run() {
 				try {
-					System.out.println("Connecting to repository: "
-							+ repositoryName);
 					connexion = ConnexionServiceFactory
 							.getServiceForRepositoryManagement(repositoryName);
 					connexion.getSync(repositoryName);
