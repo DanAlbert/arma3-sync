@@ -275,6 +275,7 @@ public class AddonsDownloader extends Thread implements DataAccessConstants {
 				}
 			}
 			initDownloadPanelForEndDownload();
+			repositoryService.setReport(repositoryName, null);
 			terminate();
 		}
 	}
@@ -566,6 +567,8 @@ public class AddonsDownloader extends Thread implements DataAccessConstants {
 
 		String header = "--- Download report ---";
 		String repositoryInfo = "Repository name: " + repositoryName;
+		String repositoryUrl = "Repository url: "
+				+ repositoryService.getRepositoryUrl(repositoryName);
 		String endDate = "Download finished on: " + new Date().toLocaleString();
 
 		// Server Connection
@@ -639,9 +642,10 @@ public class AddonsDownloader extends Thread implements DataAccessConstants {
 				+ "- Saved: " + savedCompressedSizeFileTransfer + " ("
 				+ savedCompressedSizeFileTransferFraction + "%)";
 
-		String report = header + "\n" + repositoryInfo + "\n" + endDate
-				+ "\n\n" + message + "\n\n" + serverConnectionInfo + "\n\n"
-				+ fileTransfer + "\n\n" + partialFileTransferInfo + "\n\n"
+		String report = header + "\n" + repositoryInfo + "\n" + repositoryUrl
+				+ "\n" + endDate + "\n\n" + message + "\n\n"
+				+ serverConnectionInfo + "\n\n" + fileTransfer + "\n\n"
+				+ partialFileTransferInfo + "\n\n"
 				+ compressionFileTransferInfo;
 
 		return report;
@@ -651,11 +655,13 @@ public class AddonsDownloader extends Thread implements DataAccessConstants {
 
 		String header = "--- Download report ---";
 		String repositoryInfo = "Repository name: " + repositoryName;
+		String repositoryUrl = "Repository url: "
+				+ repositoryService.getRepositoryUrl(repositoryName);
 		String endDate = "Download finished on: " + new Date().toLocaleString();
 
 		List<String> messages = new ArrayList<String>();
 		for (Exception e : errors) {
-			if (e instanceof IOException || e instanceof RepositoryException) {
+			if (e instanceof IOException) {
 				messages.add("- " + e.getMessage());
 			} else {
 				String coreMessage = "- An unexpected error has occured.";
@@ -669,8 +675,8 @@ public class AddonsDownloader extends Thread implements DataAccessConstants {
 			}
 		}
 
-		String report = header + "\n" + repositoryInfo + "\n" + endDate
-				+ "\n\n" + message;
+		String report = header + "\n" + repositoryInfo + "\n" + repositoryUrl
+				+ "\n" + endDate + "\n\n" + message;
 		for (String m : messages) {
 			report = report + "\n" + m;
 		}

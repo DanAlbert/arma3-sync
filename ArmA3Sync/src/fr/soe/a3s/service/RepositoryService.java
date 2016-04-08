@@ -201,6 +201,7 @@ public class RepositoryService extends ObjectDTOtransformer implements
 
 	public void setRepositoryPath(String repositoryName, String repositoryPath)
 			throws RepositoryException {
+
 		Repository repository = repositoryDAO.getMap().get(repositoryName);
 		if (repository != null) {
 			repository.setPath(repositoryPath);
@@ -214,6 +215,19 @@ public class RepositoryService extends ObjectDTOtransformer implements
 		Repository repository = repositoryDAO.getMap().get(repositoryName);
 		if (repository != null) {
 			return repository.getPath();
+		} else {
+			return null;
+		}
+	}
+
+	public String getRepositoryUrl(String repositoryName) {
+
+		Repository repository = repositoryDAO.getMap().get(repositoryName);
+		if (repository != null) {
+			return repository.getProtocol().getProtocolType().getPrompt()
+					+ repository.getProtocol().getHostname() + ":"
+					+ repository.getProtocol().getPort()
+					+ repository.getProtocol().getRemotePath();
 		} else {
 			return null;
 		}
@@ -1283,7 +1297,7 @@ public class RepositoryService extends ObjectDTOtransformer implements
 		repository.setLocalServerInfo(serverInfo);// null if not found
 		repository.setLocalChangelogs(changelogs);// null if not found
 		repository.setLocalAutoConfig(autoConfig);// null if not found
-		repository.setLocalEvents(events);// null if not found 
+		repository.setLocalEvents(events);// null if not found
 
 		if (sync == null) {
 			throw new SyncFileNotFoundException(repositoryName);
@@ -1452,18 +1466,18 @@ public class RepositoryService extends ObjectDTOtransformer implements
 			repository.setMaximumClientDownloadSpeed(value);
 		}
 	}
-	
+
 	public void setConnectionTimeout(String repositoryName,
 			String connectionTimeout) {
-		
+
 		Repository repository = repositoryDAO.getMap().get(repositoryName);
 		if (repository != null) {
 			repository.getProtocol().setConnectionTimeOut(connectionTimeout);
 		}
 	}
-	
+
 	public void setReadTimeout(String repositoryName, String readTimeout) {
-		
+
 		Repository repository = repositoryDAO.getMap().get(repositoryName);
 		if (repository != null) {
 			repository.getProtocol().setReadTimeOut(readTimeout);
