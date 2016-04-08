@@ -607,6 +607,7 @@ public class EditRepositoryPanel extends JDialog implements UIConstants,
 					repositoryService.setRepository(name, url, port, login,
 							pass, protocole);
 				}
+				repositoryService.resetRepositoryUploadProtocol(name);
 			} else {// New Repository
 				repositoryService.createRepository(name, url, port, login,
 						pass, protocole);
@@ -621,7 +622,8 @@ public class EditRepositoryPanel extends JDialog implements UIConstants,
 
 		this.dispose();
 
-		ProgressSynchronizationPanel synchronizingPanel = new ProgressSynchronizationPanel(facade);
+		ProgressSynchronizationPanel synchronizingPanel = new ProgressSynchronizationPanel(
+				facade);
 		synchronizingPanel.setVisible(true);
 		synchronizingPanel.init(name);
 	}

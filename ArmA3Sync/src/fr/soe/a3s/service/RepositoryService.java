@@ -175,6 +175,14 @@ public class RepositoryService extends ObjectDTOtransformer implements
 		return repositoryDAO.remove(repositoryName);
 	}
 
+	public void resetRepositoryUploadProtocol(String repositoryName) {
+
+		Repository repository = repositoryDAO.getMap().get(repositoryName);
+		if (repository != null) {
+			repository.setUploadProtocole(null);
+		}
+	}
+
 	public List<RepositoryDTO> getRepositories() {
 
 		List<RepositoryDTO> repositoryDTOs = new ArrayList<RepositoryDTO>();
