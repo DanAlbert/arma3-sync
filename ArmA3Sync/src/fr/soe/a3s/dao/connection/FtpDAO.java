@@ -47,12 +47,10 @@ public class FtpDAO extends AbstractConnexionDAO {
 	private void connect(AbstractProtocole protocole) throws IOException,
 			FtpException {
 
-		String url = protocole.getUrl();
 		String port = protocole.getPort();
 		String login = protocole.getLogin();
 		String password = protocole.getPassword();
 		String hostname = protocole.getHostname();
-		String remotePath = protocole.getRemotePath();
 
 		ftpClient = new FTPClient();
 
@@ -71,6 +69,7 @@ public class FtpDAO extends AbstractConnexionDAO {
 		boolean isLoged = false;
 
 		ftpClient.connect(hostname, Integer.parseInt(port));
+
 		isLoged = ftpClient.login(login, password);
 		ftpClient.setFileType(FTP.BINARY_FILE_TYPE);// binary transfer
 		ftpClient.enterLocalPassiveMode();// passive mode

@@ -18,8 +18,8 @@ public class Repository implements Serializable {
 	 */
 	private static final long serialVersionUID = -8142021113361619970L;
 
-	private String name;
-	private AbstractProtocole protocole;
+	private String name;// not null
+	private AbstractProtocole protocole;// not null
 	private boolean notify = false;
 	private int revision;
 	private String path;
