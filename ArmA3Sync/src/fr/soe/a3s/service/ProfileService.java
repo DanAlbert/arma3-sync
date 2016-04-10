@@ -244,6 +244,30 @@ public class ProfileService extends ObjectDTOtransformer {
 		}
 	}
 
+	public String getLastAddedAddonSearchDirecotry() {
+
+		String profileName = configurationDAO.getConfiguration()
+				.getProfileName();
+
+		Profile profile = profileDAO.getMap().get(profileName);
+		if (profile != null) {
+			return profile.getLastAddedAddonSearchDirectory();
+		} else {
+			return null;
+		}
+	}
+
+	public void setLastAddedAddonSearchDirectory(String path) {
+
+		String profileName = configurationDAO.getConfiguration()
+				.getProfileName();
+
+		Profile profile = profileDAO.getMap().get(profileName);
+		if (profile != null) {
+			profile.setLastAddedAddonSearchDirectory(path);
+		}
+	}
+
 	public TreeDirectoryDTO getAddonGroupsTree() {
 
 		String profileName = configurationDAO.getConfiguration()

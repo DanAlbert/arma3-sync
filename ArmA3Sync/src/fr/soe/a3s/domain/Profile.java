@@ -20,6 +20,7 @@ public class Profile implements Serializable {
 	private List<String> addonNamesByPriority = new ArrayList<String>();
 	private LauncherOptions launcherOptions = new LauncherOptions();
 	private List<String> addonSearchDirectories = new ArrayList<String>();
+	private String lastAddedAddonSearchDirectory;
 
 	public Profile(String name) {
 		this.name = name;
@@ -72,5 +73,14 @@ public class Profile implements Serializable {
 
 	public void setAddonSearchDirectories(List<String> addonSearchDirectories) {
 		this.addonSearchDirectories = addonSearchDirectories;
+	}
+
+	public String getLastAddedAddonSearchDirectory() {
+		return lastAddedAddonSearchDirectory;
+	}
+
+	public void setLastAddedAddonSearchDirectory(
+			String lastAddedAddonSearchDirectory) {
+		this.lastAddedAddonSearchDirectory = lastAddedAddonSearchDirectory;
 	}
 }
