@@ -1,22 +1,14 @@
 package fr.soe.a3s.ui;
 
-import fr.soe.a3s.ui.mainEditor.AddonOptionsPanel;
-import fr.soe.a3s.ui.mainEditor.AddonsPanel;
-import fr.soe.a3s.ui.mainEditor.ExternalApplicationsEditionPanel;
-import fr.soe.a3s.ui.mainEditor.ExternalApplicationsPanel;
-import fr.soe.a3s.ui.mainEditor.InfoPanel;
-import fr.soe.a3s.ui.mainEditor.InfoUpdatedRepositoryPanel;
-import fr.soe.a3s.ui.mainEditor.LaunchPanel;
-import fr.soe.a3s.ui.mainEditor.LauncherOptionsPanel;
-import fr.soe.a3s.ui.mainEditor.MainPanel;
-import fr.soe.a3s.ui.mainEditor.OnlinePanel;
-import fr.soe.a3s.ui.mainEditor.PreferencesPanel;
-import fr.soe.a3s.ui.mainEditor.SyncPanel;
-import fr.soe.a3s.ui.profileEditor.ProfilePanel;
-import fr.soe.a3s.ui.repositoryEditor.progressDialogs.ProgressConnectionAsAdminPanel;
-import fr.soe.a3s.ui.tools.acre2Editor.FirstPageACRE2InstallerPanel;
-import fr.soe.a3s.ui.tools.acreEditor.FirstPageACREInstallerPanel;
-import fr.soe.a3s.ui.tools.tfarEditor.FirstPageTFARInstallerPanel;
+import fr.soe.a3s.ui.main.AddonOptionsPanel;
+import fr.soe.a3s.ui.main.AddonsPanel;
+import fr.soe.a3s.ui.main.ExternalApplicationsPanel;
+import fr.soe.a3s.ui.main.InfoPanel;
+import fr.soe.a3s.ui.main.LaunchPanel;
+import fr.soe.a3s.ui.main.LauncherOptionsPanel;
+import fr.soe.a3s.ui.main.MainPanel;
+import fr.soe.a3s.ui.main.OnlinePanel;
+import fr.soe.a3s.ui.main.SyncPanel;
 
 public class Facade {
 
@@ -25,21 +17,13 @@ public class Facade {
 	/** Views single instance */
 	private MainPanel mainPanel;
 	private InfoPanel infoPanel;
-	private AddonsPanel addonsPanel;
 	private LaunchPanel launchPanel;
+	private AddonsPanel addonsPanel;
 	private AddonOptionsPanel addonOptionsPanel;
 	private LauncherOptionsPanel launchOptionsPanel;
 	private OnlinePanel onlinePanel;
 	private ExternalApplicationsPanel externalApplicationsPanel;
-	private ProfilePanel profilePanel;
 	private SyncPanel syncPanel;
-	private ExternalApplicationsEditionPanel externalApplicationsEditionPanel;
-	private PreferencesPanel preferencesPanel;
-	private ProgressConnectionAsAdminPanel connectiongPanel;
-	private FirstPageACREInstallerPanel firstPageACREInstallerPanel;
-	private FirstPageACRE2InstallerPanel firstPageACRE2InstallerPanel;
-	private FirstPageTFARInstallerPanel firstPageTFARInstallerPanel;
-	private InfoUpdatedRepositoryPanel infoUpdatedRepositoryPanel;
 
 	public boolean isDevMode() {
 		return devMode;
@@ -82,17 +66,8 @@ public class Facade {
 		this.externalApplicationsPanel = externalApplicationsPanel;
 	}
 
-	public void setProfilePanel(ProfilePanel profilePanel) {
-		this.profilePanel = profilePanel;
-	}
-
 	public void setSyncPanel(SyncPanel syncPanel) {
 		this.syncPanel = syncPanel;
-	}
-
-	public void setExternalApplicationsEditionPanel(
-			ExternalApplicationsEditionPanel externalApplicationsEditionPanel) {
-		this.externalApplicationsEditionPanel = externalApplicationsEditionPanel;
 	}
 
 	public MainPanel getMainPanel() {
@@ -127,67 +102,7 @@ public class Facade {
 		return onlinePanel;
 	}
 
-	public ProfilePanel getProfilePanel() {
-		return profilePanel;
-	}
-
 	public SyncPanel getSyncPanel() {
 		return syncPanel;
-	}
-
-	public ExternalApplicationsEditionPanel getExternalApplicationsEditionPanel() {
-		return externalApplicationsEditionPanel;
-	}
-
-	public PreferencesPanel getPreferencesPanel() {
-		return preferencesPanel;
-	}
-
-	public void setPreferencesPanel(PreferencesPanel preferencesPanel) {
-		this.preferencesPanel = preferencesPanel;
-	}
-
-	public void setConnectiongPanel(ProgressConnectionAsAdminPanel connectiongPanel) {
-		this.connectiongPanel = connectiongPanel;
-	}
-
-	public ProgressConnectionAsAdminPanel getConnectiongPanel() {
-		return connectiongPanel;
-	}
-
-	public void setFirstPageACREInstallerPanel(
-			FirstPageACREInstallerPanel firstPageInstallerPanel) {
-		this.firstPageACREInstallerPanel = firstPageInstallerPanel;
-	}
-
-	public FirstPageACREInstallerPanel getFirstPageACREInstallerPanel() {
-		return firstPageACREInstallerPanel;
-	}
-
-	public FirstPageACRE2InstallerPanel getFirstPageACRE2InstallerPanel() {
-		return firstPageACRE2InstallerPanel;
-	}
-
-	public void setFirstPageACRE2InstallerPanel(
-			FirstPageACRE2InstallerPanel firstPageACRE2InstallerPanel) {
-		this.firstPageACRE2InstallerPanel = firstPageACRE2InstallerPanel;
-	}
-
-	public void setInfoUpdatedRepositoryPanel(
-			InfoUpdatedRepositoryPanel infoUpdatedRepositoryPanel) {
-		this.infoUpdatedRepositoryPanel = infoUpdatedRepositoryPanel;
-	}
-
-	public InfoUpdatedRepositoryPanel getInfoUpdatedRepositoryPanel() {
-		return infoUpdatedRepositoryPanel;
-	}
-
-	public FirstPageTFARInstallerPanel getFirstPageTFARInstallerPanel() {
-		return firstPageTFARInstallerPanel;
-	}
-
-	public void setFirstPageTFARInstallerPanel(
-			FirstPageTFARInstallerPanel firstPageTFARInstallerPanel) {
-		this.firstPageTFARInstallerPanel = firstPageTFARInstallerPanel;
 	}
 }

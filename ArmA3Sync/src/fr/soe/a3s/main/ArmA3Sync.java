@@ -17,7 +17,6 @@ import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
-import javax.swing.plaf.FontUIResource;
 
 import com.jtattoo.plaf.aluminium.AluminiumLookAndFeel;
 import com.jtattoo.plaf.graphite.GraphiteLookAndFeel;
@@ -31,7 +30,7 @@ import fr.soe.a3s.dao.DataAccessConstants;
 import fr.soe.a3s.service.PreferencesService;
 import fr.soe.a3s.ui.ErrorLogDialog;
 import fr.soe.a3s.ui.Facade;
-import fr.soe.a3s.ui.mainEditor.MainPanel;
+import fr.soe.a3s.ui.main.MainPanel;
 
 public class ArmA3Sync implements DataAccessConstants {
 
@@ -283,142 +282,68 @@ public class ArmA3Sync implements DataAccessConstants {
 
 	private static void applyLookAndFeel() {
 
+		// Apply default system look and feel
 		try {
-			String osName = System.getProperty("os.name");
-			System.out.println("os Name = " + osName);
-			boolean changeFont = true;
-			if (osName.toLowerCase().contains("windows")) {
-				javax.swing.UIManager
-						.setLookAndFeel("com.sun.java.swing.plaf.windows.WindowsLookAndFeel");
-				changeFont = false;
-			}
+			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 
-			if (changeFont) {
-				Font fontMenu = UIManager.getFont("Menu.font");
-				Font fontMenuA3S = new Font(fontMenu.getName(), Font.PLAIN, 12);
-				javax.swing.UIManager.put("Menu.font", new FontUIResource(
-						fontMenuA3S));
+		// Apply preferences look and feel
+		try {
+			PreferencesService preferencesService = new PreferencesService();
+			preferencesService.read();
+			LookAndFeel lookAndFeel = preferencesService.getPreferences()
+					.getLookAndFeel();
+			if (!lookAndFeel.equals(LookAndFeel.LAF_DEFAULT)) {
+				Properties props = new Properties();
+				props.put("logoString", "");
+				props.put("menuOpaque", "on");
+				props.put("textAntiAliasing", "on");
+				props.put("windowDecoration", "on");
 
-				Font fontMenuItem = UIManager.getFont("MenuItem.font");
-				Font fontMenuItemA3S = new Font(fontMenuItem.getName(),
-						Font.PLAIN, 11);
-				javax.swing.UIManager.put("MenuItem.font", new FontUIResource(
-						fontMenuItemA3S));
+				{
+					Font font = UIManager.getFont("Label.font");
+					String fontName = font.getFontName();
+					int sytle = font.getStyle();
+					int size = font.getSize();
+					props.put("userTextFont",
+							fontName + " " + Integer.toString(sytle) + " "
+									+ Integer.toString(size));
+					props.put("subTextFont",
+							fontName + " " + Integer.toString(sytle) + " "
+									+ Integer.toString(size));
 
-				Font fontCheckBoxMenuItem = UIManager
-						.getFont("CheckBoxMenuItem.font");
-				Font fontCheckBoxMenuItemA3S = new Font(
-						fontCheckBoxMenuItem.getName(), Font.PLAIN, 11);
-				javax.swing.UIManager.put("CheckBoxMenuItem.font",
-						new FontUIResource(fontCheckBoxMenuItemA3S));
+					font = UIManager.getFont("Button.font");
+					fontName = font.getFontName();
+					sytle = font.getStyle();
+					size = font.getSize();
+					props.put("controlTextFont",
+							fontName + " " + Integer.toString(sytle) + " "
+									+ Integer.toString(size));
 
-				Font fontButton = UIManager.getFont("Button.font");
-				Font fontButtonA3S = new Font(fontButton.getName(), Font.PLAIN,
-						11);
-				javax.swing.UIManager.put("Button.font", new FontUIResource(
-						fontButtonA3S));
-
-				Font fontLabel = UIManager.getFont("Label.font");
-				Font fontLabelA3S = new Font(fontLabel.getName(), Font.PLAIN,
-						11);
-				UIManager.put("Label.font", new FontUIResource(fontLabelA3S));
-
-				Font fontTextField = UIManager.getFont("TextField.font");
-				Font fontTextFieldA3S = new Font(fontTextField.getName(),
-						fontTextField.getStyle(), 11);
-				UIManager
-						.put("TextField", new FontUIResource(fontTextFieldA3S));
-
-				Font fontComboBox = UIManager.getFont("ComboBox.font");
-				Font fontComboBoxA3S = new Font(fontComboBox.getName(),
-						Font.PLAIN, 11);
-				UIManager.put("ComboBox.font", new FontUIResource(
-						fontComboBoxA3S));
-
-				Font fontCheckBox = UIManager.getFont("CheckBox.font");
-				Font fontCheckBoxA3S = new Font(fontCheckBox.getName(),
-						Font.PLAIN, 11);
-				UIManager.put("CheckBox.font", new FontUIResource(
-						fontCheckBoxA3S));
-
-				Font tabbedPane = UIManager.getFont("TabbedPane.font");
-				Font tabbedPaneA3S = new Font(tabbedPane.getName(), Font.PLAIN,
-						11);
-				UIManager.put("TabbedPane.font", new FontUIResource(
-						tabbedPaneA3S));
-
-				Font tittleBorder = UIManager.getFont("TitledBorder.font");
-				Font tittleBorderA3S = new Font(tittleBorder.getName(),
-						Font.PLAIN, 11);
-				UIManager.put("TitledBorder.font", new FontUIResource(
-						tittleBorderA3S));
-
-				Font textArea = UIManager.getFont("TextArea.font");
-				Font textAreaA3S = new Font(textArea.getName(), Font.PLAIN, 11);
-				UIManager.put("textArea.font", new FontUIResource(textAreaA3S));
-
-				Font listArea = UIManager.getFont("List.font");
-				Font listAreaA3S = new Font(listArea.getName(), Font.PLAIN, 11);
-				UIManager.put("List.font", new FontUIResource(listAreaA3S));
-			}
-
-			try {
-				PreferencesService preferencesService = new PreferencesService();
-				preferencesService.read();
-				LookAndFeel lookAndFeel = preferencesService.getPreferences()
-						.getLookAndFeel();
-				if (!lookAndFeel.equals(LookAndFeel.LAF_DEFAULT)) {
-					Properties props = new Properties();
-					props.put("logoString", "");
-					props.put("menuOpaque", "on");
-					props.put("textAntiAliasing", "on");
-					props.put("windowDecoration", "on");
-
-					{
-						Font font = UIManager.getFont("Label.font");
-						String fontName = font.getFontName();
-						int sytle = font.getStyle();
-						int size = font.getSize();
-						props.put("userTextFont",
-								fontName + " " + Integer.toString(sytle) + " "
-										+ Integer.toString(size));
-						props.put("subTextFont",
-								fontName + " " + Integer.toString(sytle) + " "
-										+ Integer.toString(size));
-
-						font = UIManager.getFont("Button.font");
-						fontName = font.getFontName();
-						sytle = font.getStyle();
-						size = font.getSize();
-						props.put("controlTextFont",
-								fontName + " " + Integer.toString(sytle) + " "
-										+ Integer.toString(size));
-
-						font = UIManager.getFont("Menu.font");
-						fontName = font.getFontName();
-						sytle = font.getStyle();
-						size = font.getSize();
-						props.put("menuTextFont",
-								fontName + " " + Integer.toString(sytle) + " "
-										+ Integer.toString(size));
-					}
-
-					if (lookAndFeel.equals(LookAndFeel.LAF_ALUMINIUM)) {
-						AluminiumLookAndFeel.setCurrentTheme(props);
-						UIManager.setLookAndFeel(new AluminiumLookAndFeel());
-					} else if (lookAndFeel.equals(LookAndFeel.LAF_GRAPHITE)) {
-						GraphiteLookAndFeel.setCurrentTheme(props);
-						UIManager.setLookAndFeel(new GraphiteLookAndFeel());
-					} else if (lookAndFeel.equals(LookAndFeel.LAF_HIFI)) {
-						HiFiLookAndFeel.setCurrentTheme(props);
-						UIManager.setLookAndFeel(new HiFiLookAndFeel());
-					} else if (lookAndFeel.equals(LookAndFeel.LAF_NOIRE)) {
-						NoireLookAndFeel.setCurrentTheme(props);
-						UIManager.setLookAndFeel(new NoireLookAndFeel());
-					}
+					font = UIManager.getFont("Menu.font");
+					fontName = font.getFontName();
+					sytle = font.getStyle();
+					size = font.getSize();
+					props.put("menuTextFont",
+							fontName + " " + Integer.toString(sytle) + " "
+									+ Integer.toString(size));
 				}
-			} catch (Exception e) {
-				e.printStackTrace();
+
+				if (lookAndFeel.equals(LookAndFeel.LAF_ALUMINIUM)) {
+					AluminiumLookAndFeel.setCurrentTheme(props);
+					UIManager.setLookAndFeel(new AluminiumLookAndFeel());
+				} else if (lookAndFeel.equals(LookAndFeel.LAF_GRAPHITE)) {
+					GraphiteLookAndFeel.setCurrentTheme(props);
+					UIManager.setLookAndFeel(new GraphiteLookAndFeel());
+				} else if (lookAndFeel.equals(LookAndFeel.LAF_HIFI)) {
+					HiFiLookAndFeel.setCurrentTheme(props);
+					UIManager.setLookAndFeel(new HiFiLookAndFeel());
+				} else if (lookAndFeel.equals(LookAndFeel.LAF_NOIRE)) {
+					NoireLookAndFeel.setCurrentTheme(props);
+					UIManager.setLookAndFeel(new NoireLookAndFeel());
+				}
 			}
 		} catch (Exception e) {
 			e.printStackTrace();

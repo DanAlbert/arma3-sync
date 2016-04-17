@@ -9,8 +9,6 @@ public interface UIConstants {
 
 	int DEFAULT_HEIGHT = 665;
 
-	int DEFAULT_WIDTH = 570;
-
 	Image ICON = Toolkit
 			.getDefaultToolkit()
 			.getImage(
@@ -29,6 +27,12 @@ public interface UIConstants {
 					java.lang.ClassLoader
 							.getSystemResource("resources/pictures/system/ArmA3SyncBlue64x64.png"));
 
+	Image SOE = Toolkit.getDefaultToolkit().getImage(
+			java.lang.ClassLoader
+					.getSystemResource("resources/pictures/system/soe2.png"));
+
+	/* Buttons */
+
 	Image ADD = Toolkit
 			.getDefaultToolkit()
 			.getImage(
@@ -44,12 +48,14 @@ public interface UIConstants {
 	Image DELETE = Toolkit
 			.getDefaultToolkit()
 			.getImage(
-					java.lang.ClassLoader.getSystemResource("resources/pictures/system/delete16x16.png"));
-	
+					java.lang.ClassLoader
+							.getSystemResource("resources/pictures/system/delete16x16.png"));
+
 	Image ADMIN = Toolkit
 			.getDefaultToolkit()
 			.getImage(
-					java.lang.ClassLoader.getSystemResource("resources/pictures/system/admin16x16.png"));
+					java.lang.ClassLoader
+							.getSystemResource("resources/pictures/system/admin16x16.png"));
 
 	Image REPORT = Toolkit
 			.getDefaultToolkit()
@@ -75,6 +81,24 @@ public interface UIConstants {
 					java.lang.ClassLoader
 							.getSystemResource("resources/pictures/system/sync16x16.png"));
 
+	Image TOP = Toolkit
+			.getDefaultToolkit()
+			.getImage(
+					java.lang.ClassLoader
+							.getSystemResource("resources/pictures/system/top16x16.png"));
+
+	Image UP = Toolkit
+			.getDefaultToolkit()
+			.getImage(
+					java.lang.ClassLoader
+							.getSystemResource("resources/pictures/system/up16x16.png"));
+
+	Image DOWN = Toolkit
+			.getDefaultToolkit()
+			.getImage(
+					java.lang.ClassLoader
+							.getSystemResource("resources/pictures/system/down16x16.png"));
+
 	Image REPOSITORY = Toolkit
 			.getDefaultToolkit()
 			.getImage(
@@ -93,12 +117,6 @@ public interface UIConstants {
 					java.lang.ClassLoader
 							.getSystemResource("resources/pictures/system/events24x24.png"));
 
-	Image BUILD = Toolkit
-			.getDefaultToolkit()
-			.getImage(
-					java.lang.ClassLoader
-							.getSystemResource("resources/pictures/system/build48x48.png"));
-
 	Image START = Toolkit
 			.getDefaultToolkit()
 			.getImage(
@@ -116,66 +134,25 @@ public interface UIConstants {
 			.getImage(
 					java.lang.ClassLoader
 							.getSystemResource("resources/pictures/system/pause16x16.png"));
-
-	Image OPTIONS = Toolkit
+	Image UPLOAD = Toolkit
 			.getDefaultToolkit()
 			.getImage(
 					java.lang.ClassLoader
-							.getSystemResource("resources/pictures/system/folder_open_16x16.png"));
+							.getSystemResource("resources/pictures/system/upload16x16.png"));
 
-	Image JOIN = Toolkit
+	Image SAVE = Toolkit
 			.getDefaultToolkit()
 			.getImage(
 					java.lang.ClassLoader
-							.getSystemResource("resources/pictures/system/join16x16.png"));
+							.getSystemResource("resources/pictures/system/save16x16.png"));
 
-	Image CLOSE_GRAY = Toolkit
+	/* Menu */
+
+	Image SHORTCUT = Toolkit
 			.getDefaultToolkit()
 			.getImage(
 					java.lang.ClassLoader
-							.getSystemResource("resources/pictures/system/closegray10x10.png"));
-
-	Image CLOSE_RED = Toolkit
-			.getDefaultToolkit()
-			.getImage(
-					java.lang.ClassLoader
-							.getSystemResource("resources/pictures/system/closered10x10.png"));
-
-	Image OK_GREEN = Toolkit
-			.getDefaultToolkit()
-			.getImage(
-					java.lang.ClassLoader
-							.getSystemResource("resources/pictures/system/ok_green16x16.png"));
-
-	Image EXCLAMATION = Toolkit
-			.getDefaultToolkit()
-			.getImage(
-					java.lang.ClassLoader
-							.getSystemResource("resources/pictures/system/exclamation16x16.png"));
-
-	Image ABOUT = Toolkit
-			.getDefaultToolkit()
-			.getImage(
-					java.lang.ClassLoader
-							.getSystemResource("resources/pictures/system/about16x16.png"));
-
-	Image HELP = Toolkit
-			.getDefaultToolkit()
-			.getImage(
-					java.lang.ClassLoader
-							.getSystemResource("resources/pictures/system/help16x16.png"));
-
-	Image PREFERENCES = Toolkit
-			.getDefaultToolkit()
-			.getImage(
-					java.lang.ClassLoader
-							.getSystemResource("resources/pictures/system/preferences16x16.png"));
-
-	Image UPDATE = Toolkit
-			.getDefaultToolkit()
-			.getImage(
-					java.lang.ClassLoader
-							.getSystemResource("resources/pictures/system/update16x16.png"));
+							.getSystemResource("resources/pictures/system/shortcut_16x16.png"));
 
 	Image ACRE_SMALL = Toolkit
 			.getDefaultToolkit()
@@ -225,7 +202,7 @@ public interface UIConstants {
 					java.lang.ClassLoader
 							.getSystemResource("resources/pictures/system/tfar48x48.png"));
 
-	Image RPT = Toolkit
+	Image RPT_SMALL = Toolkit
 			.getDefaultToolkit()
 			.getImage(
 					java.lang.ClassLoader
@@ -243,29 +220,11 @@ public interface UIConstants {
 					java.lang.ClassLoader
 							.getSystemResource("resources/pictures/system/bikey16x16.png"));
 
-	Image TOP = Toolkit
+	Image HELP = Toolkit
 			.getDefaultToolkit()
 			.getImage(
 					java.lang.ClassLoader
-							.getSystemResource("resources/pictures/system/top16x16.png"));
-
-	Image UP = Toolkit
-			.getDefaultToolkit()
-			.getImage(
-					java.lang.ClassLoader
-							.getSystemResource("resources/pictures/system/up16x16.png"));
-
-	Image DOWN = Toolkit
-			.getDefaultToolkit()
-			.getImage(
-					java.lang.ClassLoader
-							.getSystemResource("resources/pictures/system/down16x16.png"));
-
-	Image ARMA3 = Toolkit
-			.getDefaultToolkit()
-			.getImage(
-					java.lang.ClassLoader
-							.getSystemResource("resources/pictures/system/arma316x16.png"));
+							.getSystemResource("resources/pictures/system/help16x16.png"));
 
 	Image BIS = Toolkit
 			.getDefaultToolkit()
@@ -273,41 +232,31 @@ public interface UIConstants {
 					java.lang.ClassLoader
 							.getSystemResource("resources/pictures/system/bis16x16.png"));
 
-	Image UPLOAD = Toolkit
+	Image PREFERENCES = Toolkit
 			.getDefaultToolkit()
 			.getImage(
 					java.lang.ClassLoader
-							.getSystemResource("resources/pictures/system/upload16x16.png"));
+							.getSystemResource("resources/pictures/system/preferences16x16.png"));
 
-	Image SAVE = Toolkit
+	Image UPDATE = Toolkit
 			.getDefaultToolkit()
 			.getImage(
 					java.lang.ClassLoader
-							.getSystemResource("resources/pictures/system/save16x16.png"));
+							.getSystemResource("resources/pictures/system/update16x16.png"));
 
-	Image DRIVE_ADD = Toolkit
+	Image ABOUT = Toolkit
 			.getDefaultToolkit()
 			.getImage(
 					java.lang.ClassLoader
-							.getSystemResource("resources/pictures/system/drive_add_16x16.png"));
+							.getSystemResource("resources/pictures/system/about16x16.png"));
 
-	Image DRIVE_DELETE = Toolkit
-			.getDefaultToolkit()
-			.getImage(
-					java.lang.ClassLoader
-							.getSystemResource("resources/pictures/system/drive_delete_16x16.png"));
+	/* Repository Tree */
 
-	Image AUTOCONFIG = Toolkit
+	Image EXCLAMATION = Toolkit
 			.getDefaultToolkit()
 			.getImage(
 					java.lang.ClassLoader
-							.getSystemResource("resources/pictures/system/autoconfig16x16.png"));
-
-	Image CUBE = Toolkit
-			.getDefaultToolkit()
-			.getImage(
-					java.lang.ClassLoader
-							.getSystemResource("resources/pictures/system/cube_green16x16.png"));
+							.getSystemResource("resources/pictures/system/exclamation16x16.png"));
 
 	Image BRICK = Toolkit
 			.getDefaultToolkit()
@@ -315,10 +264,18 @@ public interface UIConstants {
 					java.lang.ClassLoader
 							.getSystemResource("resources/pictures/system/brick_16x16.png"));
 
-	Image SHORTCUT = Toolkit
+	/* Repository Tab */
+
+	Image CLOSE_GRAY = Toolkit
 			.getDefaultToolkit()
 			.getImage(
 					java.lang.ClassLoader
-							.getSystemResource("resources/pictures/system/shortcut_16x16.png"));
+							.getSystemResource("resources/pictures/system/closegray12x12.png"));
+
+	Image CLOSE_RED = Toolkit
+			.getDefaultToolkit()
+			.getImage(
+					java.lang.ClassLoader
+							.getSystemResource("resources/pictures/system/closered12x12.png"));
 
 }
