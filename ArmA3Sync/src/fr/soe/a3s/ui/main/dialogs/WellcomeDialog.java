@@ -59,7 +59,7 @@ public class WellcomeDialog extends AbstractDialog {
 				JPanel arma3ExeLabelPanel = new JPanel();
 				arma3ExeLabelPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
 				JLabel labelarma3ExeLocation = new JLabel(
-						"Please select ArmA 3 executable location");
+						"Please set ArmA 3 executable location");
 				arma3ExeLabelPanel.add(labelarma3ExeLocation);
 				vBox.add(arma3ExeLabelPanel);
 			}
@@ -84,9 +84,11 @@ public class WellcomeDialog extends AbstractDialog {
 		if (this.getBounds().width < 350) {
 			this.setMinimumSize(new Dimension(350, this.getBounds().height));
 			this.setPreferredSize(new Dimension(350, this.getBounds().height));
-		}else {
-			this.setMinimumSize(new Dimension(this.getBounds().width, this.getBounds().height));
-			this.setPreferredSize(new Dimension(this.getBounds().width, this.getBounds().height));
+		} else {
+			this.setMinimumSize(new Dimension(this.getBounds().width, this
+					.getBounds().height));
+			this.setPreferredSize(new Dimension(this.getBounds().width, this
+					.getBounds().height));
 		}
 
 		this.pack();
