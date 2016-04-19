@@ -493,7 +493,9 @@ public class MainPanel extends JFrame implements UIConstants {
 		if (launchPanel.getBounds().height < 45) {
 			launchPanel.setPreferredSize(new Dimension(appWidth, 45));
 		}
+
 		this.pack();
+
 		appWidth = this.getBounds().width;
 
 		int minHeight = this.facade.getInfoPanel().getPreferredSize().height
