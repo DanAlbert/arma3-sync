@@ -6,8 +6,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
-import fr.soe.a3s.constant.DefaultProfileName;
-import fr.soe.a3s.constant.GameVersions;
+import fr.soe.a3s.domain.constants.DefaultProfileName;
+import fr.soe.a3s.domain.constants.GameVersions;
 
 public class Configuration implements Serializable {
 

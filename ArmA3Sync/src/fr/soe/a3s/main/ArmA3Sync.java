@@ -25,8 +25,8 @@ import com.jtattoo.plaf.noire.NoireLookAndFeel;
 
 import fr.soe.a3s.console.CommandConsole;
 import fr.soe.a3s.console.CommandLine;
-import fr.soe.a3s.constant.LookAndFeel;
 import fr.soe.a3s.dao.DataAccessConstants;
+import fr.soe.a3s.domain.constants.LookAndFeel;
 import fr.soe.a3s.service.PreferencesService;
 import fr.soe.a3s.ui.ErrorLogDialog;
 import fr.soe.a3s.ui.Facade;

@@ -1,6 +1,6 @@
 package fr.soe.a3s.domain;
 
-import fr.soe.a3s.constant.ProtocolType;
+import fr.soe.a3s.domain.constants.ProtocolType;
 
 public class Http extends AbstractProtocole {
 

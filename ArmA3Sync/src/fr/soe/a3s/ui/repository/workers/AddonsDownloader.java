@@ -11,12 +11,12 @@ import java.util.List;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
-import fr.soe.a3s.constant.DownloadStatus;
 import fr.soe.a3s.controller.ObserverDownload;
 import fr.soe.a3s.controller.ObserverUncompress;
 import fr.soe.a3s.dao.DataAccessConstants;
 import fr.soe.a3s.dao.FileAccessMethods;
 import fr.soe.a3s.dao.connection.AbstractConnexionDAO;
+import fr.soe.a3s.domain.constants.DownloadStatus;
 import fr.soe.a3s.dto.sync.SyncTreeDirectoryDTO;
 import fr.soe.a3s.dto.sync.SyncTreeLeafDTO;
 import fr.soe.a3s.dto.sync.SyncTreeNodeDTO;

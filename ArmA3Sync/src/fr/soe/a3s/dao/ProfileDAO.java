@@ -12,8 +12,8 @@ import java.util.Map;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
-import fr.soe.a3s.constant.DefaultProfileName;
 import fr.soe.a3s.domain.Profile;
+import fr.soe.a3s.domain.constants.DefaultProfileName;
 import fr.soe.a3s.exception.WritingException;
 
 public class ProfileDAO implements DataAccessConstants {

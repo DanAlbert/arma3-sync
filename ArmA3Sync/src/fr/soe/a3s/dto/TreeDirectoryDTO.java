@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import fr.soe.a3s.constant.ModsetType;
+import fr.soe.a3s.domain.constants.ModsetType;
 
 public class TreeDirectoryDTO implements TreeNodeDTO {
 

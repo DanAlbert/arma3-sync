@@ -23,11 +23,11 @@ import org.dom4j.DocumentException;
 import org.dom4j.Element;
 import org.dom4j.io.SAXReader;
 
-import fr.soe.a3s.constant.DownloadStatus;
 import fr.soe.a3s.dao.A3SFilesAccessor;
 import fr.soe.a3s.dao.DataAccessConstants;
 import fr.soe.a3s.dao.FileAccessMethods;
 import fr.soe.a3s.domain.AbstractProtocole;
+import fr.soe.a3s.domain.constants.DownloadStatus;
 import fr.soe.a3s.domain.repository.AutoConfig;
 import fr.soe.a3s.domain.repository.Changelogs;
 import fr.soe.a3s.domain.repository.Events;

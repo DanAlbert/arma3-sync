@@ -15,7 +15,7 @@ import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JTextField;
 
-import fr.soe.a3s.constant.ProtocolType;
+import fr.soe.a3s.domain.constants.ProtocolType;
 import fr.soe.a3s.dto.ProtocolDTO;
 
 public class ConnectionPanel extends JPanel {

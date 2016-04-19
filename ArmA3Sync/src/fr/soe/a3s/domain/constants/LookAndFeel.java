@@ -1,4 +1,4 @@
-package fr.soe.a3s.constant;
+package fr.soe.a3s.domain.constants;
 
 import com.jtattoo.plaf.acryl.AcrylLookAndFeel;
 

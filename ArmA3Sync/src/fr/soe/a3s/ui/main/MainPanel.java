@@ -50,10 +50,10 @@ import javax.swing.UIManager;
 import javax.swing.plaf.ColorUIResource;
 
 import net.jimmc.jshortcut.JShellLink;
-import fr.soe.a3s.constant.DefaultProfileName;
-import fr.soe.a3s.constant.MinimizationType;
-import fr.soe.a3s.constant.RepositoryStatus;
 import fr.soe.a3s.domain.configration.LauncherOptions;
+import fr.soe.a3s.domain.constants.DefaultProfileName;
+import fr.soe.a3s.domain.constants.MinimizationType;
+import fr.soe.a3s.domain.constants.RepositoryStatus;
 import fr.soe.a3s.dto.RepositoryDTO;
 import fr.soe.a3s.dto.configuration.PreferencesDTO;
 import fr.soe.a3s.exception.FtpException;

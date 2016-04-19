@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import fr.soe.a3s.constant.DownloadStatus;
+import fr.soe.a3s.domain.constants.DownloadStatus;
 
 public class SyncTreeDirectoryDTO extends SyncTreeNodeDTOMethods implements
 		SyncTreeNodeDTO {

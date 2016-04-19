@@ -1,7 +1,7 @@
 package fr.soe.a3s.dto.configuration;
 
-import fr.soe.a3s.constant.LookAndFeel;
-import fr.soe.a3s.constant.MinimizationType;
+import fr.soe.a3s.domain.constants.LookAndFeel;
+import fr.soe.a3s.domain.constants.MinimizationType;
 
 public class PreferencesDTO {
 

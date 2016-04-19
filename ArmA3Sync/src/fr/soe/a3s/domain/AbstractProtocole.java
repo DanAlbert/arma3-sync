@@ -2,9 +2,9 @@ package fr.soe.a3s.domain;
 
 import java.io.Serializable;
 
-import fr.soe.a3s.constant.EncryptionMode;
-import fr.soe.a3s.constant.ProtocolType;
-import fr.soe.a3s.constant.TimeOutValues;
+import fr.soe.a3s.domain.constants.EncryptionMode;
+import fr.soe.a3s.domain.constants.ProtocolType;
+import fr.soe.a3s.domain.constants.TimeOutValues;
 import fr.soe.a3s.exception.CheckException;
 
 public abstract class AbstractProtocole implements Serializable {

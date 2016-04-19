@@ -23,7 +23,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.border.BevelBorder;
 
-import fr.soe.a3s.constant.DefaultProfileName;
+import fr.soe.a3s.domain.constants.DefaultProfileName;
 import fr.soe.a3s.dto.RepositoryDTO;
 import fr.soe.a3s.dto.configuration.FavoriteServerDTO;
 import fr.soe.a3s.exception.WritingException;

@@ -7,7 +7,7 @@ import javax.swing.Box;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JOptionPane;
 
-import fr.soe.a3s.constant.ProtocolType;
+import fr.soe.a3s.domain.constants.ProtocolType;
 import fr.soe.a3s.dto.ProtocolDTO;
 import fr.soe.a3s.dto.RepositoryDTO;
 import fr.soe.a3s.exception.repository.RepositoryException;

@@ -15,8 +15,8 @@ import javax.swing.JComboBox;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
-import fr.soe.a3s.constant.LookAndFeel;
-import fr.soe.a3s.constant.MinimizationType;
+import fr.soe.a3s.domain.constants.LookAndFeel;
+import fr.soe.a3s.domain.constants.MinimizationType;
 import fr.soe.a3s.dto.configuration.PreferencesDTO;
 import fr.soe.a3s.service.PreferencesService;
 import fr.soe.a3s.ui.AbstractDialog;

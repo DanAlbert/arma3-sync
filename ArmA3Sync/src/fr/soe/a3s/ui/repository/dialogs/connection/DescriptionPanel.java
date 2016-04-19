@@ -27,10 +27,10 @@ import javax.swing.JPopupMenu;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 
-import fr.soe.a3s.constant.ProtocolType;
 import fr.soe.a3s.dao.DataAccessConstants;
 import fr.soe.a3s.dao.connection.AutoConfigURLAccessMethods;
 import fr.soe.a3s.domain.AbstractProtocole;
+import fr.soe.a3s.domain.constants.ProtocolType;
 import fr.soe.a3s.dto.AutoConfigDTO;
 import fr.soe.a3s.dto.ProtocolDTO;
 import fr.soe.a3s.exception.CheckException;

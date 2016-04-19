@@ -33,8 +33,8 @@ import javax.swing.JScrollPane;
 import javax.swing.SwingUtilities;
 import javax.swing.border.BevelBorder;
 
-import fr.soe.a3s.constant.ProtocolType;
 import fr.soe.a3s.dao.DataAccessConstants;
+import fr.soe.a3s.domain.constants.ProtocolType;
 import fr.soe.a3s.dto.configuration.FavoriteServerDTO;
 import fr.soe.a3s.exception.WritingException;
 import fr.soe.a3s.exception.repository.RepositoryException;
