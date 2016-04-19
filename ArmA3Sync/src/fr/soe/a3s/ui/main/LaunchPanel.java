@@ -170,8 +170,7 @@ public class LaunchPanel extends JPanel implements UIConstants {
 		for (int i = 0; i < favoriteServersDTO.size(); i++) {
 			String stg = favoriteServersDTO.get(i).getName();
 			if (!(favoriteServersDTO.get(i).getModsetName() == null)
-					&& !("".equals(favoriteServersDTO.get(i).getModsetName()
-							.trim()))) {
+					&& !("".equals(favoriteServersDTO.get(i).getModsetName()))) {
 				stg = stg + " - " + favoriteServersDTO.get(i).getModsetName();
 			}
 			this.joinServerComboBox.addItem(stg);
