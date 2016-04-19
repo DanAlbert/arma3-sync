@@ -277,22 +277,26 @@ public class AdminPanel extends JPanel implements UIConstants {
 		{
 			JPanel checkLabelPanel = new JPanel();
 			checkLabelPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
-			JLabel buildLabelLocation = new JLabel(
-					"Check repository synchronization");
-			checkLabelPanel.add(buildLabelLocation);
-
-			checkInformationBox = Box.createHorizontalBox();
-			checkErrorLabel = new JLabel("Errors: ");
-			checkErrorLabel.setFont(checkErrorLabel.getFont().deriveFont(
-					Font.ITALIC));
-			checkInformationBox.add(checkErrorLabel);
-			checkErrorLabelValue = new JLabel();
-			checkErrorLabelValue.setFont(checkErrorLabelValue.getFont()
-					.deriveFont(Font.ITALIC));
-			checkInformationBox.add(checkErrorLabelValue);
-			checkInformationBox.setVisible(false);
-			checkLabelPanel.add(checkInformationBox);
 			vBox.add(checkLabelPanel);
+			{
+				Box hBox = Box.createHorizontalBox();
+				checkLabelPanel.add(hBox);
+				{
+					JLabel buildLabelLocation = new JLabel(
+							"Check repository synchronization");
+					hBox.add(buildLabelLocation);
+					hBox.add(Box.createHorizontalStrut(10));
+					checkInformationBox = Box.createHorizontalBox();
+					hBox.add(checkInformationBox);
+					{
+						checkErrorLabel = new JLabel("Errors: ");
+						checkInformationBox.add(checkErrorLabel);
+						checkErrorLabelValue = new JLabel();
+						checkInformationBox.add(checkErrorLabelValue);
+						checkInformationBox.setVisible(false);
+					}
+				}
+			}
 		}
 		{
 			JPanel checkPanel = new JPanel();
