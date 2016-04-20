@@ -10,11 +10,11 @@ import java.util.Map;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
+import fr.soe.a3s.constant.ProtocolType;
 import fr.soe.a3s.controller.ObserverCount;
 import fr.soe.a3s.controller.ObserverText;
 import fr.soe.a3s.controller.ObserverUpload;
 import fr.soe.a3s.dao.DataAccessConstants;
-import fr.soe.a3s.domain.constants.ProtocolType;
 import fr.soe.a3s.dto.ProtocolDTO;
 import fr.soe.a3s.dto.RepositoryDTO;
 import fr.soe.a3s.dto.sync.SyncTreeDirectoryDTO;

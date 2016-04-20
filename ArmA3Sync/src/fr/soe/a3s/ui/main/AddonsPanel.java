@@ -39,7 +39,7 @@ import javax.swing.event.TreeExpansionListener;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 
-import fr.soe.a3s.domain.constants.ModsetType;
+import fr.soe.a3s.constant.ModsetType;
 import fr.soe.a3s.dto.EventDTO;
 import fr.soe.a3s.dto.RepositoryDTO;
 import fr.soe.a3s.dto.TreeDirectoryDTO;

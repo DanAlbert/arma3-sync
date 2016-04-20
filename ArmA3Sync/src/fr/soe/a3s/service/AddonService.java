@@ -7,6 +7,7 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 
+import fr.soe.a3s.constant.GameSystemFolders;
 import fr.soe.a3s.dao.AddonDAO;
 import fr.soe.a3s.dao.ConfigurationDAO;
 import fr.soe.a3s.dao.ProfileDAO;
@@ -15,7 +16,6 @@ import fr.soe.a3s.domain.Profile;
 import fr.soe.a3s.domain.TreeDirectory;
 import fr.soe.a3s.domain.TreeLeaf;
 import fr.soe.a3s.domain.TreeNode;
-import fr.soe.a3s.domain.constants.GameSystemFolders;
 import fr.soe.a3s.dto.TreeDirectoryDTO;
 import fr.soe.a3s.dto.TreeLeafDTO;
 import fr.soe.a3s.dto.TreeNodeDTO;

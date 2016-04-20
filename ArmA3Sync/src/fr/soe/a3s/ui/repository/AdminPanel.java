@@ -23,7 +23,7 @@ import javax.swing.JProgressBar;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 
-import fr.soe.a3s.domain.constants.RepositoryStatus;
+import fr.soe.a3s.constant.RepositoryStatus;
 import fr.soe.a3s.dto.RepositoryDTO;
 import fr.soe.a3s.dto.ServerInfoDTO;
 import fr.soe.a3s.exception.WritingException;

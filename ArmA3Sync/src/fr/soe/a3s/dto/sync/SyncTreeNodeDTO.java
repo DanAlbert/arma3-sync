@@ -1,6 +1,6 @@
 package fr.soe.a3s.dto.sync;
 
-import fr.soe.a3s.domain.constants.DownloadStatus;
+import fr.soe.a3s.constant.DownloadStatus;
 
 public interface SyncTreeNodeDTO extends java.lang.Comparable {
 

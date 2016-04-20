@@ -6,11 +6,11 @@ import java.security.NoSuchAlgorithmException;
 import javax.crypto.Cipher;
 import javax.crypto.NoSuchPaddingException;
 
+import fr.soe.a3s.constant.ProtocolType;
 import fr.soe.a3s.dao.DataAccessConstants;
 import fr.soe.a3s.dao.EncryptionProvider;
 import fr.soe.a3s.domain.AbstractProtocole;
 import fr.soe.a3s.domain.AbstractProtocoleFactory;
-import fr.soe.a3s.domain.constants.ProtocolType;
 import fr.soe.a3s.exception.CheckException;
 
 public class AutoConfigURLAccessMethods implements DataAccessConstants {

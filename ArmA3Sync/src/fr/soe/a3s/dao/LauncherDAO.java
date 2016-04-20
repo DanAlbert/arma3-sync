@@ -8,12 +8,12 @@ import java.util.List;
 import java.util.StringTokenizer;
 import java.util.concurrent.Callable;
 
+import fr.soe.a3s.constant.GameExecutables;
 import fr.soe.a3s.controller.ObservableEnd;
 import fr.soe.a3s.controller.ObservableError;
 import fr.soe.a3s.controller.ObserverEnd;
 import fr.soe.a3s.controller.ObserverError;
 import fr.soe.a3s.domain.configration.LauncherOptions;
-import fr.soe.a3s.domain.constants.GameExecutables;
 
 public class LauncherDAO implements DataAccessConstants, ObservableError,
 		ObservableEnd {

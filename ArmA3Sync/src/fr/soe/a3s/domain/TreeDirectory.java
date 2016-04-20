@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import fr.soe.a3s.domain.constants.ModsetType;
+import fr.soe.a3s.constant.ModsetType;
 
 public class TreeDirectory implements TreeNode, Serializable {
 

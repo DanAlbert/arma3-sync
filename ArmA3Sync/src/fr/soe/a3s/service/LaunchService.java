@@ -17,6 +17,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import net.jimmc.jshortcut.JShellLink;
+import fr.soe.a3s.constant.GameExecutables;
+import fr.soe.a3s.constant.GameVersions;
 import fr.soe.a3s.dao.AddonDAO;
 import fr.soe.a3s.dao.ConfigurationDAO;
 import fr.soe.a3s.dao.LauncherDAO;
@@ -31,8 +33,6 @@ import fr.soe.a3s.domain.configration.Configuration;
 import fr.soe.a3s.domain.configration.ExternalApplication;
 import fr.soe.a3s.domain.configration.FavoriteServer;
 import fr.soe.a3s.domain.configration.LauncherOptions;
-import fr.soe.a3s.domain.constants.GameExecutables;
-import fr.soe.a3s.domain.constants.GameVersions;
 import fr.soe.a3s.exception.LaunchException;
 
 public class LaunchService {

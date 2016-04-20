@@ -9,7 +9,7 @@ import java.util.Scanner;
 
 import org.apache.commons.io.FileUtils;
 
-import fr.soe.a3s.domain.constants.ProtocolType;
+import fr.soe.a3s.constant.ProtocolType;
 import fr.soe.a3s.dto.RepositoryDTO;
 import fr.soe.a3s.exception.CheckException;
 import fr.soe.a3s.exception.LoadingException;

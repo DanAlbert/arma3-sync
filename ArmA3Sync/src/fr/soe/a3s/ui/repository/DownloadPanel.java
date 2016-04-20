@@ -53,7 +53,7 @@ import javax.swing.plaf.basic.BasicSplitPaneUI;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 
-import fr.soe.a3s.domain.constants.GameExecutables;
+import fr.soe.a3s.constant.GameExecutables;
 import fr.soe.a3s.dto.sync.SyncTreeDirectoryDTO;
 import fr.soe.a3s.dto.sync.SyncTreeLeafDTO;
 import fr.soe.a3s.dto.sync.SyncTreeNodeDTO;

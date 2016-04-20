@@ -1,7 +1,7 @@
 package fr.soe.a3s.dto;
 
-import fr.soe.a3s.domain.constants.EncryptionMode;
-import fr.soe.a3s.domain.constants.ProtocolType;
+import fr.soe.a3s.constant.EncryptionMode;
+import fr.soe.a3s.constant.ProtocolType;
 
 public class ProtocolDTO {
 

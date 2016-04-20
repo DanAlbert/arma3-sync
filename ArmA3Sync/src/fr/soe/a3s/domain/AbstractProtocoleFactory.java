@@ -1,6 +1,6 @@
 package fr.soe.a3s.domain;
 
-import fr.soe.a3s.domain.constants.ProtocolType;
+import fr.soe.a3s.constant.ProtocolType;
 
 public class AbstractProtocoleFactory {
 

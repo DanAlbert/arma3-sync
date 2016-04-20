@@ -5,9 +5,9 @@ import java.io.IOException;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
+import fr.soe.a3s.constant.RepositoryStatus;
 import fr.soe.a3s.controller.ObserverCount;
 import fr.soe.a3s.controller.ObserverText;
-import fr.soe.a3s.domain.constants.RepositoryStatus;
 import fr.soe.a3s.exception.WritingException;
 import fr.soe.a3s.exception.repository.RepositoryException;
 import fr.soe.a3s.service.RepositoryService;

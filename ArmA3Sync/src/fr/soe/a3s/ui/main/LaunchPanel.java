@@ -19,10 +19,10 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 
+import fr.soe.a3s.constant.GameVersions;
+import fr.soe.a3s.constant.MinimizationType;
 import fr.soe.a3s.controller.ObserverEnd;
 import fr.soe.a3s.controller.ObserverError;
-import fr.soe.a3s.domain.constants.GameVersions;
-import fr.soe.a3s.domain.constants.MinimizationType;
 import fr.soe.a3s.dto.EventDTO;
 import fr.soe.a3s.dto.RepositoryDTO;
 import fr.soe.a3s.dto.configuration.FavoriteServerDTO;

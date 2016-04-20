@@ -1,11 +1,11 @@
 package fr.soe.a3s.service.connection;
 
+import fr.soe.a3s.constant.ProtocolType;
 import fr.soe.a3s.dao.repository.RepositoryDAO;
 import fr.soe.a3s.domain.AbstractProtocole;
 import fr.soe.a3s.domain.BitTorrent;
 import fr.soe.a3s.domain.Ftp;
 import fr.soe.a3s.domain.Http;
-import fr.soe.a3s.domain.constants.ProtocolType;
 import fr.soe.a3s.domain.repository.Repository;
 import fr.soe.a3s.domain.repository.ServerInfo;
 import fr.soe.a3s.exception.CheckException;

@@ -30,7 +30,7 @@ import javax.swing.border.BevelBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
-import fr.soe.a3s.domain.constants.MaxMemoryValues;
+import fr.soe.a3s.constant.MaxMemoryValues;
 import fr.soe.a3s.dto.configuration.LauncherOptionsDTO;
 import fr.soe.a3s.exception.ProfileException;
 import fr.soe.a3s.service.AddonService;

@@ -13,6 +13,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
+import fr.soe.a3s.constant.ProtocolType;
+import fr.soe.a3s.constant.RepositoryStatus;
 import fr.soe.a3s.dao.AddonDAO;
 import fr.soe.a3s.dao.DataAccessConstants;
 import fr.soe.a3s.dao.repository.RepositoryBuildProcessor;
@@ -25,8 +27,6 @@ import fr.soe.a3s.domain.TreeDirectory;
 import fr.soe.a3s.domain.TreeLeaf;
 import fr.soe.a3s.domain.TreeNode;
 import fr.soe.a3s.domain.configration.FavoriteServer;
-import fr.soe.a3s.domain.constants.ProtocolType;
-import fr.soe.a3s.domain.constants.RepositoryStatus;
 import fr.soe.a3s.domain.repository.AutoConfig;
 import fr.soe.a3s.domain.repository.Changelog;
 import fr.soe.a3s.domain.repository.Changelogs;

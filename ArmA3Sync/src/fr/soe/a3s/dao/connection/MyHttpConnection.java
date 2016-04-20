@@ -29,8 +29,8 @@ import javax.net.ssl.X509TrustManager;
 
 import org.apache.commons.io.output.CountingOutputStream;
 
+import fr.soe.a3s.constant.ProtocolType;
 import fr.soe.a3s.domain.AbstractProtocole;
-import fr.soe.a3s.domain.constants.ProtocolType;
 import fr.soe.a3s.exception.HttpException;
 
 public class MyHttpConnection {

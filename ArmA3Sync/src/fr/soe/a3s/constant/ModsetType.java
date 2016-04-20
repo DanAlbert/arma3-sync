@@ -1,4 +1,4 @@
-package fr.soe.a3s.domain.constants;
+package fr.soe.a3s.constant;
 
 public enum ModsetType {
 	EVENT,REPOSITORY;

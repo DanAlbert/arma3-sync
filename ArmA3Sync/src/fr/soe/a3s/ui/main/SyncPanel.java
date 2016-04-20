@@ -41,7 +41,7 @@ import javax.swing.table.JTableHeader;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 
-import fr.soe.a3s.domain.constants.RepositoryStatus;
+import fr.soe.a3s.constant.RepositoryStatus;
 import fr.soe.a3s.dto.EventDTO;
 import fr.soe.a3s.dto.RepositoryDTO;
 import fr.soe.a3s.exception.repository.RepositoryException;

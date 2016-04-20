@@ -19,7 +19,7 @@ import javax.swing.JScrollPane;
 import javax.swing.ListSelectionModel;
 import javax.swing.border.BevelBorder;
 
-import fr.soe.a3s.domain.constants.DefaultProfileName;
+import fr.soe.a3s.constant.DefaultProfileName;
 import fr.soe.a3s.exception.ProfileException;
 import fr.soe.a3s.service.ConfigurationService;
 import fr.soe.a3s.service.ProfileService;

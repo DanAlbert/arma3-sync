@@ -2,7 +2,7 @@ package fr.soe.a3s.ui.repository.dialogs.progress;
 
 import javax.swing.JOptionPane;
 
-import fr.soe.a3s.domain.constants.ProtocolType;
+import fr.soe.a3s.constant.ProtocolType;
 import fr.soe.a3s.dto.ProtocolDTO;
 import fr.soe.a3s.dto.RepositoryDTO;
 import fr.soe.a3s.exception.CheckException;

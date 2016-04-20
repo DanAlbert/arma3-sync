@@ -1,4 +1,4 @@
-package fr.soe.a3s.domain.constants;
+package fr.soe.a3s.constant;
 
 public enum MinimizationType {
 	NOTHING("Do nothing"), TASK_BAR("Reduce to task bar"), TRAY(
