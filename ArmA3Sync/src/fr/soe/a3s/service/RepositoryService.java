@@ -341,7 +341,7 @@ public class RepositoryService extends ObjectDTOtransformer implements
 		List<SyncTreeNode> nodesList = parent.getDeepSearchNodesList();
 		List<SyncTreeLeaf> leafsList = parent.getDeepSearchLeafsList();
 
-		// 1. Set destination file path
+		// 1. Set destination files path
 		determineDestinationPaths(nodesList,
 				repository.getDefaultDownloadLocation(), noAutoDiscover);
 
