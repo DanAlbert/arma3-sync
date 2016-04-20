@@ -1419,7 +1419,9 @@ public class RepositoryService extends ObjectDTOtransformer implements
 		Repository repository = repositoryDAO.getMap().get(repositoryName);
 		if (repository != null) {
 			ServerInfo serverInfo = repository.getServerInfo();
-			return serverInfo.getNumberOfConnections();
+			if (serverInfo != null) {
+				return serverInfo.getNumberOfConnections();
+			}
 		}
 		return 0;
 	}
