@@ -101,6 +101,14 @@ public class SyncTreeLeafDTO extends SyncTreeNodeDTOMethods implements
 		this.destinationPath = destinationPath;
 	}
 
+	public String getRemotePath() {
+		return remotePath;
+	}
+
+	public void setRemotePath(String remotePath) {
+		this.remotePath = remotePath;
+	}
+
 	@Override
 	public void setDeleted(boolean value) {
 		this.deleted = value;
@@ -190,7 +198,7 @@ public class SyncTreeLeafDTO extends SyncTreeNodeDTOMethods implements
 	public String getRelativePath() {
 		return determinePath(this);
 	}
-
+	
 	@Override
 	public String getParentRelativePath() {
 		return determineParentRelativePath(this);

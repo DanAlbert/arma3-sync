@@ -341,12 +341,16 @@ public class HttpDAO extends AbstractConnexionDAO {
 		return downloadedFile;
 	}
 
-	public double getFileCompletion(SyncTreeLeafDTO leaf,
-			AbstractProtocole protocole) throws IOException {
+	public double getFileCompletion(String remotePath, String destinationPath,
+			SyncTreeNodeDTO node, AbstractProtocole protocole)
+			throws IOException {
 
-		File targetFile = new File(leaf.getDestinationPath() + "/"
-				+ leaf.getName());
-		String relativeZsyncFileUrl = leaf.getRelativePath() + ZSYNC_EXTENSION;
+		File targetFile = new File(destinationPath + "/" + node.getName());
+
+		String relativeZsyncFileUrl = remotePath + "/" + node.getName()
+				+ ZSYNC_EXTENSION;
+
+		SyncTreeLeafDTO leaf = (SyncTreeLeafDTO) node;
 		String sha1 = leaf.getLocalSHA1();
 
 		double complete = 0;

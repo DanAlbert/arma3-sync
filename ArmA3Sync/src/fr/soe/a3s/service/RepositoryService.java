@@ -341,7 +341,7 @@ public class RepositoryService extends ObjectDTOtransformer implements
 		List<SyncTreeNode> nodesList = parent.getDeepSearchNodesList();
 		List<SyncTreeLeaf> leafsList = parent.getDeepSearchLeafsList();
 
-		// 1. Set destination files path
+		// 1. Set destination file path
 		determineDestinationPaths(nodesList,
 				repository.getDefaultDownloadLocation(), noAutoDiscover);
 
@@ -455,7 +455,7 @@ public class RepositoryService extends ObjectDTOtransformer implements
 
 				boolean contains = false;
 				for (String stg : hiddenFolderPaths) {
-					stg = backslashReplace(stg);
+					stg = backlashReplace(stg);
 					if (relativePath.length() >= stg.length()) {
 						String p = relativePath.substring(0, stg.length());
 						if (stg.equals(p)) {
@@ -473,7 +473,7 @@ public class RepositoryService extends ObjectDTOtransformer implements
 		}
 	}
 
-	private String backslashReplace(String myStr) {
+	private String backlashReplace(String myStr) {
 
 		final StringBuilder result = new StringBuilder();
 		final StringCharacterIterator iterator = new StringCharacterIterator(
@@ -607,6 +607,22 @@ public class RepositoryService extends ObjectDTOtransformer implements
 				folderPath = slashReplace(folderPath);
 				repository.getHiddenFolderPath().remove(folderPath);
 			}
+		}
+	}
+
+	private void determineDestinationPathsForAddonFiles(
+			SyncTreeNode syncTreeNode) {
+
+		if (!syncTreeNode.isLeaf()) {
+			SyncTreeDirectory directory = (SyncTreeDirectory) syncTreeNode;
+			String path = directory.getParent().getDestinationPath();
+			directory.setDestinationPath(new File(path + "/"
+					+ directory.getParent().getName()).getAbsolutePath());
+		} else {
+			SyncTreeLeaf leaf = (SyncTreeLeaf) syncTreeNode;
+			String path = leaf.getParent().getDestinationPath();
+			leaf.setDestinationPath(new File(path + "/"
+					+ leaf.getParent().getName()).getAbsolutePath());
 		}
 	}
 

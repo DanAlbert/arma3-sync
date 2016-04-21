@@ -9,7 +9,9 @@ import java.util.Scanner;
 
 import org.apache.commons.io.FileUtils;
 
+import fr.soe.a3s.constant.ConsoleCommands;
 import fr.soe.a3s.constant.ProtocolType;
+import fr.soe.a3s.constant.TimeOutValues;
 import fr.soe.a3s.dto.RepositoryDTO;
 import fr.soe.a3s.exception.CheckException;
 import fr.soe.a3s.exception.LoadingException;
@@ -22,10 +24,6 @@ public class CommandConsole extends CommandGeneral {
 
 	private boolean devMode = false;
 
-	private enum Commands {
-		NEW, BUILD, UPDATE, CHECK, LIST, DELETE, HELP, VERSION, QUIT, COMMANDS, SYNC, EXTRACT;
-	}
-
 	public CommandConsole(boolean devMode) {
 		this.devMode = devMode;
 	}
@@ -34,28 +32,28 @@ public class CommandConsole extends CommandGeneral {
 
 		System.out.println("");
 		System.out.println("ArmA3Sync console commands:");
-		System.out.println(Commands.NEW.toString()
+		System.out.println(ConsoleCommands.NEW.toString()
 				+ ": create a new repository");
-		System.out.println(Commands.BUILD.toString()
+		System.out.println(ConsoleCommands.BUILD.toString()
 				+ ": build repository");
-		System.out.println(Commands.CHECK.toString()
+		System.out.println(ConsoleCommands.CHECK.toString()
 				+ ": check repository synchronization");
-		System.out.println(Commands.DELETE.toString()
+		System.out.println(ConsoleCommands.DELETE.toString()
 				+ ": delete repository");
-		System.out.println(Commands.LIST.toString()
+		System.out.println(ConsoleCommands.LIST.toString()
 				+ ": list repositories");
-		System.out.println(Commands.SYNC.toString()
+		System.out.println(ConsoleCommands.SYNC.toString()
 				+ ": synchronize content with a repository");
 		System.out
-				.println(Commands.EXTRACT.toString()
+				.println(ConsoleCommands.EXTRACT.toString()
 						+ ": extract *.bikey files from source directory to target directory");
-		System.out.println(Commands.UPDATE.toString()
+		System.out.println(ConsoleCommands.UPDATE.toString()
 				+ ": check for updates");
-		System.out.println(Commands.COMMANDS.toString()
+		System.out.println(ConsoleCommands.COMMANDS.toString()
 				+ ": display commands");
-		System.out.println(Commands.VERSION.toString()
+		System.out.println(ConsoleCommands.VERSION.toString()
 				+ ": display version");
-		System.out.println(Commands.QUIT.toString() + ": quit");
+		System.out.println(ConsoleCommands.QUIT.toString() + ": quit");
 		System.out.println("");
 	}
 
@@ -65,29 +63,30 @@ public class CommandConsole extends CommandGeneral {
 		System.out.print("Please enter a command = ");
 		String command = c.nextLine().trim();
 
-		if (command.equalsIgnoreCase(Commands.VERSION.toString())) {
+		if (command.equalsIgnoreCase(ConsoleCommands.VERSION.toString())) {
 			displayVersion();
-		} else if (command.equalsIgnoreCase(Commands.LIST.toString())) {
+		} else if (command.equalsIgnoreCase(ConsoleCommands.LIST.toString())) {
 			list();
-		} else if (command.equalsIgnoreCase(Commands.NEW.toString())) {
+		} else if (command.equalsIgnoreCase(ConsoleCommands.NEW.toString())) {
 			create();
-		} else if (command.equalsIgnoreCase(Commands.CHECK.toString())) {
+		} else if (command.equalsIgnoreCase(ConsoleCommands.CHECK.toString())) {
 			check();
-		} else if (command.equalsIgnoreCase(Commands.BUILD.toString())) {
+		} else if (command.equalsIgnoreCase(ConsoleCommands.BUILD.toString())) {
 			build();
-		} else if (command.equalsIgnoreCase(Commands.DELETE.toString())) {
+		} else if (command.equalsIgnoreCase(ConsoleCommands.DELETE.toString())) {
 			delete();
-		} else if (command.equalsIgnoreCase(Commands.UPDATE.toString())) {
+		} else if (command.equalsIgnoreCase(ConsoleCommands.UPDATE.toString())) {
 			checkForUpdates();
-		} else if (command.equalsIgnoreCase(Commands.SYNC.toString())) {
+		} else if (command.equalsIgnoreCase(ConsoleCommands.SYNC.toString())) {
 			sync();
-		} else if (command.equalsIgnoreCase(Commands.EXTRACT.toString())) {
+		} else if (command.equalsIgnoreCase(ConsoleCommands.EXTRACT
+				.toString())) {
 			extractBikeys();
 		} else if (command
-				.equalsIgnoreCase(Commands.COMMANDS.toString())) {
+				.equalsIgnoreCase(ConsoleCommands.COMMANDS.toString())) {
 			displayCommands();
 			execute();
-		} else if (command.equalsIgnoreCase(Commands.QUIT.toString())) {
+		} else if (command.equalsIgnoreCase(ConsoleCommands.QUIT.toString())) {
 			quit();
 		} else {
 			System.out.println("ArmA3Sync - bad command.");
@@ -308,8 +307,7 @@ public class CommandConsole extends CommandGeneral {
 		String path = "";
 		boolean folderLocationIsWrong = true;
 		do {
-			System.out
-					.print("Enter main folder location (leave blank to pass): ");
+			System.out.print("Enter main folder location (leave blank to pass): ");
 			path = c.nextLine();
 			if (path.isEmpty()) {
 				folderLocationIsWrong = false;
@@ -330,8 +328,8 @@ public class CommandConsole extends CommandGeneral {
 		try {
 			repositoryService.createRepository(name, url, port, login,
 					password, protocole);
-			repositoryService.setConnectionTimeout(name, "0");
-			repositoryService.setReadTimeout(name, "0");
+			repositoryService.setConnectionTimeout(name,"0");
+			repositoryService.setReadTimeout(name,"0");
 			if (!path.isEmpty()) {
 				repositoryService.setRepositoryPath(name, path);
 			}
@@ -386,7 +384,8 @@ public class CommandConsole extends CommandGeneral {
 				String path = "";
 				boolean folderLocationIsWrong = true;
 				do {
-					System.out.print("Enter repository main folder location: ");
+					System.out
+							.print("Enter repository main folder location: ");
 					path = c.nextLine();
 					if (path.isEmpty()) {
 						folderLocationIsWrong = true;
@@ -688,7 +687,7 @@ public class CommandConsole extends CommandGeneral {
 		repositoryService.setExactMatch(exactMath, repositoryName);
 		repositoryService.setDefaultDownloadLocation(repositoryName,
 				destinationFolderPath);
-		repositoryService.setConnectionTimeout(repositoryName, "0");
+		repositoryService.setConnectionTimeout(repositoryName,"0");
 		repositoryService.setReadTimeout(repositoryName, "0");
 
 		super.syncRepository(repositoryName, false);
@@ -715,7 +714,7 @@ public class CommandConsole extends CommandGeneral {
 		} while (targetDirectoryPath.isEmpty());
 
 		/* Proceed with command */
-
+		
 		super.extractBikeys(sourceDirectoryPath, targetDirectoryPath, false);
 	}
 
