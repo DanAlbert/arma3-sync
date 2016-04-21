@@ -62,10 +62,8 @@ public class ConnectionDownloadProcessor implements DataAccessConstants {
 										connexionDAO
 												.updateObserverDownloadActiveConnections();
 
-										File downloadedFile = connexionDAO
-												.downloadFile(repository
-														.getName(), repository
-														.getProtocol(), node);
+										File downloadedFile = downloadFile(
+												connexionDAO, node);
 
 										if (downloadedFile != null) {
 											if (downloadedFile.isFile()) {
@@ -195,6 +193,32 @@ public class ConnectionDownloadProcessor implements DataAccessConstants {
 				}
 			}
 		}
+	}
+
+	private File downloadFile(final AbstractConnexionDAO connexionDAO,
+			final SyncTreeNodeDTO node) throws IOException {
+
+		final String rootDestinationPath = repository
+				.getDefaultDownloadLocation();
+
+		String destinationPath = null;
+		String remotePath = repository.getProtocol().getRemotePath();
+		String path = node.getParentRelativePath();
+		if (node.getDestinationPath() != null) {
+			destinationPath = node.getDestinationPath();
+			if (!path.isEmpty()) {
+				remotePath = remotePath + "/" + path;
+			}
+		} else {
+			destinationPath = rootDestinationPath;
+			if (!path.isEmpty()) {
+				destinationPath = rootDestinationPath + "/" + path;
+				remotePath = remotePath + "/" + path;
+			}
+		}
+
+		return connexionDAO.downloadFile(repository.getName(),
+				repository.getProtocol(), remotePath, destinationPath, node);
 	}
 
 	private synchronized void addError(Exception e) {

@@ -43,18 +43,18 @@ public class HttpDAO extends AbstractConnexionDAO {
 	}
 
 	public void connectToRepository(String repositoryName,
-			AbstractProtocole protocole, String relativeFileUrlFromRepository)
+			AbstractProtocole protocole, String relativePathFromRepository)
 			throws IOException {
 
 		boolean found = true;
 		try {
-			connect(protocole, relativeFileUrlFromRepository);
+			connect(protocole, relativePathFromRepository);
 		} catch (IOException e) {
 			if (!canceled) {
 				String coreMessage = "Failed to connect to repository "
 						+ repositoryName + " on url: " + "\n"
 						+ protocole.getProtocolType().getPrompt()
-						+ protocole.getUrl() + relativeFileUrlFromRepository;
+						+ protocole.getUrl() + relativePathFromRepository;
 				IOException ioe = transferIOExceptionFactory(coreMessage, e);
 				throw ioe;
 			}
@@ -81,18 +81,18 @@ public class HttpDAO extends AbstractConnexionDAO {
 		}
 	}
 
-	private void downloadFileWithRecordProgress(File file,
-			String relativeFileUrl) throws IOException {
+	private void downloadFileWithRecordProgress(File file, String relativePath)
+			throws IOException {
 
 		try {
 			myHttpConnection.downloadFileWithRecordProgress(file);
 		} catch (IOException e) {
-			String coreMessage = "Failed to retreive file " + relativeFileUrl;
+			String coreMessage = "Failed to retreive file " + relativePath;
 			IOException ioe = transferIOExceptionFactory(coreMessage, e);
 			throw ioe;
 		} catch (HttpException e) {
 			String message = "Server returned message " + e.getMessage()
-					+ " on url:" + "\n" + relativeFileUrl;
+					+ " on url:" + "\n" + relativePath;
 			throw new ConnectException(message);
 		}
 	}
@@ -232,40 +232,33 @@ public class HttpDAO extends AbstractConnexionDAO {
 
 	@Override
 	public File downloadFile(String repositoryName,
-			AbstractProtocole protocole, SyncTreeNodeDTO node)
+			AbstractProtocole protocole, String remotePath,
+			String destinationPath, SyncTreeNodeDTO node)
 			throws ConnectException, IOException {
 
 		File downloadedFile = null;
 
-		if (node.isLeaf()) {
+		File parentDirectory = new File(destinationPath);
+		parentDirectory.mkdirs();
 
-			String destinationPath = node.getDestinationPath();
-			File destinationDirectory = new File(destinationPath);
-			if (!destinationDirectory.exists()) {
-				boolean ok = destinationDirectory.mkdirs();
-				if (!ok) {
-					String message = "Failed to write file: "
-							+ downloadedFile.getAbsolutePath() + "\n"
-							+ "Permission denied.";
-					System.out.println(message);
-					throw new IOException(message);
-				}
-			}
+		if (node.isLeaf()) {
 
 			SyncTreeLeafDTO leaf = (SyncTreeLeafDTO) node;
 
 			if (leaf.getComplete() == 0) {
 
-				String relativeFileUrl = "/" + leaf.getRelativePath();
+				String relativePath = null;
+
 				if (leaf.isCompressed()) {
-					downloadedFile = new File(destinationDirectory + "/"
+					downloadedFile = new File(parentDirectory + "/"
 							+ leaf.getName() + ZIP_EXTENSION);
 					this.expectedFullSize = leaf.getCompressedSize();
-					relativeFileUrl = relativeFileUrl + ZIP_EXTENSION;
+					relativePath = "/" + node.getRelativePath() + ZIP_EXTENSION;
 				} else {
-					downloadedFile = new File(destinationDirectory + "/"
+					downloadedFile = new File(parentDirectory + "/"
 							+ leaf.getName());
 					this.expectedFullSize = leaf.getSize();
+					relativePath = "/" + node.getRelativePath();
 				}
 
 				// Resuming
@@ -282,10 +275,8 @@ public class HttpDAO extends AbstractConnexionDAO {
 				leaf.setDownloadStatus(DownloadStatus.RUNNING);
 
 				try {
-					connectToRepository(repositoryName, protocole,
-							relativeFileUrl);
-					downloadFileWithRecordProgress(downloadedFile,
-							relativeFileUrl);
+					connectToRepository(repositoryName, protocole, relativePath);
+					downloadFileWithRecordProgress(downloadedFile, relativePath);
 					if (!canceled) {
 						updateObserverDownloadTotalSizeProgress();
 						node.setDownloadStatus(DownloadStatus.DONE);
@@ -307,16 +298,17 @@ public class HttpDAO extends AbstractConnexionDAO {
 				}
 			} else {// the file is uncomplete => use .zsync
 
-				downloadedFile = new File(destinationDirectory + "/"
+				downloadedFile = new File(parentDirectory + "/"
 						+ leaf.getName());
 				this.expectedFullSize = leaf.getSize();
 
+				// this.offset = 0;
 				this.downloadingLeaf = leaf;
 				leaf.setDownloadStatus(DownloadStatus.RUNNING);
 
-				String relativeFileUrl = "/" + leaf.getRelativePath();
-				String relativeZsyncFileUrl = "/" + leaf.getRelativePath()
-						+ "/" + ZSYNC_EXTENSION;
+				String relativeZsyncFileUrl = remotePath + "/" + node.getName()
+						+ ZSYNC_EXTENSION;
+				String relativeFileUrl = remotePath + "/" + node.getName();
 
 				String sha1 = leaf.getLocalSHA1();
 
@@ -341,18 +333,8 @@ public class HttpDAO extends AbstractConnexionDAO {
 				}
 			}
 		} else {
-			String destinationPath = node.getDestinationPath();
-			downloadedFile = new File(destinationPath + "/" + node.getName());
-			if (!downloadedFile.exists()) {
-				boolean ok = downloadedFile.mkdirs();
-				if (!ok) {
-					String message = "Failed to write file: "
-							+ downloadedFile.getAbsolutePath() + "\n"
-							+ "Permission denied.";
-					System.out.println(message);
-					throw new IOException(message);
-				}
-			}
+			downloadedFile = new File(parentDirectory + "/" + node.getName());
+			downloadedFile.mkdir();
 			node.setDownloadStatus(DownloadStatus.DONE);
 		}
 
@@ -361,9 +343,6 @@ public class HttpDAO extends AbstractConnexionDAO {
 
 	public double getFileCompletion(SyncTreeLeafDTO leaf,
 			AbstractProtocole protocole) throws IOException {
-
-		assert (leaf.getDestinationPath() != null);
-		assert (!"".equals(leaf.getDestinationPath()));
 
 		File targetFile = new File(leaf.getDestinationPath() + "/"
 				+ leaf.getName());

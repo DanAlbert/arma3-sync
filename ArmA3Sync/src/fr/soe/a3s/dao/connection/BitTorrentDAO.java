@@ -28,8 +28,9 @@ public class BitTorrentDAO extends AbstractConnexionDAO {
 
 	@Override
 	public File downloadFile(String name, AbstractProtocole protocol,
-			SyncTreeNodeDTO node) throws IOException {
-		throw new UnsupportedOperationException();
+			String remotePath, String destinationPath, SyncTreeNodeDTO node) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 	@Override

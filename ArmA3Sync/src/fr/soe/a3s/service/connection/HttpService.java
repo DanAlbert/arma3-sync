@@ -1,5 +1,6 @@
 package fr.soe.a3s.service.connection;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -273,7 +274,47 @@ public class HttpService extends AbstractConnexionService implements
 				} else if (noPartialFileTransfer) {
 					leaf.setComplete(0);
 				} else {
-					list2.add(leaf);
+					assert (leaf.getDestinationPath() != null);
+					assert (!"".equals(leaf.getDestinationPath()));
+					File targetFile = new File(leaf.getDestinationPath() + "/"
+							+ leaf.getName());
+					if (!targetFile.exists()) {
+						leaf.setComplete(0);
+					} else {
+						list2.add(leaf);
+					}
+
+					// final String rootDestinationPath = repository
+					// .getDefaultDownloadLocation();
+					// String destinationPath = null;
+					// String remotePath = repository.getProtocol()
+					// .getRemotePath();
+					// String path = leaf.getParentRelativePath();
+					// assert();
+					//
+					// if (leaf.getDestinationPath() != null) {
+					// destinationPath = leaf.getDestinationPath();
+					// if (!path.isEmpty()) {
+					// remotePath = remotePath + "/" + path;
+					// }
+					// } else {
+					// destinationPath = rootDestinationPath;
+					// if (!path.isEmpty()) {
+					// destinationPath = rootDestinationPath + "/" + path;
+					// remotePath = remotePath + "/" + path;
+					// }
+					// }
+					//
+					// leaf.setDestinationPath(destinationPath);
+					// leaf.setRemotePath(remotePath);
+
+					// File targetFile = new File(destinationPath + "/"
+					// + leaf.getName());
+					// if (!targetFile.exists()) {
+					// leaf.setComplete(0);
+					// } else {
+					// list2.add(leaf);
+					// }
 				}
 			} else {
 				leaf.setComplete(100);

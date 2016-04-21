@@ -145,6 +145,21 @@ public class SyncTreeLeafDTO extends SyncTreeNodeDTOMethods implements
 		this.sha1 = sha1;
 	}
 
+	// @Override
+	// public String getRelativePath() {
+	// String path = this.name;
+	// SyncTreeDirectoryDTO p = this.parent;
+	// if (p == null) {
+	// return "";
+	// } else {
+	// while (p != null && !RACINE.equals(p.getName())) {
+	// path = p.getName() + "/" + path;
+	// p = p.getParent();
+	// }
+	// }
+	// return path;
+	// }
+
 	@Override
 	public DownloadStatus getDownloadStatus() {
 		return this.downloadStatus;

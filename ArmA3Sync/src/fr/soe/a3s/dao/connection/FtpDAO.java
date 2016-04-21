@@ -135,8 +135,8 @@ public class FtpDAO extends AbstractConnexionDAO {
 		return found;
 	}
 
-	private boolean downloadFileWithRecordProgress(File file,
-			String remoteDirectoryPath) throws IOException {
+	private boolean downloadFileWithRecordProgress(File file, String remotePath)
+			throws IOException {
 
 		boolean resume = false;
 		if (this.offset > 0) {
@@ -202,7 +202,7 @@ public class FtpDAO extends AbstractConnexionDAO {
 			};
 
 			ftpClient.setRestartOffset(this.offset);
-			found = ftpClient.changeWorkingDirectory(remoteDirectoryPath);
+			found = ftpClient.changeWorkingDirectory(remotePath);
 
 			if (found) {
 
@@ -214,9 +214,8 @@ public class FtpDAO extends AbstractConnexionDAO {
 
 				if (FTPReply.isPositiveCompletion(code)) {
 
-					inputStream = ftpClient
-							.retrieveFileStream(remoteDirectoryPath + "/"
-									+ file.getName());
+					inputStream = ftpClient.retrieveFileStream(remotePath + "/"
+							+ file.getName());
 
 					if (inputStream == null) {
 						found = false;
@@ -246,8 +245,8 @@ public class FtpDAO extends AbstractConnexionDAO {
 				}
 			}
 		} catch (IOException e) {
-			String coreMessage = "Failed to retrieve file "
-					+ remoteDirectoryPath + "/" + file.getName();
+			String coreMessage = "Failed to retrieve file " + remotePath + "/"
+					+ file.getName();
 			IOException ioe = transferIOExceptionFactory(coreMessage, e);
 			throw ioe;
 		} finally {
@@ -408,34 +407,24 @@ public class FtpDAO extends AbstractConnexionDAO {
 
 	@Override
 	public File downloadFile(String repositoryName,
-			AbstractProtocole protocole, SyncTreeNodeDTO node)
-			throws IOException {
+			AbstractProtocole protocole, String remotePath,
+			String destinationPath, SyncTreeNodeDTO node) throws IOException {
 
 		File downloadedFile = null;
 
-		if (node.isLeaf()) {
+		File parentDirectory = new File(destinationPath);
+		parentDirectory.mkdirs();
 
-			String destinationPath = node.getDestinationPath();
-			File destinationDirectory = new File(destinationPath);
-			if (!destinationDirectory.exists()) {
-				boolean ok = destinationDirectory.mkdirs();
-				if (!ok) {
-					String message = "Failed to write file: "
-							+ downloadedFile.getAbsolutePath() + "\n"
-							+ "Permission denied.";
-					System.out.println(message);
-					throw new IOException(message);
-				}
-			}
+		if (node.isLeaf()) {
 
 			SyncTreeLeafDTO leaf = (SyncTreeLeafDTO) node;
 
 			if (leaf.isCompressed()) {
-				downloadedFile = new File(destinationDirectory + "/"
+				downloadedFile = new File(parentDirectory + "/"
 						+ leaf.getName() + ZIP_EXTENSION);
 				this.expectedFullSize = leaf.getCompressedSize();
 			} else {
-				downloadedFile = new File(destinationDirectory + "/"
+				downloadedFile = new File(parentDirectory + "/"
 						+ leaf.getName());
 				this.expectedFullSize = leaf.getSize();
 			}
@@ -455,20 +444,11 @@ public class FtpDAO extends AbstractConnexionDAO {
 			leaf.setDownloadStatus(DownloadStatus.RUNNING);
 
 			try {
-				String remoteDirectoryPath = protocole.getRemotePath();
-				if (!leaf.getParentRelativePath().isEmpty()) {
-					remoteDirectoryPath = remoteDirectoryPath + "/"
-							+ leaf.getParentRelativePath();
-				}
 				boolean found = downloadFileWithRecordProgress(downloadedFile,
-						remoteDirectoryPath);
+						remotePath);
 				if (!found) {
-					if (downloadedFile.exists()) {
-						FileAccessMethods.deleteFile(downloadedFile);
-					}
-					downloadedFile = null;
-					String message = "File not found on repository: " + "/"
-							+ leaf.getRelativePath();
+					String message = "File not found on repository: "
+							+ remotePath + "/" + downloadedFile.getName();
 					throw new FileNotFoundException(message);
 				}
 				if (!canceled) {
@@ -490,18 +470,8 @@ public class FtpDAO extends AbstractConnexionDAO {
 				this.speed = 0;
 			}
 		} else {// directory
-			String destinationPath = node.getDestinationPath();
-			downloadedFile = new File(destinationPath + "/" + node.getName());
-			if (!downloadedFile.exists()) {
-				boolean ok = downloadedFile.mkdirs();
-				if (!ok) {
-					String message = "Failed to write file: "
-							+ downloadedFile.getAbsolutePath() + "\n"
-							+ "Permission denied.";
-					System.out.println(message);
-					throw new IOException(message);
-				}
-			}
+			downloadedFile = new File(parentDirectory + "/" + node.getName());
+			downloadedFile.mkdir();
 			node.setDownloadStatus(DownloadStatus.DONE);
 		}
 

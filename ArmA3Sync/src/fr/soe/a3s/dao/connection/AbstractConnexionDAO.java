@@ -73,7 +73,8 @@ public abstract class AbstractConnexionDAO implements DataAccessConstants,
 			String repositoryPath, String remotePath) throws IOException;
 
 	public abstract File downloadFile(String name, AbstractProtocole protocol,
-			SyncTreeNodeDTO node) throws IOException;
+			String remotePath, String destinationPath, SyncTreeNodeDTO node)
+			throws IOException;
 
 	public abstract void disconnect();
 
