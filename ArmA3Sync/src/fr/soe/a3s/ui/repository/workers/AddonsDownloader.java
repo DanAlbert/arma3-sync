@@ -855,7 +855,7 @@ public class AddonsDownloader extends Thread implements DataAccessConstants {
 			connexionService.cancel();
 		}
 
-		downloadPanel.getLabelDownloadStatus().setText("Paused");
+		downloadPanel.getLabelDownloadStatus().setText("Paused...");
 		downloadPanel.getButtonAdvancedConfiguration().setEnabled(true);
 		terminate();
 	}
