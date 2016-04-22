@@ -666,6 +666,10 @@ public class RepositoryService extends ObjectDTOtransformer implements
 		Repository repository = repositoryDAO.getMap().get(repositoryName);
 		if (repository != null) {
 			repository.setNotify(notify);
+			try {
+				write(repositoryName);
+			} catch (WritingException e) {
+			}
 		}
 	}
 

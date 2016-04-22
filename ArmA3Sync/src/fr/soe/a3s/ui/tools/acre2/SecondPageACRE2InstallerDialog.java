@@ -104,10 +104,11 @@ public class SecondPageACRE2InstallerDialog extends WizardDialog {
 		this.pack();
 		this.setMinimumSize(new Dimension(
 				facade.getMainPanel().getBounds().width,
-				this.getBounds().height));
+				this.firstPageACRE2InstallerDialog.getBounds().height));
 		this.setPreferredSize(new Dimension(
 				facade.getMainPanel().getBounds().width,
-				this.getBounds().height));
+				this.firstPageACRE2InstallerDialog.getBounds().height));
+		this.pack();
 
 		this.setLocationRelativeTo(facade.getMainPanel());
 
@@ -163,7 +164,7 @@ public class SecondPageACRE2InstallerDialog extends WizardDialog {
 		}
 
 		if (copyPlugin) {
-			String message1 = "You can now run your game with @ACRE 2.";
+			String message1 = "You can now run your game with @ACRE2.";
 			labelMessage1.setText(message1);
 			labelMessage2
 					.setFont(labelMessage2.getFont().deriveFont(Font.BOLD));

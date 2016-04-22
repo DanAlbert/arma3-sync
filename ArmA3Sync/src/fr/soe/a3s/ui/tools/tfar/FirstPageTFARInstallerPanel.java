@@ -230,7 +230,8 @@ public class FirstPageTFARInstallerPanel extends WizardDialog {
 		this.setPreferredSize(new Dimension(
 				facade.getMainPanel().getBounds().width,
 				this.getBounds().height));
-
+		this.pack();
+		
 		this.setLocationRelativeTo(facade.getMainPanel());
 
 		buttonSelectArmA3InstallationDirectory
@@ -283,7 +284,7 @@ public class FirstPageTFARInstallerPanel extends WizardDialog {
 
 		/* TS3 directory */
 		String ts3InstallationDirectoryPath = configurationService
-				.getAcreTS3installationFodler();
+				.getTfarTS3installationFodler();
 
 		if (ts3InstallationDirectoryPath != null) {
 			if (new File(ts3InstallationDirectoryPath).exists()) {

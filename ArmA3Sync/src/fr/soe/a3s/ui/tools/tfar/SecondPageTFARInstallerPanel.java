@@ -131,11 +131,11 @@ public class SecondPageTFARInstallerPanel extends WizardDialog {
 		this.pack();
 		this.setMinimumSize(new Dimension(
 				facade.getMainPanel().getBounds().width,
-				this.getBounds().height));
+				this.firstPageTFARInstallerPanel.getBounds().height));
 		this.setPreferredSize(new Dimension(
 				facade.getMainPanel().getBounds().width,
-				this.getBounds().height));
-
+				this.firstPageTFARInstallerPanel.getBounds().height));
+		this.pack();
 		this.setLocationRelativeTo(facade.getMainPanel());
 
 		buttonCopyPlugin.addActionListener(new ActionListener() {
