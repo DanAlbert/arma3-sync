@@ -184,6 +184,12 @@ public class ConnectionPanel extends JPanel {
 		textFieldHost.setText(ProtocolType.FTP.getPrompt());
 		textFieldPort.setText(ProtocolType.FTP.getDefaultPort());
 	}
+	
+	public void init(ProtocolType protocolType) {
+		
+		textFieldHost.setText(protocolType.getPrompt());
+		textFieldPort.setText(protocolType.getDefaultPort());
+	}
 
 	public void init(ProtocolDTO protocolDTO) {
 

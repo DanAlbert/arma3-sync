@@ -4,6 +4,8 @@ import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
 import javax.swing.BorderFactory;
 import javax.swing.ComboBoxModel;
@@ -11,12 +13,17 @@ import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
+import fr.soe.a3s.constant.ProtocolType;
+
 public class ProtocolPanel extends JPanel {
 
 	private JLabel labelProtocol;
 	private JComboBox comboBoxProtocol;
+	private ConnectionPanel connectionPanel;
 
-	public ProtocolPanel() {
+	public ProtocolPanel(ConnectionPanel connectionPanel) {
+
+		this.connectionPanel = connectionPanel;
 
 		this.setBorder(BorderFactory.createTitledBorder(
 				BorderFactory.createEtchedBorder(), "Protocol"));
@@ -51,9 +58,25 @@ public class ProtocolPanel extends JPanel {
 			c.insets = new Insets(0, 10, 10, 10);
 			panel.add(comboBoxProtocol, c);
 		}
+
+		comboBoxProtocol.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				comboBoxProtocolPerformed();
+			}
+		});
 	}
 
 	public void init(ComboBoxModel comboBoxProtocolModel) {
 		comboBoxProtocol.setModel(comboBoxProtocolModel);
+	}
+
+	private void comboBoxProtocolPerformed() {
+
+		String description = (String) this.comboBoxProtocol.getSelectedItem();
+		ProtocolType protocolType = ProtocolType.getEnum(description);
+		if (protocolType != null) {
+			this.connectionPanel.init(protocolType);
+		}
 	}
 }

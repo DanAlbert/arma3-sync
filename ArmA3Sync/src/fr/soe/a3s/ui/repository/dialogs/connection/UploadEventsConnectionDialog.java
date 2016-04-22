@@ -38,9 +38,9 @@ public class UploadEventsConnectionDialog extends AbstractDialog {
 			Box vBox = Box.createVerticalBox();
 			this.add(vBox, BorderLayout.CENTER);
 			{
-				protocolPanel = new ProtocolPanel();
-				vBox.add(protocolPanel);
 				connectionPanel = new ConnectionPanel();
+				protocolPanel = new ProtocolPanel(connectionPanel);
+				vBox.add(protocolPanel);
 				vBox.add(connectionPanel);
 			}
 		}

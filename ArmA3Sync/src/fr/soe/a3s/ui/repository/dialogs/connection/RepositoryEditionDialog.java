@@ -20,7 +20,7 @@ import fr.soe.a3s.ui.AbstractDialog;
 import fr.soe.a3s.ui.Facade;
 import fr.soe.a3s.ui.repository.dialogs.progress.ProgressSynchronizationDialog;
 
-public class RepositoryConnectionDialog extends AbstractDialog implements
+public class RepositoryEditionDialog extends AbstractDialog implements
 		DataAccessConstants {
 
 	private DescriptionPanel repositoryPanel;
@@ -32,7 +32,7 @@ public class RepositoryConnectionDialog extends AbstractDialog implements
 	/* Service */
 	private final RepositoryService repositoryService = new RepositoryService();
 
-	public RepositoryConnectionDialog(Facade facade) {
+	public RepositoryEditionDialog(Facade facade) {
 		super(facade, "Repository", true);
 		this.setResizable(false);
 
@@ -45,10 +45,10 @@ public class RepositoryConnectionDialog extends AbstractDialog implements
 			this.add(vBox, BorderLayout.CENTER);
 			{
 				repositoryPanel = new DescriptionPanel(this);
-				vBox.add(repositoryPanel);
-				protocolPanel = new ProtocolPanel();
-				vBox.add(protocolPanel);
 				connectionPanel = new ConnectionPanel();
+				protocolPanel = new ProtocolPanel(connectionPanel);
+				vBox.add(repositoryPanel);
+				vBox.add(protocolPanel);
 				vBox.add(connectionPanel);
 			}
 		}

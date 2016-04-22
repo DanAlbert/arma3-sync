@@ -40,7 +40,7 @@ import fr.soe.a3s.service.connection.ConnexionServiceFactory;
 
 public class DescriptionPanel extends JPanel {
 
-	private final RepositoryConnectionDialog repositoryConnectionDialog;
+	private final RepositoryEditionDialog repositoryConnectionDialog;
 	private JLabel labelRepositoryName;
 	private JTextField textFieldRepositoryName;
 	private JTextField textFieldAutoConfigUrl;
@@ -55,7 +55,7 @@ public class DescriptionPanel extends JPanel {
 	private boolean connexionCanceled = false;
 
 	public DescriptionPanel(
-			RepositoryConnectionDialog repositoryConnectionDialog) {
+			RepositoryEditionDialog repositoryConnectionDialog) {
 
 		this.repositoryConnectionDialog = repositoryConnectionDialog;
 

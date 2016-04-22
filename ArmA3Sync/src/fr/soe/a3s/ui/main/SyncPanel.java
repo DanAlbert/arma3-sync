@@ -52,7 +52,7 @@ import fr.soe.a3s.ui.ImageResizer;
 import fr.soe.a3s.ui.ImageResizer.Resizing;
 import fr.soe.a3s.ui.UIConstants;
 import fr.soe.a3s.ui.repository.RepositoryPanel;
-import fr.soe.a3s.ui.repository.dialogs.connection.RepositoryConnectionDialog;
+import fr.soe.a3s.ui.repository.dialogs.connection.RepositoryEditionDialog;
 import fr.soe.a3s.ui.repository.dialogs.progress.ProgressConnectionAsAdminDialog;
 import fr.soe.a3s.ui.repository.dialogs.progress.ProgressSynchronizationDialog;
 
@@ -428,7 +428,7 @@ public class SyncPanel extends JPanel implements UIConstants {
 	}
 
 	private void buttonNewPerformed() {
-		RepositoryConnectionDialog repositoryEditPanel = new RepositoryConnectionDialog(
+		RepositoryEditionDialog repositoryEditPanel = new RepositoryEditionDialog(
 				facade);
 		repositoryEditPanel.init();
 		repositoryEditPanel.setVisible(true);
@@ -454,7 +454,7 @@ public class SyncPanel extends JPanel implements UIConstants {
 		}
 		boolean closed = facade.getMainPanel().closeRepository(name);
 		if (closed) {
-			RepositoryConnectionDialog repositoryEditPanel = new RepositoryConnectionDialog(
+			RepositoryEditionDialog repositoryEditPanel = new RepositoryEditionDialog(
 					facade);
 			repositoryEditPanel.init(name);
 			repositoryEditPanel.setVisible(true);

@@ -38,11 +38,11 @@ public class UploadRepositoryConnectionDialog extends AbstractDialog {
 			Box vBox = Box.createVerticalBox();
 			this.add(vBox, BorderLayout.CENTER);
 			{
-				protocolPanel = new ProtocolPanel();
-				vBox.add(protocolPanel);
 				connectionPanel = new ConnectionPanel();
-				vBox.add(connectionPanel);
+				protocolPanel = new ProtocolPanel(connectionPanel);
 				optionsPanel = new OptionsPanel();
+				vBox.add(protocolPanel);
+				vBox.add(connectionPanel);
 				vBox.add(optionsPanel);
 			}
 		}
