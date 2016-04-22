@@ -1292,7 +1292,7 @@ public class MainPanel extends JFrame implements UIConstants {
 	public boolean closeRepository(String repositoryName) {
 
 		boolean isCheckingForAddons = repositoryService
-				.isChecking(repositoryName);
+				.isCheckingForAddons(repositoryName);
 		boolean isDownloading = repositoryService.isDownloading(repositoryName);
 		boolean isUploading = repositoryService.isUploading(repositoryName);
 		boolean isBuilding = repositoryService.isBuilding(repositoryName);
@@ -1326,7 +1326,7 @@ public class MainPanel extends JFrame implements UIConstants {
 					repositoryName, JOptionPane.INFORMATION_MESSAGE);
 		} else if (isChecking) {
 			JOptionPane.showMessageDialog(facade.getMainPanel(),
-					"Repository can't be closed.\nFiles are being checked.",
+					"Repository can't be closed.\nRepository is being checked.",
 					repositoryName, JOptionPane.INFORMATION_MESSAGE);
 		} else if (isBuilding) {
 			JOptionPane.showMessageDialog(facade.getMainPanel(),
