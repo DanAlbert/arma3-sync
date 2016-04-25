@@ -52,11 +52,11 @@ public abstract class AbstractConnexionDAO implements DataAccessConstants,
 
 	protected static final String UNKNOWN_HOST = "Host name cannot be reached."
 			+ "\n" + "Please checkout repository url, DNS and firewall.";
-	protected static final String CONNECTION_TIME_OUT_REACHED = "ArmA3Sync closed connection: Connection timeout reached."
+	protected static final String CONNECTION_TIME_OUT_REACHED = "Connection closed by ArmA3Sync: server didn't respond, connection timeout reached."
 			+ "\n" + "Please checkout the connection settings.";
-	protected static final String READ_TIME_OUT_REACHED = "ArmA3Sync closed connection: Read timeout reached."
+	protected static final String READ_TIME_OUT_REACHED = "Connection closed by ArmA3Sync: server didn't respond, read timeout reached."
 			+ "\n" + "Please checkout the connection settings.";
-	protected static final String TIME_OUT_REACHED = "ArmA3Sync closed connection: Connection or Read timeout reached."
+	protected static final String TIME_OUT_REACHED = "Connection closed by ArmA3Sync: server didn't respond, connection or read timeout reached."
 			+ "\n" + "Please checkout the connection settings.";
 	protected static final String CONNECTION_FAILED = "Connection failed.";
 	public static final String WRONG_LOGIN_PASSWORD = "login or password wrong or missing";
