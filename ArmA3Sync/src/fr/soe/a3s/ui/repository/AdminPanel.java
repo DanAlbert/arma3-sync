@@ -309,6 +309,13 @@ public class AdminPanel extends JPanel implements UIConstants {
 		}
 		vBox.add(Box.createVerticalStrut(3));
 
+		buttonSelectMainfolderPath.setPreferredSize(buttonBuildOptions
+				.getPreferredSize());
+		buttonBuild.setPreferredSize(buttonBuildOptions.getPreferredSize());
+		buttonCopyAutoConfigURL.setPreferredSize(buttonBuildOptions
+				.getPreferredSize());
+		buttonCheck.setPreferredSize(buttonBuildOptions.getPreferredSize());
+
 		buttonSelectMainfolderPath.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
