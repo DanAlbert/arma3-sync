@@ -51,7 +51,7 @@ public abstract class AbstractConnexionDAO implements DataAccessConstants,
 	protected double maximumClientDownloadSpeed = 0;
 
 	protected static final String UNKNOWN_HOST = "Host name cannot be reached."
-			+ "\n" + "Please checkout repository url, DNS and firewall.";
+			+ "\n" + "Please checkout repository url, server DNS and firewall.";
 	protected static final String CONNECTION_TIME_OUT_REACHED = "Connection closed by ArmA3Sync: server didn't respond, connection timeout reached."
 			+ "\n" + "Please checkout the connection settings.";
 	protected static final String READ_TIME_OUT_REACHED = "Connection closed by ArmA3Sync: server didn't respond, read timeout reached."
