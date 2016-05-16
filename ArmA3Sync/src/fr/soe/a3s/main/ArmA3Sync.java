@@ -175,7 +175,6 @@ public class ArmA3Sync implements DataAccessConstants {
 					+ " " + "true/false (with/without exact content matching)"
 					+ " : synchronize with repository.");
 			System.out.println("-UPDATE : check for ArmA3Sync updates.");
-
 		}
 	}
 
