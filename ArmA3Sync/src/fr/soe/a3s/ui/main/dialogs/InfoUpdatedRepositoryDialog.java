@@ -20,7 +20,7 @@ public class InfoUpdatedRepositoryDialog extends AbstractDialog {
 	private JScrollPane scrollPane;
 
 	public InfoUpdatedRepositoryDialog(Facade facade) {
-		super(facade, "Repository", false);
+		super(facade, "Repository", true);
 		this.setResizable(true);
 
 		{

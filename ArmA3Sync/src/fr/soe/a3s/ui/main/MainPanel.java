@@ -1076,15 +1076,6 @@ public class MainPanel extends JFrame implements UIConstants {
 
 		System.out.println("Checking repositories done.");
 
-		SwingUtilities.invokeLater(new Runnable() {
-			@Override
-			public void run() {
-				facade.getSyncPanel().init();
-				facade.getOnlinePanel().init();
-				facade.getLaunchPanel().init();
-			}
-		});
-
 		List<String> updatedRepositoryNames = new ArrayList<String>();
 		for (String repositoryName : repositoryNames) {
 			try {
@@ -1110,6 +1101,20 @@ public class MainPanel extends JFrame implements UIConstants {
 			infoUpdatedRepositoryPanel.init(updatedRepositoryNames);
 			infoUpdatedRepositoryPanel.setVisible(true);
 		}
+
+		SwingUtilities.invokeLater(new Runnable() {
+			@Override
+			public void run() {
+				String message = facade.getAddonsPanel().updateModsetSelection(
+						repositoryNames);
+				if (message != null) {
+					System.out.println(message);
+				}
+				facade.getSyncPanel().init();
+				facade.getOnlinePanel().init();
+				facade.getLaunchPanel().init();
+			}
+		});
 	}
 
 	public RepositoryPanel openRepository(final String repositoryName) {
@@ -1325,9 +1330,11 @@ public class MainPanel extends JFrame implements UIConstants {
 					"Repository can't be closed.\nFiles are being uploaded.",
 					repositoryName, JOptionPane.INFORMATION_MESSAGE);
 		} else if (isChecking) {
-			JOptionPane.showMessageDialog(facade.getMainPanel(),
-					"Repository can't be closed.\nRepository is being checked.",
-					repositoryName, JOptionPane.INFORMATION_MESSAGE);
+			JOptionPane
+					.showMessageDialog(
+							facade.getMainPanel(),
+							"Repository can't be closed.\nRepository is being checked.",
+							repositoryName, JOptionPane.INFORMATION_MESSAGE);
 		} else if (isBuilding) {
 			JOptionPane.showMessageDialog(facade.getMainPanel(),
 					"Repository can't be closed.\nRepository is being built.",

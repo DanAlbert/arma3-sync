@@ -164,7 +164,7 @@ public class AddonsPanel extends JPanel implements UIConstants {
 		int fontHeight = metrics.getAscent() + metrics.getDescent()
 				+ metrics.getLeading();
 		arbre1.setRowHeight(fontHeight);
-		
+
 		MyRenderer myRenderer = new MyRenderer();
 		arbre1.setCellRenderer(myRenderer);
 
@@ -957,14 +957,13 @@ public class AddonsPanel extends JPanel implements UIConstants {
 		return checkBoxTree;
 	}
 
-	public void updateModsetSelection(String repositoryName) {
+	public String updateModsetSelection(List<String> repositoryNames) {
 
-		List<String> list = new ArrayList<String>();
-		list.add(repositoryName);
-		updateModsetSelection(list);
-	}
+		this.arbre2.setEnabled(false);
 
-	public void updateModsetSelection(List<String> repositoryNames) {
+		System.out.println("Updating modset selection within addon groups.");
+
+		boolean change = false;
 
 		for (String repositoryName : repositoryNames) {
 			try {
@@ -1000,6 +999,7 @@ public class AddonsPanel extends JPanel implements UIConstants {
 								.setModsetRepositoryName(repositoryName);
 						racine2.addTreeNode(newTreeDirectoryDTO);
 						setSelectedPaths(newTreeDirectoryDTO, selectdAddonPaths);
+						change = true;
 					}
 				}
 
@@ -1069,6 +1069,7 @@ public class AddonsPanel extends JPanel implements UIConstants {
 							}
 							setSelectedPaths(newTreeDirectoryDTO,
 									selectdAddonPaths);
+							change = true;
 						}
 					}
 				}
@@ -1081,6 +1082,14 @@ public class AddonsPanel extends JPanel implements UIConstants {
 		updateAddonGroups();
 		facade.getAddonOptionsPanel().updateAddonPriorities();
 		facade.getLaunchOptionsPanel().updateRunParameters();
+		this.arbre2.setEnabled(true);
+
+		String message = null;
+
+		if (change) {
+			message = "Addon groups have been updated with repositories changes.";
+		}
+		return message;
 	}
 
 	public void selectModset(String modsetName) {

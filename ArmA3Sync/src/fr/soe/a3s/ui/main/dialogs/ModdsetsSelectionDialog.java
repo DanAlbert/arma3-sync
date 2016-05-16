@@ -168,7 +168,6 @@ public class ModdsetsSelectionDialog extends AbstractDialog {
 			}
 		}
 
-		// Check remote content of selected repositories
 		List<String> repositoryNamesForSync = new ArrayList<String>();
 		{
 			for (RepositoryDTO repositoryDTO : selectedRepositoryDTOs) {

@@ -1,6 +1,7 @@
 package fr.soe.a3s.ui.repository.workers;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -27,7 +28,6 @@ import fr.soe.a3s.ui.Facade;
 import fr.soe.a3s.ui.repository.DownloadPanel;
 import fr.soe.a3s.ui.repository.dialogs.error.HeaderErrorDialog;
 import fr.soe.a3s.ui.repository.dialogs.error.UnexpectedErrorDialog;
-import fr.soe.a3s.ui.repository.dialogs.progress.ProgressModsetsSynchronizationDialog;
 
 public class AddonsChecker extends Thread {
 
@@ -154,33 +154,15 @@ public class AddonsChecker extends Thread {
 			// 4. Update repository status
 			repositoryService.updateRepositoryRevision(repositoryName);
 
-			// 5. Update online panel and launch panel
-			SwingUtilities.invokeLater(new Runnable() {
-				@Override
-				public void run() {
-					facade.getSyncPanel().init();
-					facade.getOnlinePanel().init();
-					facade.getLaunchPanel().init();
-				}
-			});
-
 			if (!canceled) {
 
-				// 6. Update modset selection
-				if (performModsetsSynchronization) {
-					ProgressModsetsSynchronizationDialog progressModsetsSynchronizationPanel = new ProgressModsetsSynchronizationDialog(
-							facade);
-					progressModsetsSynchronizationPanel.setVisible(true);
-					progressModsetsSynchronizationPanel.init(repositoryName);
-				}
-
-				// 7. Update download panel tree
+				// 6. Update download panel tree
 				if (eventName != null) {
 					extractAddonSelectionForEventName();
 				}
 				downloadPanel.updateAddons(parent);
 
-				// 8. Display messages
+				// 7. Display messages
 				downloadPanel.getLabelCheckForAddonsStatus().setText(
 						"Finished!");
 
@@ -192,7 +174,29 @@ public class AddonsChecker extends Thread {
 							.setShowPartialFileTransferWarningMessage(false);
 				}
 
-				// 9. Save SHA1 computation on disk
+				// 5. Update online panel and launch panel
+				SwingUtilities.invokeLater(new Runnable() {
+					@Override
+					public void run() {
+						if (performModsetsSynchronization) {
+							List<String> list = new ArrayList<String>();
+							list.add(repositoryName);
+							String message = facade.getAddonsPanel()
+									.updateModsetSelection(list);
+							if (message != null) {
+								JOptionPane.showMessageDialog(
+										facade.getMainPanel(), message,
+										"Information",
+										JOptionPane.INFORMATION_MESSAGE);
+							}
+						}
+						facade.getSyncPanel().init();
+						facade.getOnlinePanel().init();
+						facade.getLaunchPanel().init();
+					}
+				});
+
+				// 8. Save SHA1 computation on disk
 				repositoryService.write(repositoryName);
 			}
 		} catch (Exception e) {
