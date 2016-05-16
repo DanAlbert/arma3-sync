@@ -174,7 +174,7 @@ public class AddonsChecker extends Thread {
 							.setShowPartialFileTransferWarningMessage(false);
 				}
 
-				// 5. Update online panel and launch panel
+				// 5. Update sync, online and launch panel
 				SwingUtilities.invokeLater(new Runnable() {
 					@Override
 					public void run() {
