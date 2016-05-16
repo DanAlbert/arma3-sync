@@ -27,8 +27,10 @@ import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
+import javax.swing.LookAndFeel;
 import javax.swing.SwingConstants;
 import javax.swing.UIManager;
+import javax.swing.UIManager.LookAndFeelInfo;
 import javax.swing.border.BevelBorder;
 import javax.swing.border.Border;
 import javax.swing.event.TableModelEvent;
@@ -47,6 +49,7 @@ import fr.soe.a3s.dto.RepositoryDTO;
 import fr.soe.a3s.exception.repository.RepositoryException;
 import fr.soe.a3s.exception.repository.RepositoryNotFoundException;
 import fr.soe.a3s.service.RepositoryService;
+import fr.soe.a3s.ui.ColumnsAutoSizer;
 import fr.soe.a3s.ui.Facade;
 import fr.soe.a3s.ui.ImageResizer;
 import fr.soe.a3s.ui.ImageResizer.Resizing;
@@ -130,15 +133,6 @@ public class SyncPanel extends JPanel implements UIConstants {
 						.createEtchedBorder(BevelBorder.LOWERED));
 				containerPanel1.add(scrollPane1, BorderLayout.CENTER);
 
-				TableColumn col1 = tableRepositories.getColumnModel()
-						.getColumn(1);
-				col1.setMinWidth(100);
-				col1.setMaxWidth(100);
-				TableColumn col2 = tableRepositories.getColumnModel()
-						.getColumn(2);
-				col2.setMinWidth(120);
-				col2.setMaxWidth(120);
-
 				// Adapt cells Height to font height
 				Font fontTable = UIManager.getFont("Table.font");
 				FontMetrics metrics = tableRepositories
@@ -147,6 +141,8 @@ public class SyncPanel extends JPanel implements UIConstants {
 						+ metrics.getLeading();
 				tableRepositories.setRowHeight(fontHeight);
 
+				TableColumn col2 = tableRepositories.getColumnModel()
+						.getColumn(2);
 				MyTableCellRenderer renderer = new MyTableCellRenderer();
 				renderer.setHorizontalAlignment(SwingConstants.CENTER);
 				col2.setCellRenderer(renderer);
@@ -411,6 +407,12 @@ public class SyncPanel extends JPanel implements UIConstants {
 
 		listEvents.setListData(tab);
 
+		// Re-adjust columns size
+		List<Integer> columnIndexes = new ArrayList<Integer>();
+		columnIndexes.add(1);
+		columnIndexes.add(2);
+		ColumnsAutoSizer.sizeColumnsToFit(tableRepositories, columnIndexes);
+
 		tableRepositories.setRowSelectionAllowed(true);
 		tableRepositories.setEnabled(true);
 		listEvents.setEnabled(true);
@@ -428,6 +430,7 @@ public class SyncPanel extends JPanel implements UIConstants {
 	}
 
 	private void buttonNewPerformed() {
+
 		RepositoryEditionDialog repositoryEditPanel = new RepositoryEditionDialog(
 				facade);
 		repositoryEditPanel.init();
