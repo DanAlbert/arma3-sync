@@ -1,5 +1,6 @@
 package fr.soe.a3s.ui.repository.workers;
 
+import java.awt.Color;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -482,11 +483,14 @@ public class AddonsDownloader extends Thread implements DataAccessConstants {
 		/* End Message */
 		if (errors == null) {
 			downloadPanel.getLabelDownloadStatus().setText("Finished!");
+			downloadPanel.getLabelDownloadStatus().setForeground(
+					DownloadPanel.GREEN);
 			JOptionPane.showMessageDialog(facade.getMainPanel(),
 					"Download is finished.", "Download",
 					JOptionPane.INFORMATION_MESSAGE);
 		} else {
 			downloadPanel.getLabelDownloadStatus().setText("Error!");
+			downloadPanel.getLabelDownloadStatus().setForeground(Color.RED);
 			downloadPanel.showDownloadReport();
 		}
 
@@ -847,6 +851,8 @@ public class AddonsDownloader extends Thread implements DataAccessConstants {
 
 		initDownloadPanelForEndDownload();
 		downloadPanel.getLabelDownloadStatus().setText("Canceled!");
+		downloadPanel.getLabelDownloadStatus().setForeground(
+				DownloadPanel.GREEN);
 		downloadPanel.checkForAddons();
 		terminate();
 	}
@@ -859,6 +865,8 @@ public class AddonsDownloader extends Thread implements DataAccessConstants {
 		}
 
 		downloadPanel.getLabelDownloadStatus().setText("Paused...");
+		downloadPanel.getLabelDownloadStatus().setForeground(
+				DownloadPanel.GREEN);
 		downloadPanel.getButtonAdvancedConfiguration().setEnabled(true);
 		terminate();
 	}

@@ -131,9 +131,10 @@ public class DownloadPanel extends JPanel implements UIConstants {
 	private String eventName = null;
 	private boolean showPartialFileTransferWarningMessage = false;
 	private boolean performModsetsSynchronization = false;
-	
+
 	/* Const */
-	private final int PROGRESSBAR_HEIGHT = 18;
+	private static final int PROGRESSBAR_HEIGHT = 18;
+	public static final Color GREEN = new Color(45, 125, 45);
 
 	/* Services */
 	private final RepositoryService repositoryService = new RepositoryService();
@@ -167,7 +168,7 @@ public class DownloadPanel extends JPanel implements UIConstants {
 			labelCheckForAddonsStatus = new JLabel();
 			labelCheckForAddonsStatus.setFont(labelCheckForAddonsStatus
 					.getFont().deriveFont(Font.ITALIC));
-			labelCheckForAddonsStatus.setForeground(new Color(45, 125, 45));
+			labelCheckForAddonsStatus.setForeground(GREEN);
 			checkForAddonsLabelPanel.add(labelCheckForAddonsStatus);
 			vBox.add(checkForAddonsLabelPanel);
 		}
@@ -211,9 +212,9 @@ public class DownloadPanel extends JPanel implements UIConstants {
 			filesPanel.add(vBox2);
 			{
 				JLabel totalFilesUpdated = new JLabel("Total files to update: ");
-				totalFilesUpdated.setForeground(Color.red);
+				totalFilesUpdated.setForeground(Color.RED);
 				labelTotalFilesUpdatedValue = new JLabel();
-				labelTotalFilesUpdatedValue.setForeground(Color.red);
+				labelTotalFilesUpdatedValue.setForeground(Color.RED);
 				Box hBox = Box.createHorizontalBox();
 				hBox.add(totalFilesUpdated);
 				hBox.add(labelTotalFilesUpdatedValue);
@@ -254,7 +255,7 @@ public class DownloadPanel extends JPanel implements UIConstants {
 			labelDownloadStatus = new JLabel();
 			labelDownloadStatus.setFont(labelDownloadStatus.getFont()
 					.deriveFont(Font.ITALIC));
-			labelDownloadStatus.setForeground(new Color(45, 125, 45));
+			labelDownloadStatus.setForeground(GREEN);
 			downloadLabelPanel.add(labelDownloadStatus);
 			vBox.add(downloadLabelPanel);
 		}
@@ -461,13 +462,13 @@ public class DownloadPanel extends JPanel implements UIConstants {
 					BorderFactory.createEtchedBorder(), "Repository content"));
 			addonsPanel.add(tableScrollPane, BorderLayout.CENTER);
 			panel2.add(addonsPanel, BorderLayout.CENTER);
-			
+
 			Font fontArbre = UIManager.getFont("Tree.font");
 			FontMetrics metrics = arbre.getFontMetrics(fontArbre);
 			int fontHeight = metrics.getAscent() + metrics.getDescent()
 					+ metrics.getLeading();
 			arbre.setRowHeight(fontHeight);
-			
+
 			MyRendererRepository myRendererRepository = new MyRendererRepository();
 			arbre.setCellRenderer(myRendererRepository);
 			CheckTreeCellRendererRepository renderer = new CheckTreeCellRendererRepository(

@@ -1,5 +1,6 @@
 package fr.soe.a3s.ui.repository.workers;
 
+import java.awt.Color;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -165,6 +166,8 @@ public class AddonsChecker extends Thread {
 				// 7. Display messages
 				downloadPanel.getLabelCheckForAddonsStatus().setText(
 						"Finished!");
+				downloadPanel.getLabelCheckForAddonsStatus().setForeground(
+						DownloadPanel.GREEN);
 
 				if (header != null && showPartialFileTransferWarningMessage) {
 					HeaderErrorDialog dialog = new HeaderErrorDialog(facade,
@@ -204,11 +207,17 @@ public class AddonsChecker extends Thread {
 					.setIndeterminate(false);
 			if (e instanceof RepositoryException
 					|| e instanceof WritingException) {
+				downloadPanel.getLabelCheckForAddonsStatus().setText("Error!");
+				downloadPanel.getLabelCheckForAddonsStatus().setForeground(
+						Color.RED);
 				JOptionPane.showMessageDialog(facade.getMainPanel(),
 						e.getMessage(), "Check for Addons",
 						JOptionPane.ERROR_MESSAGE);
 			} else if (!canceled) {
 				e.printStackTrace();
+				downloadPanel.getLabelCheckForAddonsStatus().setText("Error!");
+				downloadPanel.getLabelCheckForAddonsStatus().setForeground(
+						Color.RED);
 				if (e instanceof RemoteRepositoryException
 						|| e instanceof IOException) {
 					JOptionPane.showMessageDialog(facade.getMainPanel(),
@@ -234,6 +243,8 @@ public class AddonsChecker extends Thread {
 
 		downloadPanel.getLabelCheckForAddonsStatus().setText(
 				"Checking files...");
+		downloadPanel.getLabelCheckForAddonsStatus().setForeground(
+				DownloadPanel.GREEN);
 		downloadPanel.getButtonCheckForAddonsStart().setEnabled(false);
 		downloadPanel.getComBoxDestinationFolder().setEnabled(false);
 		downloadPanel.getButtonAdvancedConfiguration().setEnabled(false);
@@ -281,6 +292,8 @@ public class AddonsChecker extends Thread {
 
 		downloadPanel.updateAddons(null);
 		downloadPanel.getLabelCheckForAddonsStatus().setText("Canceled!");
+		downloadPanel.getLabelCheckForAddonsStatus().setForeground(
+				DownloadPanel.GREEN);
 		initDownlaodPanelForEndCheck();
 		terminate();
 	}
