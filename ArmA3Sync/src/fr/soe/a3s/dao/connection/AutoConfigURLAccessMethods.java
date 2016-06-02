@@ -72,15 +72,16 @@ public class AutoConfigURLAccessMethods implements DataAccessConstants {
 		} else if (autoConfigURL.toLowerCase().trim()
 				.contains(ProtocolType.HTTPS.getPrompt())) {
 			protocolType = ProtocolType.HTTPS;
-		} else if (autoConfigURL.toLowerCase().trim()
-				.contains(ProtocolType.A3S.getPrompt())) {
-			protocolType = ProtocolType.A3S;
-		} else {
+		}
+		// else if (autoConfigURL.toLowerCase().trim()
+		// .contains(ProtocolType.A3S.getPrompt())) {
+		// protocolType = ProtocolType.A3S;
+		// }
+		else {
 			String message = "Invalid url or unsupported protocol." + "\n"
 					+ "Url must start with " + ProtocolType.FTP.getPrompt()
 					+ " or " + ProtocolType.HTTP.getPrompt() + " or  "
-					+ ProtocolType.HTTPS.getPrompt() + " or  "
-					+ ProtocolType.A3S.getPrompt();
+					+ ProtocolType.HTTPS.getPrompt();
 			throw new CheckException(message);
 		}
 
@@ -89,11 +90,13 @@ public class AutoConfigURLAccessMethods implements DataAccessConstants {
 		autoConfigURL = autoConfigURL.substring(protocolType.getPrompt()
 				.length());
 
-		if (protocolType.equals(ProtocolType.A3S)) {
-			return parseA3S(autoConfigURL);
-		} else {
-			return parseStandard(autoConfigURL, protocolType);
-		}
+		// if (protocolType.equals(ProtocolType.A3S)) {
+		// return parseA3S(autoConfigURL);
+		// } else {
+		// return parseStandard(autoConfigURL, protocolType);
+		// }
+
+		return parseStandard(autoConfigURL, protocolType);
 	}
 
 	/**
