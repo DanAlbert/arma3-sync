@@ -791,8 +791,22 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener,
 
 	private void buttonSelectArmAExePerformed() {
 
+		String arma3Path = profileService.getArma3ExePath();
+
+		boolean ok = true;
+		if (arma3Path == null) {
+			ok = false;
+		} else if ("".equals(arma3Path)) {
+			ok = false;
+		} else if (!(new File(arma3Path)).exists()) {
+			ok = false;
+		}
+
+		if (!ok) {
+			arma3Path = configurationService.determineArmA3Path();
+		}
+
 		JFileChooser fc = null;
-		String arma3Path = configurationService.determineArmA3Path();
 		if (arma3Path == null) {
 			fc = new JFileChooser();
 		} else {
@@ -804,7 +818,7 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener,
 			}
 		}
 
-		fc.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
+		fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
 		int returnVal = fc.showOpenDialog(LauncherOptionsPanel.this);
 		if (returnVal == JFileChooser.APPROVE_OPTION) {
 			File file = fc.getSelectedFile();
