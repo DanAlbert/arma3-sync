@@ -823,9 +823,12 @@ public class AddonsDownloader extends Thread implements DataAccessConstants {
 			if (!node.isLeaf()) {
 				SyncTreeDirectoryDTO directory = (SyncTreeDirectoryDTO) node;
 				if (directory.getName().toLowerCase().equals("userconfig")) {
-					if (directory.isUpdated() || directory.isChanged()) {
-						userconfigNode = directory;
-						break;
+					if (directory.getParent().getName()
+							.equals(SyncTreeDirectoryDTO.RACINE)) {
+						if (directory.isUpdated() || directory.isChanged()) {
+							userconfigNode = directory;
+							break;
+						}
 					}
 				}
 			}
