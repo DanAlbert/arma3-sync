@@ -261,10 +261,14 @@ public class AddonsDownloader extends Thread implements DataAccessConstants {
 			downloadPanel.getProgressBarDownloadSingleAddon().setIndeterminate(
 					false);
 			if (e instanceof RepositoryException) {
+				downloadPanel.getLabelDownloadStatus().setText("Error!");
+				downloadPanel.getLabelDownloadStatus().setForeground(Color.RED);
 				JOptionPane.showMessageDialog(facade.getMainPanel(),
 						e.getMessage(), "Download", JOptionPane.ERROR_MESSAGE);
 			} else if (!canceled) {
 				e.printStackTrace();
+				downloadPanel.getLabelDownloadStatus().setText("Error!");
+				downloadPanel.getLabelDownloadStatus().setForeground(Color.RED);
 				if (e instanceof IOException) {
 					JOptionPane.showMessageDialog(facade.getMainPanel(),
 							e.getMessage(), "Download",
@@ -287,6 +291,8 @@ public class AddonsDownloader extends Thread implements DataAccessConstants {
 	private void initDownloadPanelForStartDownload() {
 
 		downloadPanel.getLabelDownloadStatus().setText("Downloading...");
+		downloadPanel.getLabelDownloadStatus().setForeground(
+				DownloadPanel.GREEN);
 		downloadPanel.getComBoxDestinationFolder().setEnabled(false);
 		downloadPanel.getButtonAdvancedConfiguration().setEnabled(false);
 		downloadPanel.getLabelTotalFilesSizeValue().setText(
@@ -306,6 +312,8 @@ public class AddonsDownloader extends Thread implements DataAccessConstants {
 	private void initDownloadPanelForStartUncompressing() {
 
 		downloadPanel.getLabelDownloadStatus().setText("Uncompressing...");
+		downloadPanel.getLabelDownloadStatus().setForeground(
+				DownloadPanel.GREEN);
 		downloadPanel.getLabelSpeedValue().setText("");
 		downloadPanel.getLabelRemainingTimeValue().setText("");
 		downloadPanel.getLabelActiveConnectionsValue().setText("");
