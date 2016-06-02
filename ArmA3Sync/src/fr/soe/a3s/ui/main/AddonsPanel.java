@@ -957,7 +957,7 @@ public class AddonsPanel extends JPanel implements UIConstants {
 		return checkBoxTree;
 	}
 
-	public String updateModsetSelection(List<String> repositoryNames) {
+	public boolean updateModsetSelection(List<String> repositoryNames) {
 
 		this.arbre2.setEnabled(false);
 
@@ -1084,12 +1084,7 @@ public class AddonsPanel extends JPanel implements UIConstants {
 		facade.getLaunchOptionsPanel().updateRunParameters();
 		this.arbre2.setEnabled(true);
 
-		String message = null;
-
-		if (change) {
-			message = "Addon groups have been updated with repositories changes.";
-		}
-		return message;
+		return change;
 	}
 
 	public void selectModset(String modsetName) {

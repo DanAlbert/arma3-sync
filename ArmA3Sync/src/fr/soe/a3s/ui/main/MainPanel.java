@@ -1105,9 +1105,10 @@ public class MainPanel extends JFrame implements UIConstants {
 		SwingUtilities.invokeLater(new Runnable() {
 			@Override
 			public void run() {
-				String message = facade.getAddonsPanel().updateModsetSelection(
+				boolean change = facade.getAddonsPanel().updateModsetSelection(
 						repositoryNames);
-				if (message != null) {
+				if (change) {
+					String message = "Addon groups have been updated with repositories changes.";
 					System.out.println(message);
 				}
 				facade.getSyncPanel().init();

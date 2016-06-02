@@ -184,9 +184,10 @@ public class AddonsChecker extends Thread {
 						if (performModsetsSynchronization) {
 							List<String> list = new ArrayList<String>();
 							list.add(repositoryName);
-							String message = facade.getAddonsPanel()
+							boolean change = facade.getAddonsPanel()
 									.updateModsetSelection(list);
-							if (message != null) {
+							if (change) {
+								String message = "Addon groups have been updated with repository changes.";
 								JOptionPane.showMessageDialog(
 										facade.getMainPanel(), message,
 										"Information",
