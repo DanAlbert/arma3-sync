@@ -54,8 +54,7 @@ public class DescriptionPanel extends JPanel {
 	/* Test */
 	private boolean connexionCanceled = false;
 
-	public DescriptionPanel(
-			RepositoryEditionDialog repositoryConnectionDialog) {
+	public DescriptionPanel(RepositoryEditionDialog repositoryConnectionDialog) {
 
 		this.repositoryConnectionDialog = repositoryConnectionDialog;
 
@@ -259,6 +258,8 @@ public class DescriptionPanel extends JPanel {
 				AbstractProtocole protocol = null;
 				try {
 					protocol = AutoConfigURLAccessMethods.parse(url);
+					protocol.setConnectionTimeOut("0");
+					protocol.setReadTimeOut("0");
 				} catch (CheckException e) {
 					JOptionPane.showMessageDialog(repositoryConnectionDialog,
 							e.getMessage(), "Warning",
