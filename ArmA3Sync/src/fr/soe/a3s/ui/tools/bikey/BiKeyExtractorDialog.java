@@ -45,7 +45,7 @@ public class BiKeyExtractorDialog extends JDialog implements UIConstants {
 
 	public BiKeyExtractorDialog(Facade facade) {
 
-		super(facade.getMainPanel(), "Bikey extractor wizard", false);
+		super(facade.getMainPanel(), "Bikey extractor wizard", true);
 		this.facade = facade;
 		setIconImage(ICON);
 
