@@ -177,7 +177,7 @@ public class AddonsChecker extends Thread {
 							.setShowPartialFileTransferWarningMessage(false);
 				}
 
-				// 5. Update sync, online and launch panel
+				// 8. Update sync, online and launch panel
 				SwingUtilities.invokeLater(new Runnable() {
 					@Override
 					public void run() {
@@ -199,7 +199,7 @@ public class AddonsChecker extends Thread {
 					}
 				});
 
-				// 8. Save SHA1 computation on disk
+				// 9. Save SHA1 computation on disk
 				repositoryService.write(repositoryName);
 			}
 		} catch (Exception e) {
