@@ -76,7 +76,7 @@ public class ProgressSynchronizationDialog extends AbstractProgressDialog {
 					});
 				} else {
 					System.out
-							.println("Synchronization with repositories canceled.");
+							.println("Synchronization with repository canceled.");
 				}
 				terminate();
 			}
