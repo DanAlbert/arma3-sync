@@ -24,6 +24,7 @@ import fr.soe.a3s.dto.sync.SyncTreeNodeDTO;
 import fr.soe.a3s.exception.CheckException;
 import fr.soe.a3s.exception.repository.RepositoryException;
 import fr.soe.a3s.service.AddonService;
+import fr.soe.a3s.service.ProfileService;
 import fr.soe.a3s.service.RepositoryService;
 import fr.soe.a3s.service.connection.ConnexionService;
 import fr.soe.a3s.service.connection.ConnexionServiceFactory;
@@ -42,6 +43,7 @@ public class AddonsDownloader extends Thread implements DataAccessConstants {
 	/* Data */
 	private final String repositoryName;
 	private final SyncTreeDirectoryDTO racine;
+	private SyncTreeDirectoryDTO userconfigNode;
 	private long incrementedFilesSize;
 	private long totalExpectedFilesSize;
 	private long totalDiskFilesSize;
@@ -64,6 +66,7 @@ public class AddonsDownloader extends Thread implements DataAccessConstants {
 	private final RepositoryService repositoryService = new RepositoryService();
 	private ConnexionService connexionService;
 	private final AddonService addonService = new AddonService();
+	private final ProfileService profileService = new ProfileService();
 
 	public AddonsDownloader(Facade facade, String repositoryName,
 			SyncTreeDirectoryDTO racine, DownloadPanel downloadPanel) {
@@ -106,6 +109,9 @@ public class AddonsDownloader extends Thread implements DataAccessConstants {
 
 		// Determine @TFAR/@ACRE2 updates
 		determineTFARandACREupdates();
+
+		// Determine userconfig updates
+		determineUserconfigUpdates();
 
 		// Determine files variables
 		determineFilesVariables();
@@ -533,6 +539,84 @@ public class AddonsDownloader extends Thread implements DataAccessConstants {
 			}
 		}
 
+		/* Check for Userconfig Update */
+		if (errors == null) {
+			if (userconfigNode != null) {
+
+				File arma3Directory = null;
+				String arma3ExePath = profileService.getArma3ExePath();
+				if (arma3ExePath != null) {
+					if (!arma3ExePath.isEmpty()) {
+						arma3Directory = new File(arma3ExePath).getParentFile();
+					}
+				}
+
+				if (arma3Directory != null) {
+
+					String userconfigSourcePath = userconfigNode
+							.getDestinationPath()
+							+ "/"
+							+ userconfigNode.getName();
+					File userconfigSourceDirectory = new File(
+							userconfigSourcePath);
+
+					String userconfigTargetPath = arma3Directory + "/"
+							+ userconfigNode.getName();
+					File userconfigTargetDirectory = new File(
+							userconfigTargetPath);
+
+					if (userconfigSourceDirectory.exists()) {
+						if (!userconfigSourcePath.equals(userconfigTargetPath)) {
+							int response = JOptionPane
+									.showConfirmDialog(
+											facade.getMainPanel(),
+											"Userconfig folder have changed."
+													+ "\n"
+													+ "Apply changes into ArmA 3 installation directory?"
+													+ "\n\n"
+													+ "Note: extra local content wont be deleted.",
+											"Userconfig",
+											JOptionPane.OK_CANCEL_OPTION);
+
+							if (response == 0) {
+								userconfigTargetDirectory.mkdir();
+								if (!userconfigTargetDirectory.exists()) {
+									JOptionPane
+											.showMessageDialog(
+													facade.getMainPanel(),
+													"Failed to create directory: "
+															+ userconfigTargetDirectory
+																	.getAbsolutePath()
+															+ "\n"
+															+ "Please checkout file access permissions.",
+													"Userconfig",
+													JOptionPane.ERROR_MESSAGE);
+								} else {
+									try {
+										FileAccessMethods.copyDirectory(
+												userconfigSourceDirectory,
+												userconfigTargetDirectory);
+										JOptionPane
+												.showMessageDialog(
+														facade.getMainPanel(),
+														"Userconfig folder have been updated into ArmA 3 installation directory.",
+														"Userconfig",
+														JOptionPane.INFORMATION_MESSAGE);
+									} catch (IOException e) {
+										e.printStackTrace();
+										JOptionPane.showMessageDialog(
+												facade.getMainPanel(),
+												e.getMessage(), "Userconfig",
+												JOptionPane.ERROR_MESSAGE);
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+
 		/* */
 		initDownloadPanelForEndDownload();
 		downloadPanel.setPerformModsetsSynchronization(true);
@@ -728,6 +812,21 @@ public class AddonsDownloader extends Thread implements DataAccessConstants {
 				SyncTreeDirectoryDTO parent = node.getParent();
 				if (parent != null) {
 					checkTFARandACREupdate(parent);
+				}
+			}
+		}
+	}
+
+	private void determineUserconfigUpdates() {
+
+		for (SyncTreeNodeDTO node : listFilesToUpdate) {
+			if (!node.isLeaf()) {
+				SyncTreeDirectoryDTO directory = (SyncTreeDirectoryDTO) node;
+				if (directory.getName().toLowerCase().equals("userconfig")) {
+					if (directory.isUpdated() || directory.isChanged()) {
+						userconfigNode = directory;
+						break;
+					}
 				}
 			}
 		}

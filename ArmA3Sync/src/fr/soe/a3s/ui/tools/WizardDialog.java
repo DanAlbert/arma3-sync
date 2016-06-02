@@ -57,7 +57,7 @@ public abstract class WizardDialog extends JDialog implements UIConstants {
 
 	public WizardDialog(Facade facade, String title, String description,
 			Image image) {
-		super(facade.getMainPanel(), title, false);
+		super(facade.getMainPanel(), title, true);
 
 		this.facade = facade;
 		this.title = title;

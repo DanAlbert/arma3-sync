@@ -82,7 +82,7 @@ import fr.soe.a3s.ui.repository.RepositoryPanel;
 import fr.soe.a3s.ui.tools.acre.FirstPageACREInstallerDialog;
 import fr.soe.a3s.ui.tools.acre2.FirstPageACRE2InstallerDialog;
 import fr.soe.a3s.ui.tools.aia.AiaInstallerDialog;
-import fr.soe.a3s.ui.tools.bikey.BiKeyExtactorDialog;
+import fr.soe.a3s.ui.tools.bikey.BiKeyExtractorDialog;
 import fr.soe.a3s.ui.tools.rpt.RptViewerPanel;
 import fr.soe.a3s.ui.tools.tfar.FirstPageTFARInstallerPanel;
 
@@ -722,7 +722,7 @@ public class MainPanel extends JFrame implements UIConstants {
 
 	private void menuItemBikeyExtractorPerformed() {
 
-		BiKeyExtactorDialog biKeyExtactorPanel = new BiKeyExtactorDialog(facade);
+		BiKeyExtractorDialog biKeyExtactorPanel = new BiKeyExtractorDialog(facade);
 		biKeyExtactorPanel.init();
 		biKeyExtactorPanel.setVisible(true);
 	}

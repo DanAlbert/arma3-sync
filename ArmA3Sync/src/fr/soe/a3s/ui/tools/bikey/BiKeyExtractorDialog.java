@@ -31,7 +31,7 @@ import fr.soe.a3s.ui.Facade;
 import fr.soe.a3s.ui.ImagePanel;
 import fr.soe.a3s.ui.UIConstants;
 
-public class BiKeyExtactorDialog extends JDialog implements UIConstants {
+public class BiKeyExtractorDialog extends JDialog implements UIConstants {
 
 	protected Facade facade;
 	protected JButton buttonProceed, buttonClose;
@@ -43,7 +43,7 @@ public class BiKeyExtactorDialog extends JDialog implements UIConstants {
 	/* Services */
 	private final ConfigurationService configurationService = new ConfigurationService();
 
-	public BiKeyExtactorDialog(Facade facade) {
+	public BiKeyExtractorDialog(Facade facade) {
 
 		super(facade.getMainPanel(), "Bikey extractor wizard", false);
 		this.facade = facade;
@@ -199,7 +199,7 @@ public class BiKeyExtactorDialog extends JDialog implements UIConstants {
 
 		JFileChooser fc = new JFileChooser();
 		fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-		int returnVal = fc.showOpenDialog(BiKeyExtactorDialog.this);
+		int returnVal = fc.showOpenDialog(BiKeyExtractorDialog.this);
 		if (returnVal == JFileChooser.APPROVE_OPTION) {
 			File file = fc.getSelectedFile();
 			String path = file.getAbsolutePath();
@@ -213,7 +213,7 @@ public class BiKeyExtactorDialog extends JDialog implements UIConstants {
 
 		JFileChooser fc = new JFileChooser();
 		fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-		int returnVal = fc.showOpenDialog(BiKeyExtactorDialog.this);
+		int returnVal = fc.showOpenDialog(BiKeyExtractorDialog.this);
 		if (returnVal == JFileChooser.APPROVE_OPTION) {
 			File file = fc.getSelectedFile();
 			String path = file.getAbsolutePath();
