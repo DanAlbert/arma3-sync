@@ -543,6 +543,9 @@ public class AddonsDownloader extends Thread implements DataAccessConstants {
 		if (errors == null) {
 			if (userconfigNode != null) {
 
+				String defaultDownloadLocation = repositoryService
+						.getDefaultDownloadLocation(repositoryName);
+
 				File arma3Directory = null;
 				String arma3ExePath = profileService.getArma3ExePath();
 				if (arma3ExePath != null) {
@@ -552,41 +555,47 @@ public class AddonsDownloader extends Thread implements DataAccessConstants {
 				}
 
 				if (arma3Directory != null) {
+					if (!arma3Directory.getAbsolutePath().equals(
+							defaultDownloadLocation)) {
+						int response = JOptionPane
+								.showConfirmDialog(
+										facade.getMainPanel(),
+										"Userconfig folder have changed."
+												+ "\n"
+												+ "Apply changes into ArmA 3 installation directory?"
+												+ "\n\n"
+												+ "Note: extra local content wont be deleted.",
+										"Userconfig",
+										JOptionPane.OK_CANCEL_OPTION);
+						if (response == 0) {
+							String userconfigSourcePath = userconfigNode
+									.getDestinationPath()
+									+ "/"
+									+ userconfigNode.getName();
+							File userconfigSourceDirectory = new File(
+									userconfigSourcePath);
 
-					String userconfigSourcePath = userconfigNode
-							.getDestinationPath()
-							+ "/"
-							+ userconfigNode.getName();
-					File userconfigSourceDirectory = new File(
-							userconfigSourcePath);
+							String userconfigTargetPath = arma3Directory + "/"
+									+ userconfigNode.getName();
+							File userconfigTargetDirectory = new File(
+									userconfigTargetPath);
 
-					String userconfigTargetPath = arma3Directory + "/"
-							+ userconfigNode.getName();
-					File userconfigTargetDirectory = new File(
-							userconfigTargetPath);
-
-					if (userconfigSourceDirectory.exists()) {
-						if (!userconfigSourcePath.equals(userconfigTargetPath)) {
-							int response = JOptionPane
-									.showConfirmDialog(
-											facade.getMainPanel(),
-											"Userconfig folder have changed."
-													+ "\n"
-													+ "Apply changes into ArmA 3 installation directory?"
-													+ "\n\n"
-													+ "Note: extra local content wont be deleted.",
-											"Userconfig",
-											JOptionPane.OK_CANCEL_OPTION);
-
-							if (response == 0) {
+							if (!userconfigSourceDirectory.exists()) {
+								JOptionPane
+										.showMessageDialog(
+												facade.getMainPanel(),
+												"File not found:"
+														+ userconfigSourcePath,
+												"Userconfig",
+												JOptionPane.ERROR_MESSAGE);
+							} else {
 								userconfigTargetDirectory.mkdir();
 								if (!userconfigTargetDirectory.exists()) {
 									JOptionPane
 											.showMessageDialog(
 													facade.getMainPanel(),
 													"Failed to create directory: "
-															+ userconfigTargetDirectory
-																	.getAbsolutePath()
+															+ userconfigTargetPath
 															+ "\n"
 															+ "Please checkout file access permissions.",
 													"Userconfig",
@@ -787,16 +796,16 @@ public class AddonsDownloader extends Thread implements DataAccessConstants {
 	private void determineTFARandACREupdates() {
 
 		for (SyncTreeNodeDTO node : listFilesToUpdate) {
-			checkTFARandACREupdate(node);
+			checkTFARandACREupdates(node);
 		}
 	}
 
-	private void checkTFARandACREupdate(SyncTreeNodeDTO node) {
+	private void checkTFARandACREupdates(SyncTreeNodeDTO node) {
 
 		if (node.isLeaf()) {
 			SyncTreeDirectoryDTO parent = node.getParent();
 			if (parent != null) {
-				checkTFARandACREupdate(parent);
+				checkTFARandACREupdates(parent);
 			}
 		} else {
 			SyncTreeDirectoryDTO directory = (SyncTreeDirectoryDTO) node;
@@ -811,7 +820,7 @@ public class AddonsDownloader extends Thread implements DataAccessConstants {
 			} else {
 				SyncTreeDirectoryDTO parent = node.getParent();
 				if (parent != null) {
-					checkTFARandACREupdate(parent);
+					checkTFARandACREupdates(parent);
 				}
 			}
 		}
@@ -820,16 +829,29 @@ public class AddonsDownloader extends Thread implements DataAccessConstants {
 	private void determineUserconfigUpdates() {
 
 		for (SyncTreeNodeDTO node : listFilesToUpdate) {
+			checkUserconfigUpdates(node);
+		}
+	}
+
+	private void checkUserconfigUpdates(SyncTreeNodeDTO node) {
+
+		if (!node.isLeaf()) {
+			SyncTreeDirectoryDTO directory = (SyncTreeDirectoryDTO) node;
+			if (directory.getName().toLowerCase().equals("userconfig")) {
+				if (directory.getParent().getName()
+						.equals(SyncTreeDirectoryDTO.RACINE)) {
+					if (directory.isUpdated() || directory.isChanged()) {
+						userconfigNode = directory;
+					}
+				}
+			}
+		}
+
+		if (userconfigNode == null) {
 			if (!node.isLeaf()) {
 				SyncTreeDirectoryDTO directory = (SyncTreeDirectoryDTO) node;
-				if (directory.getName().toLowerCase().equals("userconfig")) {
-					if (directory.getParent().getName()
-							.equals(SyncTreeDirectoryDTO.RACINE)) {
-						if (directory.isUpdated() || directory.isChanged()) {
-							userconfigNode = directory;
-							break;
-						}
-					}
+				if (directory.getParent() != null) {
+					checkUserconfigUpdates(directory.getParent());
 				}
 			}
 		}
