@@ -673,14 +673,6 @@ public class RepositoryService extends ObjectDTOtransformer implements
 		}
 	}
 
-	public void setOutOfSync(String repositoryName, boolean value) {
-
-		Repository repository = repositoryDAO.getMap().get(repositoryName);
-		if (repository != null) {
-			repository.setOutOfSynk(value);
-		}
-	}
-
 	public void setDownloading(String repositoryName, boolean value) {
 		Repository repository = repositoryDAO.getMap().get(repositoryName);
 		if (repository != null) {
@@ -711,14 +703,12 @@ public class RepositoryService extends ObjectDTOtransformer implements
 	}
 
 	public void saveTransfertParameters(String repositoryName,
-			long incrementedFilesSize, int lastIndexFileDownloaded,
-			boolean resume) {
+			long incrementedFilesSize, int lastIndexFileDownloaded) {
 
 		Repository repository = repositoryDAO.getMap().get(repositoryName);
 		if (repository != null) {
 			repository.setIncrementedFilesSize(incrementedFilesSize);
 			repository.setLastIndexFileDonwloaded(lastIndexFileDownloaded);
-			repository.setResume(resume);
 		}
 	}
 
@@ -729,24 +719,6 @@ public class RepositoryService extends ObjectDTOtransformer implements
 			return repository.getLastIndexFileTransfered();
 		} else {
 			return 0;
-		}
-	}
-
-	public long getIncrementedFilesSize(String repositoryName) {
-		Repository repository = repositoryDAO.getMap().get(repositoryName);
-		if (repository != null) {
-			return repository.getIncrementedFilesSize();
-		} else {
-			return 0;
-		}
-	}
-
-	public boolean isResume(String repositoryName) {
-		Repository repository = repositoryDAO.getMap().get(repositoryName);
-		if (repository != null) {
-			return repository.isResume();
-		} else {
-			return false;
 		}
 	}
 

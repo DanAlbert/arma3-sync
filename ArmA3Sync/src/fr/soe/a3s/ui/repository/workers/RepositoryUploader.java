@@ -303,10 +303,9 @@ public class RepositoryUploader extends Thread implements DataAccessConstants {
 		} finally {
 			if (canceled) {
 				repositoryService.saveTransfertParameters(repositoryName,
-						incrementedFilesSize, lastIndexFileUploaded, true);
+						incrementedFilesSize, lastIndexFileUploaded);
 			} else {
-				repositoryService.saveTransfertParameters(repositoryName, 0, 0,
-						false);
+				repositoryService.saveTransfertParameters(repositoryName, 0, 0);
 			}
 			if (connexionService != null) {
 				connexionService.cancel();

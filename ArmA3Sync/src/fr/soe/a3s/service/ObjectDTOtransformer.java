@@ -253,7 +253,6 @@ public class ObjectDTOtransformer {
 		repositoryDTO.setPath(repository.getPath());
 		repositoryDTO.setRevision(repository.getRevision());
 		repositoryDTO.setAutoConfigURL(repository.getAutoConfigURL());
-		repositoryDTO.setOutOfSynk(repository.isOutOfSynk());
 		return repositoryDTO;
 	}
 

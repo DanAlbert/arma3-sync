@@ -46,9 +46,6 @@ public class RepositoryBuilder extends Thread {
 		// Set building state
 		repositoryService.setBuilding(repositoryName, true);
 
-		// Reset upload repository state
-		repositoryService.saveTransfertParameters(repositoryName, 0, 0, false);
-
 		adminPanel.getBuildProgressBar().setIndeterminate(true);
 
 		repositoryService.getRepositoryBuilderDAO().addObserverText(

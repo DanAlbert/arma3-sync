@@ -20,12 +20,15 @@ public class Repository implements Serializable {
 
 	private String name;// not null
 	private AbstractProtocole protocole;// not null
+	private AbstractProtocole proxyProtocole;
+	private AbstractProtocole bitTorrentProtocole;
 	private boolean notify = false;
 	private int revision;
 	private String path;
 	private String autoConfigURL;
 	private String defaultDownloadLocation;
-	private boolean outOfSynk = false;
+	@Deprecated
+	private final boolean outOfSynk = false;
 	private boolean noAutoDiscover = true;
 	private boolean exactMatch = false;
 
@@ -39,13 +42,11 @@ public class Repository implements Serializable {
 	private transient Changelogs changelogs;// Gets from remote location
 	private transient Events events;// Gets from remote location
 	private transient AutoConfig autoConfig;// Gets from remote location
-
-	/** Local data: SHA1 computation for Client synchronization */
 	private Map<String, FileAttributes> mapFilesForSync = new HashMap<String, FileAttributes>();// <Path,FileAttrbutes>
 
 	/** Repository download */
-	private int numberOfClientConnections = 0;
-	private double maximumClientDownloadSpeed = 0;
+	private int numberOfClientConnections;
+	private double maximumClientDownloadSpeed;
 	private transient String downloadReport;
 	private transient boolean downloading = false;
 
@@ -58,7 +59,6 @@ public class Repository implements Serializable {
 	private transient AutoConfig localAutoConfig;
 	private transient Events localEvents;
 	private transient boolean uploading;
-	private transient boolean resume;
 	private transient int lastIndexFileTransfered;
 	private transient long incrementedFilesSize;
 
@@ -70,15 +70,10 @@ public class Repository implements Serializable {
 	private Set<String> excludedFilesFromBuild = new HashSet<String>();
 	private Set<String> excludedFoldersFromSync = new HashSet<String>();
 	private transient boolean building = false;
+	private Map<String, FileAttributes> mapFilesForBuild = new HashMap<String, FileAttributes>();// <Path,FileAttrbutes>
 
 	/** Repository check */
 	private transient boolean checking = false;
-
-	/** Local data: SHA1 computation for Build repository */
-	private Map<String, FileAttributes> mapFilesForBuild = new HashMap<String, FileAttributes>();// <Path,FileAttrbutes>
-
-	/** BitTorrent */
-	private AbstractProtocole bitTorrentProtocole;
 
 	public Repository(String name, AbstractProtocole protocole) {
 		this.name = name;
@@ -165,14 +160,6 @@ public class Repository implements Serializable {
 		this.defaultDownloadLocation = defaultDownloadLocation;
 	}
 
-	public boolean isOutOfSynk() {
-		return outOfSynk;
-	}
-
-	public void setOutOfSynk(boolean outOfSynk) {
-		this.outOfSynk = outOfSynk;
-	}
-
 	public boolean isDownloading() {
 		return downloading;
 	}
@@ -195,14 +182,6 @@ public class Repository implements Serializable {
 
 	public void setIncrementedFilesSize(long incrementedFilesSize) {
 		this.incrementedFilesSize = incrementedFilesSize;
-	}
-
-	public void setResume(boolean value) {
-		this.resume = value;
-	}
-
-	public boolean isResume() {
-		return resume;
 	}
 
 	public Changelogs getChangelogs() {

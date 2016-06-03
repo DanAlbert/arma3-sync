@@ -125,12 +125,10 @@ public class RepositoryChecker extends Thread implements DataAccessConstants {
 				this.adminPanel.getCheckProgressBar().setValue(100);
 				this.adminPanel.getCheckProgressBar().setString("100%");
 				if (errors.isEmpty()) {
-					this.repositoryService.setOutOfSync(repositoryName, false);
 					JOptionPane.showMessageDialog(facade.getMainPanel(),
 							"Repository is synchronized.", "Check repository",
 							JOptionPane.INFORMATION_MESSAGE);
 				} else {
-					repositoryService.setOutOfSync(repositoryName, true);
 					ErrorsListDialog dialog = new ErrorsListDialog(facade,
 							"Check repository",
 							"Check repository finished with errors:", errors,

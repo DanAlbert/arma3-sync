@@ -1,7 +1,5 @@
 package fr.soe.a3s.dto;
 
-import fr.soe.a3s.domain.repository.SyncTreeLeaf;
-
 public class RepositoryDTO implements java.lang.Comparable {
 
 	private String name;
@@ -10,7 +8,6 @@ public class RepositoryDTO implements java.lang.Comparable {
 	private int revision;
 	private String path;
 	private String autoConfigURL;
-	private boolean outOfSynk;
 	private ProtocolDTO repositoryUploadProtocoleDTO;
 
 	public String getName() {
@@ -59,14 +56,6 @@ public class RepositoryDTO implements java.lang.Comparable {
 
 	public void setAutoConfigURL(String autoConfigURL) {
 		this.autoConfigURL = autoConfigURL;
-	}
-
-	public boolean isOutOfSynk() {
-		return outOfSynk;
-	}
-
-	public void setOutOfSynk(boolean outOfSynk) {
-		this.outOfSynk = outOfSynk;
 	}
 
 	public ProtocolDTO getRepositoryUploadProtocoleDTO() {
