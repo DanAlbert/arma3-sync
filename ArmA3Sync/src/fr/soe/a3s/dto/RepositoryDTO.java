@@ -9,6 +9,7 @@ public class RepositoryDTO implements java.lang.Comparable {
 	private String path;
 	private String autoConfigURL;
 	private ProtocolDTO repositoryUploadProtocoleDTO;
+	private ProtocolDTO repositoryProxyProtocoleDTO;
 
 	public String getName() {
 		return name;
@@ -65,6 +66,15 @@ public class RepositoryDTO implements java.lang.Comparable {
 	public void setRepositoryUploadProtocoleDTO(
 			ProtocolDTO repositoryUploadProtocoleDTO) {
 		this.repositoryUploadProtocoleDTO = repositoryUploadProtocoleDTO;
+	}
+
+	public ProtocolDTO getRepositoryProxyProtocoleDTO() {
+		return repositoryProxyProtocoleDTO;
+	}
+
+	public void setRepositoryProxyProtocoleDTO(
+			ProtocolDTO repositoryProxyProtocoleDTO) {
+		this.repositoryProxyProtocoleDTO = repositoryProxyProtocoleDTO;
 	}
 
 	@Override

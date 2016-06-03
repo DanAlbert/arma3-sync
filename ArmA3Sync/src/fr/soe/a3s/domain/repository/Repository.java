@@ -17,7 +17,6 @@ public class Repository implements Serializable {
 	 * 
 	 */
 	private static final long serialVersionUID = -8142021113361619970L;
-
 	private String name;// not null
 	private AbstractProtocole protocole;// not null
 	private AbstractProtocole proxyProtocole;
@@ -274,8 +273,6 @@ public class Repository implements Serializable {
 		this.uploadProtocole = uploadProtocole;
 	}
 
-	/* Local files */
-
 	public SyncTreeDirectory getLocalSync() {
 		return localSync;
 	}
@@ -410,5 +407,13 @@ public class Repository implements Serializable {
 
 	public void setMaximumClientDownloadSpeed(double maximumClientDownloadSpeed) {
 		this.maximumClientDownloadSpeed = maximumClientDownloadSpeed;
+	}
+
+	public AbstractProtocole getProxyProtocole() {
+		return proxyProtocole;
+	}
+
+	public void setProxyProtocole(AbstractProtocole proxyProtocole) {
+		this.proxyProtocole = proxyProtocole;
 	}
 }

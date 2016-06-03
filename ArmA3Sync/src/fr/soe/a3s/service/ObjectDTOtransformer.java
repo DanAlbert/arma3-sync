@@ -245,7 +245,27 @@ public class ObjectDTOtransformer {
 			repositoryDTO
 					.setRepositoryUploadProtocoleDTO(repositoryUploadProtocoleDTO);
 		}
-		//
+		// Repository proxy protocole
+		ProtocolDTO repositoryProxyProtocoleDTO = new ProtocolDTO();
+		if (repository.getProxyProtocole() != null) {
+			repositoryProxyProtocoleDTO.setUrl(repository.getProxyProtocole()
+					.getUrl());
+			repositoryProxyProtocoleDTO.setLogin(repository.getProxyProtocole()
+					.getLogin());
+			repositoryProxyProtocoleDTO.setPassword(repository
+					.getProxyProtocole().getPassword());
+			repositoryProxyProtocoleDTO.setPort(repository.getProxyProtocole()
+					.getPort());
+			repositoryProxyProtocoleDTO.setProtocolType(repository
+					.getProxyProtocole().getProtocolType());
+			repositoryProxyProtocoleDTO.setConnectionTimeOut(repository
+					.getProxyProtocole().getConnectionTimeOut());
+			repositoryProxyProtocoleDTO.setReadTimeOut(repository
+					.getProxyProtocole().getReadTimeOut());
+			repositoryDTO
+					.setRepositoryProxyProtocoleDTO(repositoryProxyProtocoleDTO);
+		}
+
 		repositoryDTO.setPath(repository.getPath());
 		repositoryDTO.setRevision(repository.getRevision());
 		repositoryDTO.setAutoConfigURL(repository.getAutoConfigURL());
