@@ -27,10 +27,8 @@ import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
-import javax.swing.LookAndFeel;
 import javax.swing.SwingConstants;
 import javax.swing.UIManager;
-import javax.swing.UIManager.LookAndFeelInfo;
 import javax.swing.border.BevelBorder;
 import javax.swing.border.Border;
 import javax.swing.event.TableModelEvent;
@@ -455,12 +453,14 @@ public class SyncPanel extends JPanel implements UIConstants {
 			name = (String) model.getValueAt(index, 0);
 		} catch (Exception e) {
 		}
-		boolean closed = facade.getMainPanel().closeRepository(name);
-		if (closed) {
-			RepositoryEditionDialog repositoryEditPanel = new RepositoryEditionDialog(
-					facade);
-			repositoryEditPanel.init(name);
-			repositoryEditPanel.setVisible(true);
+		if (name != null) {
+			boolean closed = facade.getMainPanel().closeRepository(name);
+			if (closed) {
+				RepositoryEditionDialog repositoryEditPanel = new RepositoryEditionDialog(
+						facade);
+				repositoryEditPanel.init(name);
+				repositoryEditPanel.setVisible(true);
+			}
 		}
 	}
 
