@@ -18,6 +18,7 @@ public abstract class AbstractProtocole implements Serializable {
 	protected String url;
 	protected String port;
 	protected ProtocolType protocolType;
+	@Deprecated
 	protected EncryptionMode encryptionMode;
 	protected String connectionTimeOut;
 	protected String readTimeOut;
@@ -39,10 +40,6 @@ public abstract class AbstractProtocole implements Serializable {
 	}
 
 	public abstract ProtocolType getProtocolType();
-
-	public EncryptionMode getEncryptionMode() {
-		return encryptionMode;
-	}
 
 	public String getConnectionTimeOut() {
 		if (connectionTimeOut == null) {

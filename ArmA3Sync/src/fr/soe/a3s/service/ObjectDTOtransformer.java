@@ -219,8 +219,6 @@ public class ObjectDTOtransformer {
 		protocoleDTO.setLogin(repository.getProtocol().getLogin());
 		protocoleDTO.setPassword(repository.getProtocol().getPassword());
 		protocoleDTO.setPort(repository.getProtocol().getPort());
-		protocoleDTO.setEncryptionMode(repository.getProtocol()
-				.getEncryptionMode());
 		protocoleDTO
 				.setProtocolType(repository.getProtocol().getProtocolType());
 		protocoleDTO.setConnectionTimeOut(repository.getProtocol()
@@ -238,8 +236,6 @@ public class ObjectDTOtransformer {
 					.getUploadProtocole().getPassword());
 			repositoryUploadProtocoleDTO.setPort(repository
 					.getUploadProtocole().getPort());
-			repositoryUploadProtocoleDTO.setEncryptionMode(repository
-					.getUploadProtocole().getEncryptionMode());
 			repositoryUploadProtocoleDTO.setProtocolType(repository
 					.getUploadProtocole().getProtocolType());
 			repositoryUploadProtocoleDTO.setConnectionTimeOut(repository
@@ -266,8 +262,6 @@ public class ObjectDTOtransformer {
 		protocoleDTO.setPort(autoConfig.getProtocole().getPort());
 		protocoleDTO.setPassword(autoConfig.getProtocole().getPassword());
 		protocoleDTO.setLogin(autoConfig.getProtocole().getLogin());
-		protocoleDTO.setEncryptionMode(autoConfig.getProtocole()
-				.getEncryptionMode());
 		protocoleDTO.setProtocolType(autoConfig.getProtocole()
 				.getProtocolType());
 		protocoleDTO.setConnectionTimeOut(autoConfig.getProtocole()

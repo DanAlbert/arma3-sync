@@ -17,6 +17,7 @@ public abstract class AbstractDialog extends JDialog implements UIConstants {
 	protected final Facade facade;
 	protected JButton buttonOK;
 	protected JButton buttonCancel;
+	protected JPanel panelControl;
 
 	public AbstractDialog(Facade facade, String title, boolean modal) {
 		super(facade.getMainPanel(), title, modal);
@@ -39,12 +40,12 @@ public abstract class AbstractDialog extends JDialog implements UIConstants {
 				{
 					buttonOK = new JButton("OK");
 					buttonCancel = new JButton("Cancel");
-					JPanel panel = new JPanel();
+					panelControl = new JPanel();
 					FlowLayout flowLayout = new FlowLayout(FlowLayout.RIGHT);
-					panel.setLayout(flowLayout);
-					panel.add(buttonOK);
-					panel.add(buttonCancel);
-					vBox.add(panel);
+					panelControl.setLayout(flowLayout);
+					panelControl.add(buttonOK);
+					panelControl.add(buttonCancel);
+					vBox.add(panelControl);
 				}
 				this.add(vBox, BorderLayout.SOUTH);
 			}
