@@ -421,17 +421,7 @@ public class LaunchService {
 					String path = addon.getPath().toLowerCase();
 					addon.setAtArmA3InstallRoot(false);
 					if (path.equals(parentArma3ExePath)) {
-						addon.setPath("");
 						addon.setAtArmA3InstallRoot(true);
-					} else if (path.contains(parentArma3ExePath)) {
-						String parentPath = (new File(path)).getParentFile()
-								.getAbsolutePath();
-						if (parentPath.equals(parentArma3ExePath)) {
-							path = path
-									.substring(parentArma3ExePath.length() + 1);
-							addon.setPath(path);
-							addon.setAtArmA3InstallRoot(true);
-						}
 					}
 				}
 			}
@@ -464,16 +454,9 @@ public class LaunchService {
 			String path = list1.get(0).getPath();
 
 			if (list1.get(0).isAtArmA3InstallRoot()) {
-				if (path.isEmpty()) {
-					mods = mods + "-mod=";
-					for (Addon addon : list1) {
-						mods = mods + addon.getName() + ";";
-					}
-				} else {
-					for (Addon addon : list1) {
-						mods = mods + "-mod=" + path + "\\" + addon.getName()
-								+ ";";
-					}
+				mods = mods + "-mod=";
+				for (Addon addon : list1) {
+					mods = mods + addon.getName() + ";";
 				}
 			} else {
 				for (Addon addon : list1) {
