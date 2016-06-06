@@ -36,7 +36,7 @@ import fr.soe.a3s.exception.HttpException;
 public class MyHttpConnection {
 
 	private URLConnection urLConnection;
-	private final AbstractProtocole protocole;
+	private final AbstractProtocole protocole, proxyProtocole;
 	private final HttpDAO httpDAO;
 	private String rangeRequest;
 	private String boundary;
@@ -47,8 +47,10 @@ public class MyHttpConnection {
 	private long elapsedTime = 0;
 	private long allData = 0;
 
-	public MyHttpConnection(AbstractProtocole protocole, HttpDAO httpDAO) {
+	public MyHttpConnection(AbstractProtocole protocole,
+			AbstractProtocole proxyProtocole, HttpDAO httpDAO) {
 		this.protocole = protocole;
+		this.proxyProtocole = proxyProtocole;
 		this.httpDAO = httpDAO;
 	}
 
@@ -60,6 +62,8 @@ public class MyHttpConnection {
 	 * @throws IOException
 	 */
 	public void openConnection(String relativeUrl) throws IOException {
+
+		httpDAO.setProxy(proxyProtocole);
 
 		String hostname = protocole.getHostname();
 		String port = protocole.getPort();

@@ -75,9 +75,10 @@ public class BitTorrentService extends AbstractConnexionService implements
 	}
 
 	@Override
-	public AutoConfigDTO importAutoConfig(AbstractProtocole protocol)
-			throws IOException {
-		return centralConnexionService.importAutoConfig(protocol);
+	public AutoConfigDTO importAutoConfig(AbstractProtocole protocol,
+			AbstractProtocole proxyProtocol) throws IOException {
+		return centralConnexionService
+				.importAutoConfig(protocol, proxyProtocol);
 	}
 
 	@Override

@@ -31,6 +31,7 @@ import fr.soe.a3s.constant.ProtocolType;
 import fr.soe.a3s.dao.DataAccessConstants;
 import fr.soe.a3s.dao.connection.AutoConfigURLAccessMethods;
 import fr.soe.a3s.domain.AbstractProtocole;
+import fr.soe.a3s.domain.AbstractProtocoleFactory;
 import fr.soe.a3s.dto.AutoConfigDTO;
 import fr.soe.a3s.dto.ProtocolDTO;
 import fr.soe.a3s.exception.CheckException;
@@ -54,9 +55,9 @@ public class DescriptionPanel extends JPanel {
 	/* Test */
 	private boolean connexionCanceled = false;
 
-	public DescriptionPanel(RepositoryEditionDialog repositoryConnectionDialog) {
+	public DescriptionPanel(RepositoryEditionDialog repositoryEditionDialog) {
 
-		this.repositoryConnectionDialog = repositoryConnectionDialog;
+		this.repositoryConnectionDialog = repositoryEditionDialog;
 
 		this.setBorder(BorderFactory.createTitledBorder(
 				BorderFactory.createEtchedBorder(), "Repository"));
@@ -287,9 +288,22 @@ public class DescriptionPanel extends JPanel {
 						Font.ITALIC));
 				labelConnection.setForeground(Color.BLACK);
 
+				// Get Proxy protocol
+				AbstractProtocole proxyProtocol = null;
+				ProtocolDTO proxyProtocolDTO = repositoryConnectionDialog
+						.getProxyConfigurationDialog().getProxyProtocolDTO();
+				if (proxyProtocolDTO != null) {
+					proxyProtocol = AbstractProtocoleFactory.getProtocol(
+							proxyProtocolDTO.getUrl(),
+							proxyProtocolDTO.getPort(),
+							proxyProtocolDTO.getLogin(),
+							proxyProtocolDTO.getPassword(),
+							proxyProtocolDTO.getProtocolType());
+				}
+
 				try {
-					AutoConfigDTO autoConfigDTO = connexion
-							.importAutoConfig(protocol);
+					AutoConfigDTO autoConfigDTO = connexion.importAutoConfig(
+							protocol, proxyProtocol);
 					if (autoConfigDTO != null) {
 
 						labelConnection.setText("Connection success!");

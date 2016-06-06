@@ -13,6 +13,7 @@ import fr.soe.a3s.domain.AbstractProtocole;
 import fr.soe.a3s.domain.repository.AutoConfig;
 import fr.soe.a3s.domain.repository.Changelogs;
 import fr.soe.a3s.domain.repository.Events;
+import fr.soe.a3s.domain.repository.Repository;
 import fr.soe.a3s.domain.repository.ServerInfo;
 import fr.soe.a3s.domain.repository.SyncTreeDirectory;
 import fr.soe.a3s.dto.sync.SyncTreeLeafDTO;
@@ -29,7 +30,8 @@ public class HttpDAO extends AbstractConnexionDAO {
 	private MyHttpConnection myHttpConnection;
 
 	private void connect(AbstractProtocole protocole,
-			String relativePathFromRepository) throws IOException {
+			String relativePathFromRepository, AbstractProtocole proxyProtocole)
+			throws IOException {
 
 		// Determine the full relativeUrl
 		String remotePath = protocole.getRemotePath();
@@ -38,23 +40,27 @@ public class HttpDAO extends AbstractConnexionDAO {
 		}
 
 		// open connection
-		myHttpConnection = new MyHttpConnection(protocole, this);
+		myHttpConnection = new MyHttpConnection(protocole, proxyProtocole, this);
 		myHttpConnection.openConnection(remotePath);
 	}
 
-	public void connectToRepository(String repositoryName,
-			AbstractProtocole protocole, String relativePathFromRepository)
-			throws IOException {
+	public void connectToRepository(Repository repository,
+			String relativePathFromRepository) throws IOException {
 
 		boolean found = true;
 		try {
-			connect(protocole, relativePathFromRepository);
+			connect(repository.getProtocol(), relativePathFromRepository,
+					repository.getProxyProtocol());
 		} catch (IOException e) {
 			if (!canceled) {
 				String coreMessage = "Failed to connect to repository "
-						+ repositoryName + " on url: " + "\n"
-						+ protocole.getProtocolType().getPrompt()
-						+ protocole.getUrl() + relativePathFromRepository;
+						+ repository.getName()
+						+ " on url: "
+						+ "\n"
+						+ repository.getProtocol().getProtocolType()
+								.getPrompt()
+						+ repository.getProtocol().getUrl()
+						+ relativePathFromRepository;
 				IOException ioe = transferIOExceptionFactory(coreMessage, e);
 				throw ioe;
 			}
@@ -99,11 +105,12 @@ public class HttpDAO extends AbstractConnexionDAO {
 
 	private void downloadPartialFileWithRecordProgress(File file, String sha1,
 			String relativeFileUrl, String relativeZsyncFileUrl,
-			AbstractProtocole protocole) throws IOException {
+			AbstractProtocole protocole, AbstractProtocole proxyProtocole)
+			throws IOException {
 
 		try {
 			Jazsync.sync(file, sha1, relativeFileUrl, relativeZsyncFileUrl,
-					protocole, this);
+					protocole, proxyProtocole, this);
 		} catch (IOException e) {
 			String coreMessage = "Failed to retreive file " + relativeFileUrl;
 			IOException ioe = transferIOExceptionFactory(coreMessage, e);
@@ -115,16 +122,16 @@ public class HttpDAO extends AbstractConnexionDAO {
 		}
 	}
 
-	public SyncTreeDirectory downloadSync(String repositoryName,
-			AbstractProtocole protocole) throws IOException {
+	public SyncTreeDirectory downloadSync(Repository repository)
+			throws IOException {
 
 		SyncTreeDirectory sync = null;
-		File directory = new File(TEMP_FOLDER_PATH + "/" + repositoryName);
+		File directory = new File(TEMP_FOLDER_PATH + "/" + repository.getName());
 		File file = new File(directory + "/" + DataAccessConstants.SYNC);
 
 		try {
 			directory.mkdir();
-			connectToRepository(repositoryName, protocole, SYNC_FILE_PATH);
+			connectToRepository(repository, SYNC_FILE_PATH);
 			downloadFile(file, SYNC_FILE_PATH);
 			sync = A3SFilesAccessor.readSyncFile(file);
 		} finally {
@@ -133,16 +140,16 @@ public class HttpDAO extends AbstractConnexionDAO {
 		return sync;
 	}
 
-	public ServerInfo downloadSeverInfo(String repositoryName,
-			AbstractProtocole protocole) throws IOException {
+	public ServerInfo downloadSeverInfo(Repository repository)
+			throws IOException {
 
 		ServerInfo serverInfo = null;
-		File directory = new File(TEMP_FOLDER_PATH + "/" + repositoryName);
+		File directory = new File(TEMP_FOLDER_PATH + "/" + repository.getName());
 		File file = new File(directory + "/" + DataAccessConstants.SERVERINFO);
 
 		try {
 			directory.mkdir();
-			connectToRepository(repositoryName, protocole, SERVERINFO_FILE_PATH);
+			connectToRepository(repository, SERVERINFO_FILE_PATH);
 			downloadFile(file, SERVERINFO_FILE_PATH);
 			serverInfo = A3SFilesAccessor.readServerInfoFile(file);
 		} finally {
@@ -151,16 +158,16 @@ public class HttpDAO extends AbstractConnexionDAO {
 		return serverInfo;
 	}
 
-	public Changelogs downloadChangelogs(String repositoryName,
-			AbstractProtocole protocole) throws IOException {
+	public Changelogs downloadChangelogs(Repository repository)
+			throws IOException {
 
 		Changelogs changelogs = null;
-		File directory = new File(TEMP_FOLDER_PATH + "/" + repositoryName);
+		File directory = new File(TEMP_FOLDER_PATH + "/" + repository.getName());
 		File file = new File(directory + "/" + DataAccessConstants.CHANGELOGS);
 
 		try {
 			directory.mkdir();
-			connectToRepository(repositoryName, protocole, CHANGELOGS_FILE_PATH);
+			connectToRepository(repository, CHANGELOGS_FILE_PATH);
 			downloadFile(file, CHANGELOGS_FILE_PATH);
 			changelogs = A3SFilesAccessor.readChangelogsFile(file);
 		} finally {
@@ -169,16 +176,16 @@ public class HttpDAO extends AbstractConnexionDAO {
 		return changelogs;
 	}
 
-	public AutoConfig downloadAutoconfig(String repositoryName,
-			AbstractProtocole protocole) throws IOException {
+	public AutoConfig downloadAutoconfig(Repository repository)
+			throws IOException {
 
 		AutoConfig autoConfig = null;
-		File directory = new File(TEMP_FOLDER_PATH + "/" + repositoryName);
+		File directory = new File(TEMP_FOLDER_PATH + "/" + repository.getName());
 		File file = new File(directory + "/" + DataAccessConstants.AUTOCONFIG);
 
 		try {
 			directory.mkdir();
-			connectToRepository(repositoryName, protocole, AUTOCONFIG_FILE_PATH);
+			connectToRepository(repository, AUTOCONFIG_FILE_PATH);
 			downloadFile(file, AUTOCONFIG_FILE_PATH);
 			autoConfig = A3SFilesAccessor.readAutoConfigFile(file);
 		} finally {
@@ -187,16 +194,15 @@ public class HttpDAO extends AbstractConnexionDAO {
 		return autoConfig;
 	}
 
-	public Events downloadEvents(String repositoryName,
-			AbstractProtocole protocole) throws IOException {
+	public Events downloadEvents(Repository repository) throws IOException {
 
 		Events events = null;
-		File directory = new File(TEMP_FOLDER_PATH + "/" + repositoryName);
+		File directory = new File(TEMP_FOLDER_PATH + "/" + repository.getName());
 		File file = new File(directory + "/" + DataAccessConstants.EVENTS);
 
 		try {
 			directory.mkdir();
-			connectToRepository(repositoryName, protocole, EVENTS_FILE_PATH);
+			connectToRepository(repository, EVENTS_FILE_PATH);
 			downloadFile(file, EVENTS_FILE_PATH);
 			events = A3SFilesAccessor.readEventsFile(file);
 		} finally {
@@ -205,8 +211,8 @@ public class HttpDAO extends AbstractConnexionDAO {
 		return events;
 	}
 
-	public AutoConfig importAutoConfig(AbstractProtocole protocole)
-			throws IOException {
+	public AutoConfig importAutoConfig(AbstractProtocole protocole,
+			AbstractProtocole proxyProtocole) throws IOException {
 
 		AutoConfig autoConfig = null;
 		File directory = new File(TEMP_FOLDER_PATH);
@@ -214,7 +220,8 @@ public class HttpDAO extends AbstractConnexionDAO {
 		String relativePath = AUTOCONFIG_FILE_PATH;
 
 		try {
-			connect(protocole, "/" + DataAccessConstants.AUTOCONFIG);
+			connect(protocole, "/" + DataAccessConstants.AUTOCONFIG,
+					proxyProtocole);
 		} catch (IOException e) {
 			String coreMessage = "Failed to retreive file " + relativePath;
 			IOException ioe = transferIOExceptionFactory(coreMessage, e);
@@ -231,8 +238,7 @@ public class HttpDAO extends AbstractConnexionDAO {
 	}
 
 	@Override
-	public File downloadFile(String repositoryName,
-			AbstractProtocole protocole, String remotePath,
+	public File downloadFile(Repository repository, String remotePath,
 			String destinationPath, SyncTreeNodeDTO node)
 			throws ConnectException, IOException {
 
@@ -275,7 +281,7 @@ public class HttpDAO extends AbstractConnexionDAO {
 				leaf.setDownloadStatus(DownloadStatus.RUNNING);
 
 				try {
-					connectToRepository(repositoryName, protocole, relativePath);
+					connectToRepository(repository, relativePath);
 					downloadFileWithRecordProgress(downloadedFile, relativePath);
 					if (!canceled) {
 						updateObserverDownloadTotalSizeProgress();
@@ -314,7 +320,9 @@ public class HttpDAO extends AbstractConnexionDAO {
 
 				try {
 					downloadPartialFileWithRecordProgress(downloadedFile, sha1,
-							relativeFileUrl, relativeZsyncFileUrl, protocole);
+							relativeFileUrl, relativeZsyncFileUrl,
+							repository.getProtocol(),
+							repository.getProxyProtocol());
 					if (!canceled) {
 						updateObserverDownloadTotalSizeProgress();
 						node.setDownloadStatus(DownloadStatus.DONE);
@@ -342,8 +350,7 @@ public class HttpDAO extends AbstractConnexionDAO {
 	}
 
 	public double getFileCompletion(String remotePath, String destinationPath,
-			SyncTreeNodeDTO node, AbstractProtocole protocole)
-			throws IOException {
+			SyncTreeNodeDTO node, Repository repository) throws IOException {
 
 		File targetFile = new File(destinationPath + "/" + node.getName());
 
@@ -357,7 +364,8 @@ public class HttpDAO extends AbstractConnexionDAO {
 
 		try {
 			complete = Jazsync.getCompletion(targetFile, sha1,
-					relativeZsyncFileUrl, protocole, this);
+					relativeZsyncFileUrl, repository.getProtocol(),
+					repository.getProxyProtocol(), this);
 		} catch (IOException e) {
 			String coreMessage = "Failed to retreive file "
 					+ relativeZsyncFileUrl;
@@ -381,8 +389,7 @@ public class HttpDAO extends AbstractConnexionDAO {
 	 * @throws IOException
 	 */
 	@Override
-	public boolean fileExists(String repositoryName,
-			AbstractProtocole protocol, RemoteFile remoteFile)
+	public boolean fileExists(Repository repository, RemoteFile remoteFile)
 			throws IOException {
 
 		String fileName = remoteFile.getFilename();
@@ -397,7 +404,7 @@ public class HttpDAO extends AbstractConnexionDAO {
 
 		System.out.println("Checking remote file: " + relativeFilePath);
 
-		connectToRepository(repositoryName, protocol, relativeFilePath);
+		connectToRepository(repository, relativeFilePath);
 
 		boolean exists = false;
 		try {
@@ -432,12 +439,12 @@ public class HttpDAO extends AbstractConnexionDAO {
 		throw new UnsupportedOperationException();
 	}
 
-	public String checkPartialFileTransfer(String repositoryName,
-			AbstractProtocole protocole) throws IOException {
+	public String checkPartialFileTransfer(Repository repository)
+			throws IOException {
 
 		String header = null;
 		try {
-			connectToRepository(repositoryName, protocole, SYNC_FILE_PATH);
+			connectToRepository(repository, SYNC_FILE_PATH);
 			boolean accept = myHttpConnection.checkAcceptRanges();
 			if (!accept) {
 				header = myHttpConnection.getResponseHeader();

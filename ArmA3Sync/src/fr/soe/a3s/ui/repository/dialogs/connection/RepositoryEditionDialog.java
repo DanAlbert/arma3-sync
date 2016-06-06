@@ -30,6 +30,7 @@ public class RepositoryEditionDialog extends AbstractDialog implements
 	private ProtocolPanel protocolPanel;
 	private ConnectionPanel connectionPanel;
 	private JButton buttonProxy;
+	private ProxyConfigurationDialog proxyConfigurationDialog;
 	/* Data */
 	private String initialRepositoryName = null;
 	private DefaultComboBoxModel comboBoxProtocolModel = null;
@@ -49,6 +50,7 @@ public class RepositoryEditionDialog extends AbstractDialog implements
 			buttonOK.setPreferredSize(buttonCancel.getPreferredSize());
 			getRootPane().setDefaultButton(buttonOK);
 			buttonProxy.setPreferredSize(buttonCancel.getPreferredSize());
+			proxyConfigurationDialog = new ProxyConfigurationDialog(facade);
 		}
 		{
 			Box vBox = Box.createVerticalBox();
@@ -115,9 +117,9 @@ public class RepositoryEditionDialog extends AbstractDialog implements
 			RepositoryDTO repositoryDTO = repositoryService
 					.getRepository(repositoryName);
 			ProtocolDTO protocoleDTO = repositoryDTO.getProtocoleDTO();
-			connectionPanel.init(protocoleDTO);
 			ProtocolType protocole = protocoleDTO.getProtocolType();
 			comboBoxProtocolModel.setSelectedItem(protocole.getDescription());
+			connectionPanel.init(protocoleDTO);
 		} catch (RepositoryException e) {
 			e.printStackTrace();
 			JOptionPane.showMessageDialog(facade.getMainPanel(),
@@ -153,6 +155,11 @@ public class RepositoryEditionDialog extends AbstractDialog implements
 				repositoryService.createRepository(newRepositoryName, url,
 						port, login, password, protocolType);
 			}
+
+			ProtocolDTO proxyProtocolDTO = proxyConfigurationDialog
+					.getProxyProtocolDTO();
+			repositoryService.setProxyProtocol(newRepositoryName,
+					proxyProtocolDTO);
 			repositoryService.write(newRepositoryName);
 
 			this.dispose();
@@ -171,8 +178,6 @@ public class RepositoryEditionDialog extends AbstractDialog implements
 
 	private void buttonProxyPerformed() {
 
-		ProxyConfigurationDialog proxyConfigurationDialog = new ProxyConfigurationDialog(
-				facade);
 		proxyConfigurationDialog.init(this.initialRepositoryName);
 		proxyConfigurationDialog.setVisible(true);
 	}
@@ -195,5 +200,9 @@ public class RepositoryEditionDialog extends AbstractDialog implements
 
 	public DefaultComboBoxModel getComboBoxProtocolModel() {
 		return this.comboBoxProtocolModel;
+	}
+
+	public ProxyConfigurationDialog getProxyConfigurationDialog() {
+		return proxyConfigurationDialog;
 	}
 }

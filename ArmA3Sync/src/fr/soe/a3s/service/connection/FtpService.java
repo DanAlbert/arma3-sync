@@ -67,8 +67,7 @@ public class FtpService extends AbstractConnexionService implements
 
 		SyncTreeDirectory syncTreeDirectory = null;
 		try {
-			ftpDAOPool.get(0).connectToRepository(repository.getName(),
-					repository.getProtocol());
+			ftpDAOPool.get(0).connectToRepository(repository);
 			syncTreeDirectory = ftpDAOPool.get(0).downloadSync(repositoryName,
 					repository.getProtocol());
 		} finally {
@@ -88,8 +87,7 @@ public class FtpService extends AbstractConnexionService implements
 
 		ServerInfo serverInfo = null;
 		try {
-			ftpDAOPool.get(0).connectToRepository(repository.getName(),
-					repository.getProtocol());
+			ftpDAOPool.get(0).connectToRepository(repository);
 			serverInfo = ftpDAOPool.get(0).downloadSeverInfo(repositoryName,
 					repository.getProtocol());
 		} finally {
@@ -109,8 +107,7 @@ public class FtpService extends AbstractConnexionService implements
 
 		Changelogs changelogs = null;
 		try {
-			ftpDAOPool.get(0).connectToRepository(repository.getName(),
-					repository.getProtocol());
+			ftpDAOPool.get(0).connectToRepository(repository);
 			changelogs = ftpDAOPool.get(0).downloadChangelogs(repositoryName,
 					repository.getProtocol());
 		} finally {
@@ -130,8 +127,7 @@ public class FtpService extends AbstractConnexionService implements
 
 		AutoConfig autoConfig = null;
 		try {
-			ftpDAOPool.get(0).connectToRepository(repository.getName(),
-					repository.getProtocol());
+			ftpDAOPool.get(0).connectToRepository(repository);
 			autoConfig = ftpDAOPool.get(0).downloadAutoconfig(repositoryName,
 					repository.getProtocol());
 		} finally {
@@ -151,8 +147,7 @@ public class FtpService extends AbstractConnexionService implements
 
 		Events events = null;
 		try {
-			ftpDAOPool.get(0).connectToRepository(repository.getName(),
-					repository.getProtocol());
+			ftpDAOPool.get(0).connectToRepository(repository);
 			events = ftpDAOPool.get(0).downloadEvents(repositoryName,
 					repository.getProtocol());
 		} finally {
@@ -216,8 +211,8 @@ public class FtpService extends AbstractConnexionService implements
 	/* Import autoconfig */
 
 	@Override
-	public AutoConfigDTO importAutoConfig(AbstractProtocole protocol)
-			throws IOException {
+	public AutoConfigDTO importAutoConfig(AbstractProtocole protocol,
+			AbstractProtocole proxyProtocol) throws IOException {
 
 		System.out.println("Importing autoconfig from url: "
 				+ protocol.getProtocolType().getPrompt()
@@ -227,8 +222,8 @@ public class FtpService extends AbstractConnexionService implements
 
 		AutoConfigDTO autoConfigDTO = null;
 		try {
-			AutoConfig autoConfig = ftpDAOPool.get(0)
-					.importAutoConfig(protocol);
+			AutoConfig autoConfig = ftpDAOPool.get(0).importAutoConfig(
+					protocol, proxyProtocol);
 			if (autoConfig != null) {
 				updateFavoriteServersFromAutoconfig(autoConfig);
 				autoConfigDTO = transformAutoConfig2DTO(autoConfig);
@@ -299,8 +294,7 @@ public class FtpService extends AbstractConnexionService implements
 		}
 		boolean response = false;
 		try {
-			ftpDAOPool.get(0).connectToRepository(repository.getName(),
-					repository.getUploadProtocole());
+			ftpDAOPool.get(0).connectToRepository(repository);
 			ftpDAOPool.get(0).uploadEvents(repository.getEvents(),
 					repository.getUploadProtocole().getRemotePath());
 		} finally {
@@ -343,11 +337,10 @@ public class FtpService extends AbstractConnexionService implements
 		boolean withzsync = false;
 
 		try {
-			ftpDAOPool.get(0).connectToRepository(repository.getName(),
-					repository.getProtocol());
+			ftpDAOPool.get(0).connectToRepository(repository);
 			ConnectionCheckProcessor checkProcessor = new ConnectionCheckProcessor(
 					ftpDAOPool.get(0), filesToCheck, isCompressedPboFilesOnly,
-					withzsync, repositoryName, repository.getProtocol());
+					withzsync, repository);
 			checkProcessor.run();
 			return checkProcessor.getErrors();
 		} finally {
@@ -368,8 +361,7 @@ public class FtpService extends AbstractConnexionService implements
 
 		SyncTreeDirectory syncTreeDirectory = null;
 		try {
-			ftpDAOPool.get(0).connectToRepository(repository.getName(),
-					repository.getUploadProtocole());
+			ftpDAOPool.get(0).connectToRepository(repository);
 
 			syncTreeDirectory = ftpDAOPool.get(0).downloadSync(repositoryName,
 					repository.getUploadProtocole());
@@ -400,8 +392,7 @@ public class FtpService extends AbstractConnexionService implements
 
 		try {
 			// Connect
-			ftpDAOPool.get(0).connectToRepository(repository.getName(),
-					repository.getUploadProtocole());
+			ftpDAOPool.get(0).connectToRepository(repository);
 
 			/* Check remote files */
 			ftpDAOPool.get(0).updateObserverText("Checking remote files...");
@@ -409,8 +400,7 @@ public class FtpService extends AbstractConnexionService implements
 			ConnectionCheckProcessor checkProcessor = new ConnectionCheckProcessor(
 					ftpDAOPool.get(0), filesToCheck,
 					repository.isUploadCompressedPboFilesOnly(),
-					(repository.getProtocol() instanceof Http), repositoryName,
-					repository.getUploadProtocole());
+					(repository.getProtocol() instanceof Http), repository);
 			checkProcessor.run();
 
 			List<RemoteFile> missingRemoteFiles = checkProcessor
@@ -433,8 +423,7 @@ public class FtpService extends AbstractConnexionService implements
 
 			ConnectionDeleteProcessor deleteProcessor = new ConnectionDeleteProcessor(
 					ftpDAOPool.get(0), filesToDelete, false,
-					(repository.getProtocol() instanceof Http), repositoryName,
-					repository.getUploadProtocole());
+					(repository.getProtocol() instanceof Http), repository);
 			deleteProcessor.run();
 
 			/* Upload sync files */

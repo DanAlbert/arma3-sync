@@ -2,9 +2,12 @@ package fr.soe.a3s.ui.repository.dialogs.connection;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
 import javax.swing.Box;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.JButton;
 import javax.swing.JOptionPane;
 
 import fr.soe.a3s.constant.ProtocolType;
@@ -20,6 +23,8 @@ public class UploadRepositoryConnectionDialog extends AbstractDialog {
 	private ProtocolPanel protocolPanel;
 	private ConnectionPanel connectionPanel;
 	private OptionsPanel optionsPanel;
+	private ProxyConfigurationDialog proxyConfigurationDialog;
+	private JButton buttonProxy;
 	// Data
 	private String repositoryName;
 	private DefaultComboBoxModel comboBoxProtocolModel;
@@ -31,8 +36,15 @@ public class UploadRepositoryConnectionDialog extends AbstractDialog {
 		this.setResizable(false);
 
 		{
+			buttonProxy = new JButton("Proxy");
+			panelControl.removeAll();
+			panelControl.add(buttonProxy);
+			panelControl.add(buttonOK);
+			panelControl.add(buttonCancel);
 			buttonOK.setPreferredSize(buttonCancel.getPreferredSize());
 			getRootPane().setDefaultButton(buttonOK);
+			buttonProxy.setPreferredSize(buttonCancel.getPreferredSize());
+			proxyConfigurationDialog = new ProxyConfigurationDialog(facade);
 		}
 		{
 			Box vBox = Box.createVerticalBox();
@@ -46,6 +58,13 @@ public class UploadRepositoryConnectionDialog extends AbstractDialog {
 				vBox.add(optionsPanel);
 			}
 		}
+
+		buttonProxy.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				buttonProxyPerformed();
+			}
+		});
 
 		this.pack();
 		int height = this.getBounds().height;
@@ -116,6 +135,10 @@ public class UploadRepositoryConnectionDialog extends AbstractDialog {
 		try {
 			repositoryService.setRepositoryUploadProtocole(repositoryName, url,
 					port, login, password, protocolType, "0", "0");
+			ProtocolDTO proxyProtocolDTO = proxyConfigurationDialog
+					.getProxyProtocolDTO();
+			repositoryService
+					.setProxyProtocol(repositoryName, proxyProtocolDTO);
 			repositoryService.setUploadCompressedPboFilesOnly(repositoryName,
 					optionsPanel.isSelected());
 			repositoryService.write(repositoryName);
@@ -125,6 +148,12 @@ public class UploadRepositoryConnectionDialog extends AbstractDialog {
 			JOptionPane.showMessageDialog(this, e.getMessage(), "Error",
 					JOptionPane.ERROR_MESSAGE);
 		}
+	}
+
+	private void buttonProxyPerformed() {
+
+		proxyConfigurationDialog.init(repositoryName);
+		proxyConfigurationDialog.setVisible(true);
 	}
 
 	@Override

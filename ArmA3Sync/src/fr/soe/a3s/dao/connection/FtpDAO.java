@@ -31,6 +31,7 @@ import fr.soe.a3s.domain.AbstractProtocole;
 import fr.soe.a3s.domain.repository.AutoConfig;
 import fr.soe.a3s.domain.repository.Changelogs;
 import fr.soe.a3s.domain.repository.Events;
+import fr.soe.a3s.domain.repository.Repository;
 import fr.soe.a3s.domain.repository.ServerInfo;
 import fr.soe.a3s.domain.repository.SyncTreeDirectory;
 import fr.soe.a3s.dto.sync.SyncTreeLeafDTO;
@@ -44,8 +45,10 @@ public class FtpDAO extends AbstractConnexionDAO {
 	private int bufferSize = BUFFER_SIZE;
 	private long elapsedTime = 0;
 
-	private void connect(AbstractProtocole protocole) throws IOException,
-			FtpException {
+	private void connect(AbstractProtocole protocole,
+			AbstractProtocole proxyProtocole) throws IOException, FtpException {
+
+		super.setProxy(proxyProtocole);
 
 		String port = protocole.getPort();
 		String login = protocole.getLogin();
@@ -84,26 +87,31 @@ public class FtpDAO extends AbstractConnexionDAO {
 		}
 	}
 
-	public void connectToRepository(String repositoryName,
-			AbstractProtocole protocole) throws IOException {
+	public void connectToRepository(Repository repository) throws IOException {
 
 		try {
-			connect(protocole);
+			connect(repository.getProtocol(), repository.getProxyProtocol());
 		} catch (IOException e) {
 			if (!canceled) {
 				String coreMessage = "Failed to connect to repository "
-						+ repositoryName + " on url: " + "\n"
-						+ protocole.getProtocolType().getPrompt()
-						+ protocole.getUrl();
+						+ repository.getName()
+						+ " on url: "
+						+ "\n"
+						+ repository.getProtocol().getProtocolType()
+								.getPrompt()
+						+ repository.getProtocol().getUrl();
 				IOException ioe = transferIOExceptionFactory(coreMessage, e);
 				throw ioe;
 			}
 		} catch (FtpException e) {
 			if (!canceled) {
-				String message = "Server returned message " + e.getMessage()
-						+ " on url:" + "\n"
-						+ protocole.getProtocolType().getPrompt()
-						+ protocole.getUrl();
+				String message = "Server returned message "
+						+ e.getMessage()
+						+ " on url:"
+						+ "\n"
+						+ repository.getProtocol().getProtocolType()
+								.getPrompt()
+						+ repository.getProtocol().getUrl();
 				throw new ConnectException(message);
 			}
 		}
@@ -365,8 +373,9 @@ public class FtpDAO extends AbstractConnexionDAO {
 		return autoConfig;
 	}
 
-	public AutoConfig importAutoConfig(AbstractProtocole protocol)
-			throws ConnectException, IOException {
+	public AutoConfig importAutoConfig(AbstractProtocole protocol,
+			AbstractProtocole proxyProtocol) throws ConnectException,
+			IOException {
 
 		AutoConfig autoConfig = null;
 		File directory = new File(TEMP_FOLDER_PATH);
@@ -376,7 +385,7 @@ public class FtpDAO extends AbstractConnexionDAO {
 
 		try {
 			try {
-				connect(protocol);
+				connect(protocol, proxyProtocol);
 			} catch (IOException e) {
 				String coreMessage = "Failed to connect to url: " + "\n"
 						+ protocol.getProtocolType().getPrompt()
@@ -406,8 +415,7 @@ public class FtpDAO extends AbstractConnexionDAO {
 	}
 
 	@Override
-	public File downloadFile(String repositoryName,
-			AbstractProtocole protocole, String remotePath,
+	public File downloadFile(Repository repository, String remotePath,
 			String destinationPath, SyncTreeNodeDTO node) throws IOException {
 
 		File downloadedFile = null;
@@ -513,8 +521,7 @@ public class FtpDAO extends AbstractConnexionDAO {
 	}
 
 	@Override
-	public boolean fileExists(String repositoryName,
-			AbstractProtocole protocole, RemoteFile remoteFile)
+	public boolean fileExists(Repository repository, RemoteFile remoteFile)
 			throws IOException {
 
 		String fileName = remoteFile.getFilename();
@@ -523,11 +530,12 @@ public class FtpDAO extends AbstractConnexionDAO {
 
 		String relativeFilePath = "/" + relativeParentDirectoryPath + "/"
 				+ fileName;
-		String remoteParentDirectoryPath = protocole.getRemotePath() + "/"
-				+ relativeParentDirectoryPath;
+		String remoteParentDirectoryPath = repository.getProtocol()
+				.getRemotePath() + "/" + relativeParentDirectoryPath;
 		if (relativeParentDirectoryPath.isEmpty()) {
 			relativeFilePath = "/" + fileName;
-			remoteParentDirectoryPath = protocole.getRemotePath();
+			remoteParentDirectoryPath = repository.getProtocol()
+					.getRemotePath();
 		}
 
 		System.out.println("Checking remote file: " + relativeFilePath);

@@ -3,7 +3,7 @@ package fr.soe.a3s.dao.connection;
 import java.io.File;
 import java.io.IOException;
 
-import fr.soe.a3s.domain.AbstractProtocole;
+import fr.soe.a3s.domain.repository.Repository;
 import fr.soe.a3s.dto.sync.SyncTreeNodeDTO;
 
 public class BitTorrentDAO extends AbstractConnexionDAO {
@@ -15,8 +15,8 @@ public class BitTorrentDAO extends AbstractConnexionDAO {
 	}
 
 	@Override
-	public boolean fileExists(String name, AbstractProtocole protocol,
-			RemoteFile remoteFile) throws IOException {
+	public boolean fileExists(Repository repository, RemoteFile remoteFile)
+			throws IOException {
 		throw new UnsupportedOperationException();
 	}
 
@@ -27,14 +27,13 @@ public class BitTorrentDAO extends AbstractConnexionDAO {
 	}
 
 	@Override
-	public File downloadFile(String name, AbstractProtocole protocol,
-			String remotePath, String destinationPath, SyncTreeNodeDTO node) {
-		// TODO Auto-generated method stub
-		return null;
+	public File downloadFile(Repository repository, String remotePath,
+			String destinationPath, SyncTreeNodeDTO node) {
+		throw new UnsupportedOperationException();
 	}
 
 	@Override
 	public void disconnect() {
-
+		throw new UnsupportedOperationException();
 	}
 }

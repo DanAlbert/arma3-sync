@@ -2,11 +2,15 @@ package fr.soe.a3s.dao.connection;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.Authenticator;
+import java.net.ConnectException;
+import java.net.PasswordAuthentication;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
 import java.util.List;
 
+import fr.soe.a3s.constant.ProtocolType;
 import fr.soe.a3s.controller.ObservableCount;
 import fr.soe.a3s.controller.ObservableCountErrors;
 import fr.soe.a3s.controller.ObservableDownload;
@@ -20,6 +24,7 @@ import fr.soe.a3s.controller.ObserverText;
 import fr.soe.a3s.controller.ObserverUpload;
 import fr.soe.a3s.dao.DataAccessConstants;
 import fr.soe.a3s.domain.AbstractProtocole;
+import fr.soe.a3s.domain.repository.Repository;
 import fr.soe.a3s.dto.sync.SyncTreeLeafDTO;
 import fr.soe.a3s.dto.sync.SyncTreeNodeDTO;
 
@@ -63,7 +68,7 @@ public abstract class AbstractConnexionDAO implements DataAccessConstants,
 
 	/* Abstract Methods */
 
-	public abstract boolean fileExists(String name, AbstractProtocole protocol,
+	public abstract boolean fileExists(Repository repository,
 			RemoteFile remoteFile) throws IOException;
 
 	public abstract void deleteFile(RemoteFile remoteFile,
@@ -72,9 +77,8 @@ public abstract class AbstractConnexionDAO implements DataAccessConstants,
 	public abstract boolean uploadFile(RemoteFile remoteFile,
 			String repositoryPath, String remotePath) throws IOException;
 
-	public abstract File downloadFile(String name, AbstractProtocole protocol,
-			String remotePath, String destinationPath, SyncTreeNodeDTO node)
-			throws IOException;
+	public abstract File downloadFile(Repository repository, String remotePath,
+			String destinationPath, SyncTreeNodeDTO node) throws IOException;
 
 	public abstract void disconnect();
 
@@ -117,6 +121,47 @@ public abstract class AbstractConnexionDAO implements DataAccessConstants,
 				message = message + "\n" + e.getMessage();
 			}
 			return new IOException(message);
+		}
+	}
+
+	public void setProxy(AbstractProtocole proxyProtocole)
+			throws ConnectException {
+
+		if (proxyProtocole != null) {
+			if (proxyProtocole.getProtocolType().equals(ProtocolType.FTP)) {
+				System.setProperty("ftp.proxyHost", proxyProtocole.getUrl());
+				System.setProperty("ftp.proxyPort", proxyProtocole.getPort());
+
+			} else if (proxyProtocole.getProtocolType().equals(
+					ProtocolType.HTTP)) {
+				System.setProperty("http.proxyHost", proxyProtocole.getUrl());
+				System.setProperty("http.proxyPort", proxyProtocole.getPort());
+			} else if (proxyProtocole.getProtocolType().equals(
+					ProtocolType.HTTPS)) {
+				System.setProperty("https.proxyHost", proxyProtocole.getUrl());
+				System.setProperty("https.proxyPort", proxyProtocole.getPort());
+			} else {
+				throw new ConnectException("Unknown proxy protocol.");
+			}
+			Authenticator.setDefault(new MyAuthenticator(proxyProtocole
+					.getLogin(), proxyProtocole.getPassword()));
+		}
+	}
+
+	private class MyAuthenticator extends Authenticator {
+
+		private final String username;
+		private final String password;
+
+		public MyAuthenticator(String username, String password) {
+			super();
+			this.username = username;
+			this.password = password;
+		}
+
+		@Override
+		protected PasswordAuthentication getPasswordAuthentication() {
+			return new PasswordAuthentication(username, password.toCharArray());
 		}
 	}
 

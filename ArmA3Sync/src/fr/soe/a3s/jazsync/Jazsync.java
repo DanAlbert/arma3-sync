@@ -41,82 +41,85 @@ import fr.soe.a3s.jazsyncmake.MetaFileMaker;
  */
 public class Jazsync {
 
-    /**
-     * Generate .zsync file
-     * 
-     * @param sourcefile
-     * @param url
-     * @param sha1
-     * @throws Exception
-     */
-    public static void make(File sourcefile, File zsyncFile, String url, String sha1)
-            throws IOException {
+	/**
+	 * Generate .zsync file
+	 * 
+	 * @param sourcefile
+	 * @param url
+	 * @param sha1
+	 * @throws Exception
+	 */
+	public static void make(File sourcefile, File zsyncFile, String url,
+			String sha1) throws IOException {
 
-        assert (sourcefile != null);
-        assert (sourcefile.exists());
-        assert (!sourcefile.isDirectory());
-        assert (url != null);
-        assert (sha1 != null);
+		assert (sourcefile != null);
+		assert (sourcefile.exists());
+		assert (!sourcefile.isDirectory());
+		assert (url != null);
+		assert (sha1 != null);
 
-        MetaFileMaker mfm = new MetaFileMaker(sourcefile, zsyncFile, url, sha1);
-    }
+		MetaFileMaker mfm = new MetaFileMaker(sourcefile, zsyncFile, url, sha1);
+	}
 
-    /**
-     * Sync file with server
-     * 
-     * @param targetFile
-     * @param targetFileSha1
-     * @param relativeFileUrl
-     * @param relativeZsyncFileUrl
-     * @param hostname
-     * @param login
-     * @param password
-     * @param port
-     * @param readTimeOut
-     * @param connectionTimeOut
-     * @param resume
-     * @param httpDAO
-     * @throws HttpException
-     * @throws Exception
-     * @throws FileNotFoundException
-     */
-    public static void sync(File targetFile, String targetFileSha1, String targetRelativeFileUrl,
-            String relativeZsyncFileUrl, AbstractProtocole protocole, HttpDAO httpDAO)
-            throws IOException, HttpException {
+	/**
+	 * Sync file with server
+	 * 
+	 * @param targetFile
+	 * @param targetFileSha1
+	 * @param relativeFileUrl
+	 * @param relativeZsyncFileUrl
+	 * @param hostname
+	 * @param login
+	 * @param password
+	 * @param port
+	 * @param readTimeOut
+	 * @param connectionTimeOut
+	 * @param resume
+	 * @param httpDAO
+	 * @throws HttpException
+	 * @throws Exception
+	 * @throws FileNotFoundException
+	 */
+	public static void sync(File targetFile, String targetFileSha1,
+			String targetRelativeFileUrl, String relativeZsyncFileUrl,
+			AbstractProtocole protocole, AbstractProtocole proxyProtocole,
+			HttpDAO httpDAO) throws IOException, HttpException {
 
-        assert (targetFile != null);
-        assert (relativeZsyncFileUrl != null);
+		assert (targetFile != null);
+		assert (relativeZsyncFileUrl != null);
 
-        MyHttpConnection http = new MyHttpConnection(protocole, httpDAO);
-        httpDAO.setConnexion(http);
-        MetaFileReader mfr = new MetaFileReader(relativeZsyncFileUrl, http);
-        FileMaker fm = new FileMaker(mfr, http);
-        fm.sync(targetFile, targetFileSha1, targetRelativeFileUrl);
-    }
+		MyHttpConnection http = new MyHttpConnection(protocole, proxyProtocole,
+				httpDAO);
+		httpDAO.setConnexion(http);
+		MetaFileReader mfr = new MetaFileReader(relativeZsyncFileUrl, http);
+		FileMaker fm = new FileMaker(mfr, http);
+		fm.sync(targetFile, targetFileSha1, targetRelativeFileUrl);
+	}
 
-    /**
-     * Determine file completion in %
-     * 
-     * @throws HttpException
-     * @throws Exception
-     */
-    public static double getCompletion(File targetFile, String targetFileSha1,
-            String relativeZsyncFileUrl, AbstractProtocole protocole, HttpDAO httpDAO)
-            throws IOException, HttpException {
+	/**
+	 * Determine file completion in %
+	 * 
+	 * @throws HttpException
+	 * @throws Exception
+	 */
+	public static double getCompletion(File targetFile, String targetFileSha1,
+			String relativeZsyncFileUrl, AbstractProtocole protocole,
+			AbstractProtocole proxyProtocole, HttpDAO httpDAO)
+			throws IOException, HttpException {
 
-        assert (targetFile != null);
-        assert (relativeZsyncFileUrl != null);
+		assert (targetFile != null);
+		assert (relativeZsyncFileUrl != null);
 
-        if (!targetFile.exists()) {
-            return 0;
-        }
-        else {
-            MyHttpConnection http = new MyHttpConnection(protocole, httpDAO);
-            httpDAO.setConnexion(http);
-            MetaFileReader mfr = new MetaFileReader(relativeZsyncFileUrl, http);
-            FileMaker fm = new FileMaker(mfr, http);
-            double completion = fm.getCompletion(targetFile, targetFileSha1);
-            return completion;
-        }
-    }
+		if (!targetFile.exists()) {
+			return 0;
+		} else {
+			MyHttpConnection http = new MyHttpConnection(protocole,
+					proxyProtocole, httpDAO);
+			httpDAO.setConnexion(http);
+			MetaFileReader mfr = new MetaFileReader(relativeZsyncFileUrl, http);
+			FileMaker fm = new FileMaker(mfr, http);
+			double completion = fm.getCompletion(targetFile, targetFileSha1);
+			return completion;
+		}
+	}
 }

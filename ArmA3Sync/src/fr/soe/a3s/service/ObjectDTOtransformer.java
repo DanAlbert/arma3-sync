@@ -247,21 +247,21 @@ public class ObjectDTOtransformer {
 		}
 		// Repository proxy protocole
 		ProtocolDTO repositoryProxyProtocoleDTO = new ProtocolDTO();
-		if (repository.getProxyProtocole() != null) {
-			repositoryProxyProtocoleDTO.setUrl(repository.getProxyProtocole()
+		if (repository.getProxyProtocol() != null) {
+			repositoryProxyProtocoleDTO.setUrl(repository.getProxyProtocol()
 					.getUrl());
-			repositoryProxyProtocoleDTO.setLogin(repository.getProxyProtocole()
+			repositoryProxyProtocoleDTO.setLogin(repository.getProxyProtocol()
 					.getLogin());
 			repositoryProxyProtocoleDTO.setPassword(repository
-					.getProxyProtocole().getPassword());
-			repositoryProxyProtocoleDTO.setPort(repository.getProxyProtocole()
+					.getProxyProtocol().getPassword());
+			repositoryProxyProtocoleDTO.setPort(repository.getProxyProtocol()
 					.getPort());
 			repositoryProxyProtocoleDTO.setProtocolType(repository
-					.getProxyProtocole().getProtocolType());
+					.getProxyProtocol().getProtocolType());
 			repositoryProxyProtocoleDTO.setConnectionTimeOut(repository
-					.getProxyProtocole().getConnectionTimeOut());
+					.getProxyProtocol().getConnectionTimeOut());
 			repositoryProxyProtocoleDTO.setReadTimeOut(repository
-					.getProxyProtocole().getReadTimeOut());
+					.getProxyProtocol().getReadTimeOut());
 			repositoryDTO
 					.setProxyProtocoleDTO(repositoryProxyProtocoleDTO);
 		}

@@ -1,29 +1,24 @@
 package fr.soe.a3s.dao.connection.processors;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 
 import fr.soe.a3s.dao.connection.AbstractConnexionDAO;
 import fr.soe.a3s.dao.connection.RemoteFile;
-import fr.soe.a3s.domain.AbstractProtocole;
 import fr.soe.a3s.domain.repository.Repository;
-import fr.soe.a3s.dto.sync.SyncTreeLeafDTO;
 import fr.soe.a3s.dto.sync.SyncTreeNodeDTO;
 
 public class ConnectionDeleteProcessor extends AbstractConnectionProcessor {
 
-	private String repositoryName;
-	private AbstractProtocole protocole;
+	private final Repository repository;
 
 	public ConnectionDeleteProcessor(AbstractConnexionDAO abstractConnexionDAO,
 			List<SyncTreeNodeDTO> filesToDelete,
 			boolean isCompressedPboFilesOnly, boolean withzsync,
-			String repositoryName, AbstractProtocole protocole) {
+			Repository repository) {
 		super(abstractConnexionDAO, filesToDelete, isCompressedPboFilesOnly,
 				withzsync);
-		this.repositoryName = repositoryName;
-		this.protocole = protocole;
+		this.repository = repository;
 	}
 
 	public void run() throws IOException {
@@ -38,11 +33,11 @@ public class ConnectionDeleteProcessor extends AbstractConnectionProcessor {
 			if (abstractConnexionDAO.isCanceled()) {
 				break;
 			} else {
-				boolean found = abstractConnexionDAO.fileExists(repositoryName,
-						protocole, remoteFile);
+				boolean found = abstractConnexionDAO.fileExists(repository,
+						remoteFile);
 				if (found) {
-					abstractConnexionDAO.deleteFile(remoteFile,
-							protocole.getRemotePath());
+					abstractConnexionDAO.deleteFile(remoteFile, repository
+							.getProtocol().getRemotePath());
 				}
 				count++;
 				abstractConnexionDAO.setCount(count);

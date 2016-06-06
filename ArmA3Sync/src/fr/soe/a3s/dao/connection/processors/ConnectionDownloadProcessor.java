@@ -169,12 +169,10 @@ public class ConnectionDownloadProcessor implements DataAccessConstants {
 			if (!downloadFilesStack.isEmpty()) {// nb files < nb connections
 				try {
 					if (connexionDAO instanceof FtpDAO) {
-						((FtpDAO) connexionDAO).connectToRepository(
-								repository.getName(), repository.getProtocol());
+						((FtpDAO) connexionDAO).connectToRepository(repository);
 					} else if (connexionDAO instanceof HttpDAO) {
 						((HttpDAO) connexionDAO).connectToRepository(
-								repository.getName(), repository.getProtocol(),
-								SYNC_FILE_PATH);
+								repository, SYNC_FILE_PATH);
 						((HttpDAO) connexionDAO).disconnect();
 					}
 					connexionDAO.updateObserverProceed();
@@ -217,8 +215,8 @@ public class ConnectionDownloadProcessor implements DataAccessConstants {
 			}
 		}
 
-		return connexionDAO.downloadFile(repository.getName(),
-				repository.getProtocol(), remotePath, destinationPath, node);
+		return connexionDAO.downloadFile(repository, remotePath,
+				destinationPath, node);
 	}
 
 	private synchronized void addError(Exception e) {

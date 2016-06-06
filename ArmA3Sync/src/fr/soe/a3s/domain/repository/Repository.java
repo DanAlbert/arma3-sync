@@ -409,7 +409,7 @@ public class Repository implements Serializable {
 		this.maximumClientDownloadSpeed = maximumClientDownloadSpeed;
 	}
 
-	public AbstractProtocole getProxyProtocole() {
+	public AbstractProtocole getProxyProtocol() {
 		return proxyProtocole;
 	}
 

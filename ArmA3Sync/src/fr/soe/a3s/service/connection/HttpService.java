@@ -63,8 +63,7 @@ public class HttpService extends AbstractConnexionService implements
 
 		SyncTreeDirectory syncTreeDirectory = null;
 		try {
-			syncTreeDirectory = httpDAOPool.get(0).downloadSync(repositoryName,
-					repository.getProtocol());
+			syncTreeDirectory = httpDAOPool.get(0).downloadSync(repository);
 		} finally {
 			repository.setSync(syncTreeDirectory);
 			httpDAOPool.get(0).disconnect();
@@ -82,8 +81,7 @@ public class HttpService extends AbstractConnexionService implements
 
 		ServerInfo serverInfo = null;
 		try {
-			serverInfo = httpDAOPool.get(0).downloadSeverInfo(
-					repository.getName(), repository.getProtocol());
+			serverInfo = httpDAOPool.get(0).downloadSeverInfo(repository);
 		} finally {
 			repository.setServerInfo(serverInfo);
 			httpDAOPool.get(0).disconnect();
@@ -101,8 +99,7 @@ public class HttpService extends AbstractConnexionService implements
 
 		Changelogs changelogs = null;
 		try {
-			changelogs = httpDAOPool.get(0).downloadChangelogs(
-					repository.getName(), repository.getProtocol());
+			changelogs = httpDAOPool.get(0).downloadChangelogs(repository);
 		} finally {
 			repository.setChangelogs(changelogs);
 			httpDAOPool.get(0).disconnect();
@@ -120,8 +117,7 @@ public class HttpService extends AbstractConnexionService implements
 
 		AutoConfig autoConfig = null;
 		try {
-			autoConfig = httpDAOPool.get(0).downloadAutoconfig(
-					repository.getName(), repository.getProtocol());
+			autoConfig = httpDAOPool.get(0).downloadAutoconfig(repository);
 		} finally {
 			repository.setAutoConfig(autoConfig);
 			httpDAOPool.get(0).disconnect();
@@ -139,8 +135,7 @@ public class HttpService extends AbstractConnexionService implements
 
 		Events events = null;
 		try {
-			events = httpDAOPool.get(0).downloadEvents(repository.getName(),
-					repository.getProtocol());
+			events = httpDAOPool.get(0).downloadEvents(repository);
 		} finally {
 			repository.setEvents(events);
 			httpDAOPool.get(0).disconnect();
@@ -202,8 +197,8 @@ public class HttpService extends AbstractConnexionService implements
 	/* Import autoconfig */
 
 	@Override
-	public AutoConfigDTO importAutoConfig(AbstractProtocole protocol)
-			throws IOException {
+	public AutoConfigDTO importAutoConfig(AbstractProtocole protocol,
+			AbstractProtocole proxyProtocol) throws IOException {
 
 		System.out.println("Importing autoconfig from url: "
 				+ protocol.getProtocolType().getPrompt()
@@ -214,7 +209,7 @@ public class HttpService extends AbstractConnexionService implements
 		AutoConfigDTO autoConfigDTO = null;
 		try {
 			AutoConfig autoConfig = httpDAOPool.get(0).importAutoConfig(
-					protocol);
+					protocol, proxyProtocol);
 			if (autoConfig != null) {
 				updateFavoriteServersFromAutoconfig(autoConfig);
 				autoConfigDTO = transformAutoConfig2DTO(autoConfig);
@@ -257,8 +252,7 @@ public class HttpService extends AbstractConnexionService implements
 		// Check if server supports partial file transfer
 		String header = null;
 		if (!noPartialFileTransfer) {
-			header = httpDAOPool.get(0).checkPartialFileTransfer(
-					repository.getName(), repository.getProtocol());
+			header = httpDAOPool.get(0).checkPartialFileTransfer(repository);
 		}
 
 		if (header != null) {// Partial file transfer is not supported
@@ -317,7 +311,7 @@ public class HttpService extends AbstractConnexionService implements
 			} else {
 				double complete = httpDAOPool.get(0).getFileCompletion(
 						leaf.getRemotePath(), leaf.getDestinationPath(), leaf,
-						repository.getProtocol());
+						repository);
 				leaf.setComplete(complete);
 			}
 		}
@@ -392,7 +386,7 @@ public class HttpService extends AbstractConnexionService implements
 		try {
 			ConnectionCheckProcessor checkProcessor = new ConnectionCheckProcessor(
 					httpDAOPool.get(0), filesToCheck, isCompressedPboFilesOnly,
-					withzsync, repositoryName, repository.getProtocol());
+					withzsync, repository);
 			checkProcessor.run();
 			return checkProcessor.getErrors();
 		} finally {
