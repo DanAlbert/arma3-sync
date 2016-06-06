@@ -34,7 +34,7 @@ public class ProgressUploadEventsDialog extends AbstractProgressDialog {
 			ProtocolDTO protocoleDTO = repositoryDTO.getProtocoleDTO();
 			ProtocolType protocolType = protocoleDTO.getProtocolType();
 			ProtocolDTO uploadProtocoleDTO = repositoryDTO
-					.getRepositoryUploadProtocoleDTO();
+					.getUploadProtocoleDTO();
 			if (uploadProtocoleDTO == null
 					&& protocolType.equals(ProtocolType.FTP)) {
 				repositoryService.setRepositoryUploadProtocole(repositoryName,

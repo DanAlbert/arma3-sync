@@ -192,6 +192,7 @@ public class ConnectionPanel extends JPanel {
 	}
 
 	public void init(ProtocolDTO protocolDTO) {
+		
 
 		textFieldHost.setText(protocolDTO.getProtocolType().getPrompt()
 				+ protocolDTO.getUrl());
@@ -284,5 +285,21 @@ public class ConnectionPanel extends JPanel {
 		if (passwordField.getPassword() != null) {
 			Arrays.fill(passwordField.getPassword(), '0');
 		}
+	}
+
+	public JLabel getLabelHost() {
+		return labelHost;
+	}
+
+	public JLabel getLabelPort() {
+		return labelPort;
+	}
+
+	public JLabel getLabelLogin() {
+		return labelLogin;
+	}
+
+	public JLabel getLabelPassword() {
+		return labelPassword;
 	}
 }

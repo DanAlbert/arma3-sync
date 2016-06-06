@@ -71,7 +71,7 @@ public class UploadEventsConnectionDialog extends AbstractDialog {
 					.getRepository(repositoryName);
 			ProtocolDTO protocolDTO = repositoryDTO.getProtocoleDTO();
 			ProtocolDTO uploadProtocolDTO = repositoryDTO
-					.getRepositoryUploadProtocoleDTO();
+					.getUploadProtocoleDTO();
 			if (uploadProtocolDTO != null) {
 				connectionPanel.init(uploadProtocolDTO);
 			} else if (protocolDTO.getProtocolType().equals(ProtocolType.FTP)) {

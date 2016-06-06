@@ -80,7 +80,7 @@ public class RepositoryUploader extends Thread implements DataAccessConstants {
 			ProtocolDTO protocoleDTO = repositoryDTO.getProtocoleDTO();
 			ProtocolType protocolType = protocoleDTO.getProtocolType();
 			ProtocolDTO uploadProtocoleDTO = repositoryDTO
-					.getRepositoryUploadProtocoleDTO();
+					.getUploadProtocoleDTO();
 			if (uploadProtocoleDTO == null
 					&& protocoleDTO.getProtocolType().equals(ProtocolType.FTP)) {
 				repositoryService.setRepositoryUploadProtocole(repositoryName,

@@ -79,4 +79,8 @@ public class ProtocolPanel extends JPanel {
 			this.connectionPanel.init(protocolType);
 		}
 	}
+
+	public JLabel getLabelProtocol() {
+		return labelProtocol;
+	}
 }

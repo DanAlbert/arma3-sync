@@ -59,20 +59,20 @@ public class RepositoryDTO implements java.lang.Comparable {
 		this.autoConfigURL = autoConfigURL;
 	}
 
-	public ProtocolDTO getRepositoryUploadProtocoleDTO() {
+	public ProtocolDTO getUploadProtocoleDTO() {
 		return repositoryUploadProtocoleDTO;
 	}
 
-	public void setRepositoryUploadProtocoleDTO(
+	public void setUploadProtocoleDTO(
 			ProtocolDTO repositoryUploadProtocoleDTO) {
 		this.repositoryUploadProtocoleDTO = repositoryUploadProtocoleDTO;
 	}
 
-	public ProtocolDTO getRepositoryProxyProtocoleDTO() {
+	public ProtocolDTO getProxyProtocoleDTO() {
 		return repositoryProxyProtocoleDTO;
 	}
 
-	public void setRepositoryProxyProtocoleDTO(
+	public void setProxyProtocoleDTO(
 			ProtocolDTO repositoryProxyProtocoleDTO) {
 		this.repositoryProxyProtocoleDTO = repositoryProxyProtocoleDTO;
 	}
