@@ -2,12 +2,9 @@ package fr.soe.a3s.ui.repository.dialogs.connection;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 
 import javax.swing.Box;
 import javax.swing.DefaultComboBoxModel;
-import javax.swing.JButton;
 import javax.swing.JOptionPane;
 
 import fr.soe.a3s.constant.ProtocolType;
@@ -19,18 +16,15 @@ import fr.soe.a3s.exception.WritingException;
 import fr.soe.a3s.exception.repository.RepositoryException;
 import fr.soe.a3s.exception.repository.RepositoryNotFoundException;
 import fr.soe.a3s.service.RepositoryService;
-import fr.soe.a3s.ui.AbstractDialog;
 import fr.soe.a3s.ui.Facade;
 import fr.soe.a3s.ui.repository.dialogs.progress.ProgressSynchronizationDialog;
 
-public class RepositoryEditionDialog extends AbstractDialog implements
+public class RepositoryEditionDialog extends AbstractConnectionDialog implements
 		DataAccessConstants {
 
 	private DescriptionPanel descriptionPanel;
 	private ProtocolPanel protocolPanel;
 	private ConnectionPanel connectionPanel;
-	private JButton buttonProxy;
-	private ProxyConfigurationDialog proxyConfigurationDialog;
 	/* Data */
 	private String initialRepositoryName = null;
 	private DefaultComboBoxModel comboBoxProtocolModel = null;
@@ -41,17 +35,6 @@ public class RepositoryEditionDialog extends AbstractDialog implements
 		super(facade, "Repository", true);
 		this.setResizable(false);
 
-		{
-			buttonProxy = new JButton("Proxy");
-			panelControl.removeAll();
-			panelControl.add(buttonProxy);
-			panelControl.add(buttonOK);
-			panelControl.add(buttonCancel);
-			buttonOK.setPreferredSize(buttonCancel.getPreferredSize());
-			getRootPane().setDefaultButton(buttonOK);
-			buttonProxy.setPreferredSize(buttonCancel.getPreferredSize());
-			proxyConfigurationDialog = new ProxyConfigurationDialog(facade);
-		}
 		{
 			Box vBox = Box.createVerticalBox();
 			this.add(vBox, BorderLayout.CENTER);
@@ -64,13 +47,6 @@ public class RepositoryEditionDialog extends AbstractDialog implements
 				vBox.add(connectionPanel);
 			}
 		}
-
-		buttonProxy.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent arg0) {
-				buttonProxyPerformed();
-			}
-		});
 
 		this.pack();
 		int height = this.getBounds().height;
@@ -95,6 +71,9 @@ public class RepositoryEditionDialog extends AbstractDialog implements
 
 		/* Init Connection Section */
 		connectionPanel.init();
+
+		/* Init proxy configuration */
+		proxyConfigurationDialog.init();
 	}
 
 	public void init(String repositoryName) {
@@ -112,14 +91,16 @@ public class RepositoryEditionDialog extends AbstractDialog implements
 				ProtocolType.HTTPS.getDescription() });
 		protocolPanel.init(comboBoxProtocolModel);
 
-		/* Init Repository and Connection Section */
 		try {
+			/* Init Repository and Connection Section */
 			RepositoryDTO repositoryDTO = repositoryService
 					.getRepository(repositoryName);
 			ProtocolDTO protocoleDTO = repositoryDTO.getProtocoleDTO();
 			ProtocolType protocole = protocoleDTO.getProtocolType();
 			comboBoxProtocolModel.setSelectedItem(protocole.getDescription());
 			connectionPanel.init(protocoleDTO);
+			/* Init proxy configuration */
+			proxyConfigurationDialog.init(repositoryName);
 		} catch (RepositoryException e) {
 			e.printStackTrace();
 			JOptionPane.showMessageDialog(facade.getMainPanel(),
@@ -163,6 +144,7 @@ public class RepositoryEditionDialog extends AbstractDialog implements
 			repositoryService.write(newRepositoryName);
 
 			this.dispose();
+
 			ProgressSynchronizationDialog synchronizingPanel = new ProgressSynchronizationDialog(
 					facade);
 			synchronizingPanel.setVisible(true);
@@ -177,8 +159,6 @@ public class RepositoryEditionDialog extends AbstractDialog implements
 	}
 
 	private void buttonProxyPerformed() {
-
-		proxyConfigurationDialog.init(this.initialRepositoryName);
 		proxyConfigurationDialog.setVisible(true);
 	}
 

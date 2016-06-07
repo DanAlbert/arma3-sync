@@ -184,15 +184,14 @@ public class ConnectionPanel extends JPanel {
 		textFieldHost.setText(ProtocolType.FTP.getPrompt());
 		textFieldPort.setText(ProtocolType.FTP.getDefaultPort());
 	}
-	
+
 	public void init(ProtocolType protocolType) {
-		
+
 		textFieldHost.setText(protocolType.getPrompt());
 		textFieldPort.setText(protocolType.getDefaultPort());
 	}
 
 	public void init(ProtocolDTO protocolDTO) {
-		
 
 		textFieldHost.setText(protocolDTO.getProtocolType().getPrompt()
 				+ protocolDTO.getUrl());
@@ -225,7 +224,9 @@ public class ConnectionPanel extends JPanel {
 		String test = url.toLowerCase()
 				.replaceAll(ProtocolType.FTP.getPrompt(), "")
 				.replaceAll(ProtocolType.HTTP.getPrompt(), "")
-				.replaceAll(ProtocolType.HTTPS.getPrompt(), "");
+				.replaceAll(ProtocolType.HTTPS.getPrompt(), "")
+				.replaceAll(ProtocolType.SOCKS4.getPrompt(), "")
+				.replaceAll(ProtocolType.SOCKS5.getPrompt(), "");
 		if (url.length() > test.length()) {
 			int index = url.length() - test.length();
 			url = url.substring(index);

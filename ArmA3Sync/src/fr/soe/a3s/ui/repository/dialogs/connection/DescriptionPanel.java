@@ -41,7 +41,7 @@ import fr.soe.a3s.service.connection.ConnexionServiceFactory;
 
 public class DescriptionPanel extends JPanel {
 
-	private final RepositoryEditionDialog repositoryConnectionDialog;
+	private final RepositoryEditionDialog repositoryEditionDialog;
 	private JLabel labelRepositoryName;
 	private JTextField textFieldRepositoryName;
 	private JTextField textFieldAutoConfigUrl;
@@ -57,7 +57,7 @@ public class DescriptionPanel extends JPanel {
 
 	public DescriptionPanel(RepositoryEditionDialog repositoryEditionDialog) {
 
-		this.repositoryConnectionDialog = repositoryEditionDialog;
+		this.repositoryEditionDialog = repositoryEditionDialog;
 
 		this.setBorder(BorderFactory.createTitledBorder(
 				BorderFactory.createEtchedBorder(), "Repository"));
@@ -247,7 +247,7 @@ public class DescriptionPanel extends JPanel {
 				}
 
 				if (invalid) {
-					JOptionPane.showMessageDialog(repositoryConnectionDialog,
+					JOptionPane.showMessageDialog(repositoryEditionDialog,
 							"Url must ends with " + "\""
 									+ DataAccessConstants.AUTOCONFIG + "\""
 									+ ".", "Warning",
@@ -262,7 +262,7 @@ public class DescriptionPanel extends JPanel {
 					protocol.setConnectionTimeOut("0");
 					protocol.setReadTimeOut("0");
 				} catch (CheckException e) {
-					JOptionPane.showMessageDialog(repositoryConnectionDialog,
+					JOptionPane.showMessageDialog(repositoryEditionDialog,
 							e.getMessage(), "Warning",
 							JOptionPane.WARNING_MESSAGE);
 					return;
@@ -274,7 +274,7 @@ public class DescriptionPanel extends JPanel {
 					connexion = ConnexionServiceFactory
 							.getServiceForAutoconfigURLimportation(protocol);
 				} catch (CheckException e) {
-					JOptionPane.showMessageDialog(repositoryConnectionDialog,
+					JOptionPane.showMessageDialog(repositoryEditionDialog,
 							e.getMessage(), "Error",
 							JOptionPane.WARNING_MESSAGE);
 					return;
@@ -290,7 +290,7 @@ public class DescriptionPanel extends JPanel {
 
 				// Get Proxy protocol
 				AbstractProtocole proxyProtocol = null;
-				ProtocolDTO proxyProtocolDTO = repositoryConnectionDialog
+				ProtocolDTO proxyProtocolDTO = repositoryEditionDialog
 						.getProxyConfigurationDialog().getProxyProtocolDTO();
 				if (proxyProtocolDTO != null) {
 					proxyProtocol = AbstractProtocoleFactory.getProtocol(
@@ -319,11 +319,11 @@ public class DescriptionPanel extends JPanel {
 								.getProtocoleDTO();
 						ProtocolType protocolType = protocolDTO
 								.getProtocolType();
-						repositoryConnectionDialog.getComboBoxProtocolModel()
+						repositoryEditionDialog.getComboBoxProtocolModel()
 								.setSelectedItem(protocolType.getDescription());
 
 						// Init Connection Setion
-						repositoryConnectionDialog.getConnectionPanel().init(
+						repositoryEditionDialog.getConnectionPanel().init(
 								protocolDTO);
 					} else {
 						throw new RemoteAutoconfigFileNotFoundException();
@@ -335,7 +335,7 @@ public class DescriptionPanel extends JPanel {
 								.deriveFont(Font.ITALIC));
 						labelConnection.setForeground(Color.RED);
 						JOptionPane.showMessageDialog(
-								repositoryConnectionDialog, e.getMessage(),
+								repositoryEditionDialog, e.getMessage(),
 								"Error", JOptionPane.ERROR_MESSAGE);
 					}
 				} finally {

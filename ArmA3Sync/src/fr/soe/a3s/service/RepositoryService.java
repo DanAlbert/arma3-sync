@@ -1474,11 +1474,13 @@ public class RepositoryService extends ObjectDTOtransformer implements
 		this.repositoryBuildProcessor.cancel();
 	}
 
-	public void checkProxyProtocol(String url, String port, String login,
-			String password, ProtocolType protocolType) throws CheckException {
+	public void checkProxyProtocol(ProtocolDTO protocolDTO)
+			throws CheckException {
 
-		AbstractProtocole protocole = AbstractProtocoleFactory.getProtocol(url,
-				port, login, password, protocolType);
+		AbstractProtocole protocole = AbstractProtocoleFactory.getProtocol(
+				protocolDTO.getUrl(), protocolDTO.getPort(),
+				protocolDTO.getLogin(), protocolDTO.getPassword(),
+				protocolDTO.getProtocolType());
 		if (protocole == null) {
 			throw new CheckException("Protocol is not supported yet.");
 		}
@@ -1500,6 +1502,8 @@ public class RepositoryService extends ObjectDTOtransformer implements
 								proxypProtocolDTO.getLogin(),
 								proxypProtocolDTO.getPassword(),
 								proxypProtocolDTO.getProtocolType());
+				proxyProtocole.setConnectionTimeOut("0");
+				proxyProtocole.setConnectionTimeOut("0");
 				repository.setProxyProtocole(proxyProtocole);
 			}
 		}

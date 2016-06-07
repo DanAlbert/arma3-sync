@@ -23,7 +23,6 @@ public class ProxyConfigurationDialog extends AbstractDialog implements
 	private ProtocolPanel protocolPanel;
 	private ConnectionPanel connectionPanel;
 	private DefaultComboBoxModel comboBoxProtocolModel = null;
-	/* Data */
 	private ProtocolDTO proxyProtocolDTO;
 	/* Service */
 	private final RepositoryService repositoryService = new RepositoryService();
@@ -70,7 +69,9 @@ public class ProxyConfigurationDialog extends AbstractDialog implements
 		comboBoxProtocolModel = new DefaultComboBoxModel(new String[] {
 				ProtocolType.FTP.getDescription(),
 				ProtocolType.HTTP.getDescription(),
-				ProtocolType.HTTPS.getDescription() });
+				ProtocolType.HTTPS.getDescription(),
+				ProtocolType.SOCKS4.getDescription(),
+				ProtocolType.SOCKS5.getDescription() });
 		protocolPanel.init(comboBoxProtocolModel);
 
 		/* Init Connection Section */
@@ -83,7 +84,9 @@ public class ProxyConfigurationDialog extends AbstractDialog implements
 		comboBoxProtocolModel = new DefaultComboBoxModel(new String[] {
 				ProtocolType.FTP.getDescription(),
 				ProtocolType.HTTP.getDescription(),
-				ProtocolType.HTTPS.getDescription() });
+				ProtocolType.HTTPS.getDescription(),
+				ProtocolType.SOCKS4.getDescription(),
+				ProtocolType.SOCKS5.getDescription() });
 		protocolPanel.init(comboBoxProtocolModel);
 
 		/* Init Repository and Connection Section */
@@ -112,20 +115,16 @@ public class ProxyConfigurationDialog extends AbstractDialog implements
 	protected void buttonOKPerformed() {
 
 		try {
+			proxyProtocolDTO = new ProtocolDTO();
 			ProtocolType protocolType = ProtocolType
 					.getEnum((String) comboBoxProtocolModel.getSelectedItem());
-			String url = connectionPanel.getUrl();
-			String port = connectionPanel.getPort();
-			String login = connectionPanel.getLogin();
-			String password = connectionPanel.getPassword();
-			repositoryService.checkProxyProtocol(url, port, login, password,
-					protocolType);
-			proxyProtocolDTO = new ProtocolDTO();
-			proxyProtocolDTO.setUrl(url);
-			proxyProtocolDTO.setPort(port);
-			proxyProtocolDTO.setLogin(login);
-			proxyProtocolDTO.setPassword(password);
-			this.dispose();
+			proxyProtocolDTO.setUrl(connectionPanel.getUrl());
+			proxyProtocolDTO.setPort(connectionPanel.getPort());
+			proxyProtocolDTO.setLogin(connectionPanel.getLogin());
+			proxyProtocolDTO.setPassword(connectionPanel.getPassword());
+			proxyProtocolDTO.setProtocolType(protocolType);
+			repositoryService.checkProxyProtocol(proxyProtocolDTO);
+			this.setVisible(false);
 		} catch (CheckException e) {
 			proxyProtocolDTO = null;
 			JOptionPane.showMessageDialog(this, e.getMessage(), "Warning",
@@ -135,18 +134,12 @@ public class ProxyConfigurationDialog extends AbstractDialog implements
 
 	@Override
 	protected void buttonCancelPerformed() {
-
-		connectionPanel.clearPassword();
-		proxyProtocolDTO = null;
-		this.dispose();
+		this.setVisible(false);
 	}
 
 	@Override
 	protected void menuExitPerformed() {
-
-		connectionPanel.clearPassword();
-		proxyProtocolDTO = null;
-		this.dispose();
+		this.setVisible(false);
 	}
 
 	public ProtocolDTO getProxyProtocolDTO() {
