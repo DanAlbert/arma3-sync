@@ -39,7 +39,7 @@ public class ArmA3Sync implements DataAccessConstants {
      * Public Licence in version 3.
      * 
      * @author Major_Shepard for the [S.o.E] Team, visit us at www.sonsofexiled.fr and BIS forum.
-     * @param args command line parameters test
+     * @param args command line parameters
      */
 
     private static MainPanel mainPanel;
