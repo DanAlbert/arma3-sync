@@ -128,33 +128,9 @@ public abstract class AbstractConnexionDAO implements DataAccessConstants,
 			throws ConnectException {
 
 		if (proxyProtocole != null) {
-			if (proxyProtocole.getProtocolType().equals(ProtocolType.FTP)) {
-				System.setProperty("ftp.proxyHost", proxyProtocole.getUrl());
-				System.setProperty("ftp.proxyPort", proxyProtocole.getPort());
-				Authenticator.setDefault(new MyAuthenticator(proxyProtocole
-						.getLogin(), proxyProtocole.getPassword()));
-			} else if (proxyProtocole.getProtocolType().equals(
-					ProtocolType.HTTP)) {
+			if (proxyProtocole.getProtocolType().equals(ProtocolType.HTTP)) {
 				System.setProperty("http.proxyHost", proxyProtocole.getUrl());
 				System.setProperty("http.proxyPort", proxyProtocole.getPort());
-				if (!proxyProtocole.getLogin().equals("anonymous")) {
-					Authenticator.setDefault(new MyAuthenticator(proxyProtocole
-							.getLogin(), proxyProtocole.getPassword()));
-				}
-			} else if (proxyProtocole.getProtocolType().equals(
-					ProtocolType.HTTPS)) {
-				System.setProperty("https.proxyHost", proxyProtocole.getUrl());
-				System.setProperty("https.proxyPort", proxyProtocole.getPort());
-				if (!proxyProtocole.getLogin().equals("anonymous")) {
-					Authenticator.setDefault(new MyAuthenticator(proxyProtocole
-							.getLogin(), proxyProtocole.getPassword()));
-				}
-			} else if (proxyProtocole.getProtocolType().equals(
-					ProtocolType.SOCKS4)
-					|| proxyProtocole.getProtocolType().equals(
-							ProtocolType.SOCKS5)) {
-				System.setProperty("socksProxyHost", proxyProtocole.getUrl());
-				System.setProperty("socksProxyPort", proxyProtocole.getPort());
 				if (!proxyProtocole.getLogin().equals("anonymous")) {
 					Authenticator.setDefault(new MyAuthenticator(proxyProtocole
 							.getLogin(), proxyProtocole.getPassword()));

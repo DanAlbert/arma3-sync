@@ -23,11 +23,16 @@ public class RepositoryEditionDialog extends AbstractConnectionDialog implements
 		DataAccessConstants {
 
 	private DescriptionPanel descriptionPanel;
+
 	private ProtocolPanel protocolPanel;
+
 	private ConnectionPanel connectionPanel;
+
 	/* Data */
 	private String initialRepositoryName = null;
+
 	private DefaultComboBoxModel comboBoxProtocolModel = null;
+
 	/* Service */
 	private final RepositoryService repositoryService = new RepositoryService();
 
@@ -70,7 +75,7 @@ public class RepositoryEditionDialog extends AbstractConnectionDialog implements
 		protocolPanel.init(comboBoxProtocolModel);
 
 		/* Init Connection Section */
-		connectionPanel.init();
+		connectionPanel.init(ProtocolType.FTP);
 
 		/* Init proxy configuration */
 		proxyConfigurationDialog.init();
@@ -100,7 +105,7 @@ public class RepositoryEditionDialog extends AbstractConnectionDialog implements
 			comboBoxProtocolModel.setSelectedItem(protocole.getDescription());
 			connectionPanel.init(protocoleDTO);
 			/* Init proxy configuration */
-			proxyConfigurationDialog.init(repositoryName);
+			proxyConfigurationDialog.init(repositoryDTO.getProxyProtocoleDTO());
 		} catch (RepositoryException e) {
 			e.printStackTrace();
 			JOptionPane.showMessageDialog(facade.getMainPanel(),
@@ -158,19 +163,17 @@ public class RepositoryEditionDialog extends AbstractConnectionDialog implements
 		}
 	}
 
-	private void buttonProxyPerformed() {
-		proxyConfigurationDialog.setVisible(true);
-	}
-
 	@Override
 	protected void menuExitPerformed() {
 		connectionPanel.clearPassword();
+		proxyConfigurationDialog.dispose();
 		this.dispose();
 	}
 
 	@Override
 	protected void buttonCancelPerformed() {
 		connectionPanel.clearPassword();
+		proxyConfigurationDialog.dispose();
 		this.dispose();
 	}
 

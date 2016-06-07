@@ -10,9 +10,7 @@ import javax.swing.JOptionPane;
 import fr.soe.a3s.constant.ProtocolType;
 import fr.soe.a3s.dao.DataAccessConstants;
 import fr.soe.a3s.dto.ProtocolDTO;
-import fr.soe.a3s.dto.RepositoryDTO;
 import fr.soe.a3s.exception.CheckException;
-import fr.soe.a3s.exception.repository.RepositoryException;
 import fr.soe.a3s.service.RepositoryService;
 import fr.soe.a3s.ui.AbstractDialog;
 import fr.soe.a3s.ui.Facade;
@@ -20,10 +18,12 @@ import fr.soe.a3s.ui.Facade;
 public class ProxyConfigurationDialog extends AbstractDialog implements
 		DataAccessConstants {
 
+	private ProxyPanel proxyPanel;
 	private ProtocolPanel protocolPanel;
 	private ConnectionPanel connectionPanel;
 	private DefaultComboBoxModel comboBoxProtocolModel = null;
 	private ProtocolDTO proxyProtocolDTO;
+
 	/* Service */
 	private final RepositoryService repositoryService = new RepositoryService();
 
@@ -39,8 +39,10 @@ public class ProxyConfigurationDialog extends AbstractDialog implements
 			Box vBox = Box.createVerticalBox();
 			this.add(vBox, BorderLayout.CENTER);
 			{
+				proxyPanel = new ProxyPanel();
 				connectionPanel = new ConnectionPanel();
 				protocolPanel = new ProtocolPanel(connectionPanel);
+				vBox.add(proxyPanel);
 				vBox.add(protocolPanel);
 				vBox.add(connectionPanel);
 			}
@@ -66,48 +68,27 @@ public class ProxyConfigurationDialog extends AbstractDialog implements
 	public void init() {
 
 		/* Init Protocol Section */
-		comboBoxProtocolModel = new DefaultComboBoxModel(new String[] {
-				ProtocolType.FTP.getDescription(),
-				ProtocolType.HTTP.getDescription(),
-				ProtocolType.HTTPS.getDescription(),
-				ProtocolType.SOCKS4.getDescription(),
-				ProtocolType.SOCKS5.getDescription() });
+		comboBoxProtocolModel = new DefaultComboBoxModel(
+				new String[] { ProtocolType.HTTP.getDescription() });
 		protocolPanel.init(comboBoxProtocolModel);
 
 		/* Init Connection Section */
-		connectionPanel.init();
+		connectionPanel.init(ProtocolType.HTTP);
 	}
 
-	public void init(String repositoryName) {
+	public void init(ProtocolDTO proxyProtocoleDTO) {
 
 		/* Init Protocol Section */
-		comboBoxProtocolModel = new DefaultComboBoxModel(new String[] {
-				ProtocolType.FTP.getDescription(),
-				ProtocolType.HTTP.getDescription(),
-				ProtocolType.HTTPS.getDescription(),
-				ProtocolType.SOCKS4.getDescription(),
-				ProtocolType.SOCKS5.getDescription() });
+		comboBoxProtocolModel = new DefaultComboBoxModel(
+				new String[] { ProtocolType.HTTP.getDescription() });
 		protocolPanel.init(comboBoxProtocolModel);
 
-		/* Init Repository and Connection Section */
-		try {
-			RepositoryDTO repositoryDTO = repositoryService
-					.getRepository(repositoryName);
-			ProtocolDTO proxyProtocoleDTO = repositoryDTO
-					.getProxyProtocoleDTO();
-			if (proxyProtocoleDTO != null) {
-				ProtocolType proxyProtocole = proxyProtocoleDTO
-						.getProtocolType();
-				comboBoxProtocolModel.setSelectedItem(proxyProtocole
-						.getDescription());
-				connectionPanel.init(proxyProtocoleDTO);
-			} else {
-				connectionPanel.init();
-			}
-		} catch (RepositoryException e) {
-			e.printStackTrace();
-			JOptionPane.showMessageDialog(facade.getMainPanel(),
-					e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+		/* Init Connection Section */
+		connectionPanel.init(ProtocolType.HTTP);
+
+		/* Init Connection Section */
+		if (proxyProtocoleDTO != null) {
+			connectionPanel.init(proxyProtocoleDTO);
 		}
 	}
 

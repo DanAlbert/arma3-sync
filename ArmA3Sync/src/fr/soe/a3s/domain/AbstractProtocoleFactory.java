@@ -16,10 +16,6 @@ public class AbstractProtocoleFactory {
 				|| protocolType.equals(ProtocolType.HTTP_BITTORRENT)
 				|| protocolType.equals(ProtocolType.HTTPS_BITTORRENT)) {
 			return new BitTorrent(url, port, login, password, protocolType);
-		} else if (protocolType.equals(ProtocolType.SOCKS4)) {
-			return new Socks4(url, port, login, password, protocolType);
-		} else if (protocolType.equals(ProtocolType.SOCKS5)) {
-			return new Socks5(url, port, login, password, protocolType);
 		} else {
 			return null;
 		}

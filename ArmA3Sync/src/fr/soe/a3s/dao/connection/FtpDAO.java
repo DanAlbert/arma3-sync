@@ -17,6 +17,7 @@ import org.apache.commons.io.output.CountingOutputStream;
 import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPFile;
+import org.apache.commons.net.ftp.FTPHTTPClient;
 import org.apache.commons.net.ftp.FTPReply;
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
@@ -48,14 +49,23 @@ public class FtpDAO extends AbstractConnexionDAO {
 	private void connect(AbstractProtocole protocole,
 			AbstractProtocole proxyProtocole) throws IOException, FtpException {
 
-		super.setProxy(proxyProtocole);
+		if (proxyProtocole == null) {
+			ftpClient = new FTPClient();
+		} else {
+			if (!proxyProtocole.getLogin().equals("anonymous")) {
+				ftpClient = new FTPHTTPClient(proxyProtocole.getUrl(),
+						Integer.parseInt(proxyProtocole.getPort()),
+						proxyProtocole.getLogin(), proxyProtocole.getPassword());
+			} else {
+				ftpClient = new FTPHTTPClient(proxyProtocole.getUrl(),
+						Integer.parseInt(proxyProtocole.getPort()));
+			}
+		}
 
 		String port = protocole.getPort();
 		String login = protocole.getLogin();
 		String password = protocole.getPassword();
 		String hostname = protocole.getHostname();
-
-		ftpClient = new FTPClient();
 
 		// Set connection and read time out
 		int connectionTimeOutValue = Integer.parseInt(protocole

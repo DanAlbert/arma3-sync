@@ -21,13 +21,21 @@ import fr.soe.a3s.dto.ProtocolDTO;
 public class ConnectionPanel extends JPanel {
 
 	private JLabel labelHost;
+
 	private JTextField textFieldHost;
+
 	private JLabel labelPort;
+
 	private JTextField textFieldPort;
+
 	private JLabel labelLogin;
+
 	private JTextField textFieldLogin;
+
 	private JLabel labelPassword;
+
 	private JPasswordField passwordField;
+
 	private JCheckBox checkBoxAnonymous;
 
 	public ConnectionPanel() {
@@ -179,12 +187,6 @@ public class ConnectionPanel extends JPanel {
 		}
 	}
 
-	public void init() {
-
-		textFieldHost.setText(ProtocolType.FTP.getPrompt());
-		textFieldPort.setText(ProtocolType.FTP.getDefaultPort());
-	}
-
 	public void init(ProtocolType protocolType) {
 
 		textFieldHost.setText(protocolType.getPrompt());
@@ -224,9 +226,7 @@ public class ConnectionPanel extends JPanel {
 		String test = url.toLowerCase()
 				.replaceAll(ProtocolType.FTP.getPrompt(), "")
 				.replaceAll(ProtocolType.HTTP.getPrompt(), "")
-				.replaceAll(ProtocolType.HTTPS.getPrompt(), "")
-				.replaceAll(ProtocolType.SOCKS4.getPrompt(), "")
-				.replaceAll(ProtocolType.SOCKS5.getPrompt(), "");
+				.replaceAll(ProtocolType.HTTPS.getPrompt(), "");
 		if (url.length() > test.length()) {
 			int index = url.length() - test.length();
 			url = url.substring(index);

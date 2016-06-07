@@ -6,8 +6,13 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.Authenticator;
 import java.net.HttpURLConnection;
+import java.net.InetSocketAddress;
+import java.net.PasswordAuthentication;
 import java.net.ProtocolException;
+import java.net.Proxy;
+import java.net.SocketAddress;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -63,7 +68,23 @@ public class MyHttpConnection {
 	 */
 	public void openConnection(String relativeUrl) throws IOException {
 
-		httpDAO.setProxy(proxyProtocole);
+		Proxy proxy = Proxy.NO_PROXY;
+
+		if (proxyProtocole != null) {
+			SocketAddress addr = new InetSocketAddress(proxyProtocole.getUrl(),
+					Integer.parseInt(proxyProtocole.getPort()));
+			proxy = new Proxy(Proxy.Type.HTTP, addr);
+			if (!proxyProtocole.getLogin().equals("anonymous")) {
+				Authenticator authenticator = new Authenticator() {
+					@Override
+					public PasswordAuthentication getPasswordAuthentication() {
+						return (new PasswordAuthentication("user",
+								"password".toCharArray()));
+					}
+				};
+				Authenticator.setDefault(authenticator);
+			}
+		}
 
 		String hostname = protocole.getHostname();
 		String port = protocole.getPort();
@@ -88,7 +109,7 @@ public class MyHttpConnection {
 
 				URL url2 = new URL("https", hostname, Integer.parseInt(port),
 						file);
-				urLConnection = url2.openConnection();
+				urLConnection = url2.openConnection(proxy);
 
 				// Create a trust manager that does not validate certificate
 				// chains
@@ -131,7 +152,7 @@ public class MyHttpConnection {
 
 				URL url2 = new URL("http", hostname, Integer.parseInt(port),
 						file);
-				urLConnection = url2.openConnection();
+				urLConnection = url2.openConnection(proxy);
 			}
 
 			// Set connection and read time out

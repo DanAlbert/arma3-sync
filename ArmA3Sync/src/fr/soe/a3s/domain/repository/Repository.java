@@ -21,6 +21,7 @@ public class Repository implements Serializable {
 	private AbstractProtocole protocole;// not null
 	private AbstractProtocole proxyProtocole;
 	private AbstractProtocole bitTorrentProtocole;
+	private final boolean enableProxy = false;
 	private boolean notify = false;
 	private int revision;
 	private String path;
