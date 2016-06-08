@@ -1489,12 +1489,13 @@ public class RepositoryService extends ObjectDTOtransformer implements
 	}
 
 	public void setProxyProtocol(String repositoryName,
-			ProtocolDTO proxypProtocolDTO) {
+			ProtocolDTO proxypProtocolDTO, boolean enableProxy) {
 
 		Repository repository = repositoryDAO.getMap().get(repositoryName);
 		if (repository != null) {
 			if (proxypProtocolDTO == null) {
 				repository.setProxyProtocole(null);
+				repository.setEnableProxy(false);
 			} else {
 				AbstractProtocole proxyProtocole = AbstractProtocoleFactory
 						.getProtocol(proxypProtocolDTO.getUrl(),
@@ -1505,6 +1506,7 @@ public class RepositoryService extends ObjectDTOtransformer implements
 				proxyProtocole.setConnectionTimeOut("0");
 				proxyProtocole.setConnectionTimeOut("0");
 				repository.setProxyProtocole(proxyProtocole);
+				repository.setEnableProxy(enableProxy);
 			}
 		}
 	}

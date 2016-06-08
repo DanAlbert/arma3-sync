@@ -39,7 +39,7 @@ public class ProxyPanel extends JPanel {
 		}
 	}
 
-	public void init(boolean enabled) {
-		checkBoxProxy.setSelected(enabled);
+	public JCheckBox getCheckBoxProxy() {
+		return checkBoxProxy;
 	}
 }

@@ -105,7 +105,8 @@ public class RepositoryEditionDialog extends AbstractConnectionDialog implements
 			comboBoxProtocolModel.setSelectedItem(protocole.getDescription());
 			connectionPanel.init(protocoleDTO);
 			/* Init proxy configuration */
-			proxyConfigurationDialog.init(repositoryDTO.getProxyProtocoleDTO());
+			proxyConfigurationDialog.init(repositoryDTO.getProxyProtocoleDTO(),
+					repositoryDTO.isEnableProxy());
 		} catch (RepositoryException e) {
 			e.printStackTrace();
 			JOptionPane.showMessageDialog(facade.getMainPanel(),
@@ -145,7 +146,7 @@ public class RepositoryEditionDialog extends AbstractConnectionDialog implements
 			ProtocolDTO proxyProtocolDTO = proxyConfigurationDialog
 					.getProxyProtocolDTO();
 			repositoryService.setProxyProtocol(newRepositoryName,
-					proxyProtocolDTO);
+					proxyProtocolDTO, proxyConfigurationDialog.isEnableProxy());
 			repositoryService.write(newRepositoryName);
 
 			this.dispose();

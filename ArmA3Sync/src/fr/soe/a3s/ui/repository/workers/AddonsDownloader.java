@@ -97,7 +97,7 @@ public class AddonsDownloader extends Thread implements DataAccessConstants {
 		}
 
 		// Return if update files list is empty
-		if (this.listFilesToUpdate.size() == 0) {
+		if (this.listFilesToUpdate.size() == 0 && listFilesToDelete.size() == 0) {
 			initDownloadPanelForEndDownload();
 			downloadPanel.getLabelDownloadStatus().setText("");
 			JOptionPane.showMessageDialog(facade.getMainPanel(),

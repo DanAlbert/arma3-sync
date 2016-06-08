@@ -2,6 +2,8 @@ package fr.soe.a3s.ui.repository.dialogs.connection;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
 import javax.swing.Box;
 import javax.swing.DefaultComboBoxModel;
@@ -55,6 +57,13 @@ public class ProxyConfigurationDialog extends AbstractDialog implements
 			}
 		}
 
+		proxyPanel.getCheckBoxProxy().addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				enableProxyPerformed();
+			}
+		});
+
 		this.pack();
 		int height = this.getBounds().height;
 		int width = this.getBounds().width;
@@ -74,21 +83,37 @@ public class ProxyConfigurationDialog extends AbstractDialog implements
 
 		/* Init Connection Section */
 		connectionPanel.init(ProtocolType.HTTP);
+		connectionPanel.activate(false);
+
+		/* Init Proxy panel */
+		proxyPanel.getCheckBoxProxy().setSelected(false);
 	}
 
-	public void init(ProtocolDTO proxyProtocoleDTO) {
+	public void init(ProtocolDTO proxyProtocoleDTO, boolean isEnableProxy) {
 
 		/* Init Protocol Section */
 		comboBoxProtocolModel = new DefaultComboBoxModel(
 				new String[] { ProtocolType.HTTP.getDescription() });
 		protocolPanel.init(comboBoxProtocolModel);
 
-		/* Init Connection Section */
+		/* Init Connection and Proxy Section */
 		connectionPanel.init(ProtocolType.HTTP);
+		connectionPanel.activate(false);
+		proxyPanel.getCheckBoxProxy().setSelected(false);
 
-		/* Init Connection Section */
 		if (proxyProtocoleDTO != null) {
 			connectionPanel.init(proxyProtocoleDTO);
+			connectionPanel.activate(isEnableProxy);
+			proxyPanel.getCheckBoxProxy().setSelected(isEnableProxy);
+		}
+	}
+
+	private void enableProxyPerformed() {
+
+		if (proxyPanel.getCheckBoxProxy().isSelected()) {
+			connectionPanel.activate(true);
+		} else {
+			connectionPanel.activate(false);
 		}
 	}
 
@@ -108,22 +133,38 @@ public class ProxyConfigurationDialog extends AbstractDialog implements
 			this.setVisible(false);
 		} catch (CheckException e) {
 			proxyProtocolDTO = null;
-			JOptionPane.showMessageDialog(this, e.getMessage(), "Warning",
-					JOptionPane.WARNING_MESSAGE);
+			if (isEnableProxy()) {
+				JOptionPane.showMessageDialog(this, e.getMessage(), "Warning",
+						JOptionPane.WARNING_MESSAGE);
+			} else {
+				this.setVisible(false);
+			}
 		}
 	}
 
 	@Override
 	protected void buttonCancelPerformed() {
+		if (proxyProtocolDTO == null) {
+			proxyPanel.getCheckBoxProxy().setSelected(false);
+			connectionPanel.activate(false);
+		}
 		this.setVisible(false);
 	}
 
 	@Override
 	protected void menuExitPerformed() {
+		if (proxyProtocolDTO == null) {
+			proxyPanel.getCheckBoxProxy().setSelected(false);
+			connectionPanel.activate(false);
+		}
 		this.setVisible(false);
 	}
 
 	public ProtocolDTO getProxyProtocolDTO() {
 		return proxyProtocolDTO;
+	}
+
+	public boolean isEnableProxy() {
+		return this.proxyPanel.getCheckBoxProxy().isSelected();
 	}
 }

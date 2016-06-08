@@ -10,6 +10,7 @@ public class RepositoryDTO implements java.lang.Comparable {
 	private String autoConfigURL;
 	private ProtocolDTO repositoryUploadProtocoleDTO;
 	private ProtocolDTO repositoryProxyProtocoleDTO;
+	private boolean enableProxy;
 
 	public String getName() {
 		return name;
@@ -63,8 +64,7 @@ public class RepositoryDTO implements java.lang.Comparable {
 		return repositoryUploadProtocoleDTO;
 	}
 
-	public void setUploadProtocoleDTO(
-			ProtocolDTO repositoryUploadProtocoleDTO) {
+	public void setUploadProtocoleDTO(ProtocolDTO repositoryUploadProtocoleDTO) {
 		this.repositoryUploadProtocoleDTO = repositoryUploadProtocoleDTO;
 	}
 
@@ -72,9 +72,16 @@ public class RepositoryDTO implements java.lang.Comparable {
 		return repositoryProxyProtocoleDTO;
 	}
 
-	public void setProxyProtocoleDTO(
-			ProtocolDTO repositoryProxyProtocoleDTO) {
+	public void setProxyProtocoleDTO(ProtocolDTO repositoryProxyProtocoleDTO) {
 		this.repositoryProxyProtocoleDTO = repositoryProxyProtocoleDTO;
+	}
+
+	public boolean isEnableProxy() {
+		return enableProxy;
+	}
+
+	public void setEnableProxy(boolean enableProxy) {
+		this.enableProxy = enableProxy;
 	}
 
 	@Override

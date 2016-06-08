@@ -67,6 +67,7 @@ public class ConnectionPanel extends JPanel {
 		{
 			checkBoxAnonymous = new JCheckBox();
 			checkBoxAnonymous.setText("Anonymous");
+			checkBoxAnonymous.setFocusable(false);
 		}
 		{
 			GridBagConstraints c = new GridBagConstraints();
@@ -285,6 +286,17 @@ public class ConnectionPanel extends JPanel {
 		passwordField.setText("");
 		if (passwordField.getPassword() != null) {
 			Arrays.fill(passwordField.getPassword(), '0');
+		}
+	}
+
+	public void activate(boolean value) {
+
+		textFieldHost.setEnabled(value);
+		textFieldPort.setEnabled(value);
+		checkBoxAnonymous.setEnabled(value);
+		if (!checkBoxAnonymous.isSelected()) {
+			textFieldLogin.setEnabled(value);
+			passwordField.setEnabled(value);
 		}
 	}
 

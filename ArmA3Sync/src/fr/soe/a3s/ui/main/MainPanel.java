@@ -102,7 +102,8 @@ public class MainPanel extends JFrame implements UIConstants {
 			menuItemAbout, menuItemPreferences, menuItemACRE2wizard,
 			menuItemRPTviewer, menuItemeExportAsShortcut, menuItemAiAwizard,
 			menuItemBISforum, menuItemAutoConfigImport,
-			menuItemAutoConfigExport, menuItemBikeyExtractor;
+			menuItemAutoConfigExport, menuItemBikeyExtractor,
+			menuItemConfigureProxy;
 	private JTabbedPane tabbedPane;
 	private JPanel infoPanel, launchPanel;
 	private PopupMenu popup;
@@ -124,6 +125,7 @@ public class MainPanel extends JFrame implements UIConstants {
 	private final PreferencesService preferencesService = new PreferencesService();
 	private final RepositoryService repositoryService = new RepositoryService();
 	private final LaunchService launchService = new LaunchService();
+
 	/* Data */
 	private final Map<String, Integer> mapTabIndexes = new LinkedHashMap<String, Integer>();
 
@@ -197,6 +199,8 @@ public class MainPanel extends JFrame implements UIConstants {
 		menuItemAutoConfig.add(menuItemAutoConfigImport);
 		menuItemAutoConfigExport = new JMenuItem("Export");
 		menuItemAutoConfig.add(menuItemAutoConfigExport);
+		menuItemConfigureProxy = new JMenuItem("Configure proxy");
+		menuHelp.add(menuItemConfigureProxy);
 		menuItemuUpdates = new JMenuItem("Check for Updates", new ImageIcon(
 				UPDATE));
 		menuHelp.add(menuItemuUpdates);
@@ -345,6 +349,12 @@ public class MainPanel extends JFrame implements UIConstants {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				menuItemAutoConfigExportPerformed();
+			}
+		});
+		menuItemConfigureProxy.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				menuItemConfigureProxyPerformed();
 			}
 		});
 		menuItemuUpdates.addActionListener(new ActionListener() {
@@ -782,6 +792,10 @@ public class MainPanel extends JFrame implements UIConstants {
 				facade);
 		autoConfigExportPanel.init();
 		autoConfigExportPanel.setVisible(true);
+	}
+
+	private void menuItemConfigureProxyPerformed() {
+
 	}
 
 	private void menuItemuUpdatesPerformed() {
