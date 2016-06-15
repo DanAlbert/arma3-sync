@@ -16,23 +16,19 @@ import fr.soe.a3s.exception.WritingException;
 import fr.soe.a3s.exception.repository.RepositoryException;
 import fr.soe.a3s.exception.repository.RepositoryNotFoundException;
 import fr.soe.a3s.service.RepositoryService;
+import fr.soe.a3s.ui.AbstractDialog;
 import fr.soe.a3s.ui.Facade;
 import fr.soe.a3s.ui.repository.dialogs.progress.ProgressSynchronizationDialog;
 
-public class RepositoryEditionDialog extends AbstractConnectionDialog implements
+public class RepositoryEditionDialog extends AbstractDialog implements
 		DataAccessConstants {
 
 	private DescriptionPanel descriptionPanel;
-
 	private ProtocolPanel protocolPanel;
-
 	private ConnectionPanel connectionPanel;
-
 	/* Data */
 	private String initialRepositoryName = null;
-
 	private DefaultComboBoxModel comboBoxProtocolModel = null;
-
 	/* Service */
 	private final RepositoryService repositoryService = new RepositoryService();
 
@@ -76,9 +72,6 @@ public class RepositoryEditionDialog extends AbstractConnectionDialog implements
 
 		/* Init Connection Section */
 		connectionPanel.init(ProtocolType.FTP);
-
-		/* Init proxy configuration */
-		proxyConfigurationDialog.init();
 	}
 
 	public void init(String repositoryName) {
@@ -104,9 +97,6 @@ public class RepositoryEditionDialog extends AbstractConnectionDialog implements
 			ProtocolType protocole = protocoleDTO.getProtocolType();
 			comboBoxProtocolModel.setSelectedItem(protocole.getDescription());
 			connectionPanel.init(protocoleDTO);
-			/* Init proxy configuration */
-			proxyConfigurationDialog.init(repositoryDTO.getProxyProtocoleDTO(),
-					repositoryDTO.isEnableProxy());
 		} catch (RepositoryException e) {
 			e.printStackTrace();
 			JOptionPane.showMessageDialog(facade.getMainPanel(),
@@ -143,12 +133,7 @@ public class RepositoryEditionDialog extends AbstractConnectionDialog implements
 						port, login, password, protocolType);
 			}
 
-			ProtocolDTO proxyProtocolDTO = proxyConfigurationDialog
-					.getProxyProtocolDTO();
-			repositoryService.setProxyProtocol(newRepositoryName,
-					proxyProtocolDTO, proxyConfigurationDialog.isEnableProxy());
 			repositoryService.write(newRepositoryName);
-
 			this.dispose();
 
 			ProgressSynchronizationDialog synchronizingPanel = new ProgressSynchronizationDialog(
@@ -167,14 +152,12 @@ public class RepositoryEditionDialog extends AbstractConnectionDialog implements
 	@Override
 	protected void menuExitPerformed() {
 		connectionPanel.clearPassword();
-		proxyConfigurationDialog.dispose();
 		this.dispose();
 	}
 
 	@Override
 	protected void buttonCancelPerformed() {
 		connectionPanel.clearPassword();
-		proxyConfigurationDialog.dispose();
 		this.dispose();
 	}
 
@@ -184,9 +167,5 @@ public class RepositoryEditionDialog extends AbstractConnectionDialog implements
 
 	public DefaultComboBoxModel getComboBoxProtocolModel() {
 		return this.comboBoxProtocolModel;
-	}
-
-	public ProxyConfigurationDialog getProxyConfigurationDialog() {
-		return proxyConfigurationDialog;
 	}
 }

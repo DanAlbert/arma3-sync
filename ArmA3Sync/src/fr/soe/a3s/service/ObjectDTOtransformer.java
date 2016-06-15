@@ -3,6 +3,7 @@ package fr.soe.a3s.service;
 import java.util.Iterator;
 import java.util.List;
 
+import fr.soe.a3s.domain.AbstractProtocole;
 import fr.soe.a3s.domain.TreeDirectory;
 import fr.soe.a3s.domain.TreeLeaf;
 import fr.soe.a3s.domain.TreeNode;
@@ -10,6 +11,7 @@ import fr.soe.a3s.domain.configration.AiAOptions;
 import fr.soe.a3s.domain.configration.ExternalApplication;
 import fr.soe.a3s.domain.configration.FavoriteServer;
 import fr.soe.a3s.domain.configration.LauncherOptions;
+import fr.soe.a3s.domain.configration.Proxy;
 import fr.soe.a3s.domain.repository.AutoConfig;
 import fr.soe.a3s.domain.repository.Changelog;
 import fr.soe.a3s.domain.repository.Event;
@@ -31,6 +33,7 @@ import fr.soe.a3s.dto.configuration.AiAOptionsDTO;
 import fr.soe.a3s.dto.configuration.ExternalApplicationDTO;
 import fr.soe.a3s.dto.configuration.FavoriteServerDTO;
 import fr.soe.a3s.dto.configuration.LauncherOptionsDTO;
+import fr.soe.a3s.dto.configuration.ProxyDTO;
 import fr.soe.a3s.dto.sync.SyncTreeDirectoryDTO;
 import fr.soe.a3s.dto.sync.SyncTreeLeafDTO;
 
@@ -244,27 +247,6 @@ public class ObjectDTOtransformer {
 					.getUploadProtocole().getReadTimeOut());
 			repositoryDTO.setUploadProtocoleDTO(repositoryUploadProtocoleDTO);
 		}
-		// Repository proxy protocole
-		ProtocolDTO repositoryProxyProtocoleDTO = new ProtocolDTO();
-		if (repository.getProxyProtocol() != null) {
-			repositoryProxyProtocoleDTO.setUrl(repository.getProxyProtocol()
-					.getUrl());
-			repositoryProxyProtocoleDTO.setLogin(repository.getProxyProtocol()
-					.getLogin());
-			repositoryProxyProtocoleDTO.setPassword(repository
-					.getProxyProtocol().getPassword());
-			repositoryProxyProtocoleDTO.setPort(repository.getProxyProtocol()
-					.getPort());
-			repositoryProxyProtocoleDTO.setProtocolType(repository
-					.getProxyProtocol().getProtocolType());
-			repositoryProxyProtocoleDTO.setConnectionTimeOut(repository
-					.getProxyProtocol().getConnectionTimeOut());
-			repositoryProxyProtocoleDTO.setReadTimeOut(repository
-					.getProxyProtocol().getReadTimeOut());
-			repositoryDTO.setProxyProtocoleDTO(repositoryProxyProtocoleDTO);
-		}
-
-		repositoryDTO.setEnableProxy(repository.isEnableProxy());
 
 		repositoryDTO.setPath(repository.getPath());
 		repositoryDTO.setRevision(repository.getRevision());
@@ -438,5 +420,24 @@ public class ObjectDTOtransformer {
 			eventDTO.getUserconfigFolderNames().put(key, value);
 		}
 		return eventDTO;
+	}
+
+	protected ProxyDTO transformProxy2DTO(Proxy proxy) {
+
+		ProxyDTO proxyDTO = new ProxyDTO();
+		AbstractProtocole protocol = proxy.getProxyProtocol();
+		if (protocol != null) {
+			ProtocolDTO protocolDTO = new ProtocolDTO();
+			protocolDTO.setUrl(protocol.getUrl());
+			protocolDTO.setPort(protocol.getPort());
+			protocolDTO.setLogin(protocol.getLogin());
+			protocolDTO.setPassword(protocol.getPassword());
+			protocolDTO.setProtocolType(protocol.getProtocolType());
+			protocolDTO.setReadTimeOut(protocol.getReadTimeOut());
+			protocolDTO.setConnectionTimeOut(protocol.getConnectionTimeOut());
+			proxyDTO.setProtocolDTO(protocolDTO);
+		}
+		proxyDTO.setEnableProxy(proxy.isEnableProxy());
+		return proxyDTO;
 	}
 }

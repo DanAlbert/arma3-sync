@@ -211,8 +211,8 @@ public class FtpService extends AbstractConnexionService implements
 	/* Import autoconfig */
 
 	@Override
-	public AutoConfigDTO importAutoConfig(AbstractProtocole protocol,
-			AbstractProtocole proxyProtocol) throws IOException {
+	public AutoConfigDTO importAutoConfig(AbstractProtocole protocol)
+			throws IOException {
 
 		System.out.println("Importing autoconfig from url: "
 				+ protocol.getProtocolType().getPrompt()
@@ -222,8 +222,8 @@ public class FtpService extends AbstractConnexionService implements
 
 		AutoConfigDTO autoConfigDTO = null;
 		try {
-			AutoConfig autoConfig = ftpDAOPool.get(0).importAutoConfig(
-					protocol, proxyProtocol);
+			AutoConfig autoConfig = ftpDAOPool.get(0)
+					.importAutoConfig(protocol);
 			if (autoConfig != null) {
 				updateFavoriteServersFromAutoconfig(autoConfig);
 				autoConfigDTO = transformAutoConfig2DTO(autoConfig);

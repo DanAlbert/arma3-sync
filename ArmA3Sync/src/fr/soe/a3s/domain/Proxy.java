@@ -4,6 +4,7 @@ import java.io.Serializable;
 
 public class Proxy implements Serializable {
 
+	private static final long serialVersionUID = -50L;
 	private boolean proxyEnabled = false;
 	private AbstractProtocole proxyProtocol;// may be null
 

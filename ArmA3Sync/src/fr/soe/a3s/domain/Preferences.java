@@ -13,7 +13,7 @@ public class Preferences implements Serializable {
 	private static final long serialVersionUID = 7034433806261372240L;
 	private MinimizationType launchPanelGameLaunch = MinimizationType.TASK_BAR;
 	private MinimizationType launchPanelMinimized = MinimizationType.TASK_BAR;
-	private MinimizationType syncPanelMinimized = MinimizationType.TRAY;
+	private final MinimizationType syncPanelMinimized = MinimizationType.TRAY;
 	private LookAndFeel lookAndFeel = LookAndFeel.LAF_DEFAULT;
 
 	public MinimizationType getLaunchPanelGameLaunch() {

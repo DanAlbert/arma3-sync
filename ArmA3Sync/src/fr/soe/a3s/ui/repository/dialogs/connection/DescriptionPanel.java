@@ -31,7 +31,6 @@ import fr.soe.a3s.constant.ProtocolType;
 import fr.soe.a3s.dao.DataAccessConstants;
 import fr.soe.a3s.dao.connection.AutoConfigURLAccessMethods;
 import fr.soe.a3s.domain.AbstractProtocole;
-import fr.soe.a3s.domain.AbstractProtocoleFactory;
 import fr.soe.a3s.dto.AutoConfigDTO;
 import fr.soe.a3s.dto.ProtocolDTO;
 import fr.soe.a3s.exception.CheckException;
@@ -288,22 +287,9 @@ public class DescriptionPanel extends JPanel {
 						Font.ITALIC));
 				labelConnection.setForeground(Color.BLACK);
 
-				// Get Proxy protocol
-				AbstractProtocole proxyProtocol = null;
-				ProtocolDTO proxyProtocolDTO = repositoryEditionDialog
-						.getProxyConfigurationDialog().getProxyProtocolDTO();
-				if (proxyProtocolDTO != null) {
-					proxyProtocol = AbstractProtocoleFactory.getProtocol(
-							proxyProtocolDTO.getUrl(),
-							proxyProtocolDTO.getPort(),
-							proxyProtocolDTO.getLogin(),
-							proxyProtocolDTO.getPassword(),
-							proxyProtocolDTO.getProtocolType());
-				}
-
 				try {
-					AutoConfigDTO autoConfigDTO = connexion.importAutoConfig(
-							protocol, proxyProtocol);
+					AutoConfigDTO autoConfigDTO = connexion
+							.importAutoConfig(protocol);
 					if (autoConfigDTO != null) {
 
 						labelConnection.setText("Connection success!");
@@ -334,9 +320,9 @@ public class DescriptionPanel extends JPanel {
 						labelConnection.setFont(labelConnection.getFont()
 								.deriveFont(Font.ITALIC));
 						labelConnection.setForeground(Color.RED);
-						JOptionPane.showMessageDialog(
-								repositoryEditionDialog, e.getMessage(),
-								"Error", JOptionPane.ERROR_MESSAGE);
+						JOptionPane.showMessageDialog(repositoryEditionDialog,
+								e.getMessage(), "Error",
+								JOptionPane.ERROR_MESSAGE);
 					}
 				} finally {
 					buttonImport.setText("Import");

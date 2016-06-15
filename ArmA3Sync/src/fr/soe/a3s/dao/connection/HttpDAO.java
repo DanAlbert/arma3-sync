@@ -30,8 +30,7 @@ public class HttpDAO extends AbstractConnexionDAO {
 	private MyHttpConnection myHttpConnection;
 
 	private void connect(AbstractProtocole protocole,
-			String relativePathFromRepository, AbstractProtocole proxyProtocole)
-			throws IOException {
+			String relativePathFromRepository) throws IOException {
 
 		// Determine the full relativeUrl
 		String remotePath = protocole.getRemotePath();
@@ -40,7 +39,7 @@ public class HttpDAO extends AbstractConnexionDAO {
 		}
 
 		// open connection
-		myHttpConnection = new MyHttpConnection(protocole, proxyProtocole, this);
+		myHttpConnection = new MyHttpConnection(protocole, this);
 		myHttpConnection.openConnection(remotePath);
 	}
 
@@ -49,8 +48,7 @@ public class HttpDAO extends AbstractConnexionDAO {
 
 		boolean found = true;
 		try {
-			connect(repository.getProtocol(), relativePathFromRepository,
-					repository.getProxyProtocol());
+			connect(repository.getProtocol(), relativePathFromRepository);
 		} catch (IOException e) {
 			if (!canceled) {
 				String coreMessage = "Failed to connect to repository "
@@ -105,12 +103,11 @@ public class HttpDAO extends AbstractConnexionDAO {
 
 	private void downloadPartialFileWithRecordProgress(File file, String sha1,
 			String relativeFileUrl, String relativeZsyncFileUrl,
-			AbstractProtocole protocole, AbstractProtocole proxyProtocole)
-			throws IOException {
+			AbstractProtocole protocole) throws IOException {
 
 		try {
 			Jazsync.sync(file, sha1, relativeFileUrl, relativeZsyncFileUrl,
-					protocole, proxyProtocole, this);
+					protocole, this);
 		} catch (IOException e) {
 			String coreMessage = "Failed to retreive file " + relativeFileUrl;
 			IOException ioe = transferIOExceptionFactory(coreMessage, e);
@@ -211,8 +208,8 @@ public class HttpDAO extends AbstractConnexionDAO {
 		return events;
 	}
 
-	public AutoConfig importAutoConfig(AbstractProtocole protocole,
-			AbstractProtocole proxyProtocole) throws IOException {
+	public AutoConfig importAutoConfig(AbstractProtocole protocole)
+			throws IOException {
 
 		AutoConfig autoConfig = null;
 		File directory = new File(TEMP_FOLDER_PATH);
@@ -220,8 +217,7 @@ public class HttpDAO extends AbstractConnexionDAO {
 		String relativePath = AUTOCONFIG_FILE_PATH;
 
 		try {
-			connect(protocole, "/" + DataAccessConstants.AUTOCONFIG,
-					proxyProtocole);
+			connect(protocole, "/" + DataAccessConstants.AUTOCONFIG);
 		} catch (IOException e) {
 			String coreMessage = "Failed to retreive file " + relativePath;
 			IOException ioe = transferIOExceptionFactory(coreMessage, e);
@@ -321,8 +317,7 @@ public class HttpDAO extends AbstractConnexionDAO {
 				try {
 					downloadPartialFileWithRecordProgress(downloadedFile, sha1,
 							relativeFileUrl, relativeZsyncFileUrl,
-							repository.getProtocol(),
-							repository.getProxyProtocol());
+							repository.getProtocol());
 					if (!canceled) {
 						updateObserverDownloadTotalSizeProgress();
 						node.setDownloadStatus(DownloadStatus.DONE);
@@ -364,8 +359,7 @@ public class HttpDAO extends AbstractConnexionDAO {
 
 		try {
 			complete = Jazsync.getCompletion(targetFile, sha1,
-					relativeZsyncFileUrl, repository.getProtocol(),
-					repository.getProxyProtocol(), this);
+					relativeZsyncFileUrl, repository.getProtocol(), this);
 		} catch (IOException e) {
 			String coreMessage = "Failed to retreive file "
 					+ relativeZsyncFileUrl;

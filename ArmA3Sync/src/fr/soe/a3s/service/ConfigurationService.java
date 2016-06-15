@@ -1,21 +1,30 @@
 package fr.soe.a3s.service;
 
 import java.io.File;
+import java.net.Authenticator;
+import java.net.PasswordAuthentication;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
+import fr.soe.a3s.constant.ProtocolType;
 import fr.soe.a3s.dao.AddonDAO;
 import fr.soe.a3s.dao.ConfigurationDAO;
+import fr.soe.a3s.domain.AbstractProtocole;
+import fr.soe.a3s.domain.AbstractProtocoleFactory;
 import fr.soe.a3s.domain.Addon;
 import fr.soe.a3s.domain.configration.AiAOptions;
 import fr.soe.a3s.domain.configration.ExternalApplication;
 import fr.soe.a3s.domain.configration.FavoriteServer;
 import fr.soe.a3s.domain.configration.LauncherOptions;
+import fr.soe.a3s.domain.configration.Proxy;
+import fr.soe.a3s.dto.ProtocolDTO;
 import fr.soe.a3s.dto.configuration.AiAOptionsDTO;
 import fr.soe.a3s.dto.configuration.ExternalApplicationDTO;
 import fr.soe.a3s.dto.configuration.FavoriteServerDTO;
+import fr.soe.a3s.dto.configuration.ProxyDTO;
+import fr.soe.a3s.exception.CheckException;
 import fr.soe.a3s.exception.LoadingException;
 import fr.soe.a3s.exception.WritingException;
 
@@ -389,6 +398,92 @@ public class ConfigurationService extends ObjectDTOtransformer {
 
 	public int getWidth() {
 		return configurationDAO.getConfiguration().getWidth();
+	}
+
+	public ProxyDTO getProxy() {
+		Proxy proxy = configurationDAO.getConfiguration().getProxy();
+		ProxyDTO proxyDTO = transformProxy2DTO(proxy);
+		return proxyDTO;
+	}
+
+	public void setProxy(ProtocolDTO proxyProtocolDTO, boolean enableProxy)
+			throws CheckException {
+
+		final AbstractProtocole protocole = AbstractProtocoleFactory
+				.getProtocol(proxyProtocolDTO.getUrl(),
+						proxyProtocolDTO.getPort(),
+						proxyProtocolDTO.getLogin(),
+						proxyProtocolDTO.getPassword(),
+						proxyProtocolDTO.getProtocolType());
+		if (protocole == null) {
+			throw new CheckException("Proxy protocol type error.");
+		}
+
+		protocole.setConnectionTimeOut("0");
+		protocole.setReadTimeOut("0");
+
+		protocole.checkData();
+
+		configurationDAO.getConfiguration().getProxy()
+				.setProxyProtocol(protocole);
+		configurationDAO.getConfiguration().getProxy()
+				.setEnableProxy(enableProxy);
+	}
+
+	public void loadProxy() {
+
+		System.out.println("Loading proxy configuration...");
+
+		System.clearProperty("ftp.proxyHost");
+		System.clearProperty("ftp.proxyPort");
+		System.clearProperty("http.proxyHost");
+		System.clearProperty("http.proxyPort");
+		System.clearProperty("https.proxyHost");
+		System.clearProperty("https.proxyPort");
+		System.clearProperty("socksProxyHost");
+		System.clearProperty("socksProxyPort");
+
+		Proxy proxy = configurationDAO.getConfiguration().getProxy();
+		final AbstractProtocole protocole = proxy.getProxyProtocol();
+		boolean enableProxy = proxy.isEnableProxy();
+		if (protocole != null && enableProxy) {
+			ProtocolType protocolType = protocole.getProtocolType();
+			if (protocolType.equals(ProtocolType.FTP)) {
+				System.setProperty("ftp.proxyHost", protocole.getUrl());
+				System.setProperty("ftp.proxyPort", protocole.getPort());
+			} else if (protocolType.equals(ProtocolType.HTTP)) {
+				System.setProperty("http.proxyHost", protocole.getUrl());
+				System.setProperty("http.proxyPort", protocole.getPort());
+			} else if (protocolType.equals(ProtocolType.HTTPS)) {
+				System.setProperty("https.proxyHost", protocole.getUrl());
+				System.setProperty("https.proxyPort", protocole.getPort());
+			} else if (protocolType.equals(ProtocolType.SOCKS4)) {
+				System.setProperty("socksProxyHost", protocole.getUrl());
+				System.setProperty("socksProxyPort", protocole.getPort());
+			} else if (protocolType.equals(ProtocolType.SOCKS5)) {
+				System.setProperty("socksProxyHost", protocole.getUrl());
+				System.setProperty("socksProxyPort", protocole.getPort());
+			}
+			if (!protocole.getLogin().equals("anonymous")) {
+				Authenticator authenticator = new Authenticator() {
+					@Override
+					public PasswordAuthentication getPasswordAuthentication() {
+						return (new PasswordAuthentication(
+								protocole.getLogin(), protocole.getPassword()
+										.toCharArray()));
+					}
+				};
+				Authenticator.setDefault(authenticator);
+			} else {
+				Authenticator.setDefault(null);
+			}
+
+			System.out.println("Proxy loaded: " + protocole.getUrl() + ":"
+					+ protocole.getPort());
+
+		} else {
+			System.out.println("No proxy available.");
+		}
 	}
 
 	/* DEPRECATED */

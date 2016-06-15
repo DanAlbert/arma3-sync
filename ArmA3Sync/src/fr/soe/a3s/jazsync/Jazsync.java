@@ -82,14 +82,13 @@ public class Jazsync {
 	 */
 	public static void sync(File targetFile, String targetFileSha1,
 			String targetRelativeFileUrl, String relativeZsyncFileUrl,
-			AbstractProtocole protocole, AbstractProtocole proxyProtocole,
-			HttpDAO httpDAO) throws IOException, HttpException {
+			AbstractProtocole protocole, HttpDAO httpDAO) throws IOException,
+			HttpException {
 
 		assert (targetFile != null);
 		assert (relativeZsyncFileUrl != null);
 
-		MyHttpConnection http = new MyHttpConnection(protocole, proxyProtocole,
-				httpDAO);
+		MyHttpConnection http = new MyHttpConnection(protocole, httpDAO);
 		httpDAO.setConnexion(http);
 		MetaFileReader mfr = new MetaFileReader(relativeZsyncFileUrl, http);
 		FileMaker fm = new FileMaker(mfr, http);
@@ -104,8 +103,7 @@ public class Jazsync {
 	 */
 	public static double getCompletion(File targetFile, String targetFileSha1,
 			String relativeZsyncFileUrl, AbstractProtocole protocole,
-			AbstractProtocole proxyProtocole, HttpDAO httpDAO)
-			throws IOException, HttpException {
+			HttpDAO httpDAO) throws IOException, HttpException {
 
 		assert (targetFile != null);
 		assert (relativeZsyncFileUrl != null);
@@ -113,8 +111,7 @@ public class Jazsync {
 		if (!targetFile.exists()) {
 			return 0;
 		} else {
-			MyHttpConnection http = new MyHttpConnection(protocole,
-					proxyProtocole, httpDAO);
+			MyHttpConnection http = new MyHttpConnection(protocole, httpDAO);
 			httpDAO.setConnexion(http);
 			MetaFileReader mfr = new MetaFileReader(relativeZsyncFileUrl, http);
 			FileMaker fm = new FileMaker(mfr, http);

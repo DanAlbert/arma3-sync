@@ -75,6 +75,7 @@ import fr.soe.a3s.ui.help.AboutDialog;
 import fr.soe.a3s.ui.help.AutoConfigExportDialog;
 import fr.soe.a3s.ui.help.AutoConfigImportDialog;
 import fr.soe.a3s.ui.help.PreferencesDialog;
+import fr.soe.a3s.ui.help.ProxyConfigurationDialog;
 import fr.soe.a3s.ui.main.dialogs.InfoUpdatedRepositoryDialog;
 import fr.soe.a3s.ui.main.dialogs.WellcomeDialog;
 import fr.soe.a3s.ui.profiles.ProfileSelectionDialog;
@@ -480,6 +481,9 @@ public class MainPanel extends JFrame implements UIConstants {
 			System.out.println(e3.getMessage());
 		}
 
+		/* Set proxy configuration */
+		configurationService.loadProxy();
+
 		/* Ensure profile with name profileName really exists */
 		String profileName = configurationService.getProfileName();
 		if (profileName == null) {
@@ -796,6 +800,10 @@ public class MainPanel extends JFrame implements UIConstants {
 
 	private void menuItemConfigureProxyPerformed() {
 
+		ProxyConfigurationDialog proxyConfigurationDialog = new ProxyConfigurationDialog(
+				facade);
+		proxyConfigurationDialog.init();
+		proxyConfigurationDialog.setVisible(true);
 	}
 
 	private void menuItemuUpdatesPerformed() {

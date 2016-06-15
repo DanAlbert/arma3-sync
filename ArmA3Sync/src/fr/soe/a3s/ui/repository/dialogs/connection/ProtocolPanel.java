@@ -19,7 +19,7 @@ public class ProtocolPanel extends JPanel {
 
 	private JLabel labelProtocol;
 	private JComboBox comboBoxProtocol;
-	private ConnectionPanel connectionPanel;
+	private final ConnectionPanel connectionPanel;
 
 	public ProtocolPanel(ConnectionPanel connectionPanel) {
 
@@ -78,6 +78,10 @@ public class ProtocolPanel extends JPanel {
 		if (protocolType != null) {
 			this.connectionPanel.init(protocolType);
 		}
+	}
+
+	public void activate(boolean value) {
+		comboBoxProtocol.setEnabled(value);
 	}
 
 	public JLabel getLabelProtocol() {

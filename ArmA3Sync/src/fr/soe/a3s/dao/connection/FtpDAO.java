@@ -17,7 +17,6 @@ import org.apache.commons.io.output.CountingOutputStream;
 import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPFile;
-import org.apache.commons.net.ftp.FTPHTTPClient;
 import org.apache.commons.net.ftp.FTPReply;
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
@@ -46,21 +45,10 @@ public class FtpDAO extends AbstractConnexionDAO {
 	private int bufferSize = BUFFER_SIZE;
 	private long elapsedTime = 0;
 
-	private void connect(AbstractProtocole protocole,
-			AbstractProtocole proxyProtocole) throws IOException, FtpException {
+	private void connect(AbstractProtocole protocole) throws IOException,
+			FtpException {
 
-		if (proxyProtocole == null) {
-			ftpClient = new FTPClient();
-		} else {
-			if (!proxyProtocole.getLogin().equals("anonymous")) {
-				ftpClient = new FTPHTTPClient(proxyProtocole.getUrl(),
-						Integer.parseInt(proxyProtocole.getPort()),
-						proxyProtocole.getLogin(), proxyProtocole.getPassword());
-			} else {
-				ftpClient = new FTPHTTPClient(proxyProtocole.getUrl(),
-						Integer.parseInt(proxyProtocole.getPort()));
-			}
-		}
+		ftpClient = new FTPClient();
 
 		String port = protocole.getPort();
 		String login = protocole.getLogin();
@@ -100,7 +88,7 @@ public class FtpDAO extends AbstractConnexionDAO {
 	public void connectToRepository(Repository repository) throws IOException {
 
 		try {
-			connect(repository.getProtocol(), repository.getProxyProtocol());
+			connect(repository.getProtocol());
 		} catch (IOException e) {
 			if (!canceled) {
 				String coreMessage = "Failed to connect to repository "
@@ -383,9 +371,8 @@ public class FtpDAO extends AbstractConnexionDAO {
 		return autoConfig;
 	}
 
-	public AutoConfig importAutoConfig(AbstractProtocole protocol,
-			AbstractProtocole proxyProtocol) throws ConnectException,
-			IOException {
+	public AutoConfig importAutoConfig(AbstractProtocole protocol)
+			throws ConnectException, IOException {
 
 		AutoConfig autoConfig = null;
 		File directory = new File(TEMP_FOLDER_PATH);
@@ -395,7 +382,7 @@ public class FtpDAO extends AbstractConnexionDAO {
 
 		try {
 			try {
-				connect(protocol, proxyProtocol);
+				connect(protocol);
 			} catch (IOException e) {
 				String coreMessage = "Failed to connect to url: " + "\n"
 						+ protocol.getProtocolType().getPrompt()

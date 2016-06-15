@@ -2,15 +2,11 @@ package fr.soe.a3s.dao.connection;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.Authenticator;
-import java.net.ConnectException;
-import java.net.PasswordAuthentication;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
 import java.util.List;
 
-import fr.soe.a3s.constant.ProtocolType;
 import fr.soe.a3s.controller.ObservableCount;
 import fr.soe.a3s.controller.ObservableCountErrors;
 import fr.soe.a3s.controller.ObservableDownload;
@@ -23,7 +19,6 @@ import fr.soe.a3s.controller.ObserverProceed;
 import fr.soe.a3s.controller.ObserverText;
 import fr.soe.a3s.controller.ObserverUpload;
 import fr.soe.a3s.dao.DataAccessConstants;
-import fr.soe.a3s.domain.AbstractProtocole;
 import fr.soe.a3s.domain.repository.Repository;
 import fr.soe.a3s.dto.sync.SyncTreeLeafDTO;
 import fr.soe.a3s.dto.sync.SyncTreeNodeDTO;
@@ -55,6 +50,7 @@ public abstract class AbstractConnexionDAO implements DataAccessConstants,
 	protected long responseTime = 0;
 	protected double maximumClientDownloadSpeed = 0;
 
+	/***/
 	protected static final String UNKNOWN_HOST = "Host name cannot be reached."
 			+ "\n" + "Please checkout repository url, server DNS and firewall.";
 	protected static final String CONNECTION_TIME_OUT_REACHED = "Connection closed by ArmA3Sync: server didn't respond, connection timeout reached."
@@ -121,40 +117,6 @@ public abstract class AbstractConnexionDAO implements DataAccessConstants,
 				message = message + "\n" + e.getMessage();
 			}
 			return new IOException(message);
-		}
-	}
-
-	public void setProxy(AbstractProtocole proxyProtocole)
-			throws ConnectException {
-
-		if (proxyProtocole != null) {
-			if (proxyProtocole.getProtocolType().equals(ProtocolType.HTTP)) {
-				System.setProperty("http.proxyHost", proxyProtocole.getUrl());
-				System.setProperty("http.proxyPort", proxyProtocole.getPort());
-				if (!proxyProtocole.getLogin().equals("anonymous")) {
-					Authenticator.setDefault(new MyAuthenticator(proxyProtocole
-							.getLogin(), proxyProtocole.getPassword()));
-				}
-			} else {
-				throw new ConnectException("Unknown proxy protocol.");
-			}
-		}
-	}
-
-	private class MyAuthenticator extends Authenticator {
-
-		private final String username;
-		private final String password;
-
-		public MyAuthenticator(String username, String password) {
-			super();
-			this.username = username;
-			this.password = password;
-		}
-
-		@Override
-		protected PasswordAuthentication getPasswordAuthentication() {
-			return new PasswordAuthentication(username, password.toCharArray());
 		}
 	}
 

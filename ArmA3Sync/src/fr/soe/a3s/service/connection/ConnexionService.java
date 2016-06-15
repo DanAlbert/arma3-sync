@@ -34,8 +34,8 @@ public interface ConnexionService {
 			throws RepositoryException, IOException;
 
 	/* Import autoconfig */
-	public AutoConfigDTO importAutoConfig(AbstractProtocole protocol,
-			AbstractProtocole proxyProtocol) throws IOException;
+	public AutoConfigDTO importAutoConfig(AbstractProtocole protocol)
+			throws IOException;
 
 	/* Determine file completion */
 	public String determineFilesCompletion(String repositoryName,

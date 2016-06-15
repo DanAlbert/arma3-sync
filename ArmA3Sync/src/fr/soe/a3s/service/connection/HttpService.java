@@ -197,8 +197,8 @@ public class HttpService extends AbstractConnexionService implements
 	/* Import autoconfig */
 
 	@Override
-	public AutoConfigDTO importAutoConfig(AbstractProtocole protocol,
-			AbstractProtocole proxyProtocol) throws IOException {
+	public AutoConfigDTO importAutoConfig(AbstractProtocole protocol)
+			throws IOException {
 
 		System.out.println("Importing autoconfig from url: "
 				+ protocol.getProtocolType().getPrompt()
@@ -209,7 +209,7 @@ public class HttpService extends AbstractConnexionService implements
 		AutoConfigDTO autoConfigDTO = null;
 		try {
 			AutoConfig autoConfig = httpDAOPool.get(0).importAutoConfig(
-					protocol, proxyProtocol);
+					protocol);
 			if (autoConfig != null) {
 				updateFavoriteServersFromAutoconfig(autoConfig);
 				autoConfigDTO = transformAutoConfig2DTO(autoConfig);

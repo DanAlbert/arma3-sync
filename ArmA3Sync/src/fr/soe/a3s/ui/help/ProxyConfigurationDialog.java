@@ -1,4 +1,4 @@
-package fr.soe.a3s.ui.repository.dialogs.connection;
+package fr.soe.a3s.ui.help;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
@@ -12,10 +12,14 @@ import javax.swing.JOptionPane;
 import fr.soe.a3s.constant.ProtocolType;
 import fr.soe.a3s.dao.DataAccessConstants;
 import fr.soe.a3s.dto.ProtocolDTO;
+import fr.soe.a3s.dto.configuration.ProxyDTO;
 import fr.soe.a3s.exception.CheckException;
-import fr.soe.a3s.service.RepositoryService;
+import fr.soe.a3s.service.ConfigurationService;
 import fr.soe.a3s.ui.AbstractDialog;
 import fr.soe.a3s.ui.Facade;
+import fr.soe.a3s.ui.repository.dialogs.connection.ConnectionPanel;
+import fr.soe.a3s.ui.repository.dialogs.connection.ProtocolPanel;
+import fr.soe.a3s.ui.repository.dialogs.connection.ProxyPanel;
 
 public class ProxyConfigurationDialog extends AbstractDialog implements
 		DataAccessConstants {
@@ -24,10 +28,8 @@ public class ProxyConfigurationDialog extends AbstractDialog implements
 	private ProtocolPanel protocolPanel;
 	private ConnectionPanel connectionPanel;
 	private DefaultComboBoxModel comboBoxProtocolModel = null;
-	private ProtocolDTO proxyProtocolDTO;
-
-	/* Service */
-	private final RepositoryService repositoryService = new RepositoryService();
+	// Services
+	private final ConfigurationService configurationService = new ConfigurationService();
 
 	public ProxyConfigurationDialog(Facade facade) {
 		super(facade, "Configure proxy", true);
@@ -77,34 +79,30 @@ public class ProxyConfigurationDialog extends AbstractDialog implements
 	public void init() {
 
 		/* Init Protocol Section */
-		comboBoxProtocolModel = new DefaultComboBoxModel(
-				new String[] { ProtocolType.HTTP.getDescription() });
+		comboBoxProtocolModel = new DefaultComboBoxModel(new String[] {
+				ProtocolType.FTP.getDescription(),
+				ProtocolType.HTTP.getDescription(),
+				ProtocolType.HTTPS.getDescription(),
+				ProtocolType.SOCKS4.getDescription(),
+				ProtocolType.SOCKS5.getDescription() });
 		protocolPanel.init(comboBoxProtocolModel);
 
 		/* Init Connection Section */
-		connectionPanel.init(ProtocolType.HTTP);
-		connectionPanel.activate(false);
-
-		/* Init Proxy panel */
-		proxyPanel.getCheckBoxProxy().setSelected(false);
-	}
-
-	public void init(ProtocolDTO proxyProtocoleDTO, boolean isEnableProxy) {
-
-		/* Init Protocol Section */
-		comboBoxProtocolModel = new DefaultComboBoxModel(
-				new String[] { ProtocolType.HTTP.getDescription() });
-		protocolPanel.init(comboBoxProtocolModel);
-
-		/* Init Connection and Proxy Section */
-		connectionPanel.init(ProtocolType.HTTP);
-		connectionPanel.activate(false);
-		proxyPanel.getCheckBoxProxy().setSelected(false);
-
-		if (proxyProtocoleDTO != null) {
-			connectionPanel.init(proxyProtocoleDTO);
-			connectionPanel.activate(isEnableProxy);
-			proxyPanel.getCheckBoxProxy().setSelected(isEnableProxy);
+		ProxyDTO proxyDTO = configurationService.getProxy();
+		if (proxyDTO.getProtocolDTO() == null) {
+			comboBoxProtocolModel.setSelectedItem(ProtocolType.FTP
+					.getDescription());
+			connectionPanel.init(ProtocolType.FTP);
+			connectionPanel.activate(false);
+			protocolPanel.activate(false);
+			proxyPanel.getCheckBoxProxy().setSelected(false);
+		} else {
+			comboBoxProtocolModel.setSelectedItem(proxyDTO.getProtocolDTO()
+					.getProtocolType().getDescription());
+			connectionPanel.init(proxyDTO.getProtocolDTO());
+			connectionPanel.activate(proxyDTO.isEnableProxy());
+			protocolPanel.activate(proxyDTO.isEnableProxy());
+			proxyPanel.getCheckBoxProxy().setSelected(proxyDTO.isEnableProxy());
 		}
 	}
 
@@ -112,8 +110,10 @@ public class ProxyConfigurationDialog extends AbstractDialog implements
 
 		if (proxyPanel.getCheckBoxProxy().isSelected()) {
 			connectionPanel.activate(true);
+			protocolPanel.activate(true);
 		} else {
 			connectionPanel.activate(false);
+			protocolPanel.activate(false);
 		}
 	}
 
@@ -121,7 +121,7 @@ public class ProxyConfigurationDialog extends AbstractDialog implements
 	protected void buttonOKPerformed() {
 
 		try {
-			proxyProtocolDTO = new ProtocolDTO();
+			ProtocolDTO proxyProtocolDTO = new ProtocolDTO();
 			ProtocolType protocolType = ProtocolType
 					.getEnum((String) comboBoxProtocolModel.getSelectedItem());
 			proxyProtocolDTO.setUrl(connectionPanel.getUrl());
@@ -129,39 +129,27 @@ public class ProxyConfigurationDialog extends AbstractDialog implements
 			proxyProtocolDTO.setLogin(connectionPanel.getLogin());
 			proxyProtocolDTO.setPassword(connectionPanel.getPassword());
 			proxyProtocolDTO.setProtocolType(protocolType);
-			repositoryService.checkProxyProtocol(proxyProtocolDTO);
-			this.setVisible(false);
+			configurationService.setProxy(proxyProtocolDTO, isEnableProxy());
+			configurationService.loadProxy();
+			this.dispose();
 		} catch (CheckException e) {
-			proxyProtocolDTO = null;
 			if (isEnableProxy()) {
 				JOptionPane.showMessageDialog(this, e.getMessage(), "Warning",
 						JOptionPane.WARNING_MESSAGE);
 			} else {
-				this.setVisible(false);
+				this.dispose();
 			}
 		}
 	}
 
 	@Override
 	protected void buttonCancelPerformed() {
-		if (proxyProtocolDTO == null) {
-			proxyPanel.getCheckBoxProxy().setSelected(false);
-			connectionPanel.activate(false);
-		}
-		this.setVisible(false);
+		this.dispose();
 	}
 
 	@Override
 	protected void menuExitPerformed() {
-		if (proxyProtocolDTO == null) {
-			proxyPanel.getCheckBoxProxy().setSelected(false);
-			connectionPanel.activate(false);
-		}
-		this.setVisible(false);
-	}
-
-	public ProtocolDTO getProxyProtocolDTO() {
-		return proxyProtocolDTO;
+		this.dispose();
 	}
 
 	public boolean isEnableProxy() {

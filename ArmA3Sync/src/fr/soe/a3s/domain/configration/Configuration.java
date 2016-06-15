@@ -31,6 +31,7 @@ public class Configuration implements Serializable {
 	private Set<String> addonSearchDirectoryPaths = new TreeSet<String>();
 	@Deprecated
 	private LauncherOptions launcherOptions = new LauncherOptions();
+	private Proxy proxy = new Proxy();
 
 	public String getProfileName() {
 		return profileName;
@@ -147,6 +148,13 @@ public class Configuration implements Serializable {
 		this.defaultModset = defaultModset;
 	}
 
+	public Proxy getProxy() {
+		if (proxy == null) {
+			proxy = new Proxy();
+		}
+		return proxy;
+	}
+
 	/* DEPRECATED */
 
 	public Set<String> getAddonSearchDirectoryPaths() {
@@ -164,4 +172,5 @@ public class Configuration implements Serializable {
 	public void resetLauncherOptions() {
 		launcherOptions = null;
 	}
+
 }

@@ -40,7 +40,6 @@ import fr.soe.a3s.domain.repository.SyncTreeNode;
 import fr.soe.a3s.dto.AutoConfigDTO;
 import fr.soe.a3s.dto.ChangelogDTO;
 import fr.soe.a3s.dto.EventDTO;
-import fr.soe.a3s.dto.ProtocolDTO;
 import fr.soe.a3s.dto.RepositoryDTO;
 import fr.soe.a3s.dto.ServerInfoDTO;
 import fr.soe.a3s.dto.TreeDirectoryDTO;
@@ -1472,42 +1471,5 @@ public class RepositoryService extends ObjectDTOtransformer implements
 	public void cancel() {
 		this.repositorySHA1Processor.cancel();
 		this.repositoryBuildProcessor.cancel();
-	}
-
-	public void checkProxyProtocol(ProtocolDTO protocolDTO)
-			throws CheckException {
-
-		AbstractProtocole protocole = AbstractProtocoleFactory.getProtocol(
-				protocolDTO.getUrl(), protocolDTO.getPort(),
-				protocolDTO.getLogin(), protocolDTO.getPassword(),
-				protocolDTO.getProtocolType());
-		if (protocole == null) {
-			throw new CheckException("Protocol is not supported yet.");
-		}
-
-		protocole.checkData();
-	}
-
-	public void setProxyProtocol(String repositoryName,
-			ProtocolDTO proxypProtocolDTO, boolean enableProxy) {
-
-		Repository repository = repositoryDAO.getMap().get(repositoryName);
-		if (repository != null) {
-			if (proxypProtocolDTO == null) {
-				repository.setProxyProtocole(null);
-				repository.setEnableProxy(false);
-			} else {
-				AbstractProtocole proxyProtocole = AbstractProtocoleFactory
-						.getProtocol(proxypProtocolDTO.getUrl(),
-								proxypProtocolDTO.getPort(),
-								proxypProtocolDTO.getLogin(),
-								proxypProtocolDTO.getPassword(),
-								proxypProtocolDTO.getProtocolType());
-				proxyProtocole.setConnectionTimeOut("0");
-				proxyProtocole.setConnectionTimeOut("0");
-				repository.setProxyProtocole(proxyProtocole);
-				repository.setEnableProxy(enableProxy);
-			}
-		}
 	}
 }
