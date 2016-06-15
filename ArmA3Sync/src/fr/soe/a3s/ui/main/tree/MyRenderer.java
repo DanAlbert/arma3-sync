@@ -7,6 +7,7 @@ import javax.swing.JTree;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.TreePath;
 
+import fr.soe.a3s.dto.TreeLeafDTO;
 import fr.soe.a3s.dto.TreeNodeDTO;
 import fr.soe.a3s.ui.UIConstants;
 
@@ -30,7 +31,8 @@ public class MyRenderer extends DefaultTreeCellRenderer implements UIConstants {
 	private void setIcon(TreeNodeDTO treeNodeDTO) {
 
 		if (treeNodeDTO.isLeaf()) {
-			if (treeNodeDTO.isDuplicate()) {
+			TreeLeafDTO leaf = (TreeLeafDTO) treeNodeDTO;
+			if (leaf.isDuplicate()) {
 				setIcon(new ImageIcon(EXCLAMATION));
 			} else {
 				setIcon(new ImageIcon(BRICK));

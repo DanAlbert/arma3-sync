@@ -61,6 +61,9 @@ public class TreeLeafDTO implements TreeNodeDTO {
 		if (optional) {
 			stg = stg + " " + "(optional)";
 		}
+		if (duplicate){
+			stg = stg + " " + "(duplicate)";
+		}
 		return stg;
 	}
 
@@ -84,12 +87,10 @@ public class TreeLeafDTO implements TreeNodeDTO {
 		return optional;
 	}
 
-	@Override
 	public boolean isDuplicate() {
 		return this.duplicate;
 	}
 
-	@Override
 	public void setDuplicate(boolean value) {
 		this.duplicate = value;
 	}

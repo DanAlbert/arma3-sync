@@ -17,9 +17,7 @@ import fr.soe.a3s.dto.TreeNodeDTO;
 public class AddonTreeModel implements TreeModel {
 
 	private TreeDirectoryDTO root;
-
 	private Vector listeners = new Vector();
-	
 	private List<TreeNodeDTO> selectedNodes = new ArrayList<TreeNodeDTO>();
 
 	public AddonTreeModel(TreeDirectoryDTO treeDirectoryDTO) {

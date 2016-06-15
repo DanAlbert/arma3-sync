@@ -506,7 +506,7 @@ public class EventsPanel extends JPanel implements UIConstants {
 
 		try {
 			TreeDirectoryDTO treeDirectoryDTO = repositoryService
-					.getAddonTreeFromRepository(repositoryName, true);
+					.getAddonTreeFromRepository(repositoryName, true,false);
 
 			if (treeDirectoryDTO != null) {
 				arbre.removeAll();

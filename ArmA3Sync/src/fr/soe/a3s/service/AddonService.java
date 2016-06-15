@@ -176,6 +176,23 @@ public class AddonService {
 			cleanTree(d, availableAddonsTree);
 		}
 
+		// Mark duplicated Addon Name
+		List<String> duplicateNames = new ArrayList<String>();
+		for (Iterator<String> iter = addonDAO.getMap().keySet().iterator(); iter
+				.hasNext();) {
+			String key = iter.next();
+			Addon addon = addonDAO.getMap().get(key);
+			if (key.contains("*")) {
+				if (!duplicateNames.contains(addon.getName())) {
+					duplicateNames.add(addon.getName());
+				}
+			}
+		}
+
+		for (String name : duplicateNames) {
+			markAsDuplicatedAddon(name, availableAddonsTree);
+		}
+
 		return availableAddonsTree;
 	}
 
@@ -307,6 +324,27 @@ public class AddonService {
 		}
 	}
 
+	private void markAsDuplicatedAddon(String name, TreeNode node) {
+		
+		if (node.isLeaf()) {
+			TreeLeaf leaf = (TreeLeaf) node;
+			if (leaf.getName().equalsIgnoreCase(name)) {
+				leaf.setDuplicate(true);
+			} else if (leaf.getName().toLowerCase()
+					.contains(name.toLowerCase())
+					&& leaf.getName().contains("*")) {
+				leaf.setDuplicate(true);
+			} else {
+				leaf.setDuplicate(false);
+			}
+		} else {
+			TreeDirectory directory = (TreeDirectory) node;
+			for (TreeNode n : directory.getList()) {
+				markAsDuplicatedAddon(name, n);
+			}
+		}
+	}
+
 	public List<String> getAddonsByPriorityList() {
 
 		TreeDirectoryDTO availableAddonsList = getAvailableAddonsList();
@@ -414,6 +452,7 @@ public class AddonService {
 		TreeLeafDTO treeLeafDTO = new TreeLeafDTO();
 		treeLeafDTO.setName(treeLeaf.getName());
 		treeLeafDTO.setSelected(treeLeaf.isSelected());
+		treeLeafDTO.setDuplicate(treeLeaf.isDuplicate());
 		return treeLeafDTO;
 	}
 }

@@ -313,6 +313,7 @@ public class TreeDnD {
 							TreeLeafDTO newTreeLeaf = new TreeLeafDTO();
 							newTreeLeaf.setName(sourceTreeLeaf.getName());
 							newTreeLeaf.setSelected(false);
+							newTreeLeaf.setDuplicate(sourceTreeLeaf.isDuplicate());
 							newTreeLeaf.setParent(targetDirectory);
 							targetDirectory.addTreeNode(newTreeLeaf);
 							if (oldPaths[i].toString().contains("racine2")) {

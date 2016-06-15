@@ -172,6 +172,7 @@ public class ObjectDTOtransformer {
 		treeLeafDTO.setName(treeLeaf.getName());
 		treeLeafDTO.setSelected(treeLeaf.isSelected());
 		treeLeafDTO.setOptional(treeLeaf.isOptional());
+		treeLeafDTO.setDuplicate(treeLeaf.isDuplicate());
 		return treeLeafDTO;
 	}
 
@@ -207,6 +208,7 @@ public class ObjectDTOtransformer {
 		treeLeaf.setName(treeLeafDTO.getName());
 		treeLeaf.setSelected(treeLeafDTO.isSelected());
 		treeLeaf.setOptional(treeLeafDTO.isOptional());
+		treeLeaf.setDuplicate(treeLeafDTO.isDuplicate());
 		return treeLeaf;
 	}
 

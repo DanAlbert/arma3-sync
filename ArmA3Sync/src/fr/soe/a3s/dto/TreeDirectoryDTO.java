@@ -133,14 +133,4 @@ public class TreeDirectoryDTO implements TreeNodeDTO {
 	public void setModsetRepositoryName(String modsetRepositoryName) {
 		this.modsetRepositoryName = modsetRepositoryName;
 	}
-
-	@Override
-	public boolean isDuplicate() {
-		return this.duplicate;
-	}
-
-	@Override
-	public void setDuplicate(boolean value) {
-		this.duplicate = value;
-	}
 }

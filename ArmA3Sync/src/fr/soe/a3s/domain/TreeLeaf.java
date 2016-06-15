@@ -13,6 +13,7 @@ public class TreeLeaf implements TreeNode,Serializable{
 	private String name;
 	private boolean selected = false;
 	private boolean optional = false;
+	private boolean duplicate = false;
 	private TreeDirectory parent;
 	
 	public TreeLeaf(String name, TreeDirectory parent){
@@ -82,5 +83,13 @@ public class TreeLeaf implements TreeNode,Serializable{
 	@Override
 	public boolean isOptional() {
 		return this.optional;
+	}
+
+	public boolean isDuplicate() {
+		return duplicate;
+	}
+
+	public void setDuplicate(boolean duplicate) {
+		this.duplicate = duplicate;
 	}
 }

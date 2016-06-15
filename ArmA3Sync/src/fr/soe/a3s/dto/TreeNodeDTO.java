@@ -26,8 +26,4 @@ public interface TreeNodeDTO extends java.lang.Comparable {
 	public void setOptional(boolean value);
 
 	public boolean isOptional();
-
-	public boolean isDuplicate();
-
-	public void setDuplicate(boolean value);
 }
