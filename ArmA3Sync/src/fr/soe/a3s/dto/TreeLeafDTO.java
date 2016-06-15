@@ -1,14 +1,12 @@
 package fr.soe.a3s.dto;
 
-import javax.print.attribute.standard.MediaSize.ISO;
-
-
-public class TreeLeafDTO  implements TreeNodeDTO{
+public class TreeLeafDTO implements TreeNodeDTO {
 
 	private String name;
 	private boolean selected = false;
 	private boolean missing = false;
 	private boolean optional = false;
+	private boolean duplicate = false;
 	private TreeDirectoryDTO parent;
 
 	@Override
@@ -45,10 +43,10 @@ public class TreeLeafDTO  implements TreeNodeDTO{
 	public void setSelected(boolean value) {
 		this.selected = value;
 	}
-	
+
 	@Override
 	public int compareTo(Object other) {
-		String name =  ((TreeLeafDTO) other).getName();
+		String name = ((TreeLeafDTO) other).getName();
 		int result = 1;
 		if (name.compareToIgnoreCase(getName()) > 0)
 			result = -1;
@@ -56,19 +54,22 @@ public class TreeLeafDTO  implements TreeNodeDTO{
 			result = 0;
 		return result;
 	}
-	
-	public String toString(){
-		if (optional){
-			return name + " (optional)";
-		}else {
-			return name;
+
+	@Override
+	public String toString() {
+		String stg = name;
+		if (optional) {
+			stg = stg + " " + "(optional)";
 		}
+		return stg;
 	}
 
+	@Override
 	public boolean isMissing() {
 		return missing;
 	}
 
+	@Override
 	public void setMissing(boolean missing) {
 		this.missing = missing;
 	}
@@ -83,4 +84,13 @@ public class TreeLeafDTO  implements TreeNodeDTO{
 		return optional;
 	}
 
+	@Override
+	public boolean isDuplicate() {
+		return this.duplicate;
+	}
+
+	@Override
+	public void setDuplicate(boolean value) {
+		this.duplicate = value;
+	}
 }

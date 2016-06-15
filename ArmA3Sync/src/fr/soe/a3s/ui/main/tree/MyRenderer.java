@@ -8,11 +8,11 @@ import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.TreePath;
 
 import fr.soe.a3s.dto.TreeNodeDTO;
-import fr.soe.a3s.dto.sync.SyncTreeNodeDTO;
 import fr.soe.a3s.ui.UIConstants;
 
 public class MyRenderer extends DefaultTreeCellRenderer implements UIConstants {
 
+	@Override
 	public Component getTreeCellRendererComponent(JTree tree, Object value,
 			boolean sel, boolean expanded, boolean isLeaf, int row,
 			boolean hasFocus) {
@@ -30,7 +30,11 @@ public class MyRenderer extends DefaultTreeCellRenderer implements UIConstants {
 	private void setIcon(TreeNodeDTO treeNodeDTO) {
 
 		if (treeNodeDTO.isLeaf()) {
-			setIcon(new ImageIcon(BRICK));
+			if (treeNodeDTO.isDuplicate()) {
+				setIcon(new ImageIcon(EXCLAMATION));
+			} else {
+				setIcon(new ImageIcon(BRICK));
+			}
 		}
 	}
 }

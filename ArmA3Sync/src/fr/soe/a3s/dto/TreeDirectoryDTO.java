@@ -12,6 +12,7 @@ public class TreeDirectoryDTO implements TreeNodeDTO {
 	private boolean selected = false;
 	private boolean missing = false;
 	private boolean optional = false;
+	private boolean duplicate = false;
 	private ModsetType modsetType;
 	private String modsetRepositoryName;
 	private TreeDirectoryDTO parent;
@@ -131,5 +132,15 @@ public class TreeDirectoryDTO implements TreeNodeDTO {
 
 	public void setModsetRepositoryName(String modsetRepositoryName) {
 		this.modsetRepositoryName = modsetRepositoryName;
+	}
+
+	@Override
+	public boolean isDuplicate() {
+		return this.duplicate;
+	}
+
+	@Override
+	public void setDuplicate(boolean value) {
+		this.duplicate = value;
 	}
 }

@@ -311,19 +311,20 @@ public class AddonService {
 
 		TreeDirectoryDTO availableAddonsList = getAvailableAddonsList();
 		List<String> availableAddonsByName = new ArrayList<String>();
-		for (TreeNodeDTO node:availableAddonsList.getList()){
+		for (TreeNodeDTO node : availableAddonsList.getList()) {
 			availableAddonsByName.add(node.getName());
 		}
-		Collections.sort( availableAddonsByName, new SortIgnoreCase());
+		Collections.sort(availableAddonsByName, new SortIgnoreCase());
 
 		String profileName = configurationDAO.getConfiguration()
 				.getProfileName();
 		Profile profile = profileDAO.getMap().get(profileName);
 		if (profile != null) {
-			List<String> addonNamesByPriority = profile.getAddonNamesByPriority();
-			if (availableAddonsByName.isEmpty()){
+			List<String> addonNamesByPriority = profile
+					.getAddonNamesByPriority();
+			if (availableAddonsByName.isEmpty()) {
 				addonNamesByPriority.clear();
-			}else {
+			} else {
 				Iterator iter = availableAddonsByName.iterator();
 				while (iter.hasNext()) {
 					String name = (String) iter.next();
@@ -343,7 +344,7 @@ public class AddonService {
 		}
 		return null;
 	}
-	
+
 	private class SortIgnoreCase implements Comparator<Object> {
 		@Override
 		public int compare(Object o1, Object o2) {
