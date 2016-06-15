@@ -165,28 +165,33 @@ public class ConnectionDownloadProcessor implements DataAccessConstants {
 			});
 		}
 
-		for (final AbstractConnexionDAO connexionDAO : connexionDAOs) {
-			if (!downloadFilesStack.isEmpty()) {// nb files < nb connections
-				try {
-					if (connexionDAO instanceof FtpDAO) {
-						((FtpDAO) connexionDAO).connectToRepository(repository);
-					} else if (connexionDAO instanceof HttpDAO) {
-						((HttpDAO) connexionDAO).connectToRepository(
-								repository, SYNC_FILE_PATH);
-						((HttpDAO) connexionDAO).disconnect();
-					}
-					connexionDAO.updateObserverProceed();
-				} catch (IOException e) {
-					boolean isDowloading = false;
-					connexionDAO.setActiveConnection(false);
-					for (final AbstractConnexionDAO cDAO : connexionDAOs) {
-						if (cDAO.isActiveConnection()) {
-							isDowloading = true;
-							break;
+		if (downloadFilesStack.isEmpty()) {
+			connexionDAOs.get(0).updateObserverProceed();
+		} else {
+			for (final AbstractConnexionDAO connexionDAO : connexionDAOs) {
+				if (!downloadFilesStack.isEmpty()) {// nb files < nb connections
+					try {
+						if (connexionDAO instanceof FtpDAO) {
+							((FtpDAO) connexionDAO)
+									.connectToRepository(repository);
+						} else if (connexionDAO instanceof HttpDAO) {
+							((HttpDAO) connexionDAO).connectToRepository(
+									repository, SYNC_FILE_PATH);
+							((HttpDAO) connexionDAO).disconnect();
 						}
-					}
-					if (!isDowloading) {
-						throw e;
+						connexionDAO.updateObserverProceed();
+					} catch (IOException e) {
+						boolean isDowloading = false;
+						connexionDAO.setActiveConnection(false);
+						for (final AbstractConnexionDAO cDAO : connexionDAOs) {
+							if (cDAO.isActiveConnection()) {
+								isDowloading = true;
+								break;
+							}
+						}
+						if (!isDowloading) {
+							throw e;
+						}
 					}
 				}
 			}
