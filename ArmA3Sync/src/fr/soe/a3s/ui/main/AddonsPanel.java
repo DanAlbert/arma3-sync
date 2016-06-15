@@ -86,16 +86,16 @@ public class AddonsPanel extends JPanel implements UIConstants {
 	private TreeDnD treeDnD;
 	private JMenuItem menuItemAddGroup, menuItemDuplicate, menuItemRename,
 			menuItemRemove;
-	private final ConfigurationService configurationService = new ConfigurationService();
-	private final ProfileService profileService = new ProfileService();
-	private final LaunchService launchService = new LaunchService();
 	private TreePath arbre2TreePath;
 	private JButton buttonRefresh;
 	private TreePath arbre2NewTreePath;
 	private JCheckBox checkBoxSelectAll;
 	private JCheckBox checkBoxExpandAll;
 	private JButton buttonModsets;
-	// Service
+	// Services
+	private final ConfigurationService configurationService = new ConfigurationService();
+	private final ProfileService profileService = new ProfileService();
+	private final LaunchService launchService = new LaunchService();
 	private final AddonService addonService = new AddonService();
 	private final RepositoryService repositoryService = new RepositoryService();
 
