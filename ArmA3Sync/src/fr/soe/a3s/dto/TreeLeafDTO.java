@@ -62,7 +62,7 @@ public class TreeLeafDTO implements TreeNodeDTO {
 			stg = stg + " " + "(optional)";
 		}
 		if (duplicate){
-			stg = stg + " " + "(duplicate)";
+			stg = stg + " " + "(duplicate available)";
 		}
 		return stg;
 	}

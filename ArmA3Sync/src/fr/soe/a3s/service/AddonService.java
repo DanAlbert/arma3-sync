@@ -20,7 +20,7 @@ import fr.soe.a3s.dto.TreeDirectoryDTO;
 import fr.soe.a3s.dto.TreeLeafDTO;
 import fr.soe.a3s.dto.TreeNodeDTO;
 
-public class AddonService {
+public class AddonService extends ObjectDTOtransformer {
 
 	private static final ConfigurationDAO configurationDAO = new ConfigurationDAO();
 	private static final ProfileDAO profileDAO = new ProfileDAO();
@@ -176,24 +176,11 @@ public class AddonService {
 			cleanTree(d, availableAddonsTree);
 		}
 
-		// Mark duplicated Addon Name
-		List<String> duplicateNames = new ArrayList<String>();
-		for (Iterator<String> iter = addonDAO.getMap().keySet().iterator(); iter
-				.hasNext();) {
-			String key = iter.next();
-			Addon addon = addonDAO.getMap().get(key);
-			if (key.contains("*")) {
-				if (!duplicateNames.contains(addon.getName())) {
-					duplicateNames.add(addon.getName());
-				}
-			}
-		}
-
-		for (String name : duplicateNames) {
-			markAsDuplicatedAddon(name, availableAddonsTree);
-		}
-
 		return availableAddonsTree;
+	}
+
+	public boolean hasDuplicate(String name) {
+		return addonDAO.hasDuplicate(name);
 	}
 
 	public TreeDirectoryDTO getAvailableAddonsTree() {
@@ -270,7 +257,7 @@ public class AddonService {
 						.getAbsolutePath());
 
 				// Determine the symbolic key
-				String key = determineNewAdddonKey(name);
+				String key = addonDAO.determineNewAddonKey(name);
 				addonDAO.getMap().put(key.toLowerCase(), addon);
 
 				// Set directory name with addon key
@@ -284,16 +271,6 @@ public class AddonService {
 					generateTree(f, treeDirectory);
 				}
 			}
-		}
-	}
-
-	private String determineNewAdddonKey(String key) {
-
-		if (addonDAO.getMap().containsKey(key.toLowerCase())) {
-			String newKey = key + "*";
-			return determineNewAdddonKey(newKey);
-		} else {
-			return key;
 		}
 	}
 
@@ -323,27 +300,8 @@ public class AddonService {
 			directoryCleaned.addTreeNode(newTreelLeaf);
 		}
 	}
+	
 
-	private void markAsDuplicatedAddon(String name, TreeNode node) {
-		
-		if (node.isLeaf()) {
-			TreeLeaf leaf = (TreeLeaf) node;
-			if (leaf.getName().equalsIgnoreCase(name)) {
-				leaf.setDuplicate(true);
-			} else if (leaf.getName().toLowerCase()
-					.contains(name.toLowerCase())
-					&& leaf.getName().contains("*")) {
-				leaf.setDuplicate(true);
-			} else {
-				leaf.setDuplicate(false);
-			}
-		} else {
-			TreeDirectory directory = (TreeDirectory) node;
-			for (TreeNode n : directory.getList()) {
-				markAsDuplicatedAddon(name, n);
-			}
-		}
-	}
 
 	public List<String> getAddonsByPriorityList() {
 
@@ -420,39 +378,5 @@ public class AddonService {
 		} else {
 			return addon.getPath();
 		}
-	}
-
-	/* Business methods */
-
-	public void transformTreeDirectory2DTO(TreeDirectory treeDirectory,
-			TreeDirectoryDTO treeDirectoryDTO) {
-
-		List<TreeNode> list = treeDirectory.getList();
-
-		for (TreeNode treeNode : list) {
-			if (treeNode.isLeaf()) {
-				TreeLeaf treeLeaf = (TreeLeaf) treeNode;
-				TreeLeafDTO treeLeafDTO = transformTreeLeaf2DTO(treeLeaf);
-				treeLeafDTO.setParent(treeDirectoryDTO);
-				treeDirectoryDTO.addTreeNode(treeLeafDTO);
-			} else {
-				TreeDirectory treeDirectory2 = (TreeDirectory) treeNode;
-				TreeDirectoryDTO treedDirectoryDTO2 = new TreeDirectoryDTO();
-				treedDirectoryDTO2.setName(treeDirectory2.getName());
-				treedDirectoryDTO2.setSelected(treeDirectory2.isSelected());
-				treedDirectoryDTO2.setParent(treeDirectoryDTO);
-				treeDirectoryDTO.addTreeNode(treedDirectoryDTO2);
-				transformTreeDirectory2DTO(treeDirectory2, treedDirectoryDTO2);
-			}
-		}
-	}
-
-	private TreeLeafDTO transformTreeLeaf2DTO(TreeLeaf treeLeaf) {
-
-		TreeLeafDTO treeLeafDTO = new TreeLeafDTO();
-		treeLeafDTO.setName(treeLeaf.getName());
-		treeLeafDTO.setSelected(treeLeaf.isSelected());
-		treeLeafDTO.setDuplicate(treeLeaf.isDuplicate());
-		return treeLeafDTO;
 	}
 }

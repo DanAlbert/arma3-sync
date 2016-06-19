@@ -13,4 +13,27 @@ public class AddonDAO {
 	public Map<String, Addon> getMap() {
 		return mapAddons;
 	}
+
+	public String determineNewAddonKey(String key) {
+
+		if (mapAddons.containsKey(key.toLowerCase())) {
+			String newKey = key + "*";
+			return determineNewAddonKey(newKey);
+		} else {
+			return key;
+		}
+	}
+
+	public boolean hasDuplicate(String name) {
+
+		if (name.contains("*")) {
+			return true;
+		} else {
+			String key = name.toLowerCase() + "*";
+			if (mapAddons.containsKey(key)) {
+				return true;
+			}
+		}
+		return false;
+	}
 }

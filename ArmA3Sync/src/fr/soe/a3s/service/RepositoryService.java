@@ -892,25 +892,6 @@ public class RepositoryService extends ObjectDTOtransformer implements
 					cleanTree(d, racineCleaned);
 				}
 
-				// Marck duplicate Addon Names
-				if (markDuplicate){
-					List<String> duplicateNames = new ArrayList<String>();
-					for (Iterator<String> iter = addonDAO.getMap().keySet()
-							.iterator(); iter.hasNext();) {
-						String key = iter.next();
-						Addon addon = addonDAO.getMap().get(key);
-						if (key.contains("*")) {
-							if (!duplicateNames.contains(addon.getName())) {
-								duplicateNames.add(addon.getName());
-							}
-						}
-					}
-
-					for (String name : duplicateNames) {
-						markAsDuplicatedAddon(name, racineCleaned);
-					}
-				}
-
 				// Userconfig
 				if (withUserconfig) {
 					for (SyncTreeNode node : parent.getList()) {
@@ -936,27 +917,6 @@ public class RepositoryService extends ObjectDTOtransformer implements
 			}
 		} else {
 			throw new RepositoryNotFoundException(repositoryName);
-		}
-	}
-
-	private void markAsDuplicatedAddon(String name, TreeNode node) {
-		
-		if (node.isLeaf()) {
-			TreeLeaf leaf = (TreeLeaf) node;
-			if (leaf.getName().equalsIgnoreCase(name)) {
-				leaf.setDuplicate(true);
-			} else if (leaf.getName().toLowerCase()
-					.contains(name.toLowerCase())
-					&& leaf.getName().contains("*")) {
-				leaf.setDuplicate(true);
-			} else {
-				leaf.setDuplicate(false);
-			}
-		} else {
-			TreeDirectory directory = (TreeDirectory) node;
-			for (TreeNode n : directory.getList()) {
-				markAsDuplicatedAddon(name, n);
-			}
 		}
 	}
 

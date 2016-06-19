@@ -167,18 +167,8 @@ public class ModdsetsSelectionDialog extends AbstractDialog {
 						.createGroupFromEvents(selectedEventDTOs);
 			}
 		}
-
-		List<String> repositoryNamesForSync = new ArrayList<String>();
-		{
-			for (RepositoryDTO repositoryDTO : selectedRepositoryDTOs) {
-				repositoryNamesForSync.add(repositoryDTO.getName());
-			}
-			for (EventDTO eventDTO : selectedEventDTOs) {
-				repositoryNamesForSync.add(eventDTO.getRepositoryName());
-			}
-		}
-		facade.getAddonsPanel().updateModsetSelection(repositoryNamesForSync);
 		this.dispose();
+		facade.getAddonsPanel().lookForDuplicates();
 	}
 
 	@Override

@@ -136,6 +136,25 @@ public class ObjectDTOtransformer {
 		aiaOptionsDTO.setAllinArmaPath(aiaOptions.getAllinArmaPath());
 		return aiaOptionsDTO;
 	}
+	
+	protected ProxyDTO transformProxy2DTO(Proxy proxy) {
+
+		final ProxyDTO proxyDTO = new ProxyDTO();
+		AbstractProtocole protocol = proxy.getProxyProtocol();
+		if (protocol != null) {
+			ProtocolDTO protocolDTO = new ProtocolDTO();
+			protocolDTO.setUrl(protocol.getUrl());
+			protocolDTO.setPort(protocol.getPort());
+			protocolDTO.setLogin(protocol.getLogin());
+			protocolDTO.setPassword(protocol.getPassword());
+			protocolDTO.setProtocolType(protocol.getProtocolType());
+			protocolDTO.setReadTimeOut(protocol.getReadTimeOut());
+			protocolDTO.setConnectionTimeOut(protocol.getConnectionTimeOut());
+			proxyDTO.setProtocolDTO(protocolDTO);
+		}
+		proxyDTO.setEnableProxy(proxy.isEnableProxy());
+		return proxyDTO;
+	}
 
 	/* Profile */
 
@@ -354,26 +373,6 @@ public class ObjectDTOtransformer {
 		return syncTreeLeafDTO;
 	}
 
-	private void propagateUpdatedStatus(
-			SyncTreeDirectoryDTO syncTreeDirectoryDTO) {
-
-		if (syncTreeDirectoryDTO != null) {
-			syncTreeDirectoryDTO.setUpdated(true);
-			SyncTreeDirectoryDTO parentDTO = syncTreeDirectoryDTO.getParent();
-			propagateUpdatedStatus(parentDTO);
-		}
-	}
-
-	private void propagateDeletedStatus(
-			SyncTreeDirectoryDTO syncTreeDirectoryDTO) {
-
-		if (syncTreeDirectoryDTO != null) {
-			syncTreeDirectoryDTO.setDeleted(true);
-			SyncTreeDirectoryDTO parentDTO = syncTreeDirectoryDTO.getParent();
-			propagateDeletedStatus(parentDTO);
-		}
-	}
-
 	protected ChangelogDTO transformChangelog2DTO(Changelog changelog) {
 
 		final ChangelogDTO changelogDTO = new ChangelogDTO();
@@ -422,24 +421,5 @@ public class ObjectDTOtransformer {
 			eventDTO.getUserconfigFolderNames().put(key, value);
 		}
 		return eventDTO;
-	}
-
-	protected ProxyDTO transformProxy2DTO(Proxy proxy) {
-
-		ProxyDTO proxyDTO = new ProxyDTO();
-		AbstractProtocole protocol = proxy.getProxyProtocol();
-		if (protocol != null) {
-			ProtocolDTO protocolDTO = new ProtocolDTO();
-			protocolDTO.setUrl(protocol.getUrl());
-			protocolDTO.setPort(protocol.getPort());
-			protocolDTO.setLogin(protocol.getLogin());
-			protocolDTO.setPassword(protocol.getPassword());
-			protocolDTO.setProtocolType(protocol.getProtocolType());
-			protocolDTO.setReadTimeOut(protocol.getReadTimeOut());
-			protocolDTO.setConnectionTimeOut(protocol.getConnectionTimeOut());
-			proxyDTO.setProtocolDTO(protocolDTO);
-		}
-		proxyDTO.setEnableProxy(proxy.isEnableProxy());
-		return proxyDTO;
 	}
 }

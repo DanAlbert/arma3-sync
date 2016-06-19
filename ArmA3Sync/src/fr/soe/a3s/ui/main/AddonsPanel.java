@@ -40,6 +40,7 @@ import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 
 import fr.soe.a3s.constant.ModsetType;
+import fr.soe.a3s.domain.TreeNode;
 import fr.soe.a3s.dto.EventDTO;
 import fr.soe.a3s.dto.RepositoryDTO;
 import fr.soe.a3s.dto.TreeDirectoryDTO;
@@ -442,6 +443,7 @@ public class AddonsPanel extends JPanel implements UIConstants {
 		addonTreeModel2 = new AddonTreeModel(racine2);
 		arbre2.setModel(addonTreeModel2);
 		highlightMissingAddons();
+		highlightDuplicatedAddons();
 		expandAddonGroups();
 		refreshViewArbre2();
 		arbre2.setEnabled(true);
@@ -462,6 +464,27 @@ public class AddonsPanel extends JPanel implements UIConstants {
 			TreeDirectoryDTO treeDirectoryDTO = (TreeDirectoryDTO) treeNodeDTO;
 			for (TreeNodeDTO t : treeDirectoryDTO.getList()) {
 				markAsMissing(t, addonNames);
+			}
+		}
+	}
+
+	public void highlightDuplicatedAddons() {
+
+		for (TreeNodeDTO treeNodeDTO : racine2.getList()) {
+			markAsDuplicated(treeNodeDTO);
+		}
+	}
+
+	private void markAsDuplicated(TreeNodeDTO treeNodeDTO) {
+		if (treeNodeDTO.isLeaf()) {
+			TreeLeafDTO leaf = (TreeLeafDTO) treeNodeDTO;
+			boolean duplicated = addonService.hasDuplicate(treeNodeDTO
+					.getName());
+			leaf.setDuplicate(duplicated);
+		} else if (!treeNodeDTO.isLeaf()) {
+			TreeDirectoryDTO treeDirectoryDTO = (TreeDirectoryDTO) treeNodeDTO;
+			for (TreeNodeDTO t : treeDirectoryDTO.getList()) {
+				markAsDuplicated(t);
 			}
 		}
 	}
@@ -857,7 +880,7 @@ public class AddonsPanel extends JPanel implements UIConstants {
 		for (String repositoryName : repositoryNames) {
 			try {
 				TreeDirectoryDTO directory = repositoryService
-						.getAddonTreeFromRepository(repositoryName, false,true);
+						.getAddonTreeFromRepository(repositoryName, false, true);
 				if (directory != null) {
 					TreeNodeDTO nodeToRemove = null;
 					for (TreeNodeDTO node : racine2.getList()) {
@@ -881,7 +904,6 @@ public class AddonsPanel extends JPanel implements UIConstants {
 
 		saveAddonGroups();
 		updateAddonGroups();
-
 		facade.getAddonOptionsPanel().updateAddonPriorities();
 		facade.getLaunchOptionsPanel().updateRunParameters();
 	}
@@ -989,7 +1011,8 @@ public class AddonsPanel extends JPanel implements UIConstants {
 					getSelectedAddonPaths(treeDirectoryDTO, selectdAddonPaths);
 					racine2.removeTreeNode(treeDirectoryDTO);
 					TreeDirectoryDTO newTreeDirectoryDTO = repositoryService
-							.getAddonTreeFromRepository(repositoryName, false,true);
+							.getAddonTreeFromRepository(repositoryName, false,
+									true);
 					if (newTreeDirectoryDTO != null) {
 						newTreeDirectoryDTO.setName(repositoryName);
 						newTreeDirectoryDTO.setParent(racine2);
@@ -1145,6 +1168,33 @@ public class AddonsPanel extends JPanel implements UIConstants {
 			TreeDirectoryDTO directory = (TreeDirectoryDTO) node;
 			for (TreeNodeDTO n : directory.getList()) {
 				setSelectedPaths(n, selectdAddonPaths);
+			}
+		}
+	}
+
+	public void lookForDuplicates() {
+
+		List<String> duplicateNames = new ArrayList<String>();
+		findDuplicate(racine2, duplicateNames);
+		if (!duplicateNames.isEmpty()) {
+			JOptionPane.showMessageDialog(facade.getMainPanel(),
+					"Duplicate addon name available.", "Warning",
+					JOptionPane.WARNING_MESSAGE);
+		}
+	}
+
+	private void findDuplicate(TreeNodeDTO node, List<String> duplicateNames) {
+
+		boolean found = false;
+		if (node.isLeaf()) {
+			TreeLeafDTO leaf = (TreeLeafDTO) node;
+			if (leaf.isDuplicate()) {
+				duplicateNames.add(leaf.getName());
+			}
+		} else {
+			TreeDirectoryDTO directory = (TreeDirectoryDTO) node;
+			for (TreeNodeDTO n : directory.getList()) {
+				findDuplicate(n, duplicateNames);
 			}
 		}
 	}

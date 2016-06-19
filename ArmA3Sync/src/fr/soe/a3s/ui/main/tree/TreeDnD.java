@@ -331,12 +331,11 @@ public class TreeDnD {
 			}
 
 			facade.getAddonsPanel().saveAddonGroups();
+			facade.getAddonsPanel().refreshViewArbre2();
 			if (oldTreeNodeDTO.isLeaf()) {
-				facade.getAddonsPanel().refreshViewArbre2();
 				facade.getAddonsPanel().expand(newPath);
-			} else {
-				facade.getAddonsPanel().updateAddonGroups();
-			}
+			} 
+			facade.getAddonsPanel().highlightDuplicatedAddons();
 			facade.getAddonOptionsPanel().updateAddonPriorities();
 			facade.getLaunchOptionsPanel().updateRunParameters();
 
