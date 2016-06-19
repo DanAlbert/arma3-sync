@@ -45,7 +45,6 @@ public abstract class AbstractDialog extends JDialog implements UIConstants {
 					panelControl.setLayout(flowLayout);
 					panelControl.add(buttonOK);
 					panelControl.add(buttonCancel);
-					buttonOK.setPreferredSize(buttonCancel.getPreferredSize());
 					vBox.add(panelControl);
 				}
 				this.add(vBox, BorderLayout.SOUTH);

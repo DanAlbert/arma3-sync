@@ -31,6 +31,10 @@ public class UploadRepositoryConnectionDialog extends AbstractDialog {
 		this.setResizable(false);
 
 		{
+			buttonOK.setPreferredSize(buttonCancel.getPreferredSize());
+			getRootPane().setDefaultButton(buttonOK);
+		}
+		{
 			Box vBox = Box.createVerticalBox();
 			this.add(vBox, BorderLayout.CENTER);
 			{
