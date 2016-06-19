@@ -43,22 +43,17 @@ public class HttpDAO extends AbstractConnexionDAO {
 		myHttpConnection.openConnection(remotePath);
 	}
 
-	public void connectToRepository(Repository repository,
+	public void connectToRepository(AbstractProtocole protocole,
 			String relativePathFromRepository) throws IOException {
 
 		boolean found = true;
 		try {
-			connect(repository.getProtocol(), relativePathFromRepository);
+			connect(protocole, relativePathFromRepository);
 		} catch (IOException e) {
 			if (!canceled) {
-				String coreMessage = "Failed to connect to repository "
-						+ repository.getName()
-						+ " on url: "
-						+ "\n"
-						+ repository.getProtocol().getProtocolType()
-								.getPrompt()
-						+ repository.getProtocol().getUrl()
-						+ relativePathFromRepository;
+				String coreMessage = "Failed to connect to repository on url: "
+						+ "\n" + protocole.getProtocolType().getPrompt()
+						+ protocole.getUrl() + relativePathFromRepository;
 				IOException ioe = transferIOExceptionFactory(coreMessage, e);
 				throw ioe;
 			}
@@ -128,7 +123,7 @@ public class HttpDAO extends AbstractConnexionDAO {
 
 		try {
 			directory.mkdir();
-			connectToRepository(repository, SYNC_FILE_PATH);
+			connectToRepository(repository.getProtocol(), SYNC_FILE_PATH);
 			downloadFile(file, SYNC_FILE_PATH);
 			sync = A3SFilesAccessor.readSyncFile(file);
 		} finally {
@@ -146,7 +141,7 @@ public class HttpDAO extends AbstractConnexionDAO {
 
 		try {
 			directory.mkdir();
-			connectToRepository(repository, SERVERINFO_FILE_PATH);
+			connectToRepository(repository.getProtocol(), SERVERINFO_FILE_PATH);
 			downloadFile(file, SERVERINFO_FILE_PATH);
 			serverInfo = A3SFilesAccessor.readServerInfoFile(file);
 		} finally {
@@ -164,7 +159,7 @@ public class HttpDAO extends AbstractConnexionDAO {
 
 		try {
 			directory.mkdir();
-			connectToRepository(repository, CHANGELOGS_FILE_PATH);
+			connectToRepository(repository.getProtocol(), CHANGELOGS_FILE_PATH);
 			downloadFile(file, CHANGELOGS_FILE_PATH);
 			changelogs = A3SFilesAccessor.readChangelogsFile(file);
 		} finally {
@@ -182,7 +177,7 @@ public class HttpDAO extends AbstractConnexionDAO {
 
 		try {
 			directory.mkdir();
-			connectToRepository(repository, AUTOCONFIG_FILE_PATH);
+			connectToRepository(repository.getProtocol(), AUTOCONFIG_FILE_PATH);
 			downloadFile(file, AUTOCONFIG_FILE_PATH);
 			autoConfig = A3SFilesAccessor.readAutoConfigFile(file);
 		} finally {
@@ -199,7 +194,7 @@ public class HttpDAO extends AbstractConnexionDAO {
 
 		try {
 			directory.mkdir();
-			connectToRepository(repository, EVENTS_FILE_PATH);
+			connectToRepository(repository.getProtocol(), EVENTS_FILE_PATH);
 			downloadFile(file, EVENTS_FILE_PATH);
 			events = A3SFilesAccessor.readEventsFile(file);
 		} finally {
@@ -277,7 +272,7 @@ public class HttpDAO extends AbstractConnexionDAO {
 				leaf.setDownloadStatus(DownloadStatus.RUNNING);
 
 				try {
-					connectToRepository(repository, relativePath);
+					connectToRepository(repository.getProtocol(), relativePath);
 					downloadFileWithRecordProgress(downloadedFile, relativePath);
 					if (!canceled) {
 						updateObserverDownloadTotalSizeProgress();
@@ -398,7 +393,7 @@ public class HttpDAO extends AbstractConnexionDAO {
 
 		System.out.println("Checking remote file: " + relativeFilePath);
 
-		connectToRepository(repository, relativeFilePath);
+		connectToRepository(repository.getProtocol(), relativeFilePath);
 
 		boolean exists = false;
 		try {
@@ -438,7 +433,7 @@ public class HttpDAO extends AbstractConnexionDAO {
 
 		String header = null;
 		try {
-			connectToRepository(repository, SYNC_FILE_PATH);
+			connectToRepository(repository.getProtocol(), SYNC_FILE_PATH);
 			boolean accept = myHttpConnection.checkAcceptRanges();
 			if (!accept) {
 				header = myHttpConnection.getResponseHeader();

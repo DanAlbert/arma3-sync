@@ -85,31 +85,25 @@ public class FtpDAO extends AbstractConnexionDAO {
 		}
 	}
 
-	public void connectToRepository(Repository repository) throws IOException {
+	public void connectToRepository(AbstractProtocole protocole)
+			throws IOException {
 
 		try {
-			connect(repository.getProtocol());
+			connect(protocole);
 		} catch (IOException e) {
 			if (!canceled) {
-				String coreMessage = "Failed to connect to repository "
-						+ repository.getName()
-						+ " on url: "
-						+ "\n"
-						+ repository.getProtocol().getProtocolType()
-								.getPrompt()
-						+ repository.getProtocol().getUrl();
+				String coreMessage = "Failed to connect to repository on url: "
+						+ "\n" + protocole.getProtocolType().getPrompt()
+						+ protocole.getUrl();
 				IOException ioe = transferIOExceptionFactory(coreMessage, e);
 				throw ioe;
 			}
 		} catch (FtpException e) {
 			if (!canceled) {
-				String message = "Server returned message "
-						+ e.getMessage()
-						+ " on url:"
-						+ "\n"
-						+ repository.getProtocol().getProtocolType()
-								.getPrompt()
-						+ repository.getProtocol().getUrl();
+				String message = "Server returned message " + e.getMessage()
+						+ " on url:" + "\n"
+						+ protocole.getProtocolType().getPrompt()
+						+ protocole.getUrl();
 				throw new ConnectException(message);
 			}
 		}
@@ -721,14 +715,14 @@ public class FtpDAO extends AbstractConnexionDAO {
 					if (!ftpClient.makeDirectory(dir)) {
 						throw new IOException(
 								"Unable to create remote directory "
-										+ remotePath + dirTree + "\n"
+										+ remotePath + "/" + dirTree + "\n"
 										+ "Server returned FTP error: "
 										+ ftpClient.getReplyString());
 					}
 					if (!ftpClient.changeWorkingDirectory(dir)) {
 						throw new IOException(
 								"Unable to change into newly created remote directory "
-										+ remotePath + dirTree + "\n"
+										+ remotePath + "/" + dirTree + "\n"
 										+ "Server returned FTP error: "
 										+ ftpClient.getReplyString());
 					}

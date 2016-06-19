@@ -173,10 +173,10 @@ public class ConnectionDownloadProcessor implements DataAccessConstants {
 					try {
 						if (connexionDAO instanceof FtpDAO) {
 							((FtpDAO) connexionDAO)
-									.connectToRepository(repository);
+									.connectToRepository(repository.getProtocol());
 						} else if (connexionDAO instanceof HttpDAO) {
 							((HttpDAO) connexionDAO).connectToRepository(
-									repository, SYNC_FILE_PATH);
+									repository.getProtocol(), SYNC_FILE_PATH);
 							((HttpDAO) connexionDAO).disconnect();
 						}
 						connexionDAO.updateObserverProceed();
