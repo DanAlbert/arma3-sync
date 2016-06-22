@@ -454,7 +454,6 @@ public class FtpDAO extends AbstractConnexionDAO {
 						+ directory.getAbsolutePath() + "\n"
 						+ "Permission dinied.");
 			}
-
 			boolean found = downloadFile(file, protocol.getRemotePath());
 			if (found) {
 				if (file.exists()) {
