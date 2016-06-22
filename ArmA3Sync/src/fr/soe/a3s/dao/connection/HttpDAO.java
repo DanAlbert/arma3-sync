@@ -123,9 +123,19 @@ public class HttpDAO extends AbstractConnexionDAO {
 
 		try {
 			directory.mkdir();
+			if (!directory.exists()) {
+				throw new IOException("Failed to write file: "
+						+ directory.getAbsolutePath() + "\n"
+						+ "Permission dinied.");
+			}
 			connectToRepository(repository.getProtocol(), SYNC_FILE_PATH);
 			downloadFile(file, SYNC_FILE_PATH);
-			sync = A3SFilesAccessor.readSyncFile(file);
+			if (file.exists()) {
+				sync = A3SFilesAccessor.readSyncFile(file);
+			} else {
+				throw new IOException("Failed to write file: "
+						+ file.getAbsolutePath() + "\n" + "Permission dinied.");
+			}
 		} finally {
 			FileAccessMethods.deleteDirectory(directory);
 		}
@@ -141,9 +151,19 @@ public class HttpDAO extends AbstractConnexionDAO {
 
 		try {
 			directory.mkdir();
+			if (!directory.exists()) {
+				throw new IOException("Failed to write file: "
+						+ directory.getAbsolutePath() + "\n"
+						+ "Permission dinied.");
+			}
 			connectToRepository(repository.getProtocol(), SERVERINFO_FILE_PATH);
 			downloadFile(file, SERVERINFO_FILE_PATH);
-			serverInfo = A3SFilesAccessor.readServerInfoFile(file);
+			if (file.exists()) {
+				serverInfo = A3SFilesAccessor.readServerInfoFile(file);
+			} else {
+				throw new IOException("Failed to write file: "
+						+ file.getAbsolutePath() + "\n" + "Permission dinied.");
+			}
 		} finally {
 			FileAccessMethods.deleteDirectory(directory);
 		}
@@ -159,9 +179,19 @@ public class HttpDAO extends AbstractConnexionDAO {
 
 		try {
 			directory.mkdir();
+			if (!directory.exists()) {
+				throw new IOException("Failed to write file: "
+						+ directory.getAbsolutePath() + "\n"
+						+ "Permission dinied.");
+			}
 			connectToRepository(repository.getProtocol(), CHANGELOGS_FILE_PATH);
 			downloadFile(file, CHANGELOGS_FILE_PATH);
-			changelogs = A3SFilesAccessor.readChangelogsFile(file);
+			if (file.exists()) {
+				changelogs = A3SFilesAccessor.readChangelogsFile(file);
+			} else {
+				throw new IOException("Failed to write file: "
+						+ file.getAbsolutePath() + "\n" + "Permission dinied.");
+			}
 		} finally {
 			FileAccessMethods.deleteDirectory(directory);
 		}
@@ -177,9 +207,19 @@ public class HttpDAO extends AbstractConnexionDAO {
 
 		try {
 			directory.mkdir();
+			if (!directory.exists()) {
+				throw new IOException("Failed to write file: "
+						+ directory.getAbsolutePath() + "\n"
+						+ "Permission dinied.");
+			}
 			connectToRepository(repository.getProtocol(), AUTOCONFIG_FILE_PATH);
 			downloadFile(file, AUTOCONFIG_FILE_PATH);
-			autoConfig = A3SFilesAccessor.readAutoConfigFile(file);
+			if (file.exists()) {
+				autoConfig = A3SFilesAccessor.readAutoConfigFile(file);
+			} else {
+				throw new IOException("Failed to write file: "
+						+ file.getAbsolutePath() + "\n" + "Permission dinied.");
+			}
 		} finally {
 			FileAccessMethods.deleteDirectory(directory);
 		}
@@ -194,9 +234,19 @@ public class HttpDAO extends AbstractConnexionDAO {
 
 		try {
 			directory.mkdir();
+			if (!directory.exists()) {
+				throw new IOException("Failed to write file: "
+						+ directory.getAbsolutePath() + "\n"
+						+ "Permission dinied.");
+			}
 			connectToRepository(repository.getProtocol(), EVENTS_FILE_PATH);
 			downloadFile(file, EVENTS_FILE_PATH);
-			events = A3SFilesAccessor.readEventsFile(file);
+			if (file.exists()) {
+				events = A3SFilesAccessor.readEventsFile(file);
+			} else {
+				throw new IOException("Failed to write file: "
+						+ file.getAbsolutePath() + "\n" + "Permission dinied.");
+			}
 		} finally {
 			FileAccessMethods.deleteDirectory(directory);
 		}
@@ -220,8 +270,18 @@ public class HttpDAO extends AbstractConnexionDAO {
 		}
 		try {
 			directory.mkdir();
+			if (!directory.exists()) {
+				throw new IOException("Failed to write file: "
+						+ directory.getAbsolutePath() + "\n"
+						+ "Permission dinied.");
+			}
 			downloadFile(file, relativePath);
-			autoConfig = A3SFilesAccessor.readAutoConfigFile(file);
+			if (file.exists()) {
+				autoConfig = A3SFilesAccessor.readAutoConfigFile(file);
+			} else {
+				throw new IOException("Failed to write file: "
+						+ file.getAbsolutePath() + "\n" + "Permission dinied.");
+			}
 		} finally {
 			FileAccessMethods.deleteFile(file);
 		}
@@ -274,6 +334,11 @@ public class HttpDAO extends AbstractConnexionDAO {
 				try {
 					connectToRepository(repository.getProtocol(), relativePath);
 					downloadFileWithRecordProgress(downloadedFile, relativePath);
+					if (!downloadedFile.exists()) {
+						throw new IOException("Failed to write file: "
+								+ downloadedFile.getAbsolutePath() + "\n"
+								+ "Permission dinied.");
+					}
 					if (!canceled) {
 						updateObserverDownloadTotalSizeProgress();
 						node.setDownloadStatus(DownloadStatus.DONE);
@@ -313,6 +378,11 @@ public class HttpDAO extends AbstractConnexionDAO {
 					downloadPartialFileWithRecordProgress(downloadedFile, sha1,
 							relativeFileUrl, relativeZsyncFileUrl,
 							repository.getProtocol());
+					if (!downloadedFile.exists()) {
+						throw new IOException("Failed to write file: "
+								+ downloadedFile.getAbsolutePath() + "\n"
+								+ "Permission dinied.");
+					}
 					if (!canceled) {
 						updateObserverDownloadTotalSizeProgress();
 						node.setDownloadStatus(DownloadStatus.DONE);
@@ -334,6 +404,11 @@ public class HttpDAO extends AbstractConnexionDAO {
 			downloadedFile = new File(parentDirectory + "/" + node.getName());
 			downloadedFile.mkdir();
 			node.setDownloadStatus(DownloadStatus.DONE);
+			if (!downloadedFile.exists()) {
+				throw new IOException("Failed to write file: "
+						+ downloadedFile.getAbsolutePath() + "\n"
+						+ "Permission dinied.");
+			}
 		}
 
 		return downloadedFile;
