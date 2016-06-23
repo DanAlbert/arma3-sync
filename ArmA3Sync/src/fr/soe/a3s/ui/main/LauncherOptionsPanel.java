@@ -21,6 +21,7 @@ import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
@@ -30,6 +31,7 @@ import javax.swing.border.BevelBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
+import fr.soe.a3s.constant.GameExecutables;
 import fr.soe.a3s.constant.MaxMemoryValues;
 import fr.soe.a3s.dto.configuration.LauncherOptionsDTO;
 import fr.soe.a3s.exception.ProfileException;
@@ -70,7 +72,8 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener,
 			checkBoxShowScriptErrors, checkBoxMaxMemory, checkBoxCpuCount,
 			checkBoxNoSplashScreen, checkBoxDefaultWorld, checkBoxNoLogs,
 			checkBoxCheckSignatures, checkBoxExThreads, checkBoxEnableHT,
-			checkBoxFilePatching, checkBoxAutoRestart, checkBoxMalloc;
+			checkBoxFilePatching, checkBoxAutoRestart, checkBoxMalloc,
+			checkBoxEnableBattleye;
 	private JLabel labelMallocPath;
 
 	/* Services */
@@ -208,6 +211,15 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener,
 			checkBoxCheckSignatures.setFocusable(false);
 			Box hBox = Box.createHorizontalBox();
 			hBox.add(checkBoxCheckSignatures);
+			hBox.add(Box.createHorizontalGlue());
+			vBox.add(hBox);
+		}
+		{
+			checkBoxEnableBattleye = new JCheckBox();
+			checkBoxEnableBattleye.setText("Enable Battleye");
+			checkBoxEnableBattleye.setFocusable(false);
+			Box hBox = Box.createHorizontalBox();
+			hBox.add(checkBoxEnableBattleye);
 			hBox.add(Box.createHorizontalGlue());
 			vBox.add(hBox);
 		}
@@ -493,6 +505,12 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener,
 				checkBoxCheckSignaturesPerformed();
 			}
 		});
+		checkBoxEnableBattleye.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				checkBoxEnableBattleyePerformed();
+			}
+		});
 		checkBoxAutoRestart.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
@@ -605,7 +623,7 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener,
 		checkBoxNoLogs.setToolTipText("Do not write errors into RPT file");
 		checkBoxAutoRestart.setToolTipText("Auto-restart game/server");
 		checkBoxMalloc.setToolTipText("Sets memory allocator");
-		comboBoxMalloc.setToolTipText("Sets memory allocator");
+		checkBoxEnableBattleye.setToolTipText("Start the game with Battleye");
 	}
 
 	public void init() {
@@ -667,6 +685,46 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener,
 		profileService.setCheckBoxCheckSignatures(checkBoxCheckSignatures
 				.isSelected());
 		updateRunParameters();
+	}
+
+	private void checkBoxEnableBattleyePerformed() {
+
+		File arma3ExeFile = null;
+		String arma3ExePath = textFieldArmAExecutableLocation.getText();
+		if (arma3ExePath != null) {
+			if (!arma3ExePath.isEmpty()) {
+				arma3ExeFile = new File(arma3ExePath);
+			}
+		}
+
+		String newArma3ExePath = null;
+		if (arma3ExeFile != null) {
+			File parent = arma3ExeFile.getParentFile();
+			if (parent != null) {
+				if (arma3ExeFile.getName().equals(
+						GameExecutables.BATTLEYE.getDescription())) {
+					newArma3ExePath = parent.getAbsolutePath() + "/"
+							+ GameExecutables.GAME.getDescription();
+				} else if (arma3ExeFile.getName().equals(
+						GameExecutables.GAME.getDescription())) {
+					newArma3ExePath = parent.getAbsolutePath() + "/"
+							+ GameExecutables.BATTLEYE.getDescription();
+				}
+			}
+		}
+
+		if (newArma3ExePath != null) {
+			File newArma3Exe = new File(newArma3ExePath);
+			if (newArma3Exe.exists()) {
+				textFieldArmAExecutableLocation.setText(newArma3Exe
+						.getAbsolutePath());
+				profileService.setArmA3ExePath(newArma3Exe.getAbsolutePath());
+				updateOptions();
+				JOptionPane.showMessageDialog(facade.getMainPanel(),
+						"ArmA 3 Executable have changed.", "Information",
+						JOptionPane.INFORMATION_MESSAGE);
+			}
+		}
 	}
 
 	private void checkBoxAutoRestartPerformed() {
@@ -926,18 +984,19 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener,
 		checkBoxDefaultWorld.setSelected(launcherOptionsDTO.isDefaultWorld());
 		checkBoxNoLogs.setSelected(launcherOptionsDTO.isNoLogs());
 
-		/* ArmA 3 Executable Location and Malloc */
+		/* ArmA 3 Executable Location, Malloc and Battleye */
 		checkBoxMalloc.setSelected(false);
 		comboBoxMalloc.setSelectedIndex(0);// default empty
+		checkBoxEnableBattleye.setSelected(false);
 		// Battleye setting may have change ArmA3ExePath
 		String arma3ExePath = launcherOptionsDTO.getArma3ExePath();
 		if (arma3ExePath != null) {
 			File arma3ExeFile = new File(arma3ExePath);
-			if (arma3ExeFile.exists()) {
+			if (arma3ExeFile.exists()) {// set executable location
 				textFieldArmAExecutableLocation.setText(launcherOptionsDTO
 						.getArma3ExePath());
 			}
-			if (arma3ExeFile.getParentFile() != null) {
+			if (arma3ExeFile.getParentFile() != null) {// set Malloc
 				File parent = new File(arma3ExeFile.getParent());
 				List<String> list = new ArrayList<String>();
 				if (parent != null) {
@@ -968,6 +1027,10 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener,
 				} else {
 					comboBoxMalloc.setSelectedIndex(0);
 				}
+			}
+			if (arma3ExeFile.getName().toLowerCase()
+					.equals(GameExecutables.BATTLEYE.getDescription())) {
+				checkBoxEnableBattleye.setSelected(true);
 			}
 		}
 	}
