@@ -88,13 +88,20 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener,
 		this.setLayout(new BorderLayout());
 
 		Box vertBox1 = Box.createVerticalBox();
+		this.add(vertBox1);
 		vertBox1.add(Box.createVerticalStrut(10));
+
+		JPanel mainPanel = new JPanel();
+		mainPanel.setLayout(new BorderLayout());
+		vertBox1.add(mainPanel);
 
 		JPanel centerPanel = new JPanel();
 		GridLayout grid1 = new GridLayout(2, 2);
 		centerPanel.setLayout(grid1);
-		vertBox1.add(centerPanel, BorderLayout.CENTER);
-		this.add(vertBox1);
+		mainPanel.add(centerPanel, BorderLayout.CENTER);
+
+		// vertBox1.add(centerPanel, BorderLayout.CENTER);
+		//
 
 		launcherOptionsPanel = new JPanel();
 		launcherOptionsPanel.setBorder(BorderFactory.createTitledBorder(
@@ -434,31 +441,24 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener,
 		centerPanel.add(scrollPaneAditionalParameters);
 
 		/* Executable locations */
+		vBox = Box.createVerticalBox();
+		vBox.add(Box.createVerticalStrut(5));
 		JPanel southPanel = new JPanel();
-		GridLayout grid2 = new GridLayout(0, 1);
-		southPanel.setLayout(grid2);
-		this.add(southPanel, BorderLayout.SOUTH);
+		southPanel.setBorder(BorderFactory.createTitledBorder(
+				BorderFactory.createEtchedBorder(),
+				"ArmA III Executable Location (game/server)"));
+		southPanel.setLayout(new BorderLayout());
 		{
-			armaPanel = new JPanel();
-			armaPanel.setBorder(BorderFactory.createTitledBorder(
-					BorderFactory.createEtchedBorder(),
-					"ArmA III Executable Location (game/server)"));
-			southPanel.add(armaPanel);
-			armaPanel.setLayout(new BorderLayout());
-
-			vBox = Box.createVerticalBox();
-			{
-				JPanel panel1 = new JPanel();
-				panel1.setLayout(new BorderLayout());
-				textFieldArmAExecutableLocation = new JTextField();
-				textFieldArmAExecutableLocation.setEditable(false);
-				buttonSelectArmAExe = new JButton("Select");
-				panel1.add(textFieldArmAExecutableLocation, BorderLayout.CENTER);
-				panel1.add(buttonSelectArmAExe, BorderLayout.EAST);
-				vBox.add(panel1);
-			}
-			armaPanel.add(vBox);
+			textFieldArmAExecutableLocation = new JTextField();
+			textFieldArmAExecutableLocation.setEditable(false);
+			buttonSelectArmAExe = new JButton("Select");
+			southPanel
+					.add(textFieldArmAExecutableLocation, BorderLayout.CENTER);
+			southPanel.add(buttonSelectArmAExe, BorderLayout.EAST);
 		}
+		vBox.add(southPanel);
+		vBox.add(Box.createVerticalStrut(5));
+		mainPanel.add(vBox, BorderLayout.SOUTH);
 
 		/* Align Profiles comboBox */
 		checkBoxProfiles.setPreferredSize(checkBoxMaxMemory.getPreferredSize());
