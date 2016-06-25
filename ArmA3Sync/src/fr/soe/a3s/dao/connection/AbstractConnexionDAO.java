@@ -1,6 +1,7 @@
 package fr.soe.a3s.dao.connection;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
@@ -111,6 +112,12 @@ public abstract class AbstractConnexionDAO implements DataAccessConstants,
 		} else if (e.getCause() instanceof SocketException) {
 			String message = coreMessage + "\n" + CONNECTION_FAILED;
 			return new SocketException(message);
+		} else if (e instanceof FileNotFoundException) {
+			String message = coreMessage;
+			if (e.getMessage() != null) {
+				message = message + "\n" + e.getMessage();
+			}
+			return new FileNotFoundException(message);
 		} else {
 			String message = coreMessage;
 			if (e.getMessage() != null) {

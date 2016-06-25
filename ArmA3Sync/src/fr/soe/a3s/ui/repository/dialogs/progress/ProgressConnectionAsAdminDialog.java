@@ -67,6 +67,7 @@ public class ProgressConnectionAsAdminDialog extends AbstractProgressDialog {
 						System.out.println("Remote file Events not found.");
 					}
 				} catch (Exception e) {
+					e.printStackTrace();
 					setVisible(false);
 					if (e instanceof RepositoryException) {
 						JOptionPane.showMessageDialog(facade.getMainPanel(),
@@ -74,12 +75,10 @@ public class ProgressConnectionAsAdminDialog extends AbstractProgressDialog {
 								JOptionPane.ERROR_MESSAGE);
 					} else if (!canceled) {
 						if (e instanceof IOException) {
-							System.out.println(e.getMessage());
 							JOptionPane.showMessageDialog(
 									facade.getMainPanel(), e.getMessage(),
 									"Repository", JOptionPane.WARNING_MESSAGE);
 						} else {
-							e.printStackTrace();
 							UnexpectedErrorDialog dialog = new UnexpectedErrorDialog(
 									facade, "Repository", e, repositoryName);
 							dialog.show();

@@ -1,6 +1,7 @@
 package fr.soe.a3s.dao.connection;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.ConnectException;
 import java.net.HttpURLConnection;
@@ -129,12 +130,20 @@ public class HttpDAO extends AbstractConnexionDAO {
 						+ "Permission dinied.");
 			}
 			connectToRepository(repository.getProtocol(), SYNC_FILE_PATH);
-			downloadFile(file, SYNC_FILE_PATH);
-			if (file.exists()) {
-				sync = A3SFilesAccessor.readSyncFile(file);
-			} else {
-				throw new IOException("Failed to write file: "
-						+ file.getAbsolutePath() + "\n" + "Permission dinied.");
+			boolean found = true;
+			try {
+				downloadFile(file, SYNC_FILE_PATH);
+			} catch (FileNotFoundException e) {
+				found = false;
+			}
+			if (found) {
+				if (file.exists()) {
+					sync = A3SFilesAccessor.readSyncFile(file);
+				} else {
+					throw new IOException("Failed to write file: "
+							+ file.getAbsolutePath() + "\n"
+							+ "Permission dinied.");
+				}
 			}
 		} finally {
 			FileAccessMethods.deleteDirectory(directory);
@@ -157,12 +166,20 @@ public class HttpDAO extends AbstractConnexionDAO {
 						+ "Permission dinied.");
 			}
 			connectToRepository(repository.getProtocol(), SERVERINFO_FILE_PATH);
-			downloadFile(file, SERVERINFO_FILE_PATH);
-			if (file.exists()) {
-				serverInfo = A3SFilesAccessor.readServerInfoFile(file);
-			} else {
-				throw new IOException("Failed to write file: "
-						+ file.getAbsolutePath() + "\n" + "Permission dinied.");
+			boolean found = true;
+			try {
+				downloadFile(file, SERVERINFO_FILE_PATH);
+			} catch (FileNotFoundException e) {
+				found = false;
+			}
+			if (found) {
+				if (file.exists()) {
+					serverInfo = A3SFilesAccessor.readServerInfoFile(file);
+				} else {
+					throw new IOException("Failed to write file: "
+							+ file.getAbsolutePath() + "\n"
+							+ "Permission dinied.");
+				}
 			}
 		} finally {
 			FileAccessMethods.deleteDirectory(directory);
@@ -185,17 +202,60 @@ public class HttpDAO extends AbstractConnexionDAO {
 						+ "Permission dinied.");
 			}
 			connectToRepository(repository.getProtocol(), CHANGELOGS_FILE_PATH);
-			downloadFile(file, CHANGELOGS_FILE_PATH);
-			if (file.exists()) {
-				changelogs = A3SFilesAccessor.readChangelogsFile(file);
-			} else {
-				throw new IOException("Failed to write file: "
-						+ file.getAbsolutePath() + "\n" + "Permission dinied.");
+			boolean found = true;
+			try {
+				downloadFile(file, CHANGELOGS_FILE_PATH);
+			} catch (FileNotFoundException e) {
+				found = false;
+			}
+			if (found) {
+				if (file.exists()) {
+					changelogs = A3SFilesAccessor.readChangelogsFile(file);
+				} else {
+					throw new IOException("Failed to write file: "
+							+ file.getAbsolutePath() + "\n"
+							+ "Permission dinied.");
+				}
 			}
 		} finally {
 			FileAccessMethods.deleteDirectory(directory);
 		}
 		return changelogs;
+	}
+	
+	public Events downloadEvents(Repository repository) throws IOException {
+
+		Events events = null;
+		File directory = new File(TEMP_FOLDER_PATH + "/" + repository.getName());
+		File file = new File(directory + "/" + DataAccessConstants.EVENTS);
+
+		try {
+			directory.mkdir();
+			if (!directory.exists()) {
+				throw new IOException("Failed to write file: "
+						+ directory.getAbsolutePath() + "\n"
+						+ "Permission dinied.");
+			}
+			connectToRepository(repository.getProtocol(), EVENTS_FILE_PATH);
+			boolean found = true;
+			try {
+				downloadFile(file, EVENTS_FILE_PATH);
+			} catch (FileNotFoundException e) {
+				found = false;
+			}
+			if (found) {
+				if (file.exists()) {
+					events = A3SFilesAccessor.readEventsFile(file);
+				} else {
+					throw new IOException("Failed to write file: "
+							+ file.getAbsolutePath() + "\n"
+							+ "Permission dinied.");
+				}
+			}
+		} finally {
+			FileAccessMethods.deleteDirectory(directory);
+		}
+		return events;
 	}
 
 	public AutoConfig downloadAutoconfig(Repository repository)
@@ -213,44 +273,25 @@ public class HttpDAO extends AbstractConnexionDAO {
 						+ "Permission dinied.");
 			}
 			connectToRepository(repository.getProtocol(), AUTOCONFIG_FILE_PATH);
-			downloadFile(file, AUTOCONFIG_FILE_PATH);
-			if (file.exists()) {
-				autoConfig = A3SFilesAccessor.readAutoConfigFile(file);
-			} else {
-				throw new IOException("Failed to write file: "
-						+ file.getAbsolutePath() + "\n" + "Permission dinied.");
+			boolean found = true;
+			try {
+				downloadFile(file, AUTOCONFIG_FILE_PATH);
+			} catch (FileNotFoundException e) {
+				found = false;
+			}
+			if (found) {
+				if (file.exists()) {
+					autoConfig = A3SFilesAccessor.readAutoConfigFile(file);
+				} else {
+					throw new IOException("Failed to write file: "
+							+ file.getAbsolutePath() + "\n"
+							+ "Permission dinied.");
+				}
 			}
 		} finally {
 			FileAccessMethods.deleteDirectory(directory);
 		}
 		return autoConfig;
-	}
-
-	public Events downloadEvents(Repository repository) throws IOException {
-
-		Events events = null;
-		File directory = new File(TEMP_FOLDER_PATH + "/" + repository.getName());
-		File file = new File(directory + "/" + DataAccessConstants.EVENTS);
-
-		try {
-			directory.mkdir();
-			if (!directory.exists()) {
-				throw new IOException("Failed to write file: "
-						+ directory.getAbsolutePath() + "\n"
-						+ "Permission dinied.");
-			}
-			connectToRepository(repository.getProtocol(), EVENTS_FILE_PATH);
-			downloadFile(file, EVENTS_FILE_PATH);
-			if (file.exists()) {
-				events = A3SFilesAccessor.readEventsFile(file);
-			} else {
-				throw new IOException("Failed to write file: "
-						+ file.getAbsolutePath() + "\n" + "Permission dinied.");
-			}
-		} finally {
-			FileAccessMethods.deleteDirectory(directory);
-		}
-		return events;
 	}
 
 	public AutoConfig importAutoConfig(AbstractProtocole protocole)
@@ -275,12 +316,20 @@ public class HttpDAO extends AbstractConnexionDAO {
 						+ directory.getAbsolutePath() + "\n"
 						+ "Permission dinied.");
 			}
-			downloadFile(file, relativePath);
-			if (file.exists()) {
-				autoConfig = A3SFilesAccessor.readAutoConfigFile(file);
-			} else {
-				throw new IOException("Failed to write file: "
-						+ file.getAbsolutePath() + "\n" + "Permission dinied.");
+			boolean found = true;
+			try {
+				downloadFile(file, relativePath);
+			} catch (FileNotFoundException e) {
+				found = false;
+			}
+			if (found) {
+				if (file.exists()) {
+					autoConfig = A3SFilesAccessor.readAutoConfigFile(file);
+				} else {
+					throw new IOException("Failed to write file: "
+							+ file.getAbsolutePath() + "\n"
+							+ "Permission dinied.");
+				}
 			}
 		} finally {
 			FileAccessMethods.deleteFile(file);
