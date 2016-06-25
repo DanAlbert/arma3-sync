@@ -204,18 +204,15 @@ public class AddonsChecker extends Thread {
 				repositoryService.write(repositoryName);
 			}
 		} catch (Exception e) {
+			e.printStackTrace();
 			downloadPanel.getProgressBarCheckForAddons()
 					.setIndeterminate(false);
 			if (e instanceof RepositoryException
 					|| e instanceof WritingException) {
-				downloadPanel.getLabelCheckForAddonsStatus().setText("Error!");
-				downloadPanel.getLabelCheckForAddonsStatus().setForeground(
-						Color.RED);
 				JOptionPane.showMessageDialog(facade.getMainPanel(),
 						e.getMessage(), "Check for Addons",
 						JOptionPane.ERROR_MESSAGE);
 			} else if (!canceled) {
-				e.printStackTrace();
 				downloadPanel.getLabelCheckForAddonsStatus().setText("Error!");
 				downloadPanel.getLabelCheckForAddonsStatus().setForeground(
 						Color.RED);

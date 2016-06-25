@@ -264,15 +264,13 @@ public class AddonsDownloader extends Thread implements DataAccessConstants {
 			connexionService.synchronize(repositoryName, list);
 
 		} catch (Exception e) {
+			e.printStackTrace();
 			downloadPanel.getProgressBarDownloadSingleAddon().setIndeterminate(
 					false);
 			if (e instanceof RepositoryException) {
-				downloadPanel.getLabelDownloadStatus().setText("Error!");
-				downloadPanel.getLabelDownloadStatus().setForeground(Color.RED);
 				JOptionPane.showMessageDialog(facade.getMainPanel(),
 						e.getMessage(), "Download", JOptionPane.ERROR_MESSAGE);
 			} else if (!canceled) {
-				e.printStackTrace();
 				downloadPanel.getLabelDownloadStatus().setText("Error!");
 				downloadPanel.getLabelDownloadStatus().setForeground(Color.RED);
 				if (e instanceof IOException) {
