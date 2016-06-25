@@ -721,7 +721,7 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener,
 				profileService.setArmA3ExePath(newArma3Exe.getAbsolutePath());
 				updateOptions();
 				JOptionPane.showMessageDialog(facade.getMainPanel(),
-						"ArmA 3 Executable have changed.", "Information",
+						"ArmA 3 Executable Location have changed.", "Information",
 						JOptionPane.INFORMATION_MESSAGE);
 			}
 		}
