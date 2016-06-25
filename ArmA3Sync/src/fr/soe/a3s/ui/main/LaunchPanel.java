@@ -21,6 +21,7 @@ import javax.swing.SwingUtilities;
 
 import fr.soe.a3s.constant.GameVersions;
 import fr.soe.a3s.constant.MinimizationType;
+import fr.soe.a3s.constant.RepositoryStatus;
 import fr.soe.a3s.controller.ObserverEnd;
 import fr.soe.a3s.controller.ObserverError;
 import fr.soe.a3s.dto.EventDTO;
@@ -269,6 +270,7 @@ public class LaunchPanel extends JPanel implements UIConstants {
 		/* AiA */
 		configurationService.determineAiAOptions();
 
+		/* Blocking messages */
 		try {
 			// Update join server addons selection
 			serverSelectionPerformed();
@@ -278,13 +280,6 @@ public class LaunchPanel extends JPanel implements UIConstants {
 			facade.getAddonsPanel().updateAddonGroups();
 			String message = launchService.checkSelectedAddons();
 			if (message != null) {
-				throw new LaunchException(message);
-			}
-
-			// Check if addons are not being downloaded
-			RepositoryService repositoryService = new RepositoryService();
-			if (repositoryService.isDownloading()) {
-				message = "Addons are currently being updated.";
 				throw new LaunchException(message);
 			}
 
@@ -300,6 +295,50 @@ public class LaunchPanel extends JPanel implements UIConstants {
 					"Failed to launch ArmA 3.\n" + e.getMessage(),
 					"ArmA 3 Start Game", JOptionPane.ERROR_MESSAGE);
 			return;
+		}
+
+		/* Warning messages */
+		// Check if addons are not being downloaded
+		if (repositoryService.isDownloading()) {
+			String message = "Addons are currently being updated." + "\n"
+					+ "Proceed with launch anyway?";
+			int res = JOptionPane.showConfirmDialog(facade.getMainPanel(),
+					message, "ArmA 3 Start Game", JOptionPane.YES_NO_OPTION);
+			if (res == 1) {
+				return;
+			}
+		}
+
+		// Check if selected modset is updated
+		String modsetName = configurationService.getDefaultModset();
+		if (modsetName != null) {
+			String name = null;
+			Object objectDTO = map.get(modsetName);// null if not found
+			if (objectDTO instanceof RepositoryDTO) {
+				name = ((RepositoryDTO) objectDTO).getName();
+
+			} else if (objectDTO instanceof EventDTO) {
+				EventDTO eventDTO = (EventDTO) objectDTO;
+				name = eventDTO.getRepositoryName();
+			}
+			if (name != null) {
+				RepositoryStatus status = RepositoryStatus.INDETERMINATED;
+				try {
+					status = repositoryService.getRepositoryStatus(name);
+				} catch (Exception e) {
+				}
+				if (status.equals(RepositoryStatus.UPDATED)) {
+					String message = "Repository: " + name
+							+ " have been updated." + "\n"
+							+ "Proceed with launch anyway?";
+					int res = JOptionPane.showConfirmDialog(
+							facade.getMainPanel(), message,
+							"ArmA 3 Start Game", JOptionPane.YES_NO_OPTION);
+					if (res == 1) {
+						return;
+					}
+				}
+			}
 		}
 
 		launchService.getLauncherDAO().addObserverError(new ObserverError() {
