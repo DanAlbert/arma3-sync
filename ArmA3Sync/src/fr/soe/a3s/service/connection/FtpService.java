@@ -294,7 +294,8 @@ public class FtpService extends AbstractConnexionService implements
 		}
 		boolean response = false;
 		try {
-			ftpDAOPool.get(0).connectToRepository(repository.getProtocol());
+			ftpDAOPool.get(0).connectToRepository(
+					repository.getUploadProtocole());
 			ftpDAOPool.get(0).uploadEvents(repository.getEvents(),
 					repository.getUploadProtocole().getRemotePath());
 		} finally {
@@ -361,7 +362,8 @@ public class FtpService extends AbstractConnexionService implements
 
 		SyncTreeDirectory syncTreeDirectory = null;
 		try {
-			ftpDAOPool.get(0).connectToRepository(repository.getUploadProtocole());
+			ftpDAOPool.get(0).connectToRepository(
+					repository.getUploadProtocole());
 
 			syncTreeDirectory = ftpDAOPool.get(0).downloadSync(repositoryName,
 					repository.getUploadProtocole());
@@ -392,7 +394,8 @@ public class FtpService extends AbstractConnexionService implements
 
 		try {
 			// Connect
-			ftpDAOPool.get(0).connectToRepository(repository.getUploadProtocole());
+			ftpDAOPool.get(0).connectToRepository(
+					repository.getUploadProtocole());
 
 			/* Check remote files */
 			ftpDAOPool.get(0).updateObserverText("Checking remote files...");
