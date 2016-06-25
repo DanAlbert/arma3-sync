@@ -8,7 +8,7 @@
 	<classpathentry kind="lib" path="resources/lib/commons-net-3.4.jar"/>
 	<classpathentry kind="lib" path="resources/lib/JTattoo-1.6.10.jar"/>
 	<classpathentry kind="lib" path="resources/lib/jshortcut-0.4-oberzalek.jar"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.7"/>
 	<classpathentry kind="lib" path="resources/lib/junique-1.0.4.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/jre7"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
