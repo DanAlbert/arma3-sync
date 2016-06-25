@@ -101,9 +101,9 @@ public class RepositoryBuilder extends Thread {
 			repositoryService.write(repositoryName);
 
 		} catch (Exception e) {
-			e.printStackTrace();
 			adminPanel.getBuildProgressBar().setIndeterminate(false);
 			if (!canceled) {
+				e.printStackTrace();
 				this.adminPanel.updateRepositoryStatus(RepositoryStatus.ERROR);
 				if (e instanceof RepositoryException) {
 					JOptionPane.showMessageDialog(facade.getMainPanel(),

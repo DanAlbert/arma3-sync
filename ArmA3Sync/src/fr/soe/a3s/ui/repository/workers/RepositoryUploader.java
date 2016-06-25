@@ -278,9 +278,9 @@ public class RepositoryUploader extends Thread implements DataAccessConstants {
 						JOptionPane.INFORMATION_MESSAGE);
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
 			adminPanel.getUploadrogressBar().setIndeterminate(false);
 			if (!canceled) {
+				e.printStackTrace();
 				if (e instanceof RepositoryException
 						|| e instanceof LoadingException) {
 					JOptionPane.showMessageDialog(facade.getMainPanel(),

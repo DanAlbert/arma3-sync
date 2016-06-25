@@ -139,9 +139,9 @@ public class RepositoryChecker extends Thread implements DataAccessConstants {
 				this.facade.getSyncPanel().init();
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
 			this.adminPanel.getCheckProgressBar().setIndeterminate(false);
 			if (!canceled) {
+				e.printStackTrace();
 				if (e instanceof RepositoryException
 						|| e instanceof RemoteRepositoryException) {
 					JOptionPane.showMessageDialog(facade.getMainPanel(),
