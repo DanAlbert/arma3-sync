@@ -983,7 +983,7 @@ public class AddonsPanel extends JPanel implements UIConstants {
 
 		this.arbre2.setEnabled(false);
 
-		System.out.println("Updating modset selection within addon groups.");
+		System.out.println("Updating modset selection within addon groups...");
 
 		boolean change = false;
 
