@@ -826,18 +826,34 @@ public class AddonsDownloader extends Thread implements DataAccessConstants {
 
 	private void determineUserconfigUpdates() {
 
+		userconfigNode = null;
 		for (SyncTreeNodeDTO node : listFilesToUpdate) {
-			if (!node.isLeaf()) {
-				SyncTreeDirectoryDTO directory = (SyncTreeDirectoryDTO) node;
-				if (directory.getName().toLowerCase().equals("userconfig")
-						&& directory.getParent().getName()
-								.equals(SyncTreeDirectoryDTO.RACINE)) {
-					if (directory.isUpdated() || directory.isChanged()) {
-						userconfigNode = directory;
-						break;
-					}
+			isUserconfigParent(node);
+			if (userconfigNode != null) {
+				break;
+			}
+		}
+	}
+
+	private void isUserconfigParent(SyncTreeNodeDTO node) {
+
+		boolean ok = false;
+		if (!node.isLeaf()) {
+			SyncTreeDirectoryDTO directory = (SyncTreeDirectoryDTO) node;
+			if (directory.getName().toLowerCase().equals("userconfig")) {
+				if (directory.getParent().getName()
+						.equals(SyncTreeDirectoryDTO.RACINE)) {
+					ok = true;
 				}
 			}
+		}
+		if (!ok) {
+			SyncTreeDirectoryDTO parent = node.getParent();
+			if (parent != null) {
+				isUserconfigParent(parent);
+			}
+		} else {
+			userconfigNode = (SyncTreeDirectoryDTO) node;
 		}
 	}
 
