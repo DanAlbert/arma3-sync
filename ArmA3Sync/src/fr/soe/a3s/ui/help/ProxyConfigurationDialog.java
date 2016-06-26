@@ -82,9 +82,7 @@ public class ProxyConfigurationDialog extends AbstractDialog implements
 		comboBoxProtocolModel = new DefaultComboBoxModel(new String[] {
 				ProtocolType.FTP.getDescription(),
 				ProtocolType.HTTP.getDescription(),
-				ProtocolType.HTTPS.getDescription(),
-				ProtocolType.SOCKS4.getDescription(),
-				ProtocolType.SOCKS5.getDescription() });
+				ProtocolType.HTTPS.getDescription() });
 		protocolPanel.init(comboBoxProtocolModel);
 
 		/* Init Connection Section */
@@ -122,14 +120,18 @@ public class ProxyConfigurationDialog extends AbstractDialog implements
 
 		try {
 			ProtocolDTO proxyProtocolDTO = new ProtocolDTO();
-			ProtocolType protocolType = ProtocolType
-					.getEnum((String) comboBoxProtocolModel.getSelectedItem());
-			proxyProtocolDTO.setUrl(connectionPanel.getUrl());
-			proxyProtocolDTO.setPort(connectionPanel.getPort());
-			proxyProtocolDTO.setLogin(connectionPanel.getLogin());
-			proxyProtocolDTO.setPassword(connectionPanel.getPassword());
-			proxyProtocolDTO.setProtocolType(protocolType);
-			configurationService.setProxy(proxyProtocolDTO, isEnableProxy());
+			if (connectionPanel.getUrl().isEmpty()){
+				configurationService.setProxy(null, false);
+			}else {
+				ProtocolType protocolType = ProtocolType
+						.getEnum((String) comboBoxProtocolModel.getSelectedItem());
+				proxyProtocolDTO.setUrl(connectionPanel.getUrl());
+				proxyProtocolDTO.setPort(connectionPanel.getPort());
+				proxyProtocolDTO.setLogin(connectionPanel.getLogin());
+				proxyProtocolDTO.setPassword(connectionPanel.getPassword());
+				proxyProtocolDTO.setProtocolType(protocolType);
+				configurationService.setProxy(proxyProtocolDTO, isEnableProxy());
+			}
 			configurationService.loadProxy();
 			this.dispose();
 		} catch (CheckException e) {

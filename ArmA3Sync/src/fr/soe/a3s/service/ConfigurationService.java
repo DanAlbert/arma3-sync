@@ -409,25 +409,32 @@ public class ConfigurationService extends ObjectDTOtransformer {
 	public void setProxy(ProtocolDTO proxyProtocolDTO, boolean enableProxy)
 			throws CheckException {
 
-		final AbstractProtocole protocole = AbstractProtocoleFactory
-				.getProtocol(proxyProtocolDTO.getUrl(),
-						proxyProtocolDTO.getPort(),
-						proxyProtocolDTO.getLogin(),
-						proxyProtocolDTO.getPassword(),
-						proxyProtocolDTO.getProtocolType());
-		if (protocole == null) {
-			throw new CheckException("Proxy protocol type error.");
+		if (proxyProtocolDTO == null) {
+			configurationDAO.getConfiguration().getProxy()
+					.setProxyProtocol(null);
+			configurationDAO.getConfiguration().getProxy()
+					.setEnableProxy(false);
+		} else {
+			final AbstractProtocole protocole = AbstractProtocoleFactory
+					.getProtocol(proxyProtocolDTO.getUrl(),
+							proxyProtocolDTO.getPort(),
+							proxyProtocolDTO.getLogin(),
+							proxyProtocolDTO.getPassword(),
+							proxyProtocolDTO.getProtocolType());
+			if (protocole == null) {
+				throw new CheckException("Proxy protocol type error.");
+			}
+
+			protocole.setConnectionTimeOut("0");
+			protocole.setReadTimeOut("0");
+
+			protocole.checkData();
+
+			configurationDAO.getConfiguration().getProxy()
+					.setProxyProtocol(protocole);
+			configurationDAO.getConfiguration().getProxy()
+					.setEnableProxy(enableProxy);
 		}
-
-		protocole.setConnectionTimeOut("0");
-		protocole.setReadTimeOut("0");
-
-		protocole.checkData();
-
-		configurationDAO.getConfiguration().getProxy()
-				.setProxyProtocol(protocole);
-		configurationDAO.getConfiguration().getProxy()
-				.setEnableProxy(enableProxy);
 	}
 
 	public void loadProxy() {
@@ -478,8 +485,9 @@ public class ConfigurationService extends ObjectDTOtransformer {
 				Authenticator.setDefault(null);
 			}
 
-			System.out.println("Proxy loaded: " + protocole.getUrl() + ":"
-					+ protocole.getPort());
+			System.out.println("Proxy loaded: "
+					+ protocole.getProtocolType().getPrompt()
+					+ protocole.getUrl() + ":" + protocole.getPort());
 
 		} else {
 			System.out.println("No proxy available.");
