@@ -458,7 +458,7 @@ public class CommandConsole extends CommandGeneral {
 				boolean partialFileTransfer = false;
 				do {
 					System.out
-							.print("Perform partial file transfer (yes/no): ");
+							.print("Use HTTP partial file transfer (yes/no): ");
 					String line = c.nextLine();
 					if (line.equalsIgnoreCase("YES")) {
 						partialFileTransfer = true;
