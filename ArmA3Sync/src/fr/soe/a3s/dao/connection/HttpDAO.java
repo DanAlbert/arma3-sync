@@ -222,7 +222,7 @@ public class HttpDAO extends AbstractConnexionDAO {
 		}
 		return changelogs;
 	}
-	
+
 	public Events downloadEvents(Repository repository) throws IOException {
 
 		Events events = null;
@@ -502,7 +502,7 @@ public class HttpDAO extends AbstractConnexionDAO {
 	 * @throws IOException
 	 */
 	@Override
-	public boolean fileExists(Repository repository, RemoteFile remoteFile)
+	public boolean fileExists(AbstractProtocole protocole, RemoteFile remoteFile)
 			throws IOException {
 
 		String fileName = remoteFile.getFilename();
@@ -517,7 +517,7 @@ public class HttpDAO extends AbstractConnexionDAO {
 
 		System.out.println("Checking remote file: " + relativeFilePath);
 
-		connectToRepository(repository.getProtocol(), relativeFilePath);
+		connectToRepository(protocole, relativeFilePath);
 
 		boolean exists = false;
 		try {

@@ -3,6 +3,7 @@ package fr.soe.a3s.dao.connection;
 import java.io.File;
 import java.io.IOException;
 
+import fr.soe.a3s.domain.AbstractProtocole;
 import fr.soe.a3s.domain.repository.Repository;
 import fr.soe.a3s.dto.sync.SyncTreeNodeDTO;
 
@@ -15,7 +16,7 @@ public class BitTorrentDAO extends AbstractConnexionDAO {
 	}
 
 	@Override
-	public boolean fileExists(Repository repository, RemoteFile remoteFile)
+	public boolean fileExists(AbstractProtocole protocole, RemoteFile remoteFile)
 			throws IOException {
 		throw new UnsupportedOperationException();
 	}

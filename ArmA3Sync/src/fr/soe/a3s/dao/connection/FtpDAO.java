@@ -586,7 +586,7 @@ public class FtpDAO extends AbstractConnexionDAO {
 	}
 
 	@Override
-	public boolean fileExists(Repository repository, RemoteFile remoteFile)
+	public boolean fileExists(AbstractProtocole protocol, RemoteFile remoteFile)
 			throws IOException {
 
 		String fileName = remoteFile.getFilename();
@@ -595,12 +595,11 @@ public class FtpDAO extends AbstractConnexionDAO {
 
 		String relativeFilePath = "/" + relativeParentDirectoryPath + "/"
 				+ fileName;
-		String remoteParentDirectoryPath = repository.getProtocol()
-				.getRemotePath() + "/" + relativeParentDirectoryPath;
+		String remoteParentDirectoryPath = protocol.getRemotePath() + "/"
+				+ relativeParentDirectoryPath;
 		if (relativeParentDirectoryPath.isEmpty()) {
 			relativeFilePath = "/" + fileName;
-			remoteParentDirectoryPath = repository.getProtocol()
-					.getRemotePath();
+			remoteParentDirectoryPath = protocol.getRemotePath();
 		}
 
 		System.out.println("Checking remote file: " + relativeFilePath);

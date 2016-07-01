@@ -7,22 +7,22 @@ import java.util.List;
 
 import fr.soe.a3s.dao.connection.AbstractConnexionDAO;
 import fr.soe.a3s.dao.connection.RemoteFile;
-import fr.soe.a3s.domain.repository.Repository;
+import fr.soe.a3s.domain.AbstractProtocole;
 import fr.soe.a3s.dto.sync.SyncTreeNodeDTO;
 
 public class ConnectionCheckProcessor extends AbstractConnectionProcessor {
 
-	private final Repository repository;
+	private final AbstractProtocole protocol;
 	private List<Exception> errors = null;
 	private List<RemoteFile> missingRemoteFiles = null;
 
 	public ConnectionCheckProcessor(AbstractConnexionDAO abstractConnexionDAO,
 			List<SyncTreeNodeDTO> filesToCheck,
 			boolean isCompressedPboFilesOnly, boolean withzsync,
-			Repository repository) {
+			AbstractProtocole protocol) {
 		super(abstractConnexionDAO, filesToCheck, isCompressedPboFilesOnly,
 				withzsync);
-		this.repository = repository;
+		this.protocol = protocol;
 		this.errors = new ArrayList<Exception>();
 		this.missingRemoteFiles = new ArrayList<RemoteFile>();
 	}
@@ -39,7 +39,7 @@ public class ConnectionCheckProcessor extends AbstractConnectionProcessor {
 			if (abstractConnexionDAO.isCanceled()) {
 				break;
 			} else {
-				boolean found = abstractConnexionDAO.fileExists(repository,
+				boolean found = abstractConnexionDAO.fileExists(protocol,
 						remoteFile);
 				if (!found) {
 					missingRemoteFiles.add(remoteFile);

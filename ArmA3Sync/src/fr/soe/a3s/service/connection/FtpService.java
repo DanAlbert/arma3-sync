@@ -341,7 +341,7 @@ public class FtpService extends AbstractConnexionService implements
 			ftpDAOPool.get(0).connectToRepository(repository.getProtocol());
 			ConnectionCheckProcessor checkProcessor = new ConnectionCheckProcessor(
 					ftpDAOPool.get(0), filesToCheck, isCompressedPboFilesOnly,
-					withzsync, repository);
+					withzsync, repository.getProtocol());
 			checkProcessor.run();
 			return checkProcessor.getErrors();
 		} finally {
@@ -403,7 +403,8 @@ public class FtpService extends AbstractConnexionService implements
 			ConnectionCheckProcessor checkProcessor = new ConnectionCheckProcessor(
 					ftpDAOPool.get(0), filesToCheck,
 					repository.isUploadCompressedPboFilesOnly(),
-					(repository.getProtocol() instanceof Http), repository);
+					(repository.getProtocol() instanceof Http),
+					repository.getUploadProtocole());
 			checkProcessor.run();
 
 			List<RemoteFile> missingRemoteFiles = checkProcessor
@@ -426,7 +427,8 @@ public class FtpService extends AbstractConnexionService implements
 
 			ConnectionDeleteProcessor deleteProcessor = new ConnectionDeleteProcessor(
 					ftpDAOPool.get(0), filesToDelete, false,
-					(repository.getProtocol() instanceof Http), repository);
+					(repository.getProtocol() instanceof Http),
+					repository.getUploadProtocole());
 			deleteProcessor.run();
 
 			/* Upload sync files */

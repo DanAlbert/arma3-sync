@@ -20,6 +20,7 @@ import fr.soe.a3s.controller.ObserverProceed;
 import fr.soe.a3s.controller.ObserverText;
 import fr.soe.a3s.controller.ObserverUpload;
 import fr.soe.a3s.dao.DataAccessConstants;
+import fr.soe.a3s.domain.AbstractProtocole;
 import fr.soe.a3s.domain.repository.Repository;
 import fr.soe.a3s.dto.sync.SyncTreeLeafDTO;
 import fr.soe.a3s.dto.sync.SyncTreeNodeDTO;
@@ -65,7 +66,7 @@ public abstract class AbstractConnexionDAO implements DataAccessConstants,
 
 	/* Abstract Methods */
 
-	public abstract boolean fileExists(Repository repository,
+	public abstract boolean fileExists(AbstractProtocole protocol,
 			RemoteFile remoteFile) throws IOException;
 
 	public abstract void deleteFile(RemoteFile remoteFile,

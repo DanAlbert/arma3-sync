@@ -5,20 +5,20 @@ import java.util.List;
 
 import fr.soe.a3s.dao.connection.AbstractConnexionDAO;
 import fr.soe.a3s.dao.connection.RemoteFile;
-import fr.soe.a3s.domain.repository.Repository;
+import fr.soe.a3s.domain.AbstractProtocole;
 import fr.soe.a3s.dto.sync.SyncTreeNodeDTO;
 
 public class ConnectionDeleteProcessor extends AbstractConnectionProcessor {
 
-	private final Repository repository;
+	private final AbstractProtocole protocol;
 
 	public ConnectionDeleteProcessor(AbstractConnexionDAO abstractConnexionDAO,
 			List<SyncTreeNodeDTO> filesToDelete,
 			boolean isCompressedPboFilesOnly, boolean withzsync,
-			Repository repository) {
+			AbstractProtocole protocol) {
 		super(abstractConnexionDAO, filesToDelete, isCompressedPboFilesOnly,
 				withzsync);
-		this.repository = repository;
+		this.protocol = protocol;
 	}
 
 	public void run() throws IOException {
@@ -33,11 +33,11 @@ public class ConnectionDeleteProcessor extends AbstractConnectionProcessor {
 			if (abstractConnexionDAO.isCanceled()) {
 				break;
 			} else {
-				boolean found = abstractConnexionDAO.fileExists(repository,
+				boolean found = abstractConnexionDAO.fileExists(protocol,
 						remoteFile);
 				if (found) {
-					abstractConnexionDAO.deleteFile(remoteFile, repository
-							.getProtocol().getRemotePath());
+					abstractConnexionDAO.deleteFile(remoteFile,
+							protocol.getRemotePath());
 				}
 				count++;
 				abstractConnexionDAO.setCount(count);

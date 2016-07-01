@@ -386,7 +386,7 @@ public class HttpService extends AbstractConnexionService implements
 		try {
 			ConnectionCheckProcessor checkProcessor = new ConnectionCheckProcessor(
 					httpDAOPool.get(0), filesToCheck, isCompressedPboFilesOnly,
-					withzsync, repository);
+					withzsync, repository.getProtocol());
 			checkProcessor.run();
 			return checkProcessor.getErrors();
 		} finally {
