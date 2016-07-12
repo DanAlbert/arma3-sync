@@ -40,7 +40,6 @@ import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 
 import fr.soe.a3s.constant.ModsetType;
-import fr.soe.a3s.domain.TreeNode;
 import fr.soe.a3s.dto.EventDTO;
 import fr.soe.a3s.dto.RepositoryDTO;
 import fr.soe.a3s.dto.TreeDirectoryDTO;
@@ -123,6 +122,8 @@ public class AddonsPanel extends JPanel implements UIConstants {
 		groupCheckBox.add(checkBoxList);
 		buttonRefresh = new JButton("Refresh");
 		buttonRefresh.setFocusable(false);
+		buttonRefresh.setContentAreaFilled(false);
+		buttonRefresh.setBorderPainted(false);
 		ImageIcon refreshIcon = new ImageIcon(REFRESH);
 		buttonRefresh.setIcon(refreshIcon);
 		controlPanel1.add(checkBoxTree);
@@ -135,6 +136,9 @@ public class AddonsPanel extends JPanel implements UIConstants {
 		checkBoxExpandAll.setFocusable(false);
 		buttonModsets = new JButton("Modsets");
 		buttonModsets.setFocusable(false);
+		buttonModsets.setContentAreaFilled(false);
+		buttonModsets.setBorderPainted(false);
+
 		ImageIcon checkIcon = new ImageIcon(CHECK);
 		buttonModsets.setIcon(checkIcon);
 		controlPanel2.add(checkBoxSelectAll);
@@ -235,9 +239,6 @@ public class AddonsPanel extends JPanel implements UIConstants {
 		});
 		menuItemRemove.setActionCommand("Remove");
 		popup.add(menuItemRemove);
-
-		// popup.setOpaque(true);
-		// popup.setLightWeightPopupEnabled(true);
 
 		popup.addPopupMenuListener(new PopupMenuListener() {
 
@@ -371,6 +372,17 @@ public class AddonsPanel extends JPanel implements UIConstants {
 				buttonRefreshPerformed();
 			}
 		});
+		buttonRefresh.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseEntered(MouseEvent evt) {
+				buttonRefresh.setContentAreaFilled(true);
+			}
+
+			@Override
+			public void mouseExited(MouseEvent evt) {
+				buttonRefresh.setContentAreaFilled(false);
+			}
+		});
 		checkBoxSelectAll.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
@@ -389,7 +401,17 @@ public class AddonsPanel extends JPanel implements UIConstants {
 				buttonModsetsPerformed();
 			}
 		});
+		buttonModsets.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseEntered(MouseEvent evt) {
+				buttonModsets.setContentAreaFilled(true);
+			}
 
+			@Override
+			public void mouseExited(MouseEvent evt) {
+				buttonModsets.setContentAreaFilled(false);
+			}
+		});
 		setContextualHelp();
 	}
 
