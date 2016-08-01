@@ -94,9 +94,6 @@ public class ProfileDAO implements DataAccessConstants {
 		try {
 			// write all, or nothing at all (better be save)
 			for (Profile profile : mapProfiles.values()) {
-				// XXX: are there really null values in the map?
-				if (profile == null)
-					continue;
 
 				String profileFilename = profile.getName() + PROFILE_EXTENSION;
 				File profileFile = new File(profilesFolder, profileFilename);
