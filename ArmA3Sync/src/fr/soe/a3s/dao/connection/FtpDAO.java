@@ -536,6 +536,7 @@ public class FtpDAO extends AbstractConnexionDAO {
 				this.offset = 0;
 				this.countFileSize = 0;
 				this.speed = 0;
+				updateObserverDownloadSingleSizeProgress();
 			}
 		} else {// directory
 			downloadedFile = new File(parentDirectory + "/" + node.getName());
