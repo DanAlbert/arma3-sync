@@ -147,14 +147,14 @@ public class RepositoryBuildProcessor implements DataAccessConstants,
 		serverInfo.setRepositoryContentUpdated(contentUpdated);
 
 		int index = repository.getPath().lastIndexOf(File.separator);
-		String repositoryName = repository.getPath().substring(index + 1);
+		String repositoryMainFolderName = repository.getPath().substring(index + 1);
 
 		Iterator iterator = repository.getExcludedFoldersFromSync().iterator();
 		while (iterator.hasNext()) {
 			String path = (String) iterator.next();
 			index = path.toLowerCase().indexOf(
-					File.separator + repositoryName.toLowerCase());
-			String folderPath = path.substring(index + repositoryName.length()
+					File.separator + repositoryMainFolderName.toLowerCase());
+			String folderPath = path.substring(index + repositoryMainFolderName.length()
 					+ 2);
 			folderPath = backslashReplace(folderPath);
 			serverInfo.getHiddenFolderPaths().add(folderPath);
@@ -274,7 +274,7 @@ public class RepositoryBuildProcessor implements DataAccessConstants,
 		/* Determine .zsync files for HTTP based Repository */
 		if (repository.getProtocol() instanceof Http) {
 			updateObserverText("Processing *"
-					+ DataAccessConstants.ZSYNC_EXTENSION + " files...");
+					+ ZSYNC_EXTENSION + " files...");
 			List<SyncTreeLeaf> list = new ArrayList<SyncTreeLeaf>();
 			getZSyncFiles(leafsList, list);
 			repositoryZsyncFilesProcessor = new RepositoryZsyncProcessor();
@@ -283,7 +283,7 @@ public class RepositoryBuildProcessor implements DataAccessConstants,
 			repositoryZsyncFilesProcessor.run();
 		} else {
 			updateObserverText("Deleting *"
-					+ DataAccessConstants.ZSYNC_EXTENSION + " files...");
+					+ ZSYNC_EXTENSION + " files...");
 			repositoryDeleteZSyncProcessor = new RepositoryDeleteZSyncProcessor();
 			repositoryDeleteZSyncProcessor.init(leafsList);
 			repositoryDeleteZSyncProcessor.addObserverCount(observerCount);
@@ -293,7 +293,7 @@ public class RepositoryBuildProcessor implements DataAccessConstants,
 		/* Determine .zip files */
 		if (repository.isCompressed()) {
 			updateObserverText("Processing *"
-					+ DataAccessConstants.PBO_ZIP_EXTENSION + " files...");
+					+ PBO_ZIP_EXTENSION + " files...");
 			List<SyncTreeLeaf> list = new ArrayList<SyncTreeLeaf>();
 			getPboFilesForCompression(leafsList, list);
 			zipBatchProcessor = new ZipBatchProcessor();
@@ -302,7 +302,7 @@ public class RepositoryBuildProcessor implements DataAccessConstants,
 			zipBatchProcessor.zipBatch();
 		} else {
 			observerText.update("Deleting *"
-					+ DataAccessConstants.PBO_ZIP_EXTENSION + " files...");
+					+ PBO_ZIP_EXTENSION + " files...");
 			List<SyncTreeLeaf> list = new ArrayList<SyncTreeLeaf>();
 			getPboFilesForDeletion(leafsList, list);
 			deleteZipBatchProcessor = new DeleteZipBatchProcessor();
