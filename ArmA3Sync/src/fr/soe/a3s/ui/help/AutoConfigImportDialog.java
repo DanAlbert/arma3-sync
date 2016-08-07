@@ -7,7 +7,11 @@ import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
 import javax.swing.Box;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
@@ -72,7 +76,7 @@ public class AutoConfigImportDialog extends AbstractDialog {
 				vBox.add(panel);
 			}
 		}
-		
+
 		buttonSelect.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
@@ -128,21 +132,16 @@ public class AutoConfigImportDialog extends AbstractDialog {
 				try {
 					CommonService commonService = new CommonService();
 					commonService.importAutoConfig(path);
-					RepositoryService repositoryService = new RepositoryService();
-					repositoryService.writeAll();
 					dispose();
 					facade.getMainPanel().updateProfilesMenu();
 					facade.getSyncPanel().init();
 					facade.getOnlinePanel().init();
 					facade.getLaunchPanel().init();
-				} catch (LoadingException e) {
-					JOptionPane.showMessageDialog(
-							facade.getMainPanel(),
-							"An error occured. \n Failed to import auto-config.",
-							"Import auto-config", JOptionPane.ERROR_MESSAGE);
-				} catch (WritingException e) {
+				} catch (Exception e) {
 					JOptionPane.showMessageDialog(facade.getMainPanel(),
-							e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+							"An error occured. \n Failed to import auto-config."
+									+ "\n" + e.getMessage(),
+							"Import auto-config", JOptionPane.ERROR_MESSAGE);
 				}
 			}
 		});

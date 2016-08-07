@@ -1,8 +1,13 @@
 package fr.soe.a3s.service;
 
 import java.io.IOException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 import java.util.Date;
 import java.util.List;
+
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
 
 import net.jimmc.jshortcut.JShellLink;
 import fr.soe.a3s.dao.CommonDAO;
@@ -81,7 +86,7 @@ public class CommonService {
 		}
 	}
 
-	public void importAutoConfig(String path) throws LoadingException {
+	public void importAutoConfig(String path) throws LoadingException, InvalidKeyException, IllegalBlockSizeException, NoSuchAlgorithmException, NoSuchPaddingException, WritingException {
 
 		AutoConfig autoConfig = null;
 		try {
@@ -113,6 +118,7 @@ public class CommonService {
 			if (!repositoryDAO.getMap().containsKey(repository.getName())) {
 				repositoryDAO.getMap().put(repository.getName(), repository);
 			}
+			repositoryDAO.write(repository.getName());
 		}
 	}
 

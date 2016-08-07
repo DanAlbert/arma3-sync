@@ -89,15 +89,6 @@ public class RepositoryService extends ObjectDTOtransformer implements
 		}
 	}
 
-	public void writeAll() throws WritingException {
-
-		for (Iterator<String> iter = repositoryDAO.getMap().keySet().iterator(); iter
-				.hasNext();) {
-			String repositoryName = iter.next();
-			write(repositoryName);
-		}
-	}
-
 	public void write(String repositoryName) throws WritingException {
 
 		try {
