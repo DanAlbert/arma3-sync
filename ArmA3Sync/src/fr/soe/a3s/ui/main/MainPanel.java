@@ -110,12 +110,9 @@ public class MainPanel extends JFrame implements UIConstants {
 	private PopupMenu popup;
 	private MenuItem launchItem, exitItem;
 	private final Container contenu;
-	private JMenuItem menuItemAddGroup;
-	private JMenuItem menuItemDuplicateGroup;
-	private JMenuItem menuItemRenameGroup;
-	private JMenuItem menuItemRemoveGroup;
-	private JMenuItem menuItemTFARwizard;
-	private JMenuItem menuDonate;
+	private JMenuItem menuItemAddGroup, menuItemDuplicateGroup,
+			menuItemRenameGroup, menuItemRemoveGroup, menuItemTFARwizard,
+			menuDonate;
 	/* System tray */
 	private SystemTray tray;
 	private TrayIcon trayIcon;
@@ -126,9 +123,10 @@ public class MainPanel extends JFrame implements UIConstants {
 	private final PreferencesService preferencesService = new PreferencesService();
 	private final RepositoryService repositoryService = new RepositoryService();
 	private final LaunchService launchService = new LaunchService();
-
 	/* Data */
 	private final Map<String, Integer> mapTabIndexes = new LinkedHashMap<String, Integer>();
+	/* Perform save parameters on shutdown */
+	private boolean doSaveOnShutDown = true;
 
 	public MainPanel(Facade facade) {
 
@@ -425,7 +423,7 @@ public class MainPanel extends JFrame implements UIConstants {
 			}
 		});
 
-		// Add Listeners
+		// Add Windows Listeners
 		this.addWindowListener(new WindowListener() {
 			@Override
 			public void windowDeiconified(WindowEvent arg0) {
@@ -458,6 +456,8 @@ public class MainPanel extends JFrame implements UIConstants {
 			public void windowOpened(WindowEvent e) {
 			}
 		});
+
+		//
 	}
 
 	public void init() {
@@ -856,16 +856,22 @@ public class MainPanel extends JFrame implements UIConstants {
 
 	public void menuExitPerformed() {
 
-		/* Write configuration and profiles. */
+		int close = 0;
 		try {
-			commonService.saveAllParameters(this.getHeight(), this.getWidth());
+			commonService.saveAllParameters(getHeight(), getWidth());
 		} catch (WritingException e) {
-			JOptionPane.showMessageDialog(this,
-					"An error occured.\n" + e.getMessage(), "Error",
-					JOptionPane.ERROR_MESSAGE);
+			close = JOptionPane.showConfirmDialog(facade.getMainPanel(),
+					"An error occured.\n" + e.getMessage() + "\n"
+							+ "Exit ArmA3Sync anyway?", "Error",
+							JOptionPane.YES_NO_OPTION,JOptionPane.ERROR_MESSAGE);
 		} finally {
-			dispose();
-			System.exit(0);
+			if (close == 0) {
+				dispose();
+				doSaveOnShutDown = false;
+				System.exit(0);
+			} else {
+				doSaveOnShutDown = true;
+			}
 		}
 	}
 
@@ -1365,5 +1371,9 @@ public class MainPanel extends JFrame implements UIConstants {
 					repositoryName, JOptionPane.INFORMATION_MESSAGE);
 		}
 		return false;
+	}
+
+	public boolean isDoSaveOnShutDown() {
+		return this.doSaveOnShutDown;
 	}
 }

@@ -116,7 +116,14 @@ public class RepositoryDAO implements DataAccessConstants {
 		Cipher cipher = EncryptionProvider.getEncryptionCipher();
 
 		File repositoryFolder = new File(REPOSITORY_FOLDER_PATH);
-		repositoryFolder.mkdirs();
+		
+		boolean ok = repositoryFolder.mkdirs();
+		if (!ok){
+			throw new WritingException("Failed to save repository."
+					+ "\n" + " Reason: Write access is denied on "
+					+ repositoryFolder.getParentFile().getAbsolutePath());
+		}
+		
 
 		Repository repository = mapRepositories.get(repositoryName);
 		if (repository != null) {
@@ -127,24 +134,24 @@ public class RepositoryDAO implements DataAccessConstants {
 			File backup = new File(repositoryFile.getAbsolutePath() + ".backup");
 
 			if (backup.exists()) {
-				boolean ok = FileAccessMethods.deleteFile(backup);
+				ok = FileAccessMethods.deleteFile(backup);
 				if (!ok) {
 					throw new WritingException(
 							"Failed to create a backup file while saving repository."
 									+ "\n"
 									+ " Reason:Write access permission denied on "
-									+ backup.getPath());
+									+ backup.getAbsolutePath());
 				}
 			}
 
 			if (repositoryFile.exists()) {
-				boolean ok = repositoryFile.renameTo(backup);
+				ok = repositoryFile.renameTo(backup);
 				if (!ok) {
 					throw new WritingException(
 							"Failed to create a backup file while saving repository."
 									+ "\n"
 									+ " Reason: Write access permission denied on "
-									+ repositoryFile.getPath());
+									+ repositoryFolder.getAbsolutePath());
 				}
 			}
 
@@ -157,6 +164,15 @@ public class RepositoryDAO implements DataAccessConstants {
 					fWo.writeObject(sealedObject);
 				}
 				fWo.close();
+				
+				if (!repositoryFile.exists()){
+					throw new WritingException(
+							"Failed to save repository."
+									+ "\n"
+									+ " Reason: Write access permission denied on "
+									+ repositoryFolder.getAbsolutePath());
+				}
+				
 				FileAccessMethods.deleteFile(backup);
 			} catch (Throwable e) {
 				e.printStackTrace();
