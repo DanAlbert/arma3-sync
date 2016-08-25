@@ -396,8 +396,16 @@ public class ConfigurationService extends ObjectDTOtransformer {
 		return configurationDAO.getConfiguration().getHeight();
 	}
 
+	public void setHeight(int height) {
+		configurationDAO.getConfiguration().setHeight(height);
+	}
+
 	public int getWidth() {
 		return configurationDAO.getConfiguration().getWidth();
+	}
+
+	public void setWidth(int width) {
+		configurationDAO.getConfiguration().setWidth(width);
 	}
 
 	public ProxyDTO getProxy() {

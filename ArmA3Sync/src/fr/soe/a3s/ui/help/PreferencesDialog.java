@@ -18,6 +18,7 @@ import javax.swing.JPanel;
 import fr.soe.a3s.constant.LookAndFeel;
 import fr.soe.a3s.constant.MinimizationType;
 import fr.soe.a3s.dto.configuration.PreferencesDTO;
+import fr.soe.a3s.exception.WritingException;
 import fr.soe.a3s.service.PreferencesService;
 import fr.soe.a3s.ui.AbstractDialog;
 import fr.soe.a3s.ui.Facade;
@@ -237,8 +238,6 @@ public class PreferencesDialog extends AbstractDialog {
 		LookAndFeel newLookAndFeel = LookAndFeel.getEnum(lookAndFeel);
 		preferencesDTO.setLookAndFeel(newLookAndFeel);
 
-		this.dispose();
-
 		/* Warning user to restart app if L&F has changed */
 		LookAndFeel currentLookAndFeel = preferencesServices.getPreferences()
 				.getLookAndFeel();
@@ -250,6 +249,13 @@ public class PreferencesDialog extends AbstractDialog {
 		}
 
 		preferencesServices.setPreferences(preferencesDTO);
+		try {
+			preferencesServices.write();
+			this.dispose();
+		} catch (WritingException e) {
+			JOptionPane.showMessageDialog(facade.getMainPanel(),
+					e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+		}
 	}
 
 	@Override

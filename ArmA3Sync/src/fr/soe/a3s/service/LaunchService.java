@@ -173,7 +173,6 @@ public class LaunchService {
 			executor.submit(c);
 			executor.shutdown();
 		}
-
 	}
 
 	private void eraseArma3CfgModLauncherList() {

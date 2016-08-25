@@ -11,6 +11,7 @@ import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
 import fr.soe.a3s.domain.configration.Configuration;
+import fr.soe.a3s.exception.CreateDirectoryException;
 import fr.soe.a3s.exception.LoadingException;
 import fr.soe.a3s.exception.WritingException;
 
@@ -44,14 +45,21 @@ public class ConfigurationDAO implements DataAccessConstants {
 	public void write() throws WritingException {
 
 		try {
+			File folder = new File(CONFIGURATION_FOLDER_PATH);
+			folder.mkdirs();
+			if (!folder.exists()) {
+				throw new CreateDirectoryException(folder.getCanonicalPath());
+			}
+			File file = new File(CONFIGURATION_FILE_PATH);
 			ObjectOutputStream fWo = new ObjectOutputStream(
 					new GZIPOutputStream(new FileOutputStream(
-							CONFIGURATION_FILE_PATH)));
+							file.getCanonicalPath())));
 			fWo.writeObject(configuration);
 			fWo.close();
 		} catch (Exception e) {
 			e.printStackTrace();
-			throw new WritingException("Failded to write configuration.");
+			throw new WritingException("Failed to save configuration." + "\n"
+					+ e.getMessage());
 		}
 	}
 

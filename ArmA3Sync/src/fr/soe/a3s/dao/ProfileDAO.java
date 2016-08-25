@@ -14,6 +14,7 @@ import java.util.zip.GZIPOutputStream;
 
 import fr.soe.a3s.constant.DefaultProfileName;
 import fr.soe.a3s.domain.Profile;
+import fr.soe.a3s.exception.CreateDirectoryException;
 import fr.soe.a3s.exception.WritingException;
 
 public class ProfileDAO implements DataAccessConstants {
@@ -55,6 +56,40 @@ public class ProfileDAO implements DataAccessConstants {
 		}
 
 		return profilesFailedToLoad;
+	}
+
+	public void write(Profile profile) throws WritingException {
+
+		assert (profile != null);
+
+		try {
+			File folder = new File(PROFILES_FOLDER_PATH);
+			folder.mkdir();
+			if (!folder.exists()) {
+				throw new CreateDirectoryException(folder.getCanonicalPath());
+			}
+			String profileFilename = profile.getName() + PROFILE_EXTENSION;
+			File profileFile = new File(folder, profileFilename);
+			ObjectOutputStream fWo = new ObjectOutputStream(
+					new GZIPOutputStream(new FileOutputStream(
+							profileFile.getCanonicalPath())));
+			fWo.writeObject(profile);
+			fWo.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new WritingException("Failed to save profile." + "\n"
+					+ e.getMessage());
+		}
+	}
+
+	public void delete(Profile profile) {
+
+		assert (profile != null);
+
+		File folder = new File(PROFILES_FOLDER_PATH);
+		String profileFilename = profile.getName() + PROFILE_EXTENSION;
+		File profileFile = new File(folder, profileFilename);
+		FileAccessMethods.deleteFile(profileFile);
 	}
 
 	public void writeProfiles() throws WritingException {
@@ -110,7 +145,7 @@ public class ProfileDAO implements DataAccessConstants {
 						new FileOutputStream(profileFile)));
 				fWo.writeObject(profile);
 				fWo.close();
-				
+
 				if (!profileFile.exists()) {
 					throw new WritingException("Failed to write profile."
 							+ "\n" + " Reason: Write access is denied on "

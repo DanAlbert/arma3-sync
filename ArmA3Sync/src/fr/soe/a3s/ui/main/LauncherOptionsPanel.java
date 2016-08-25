@@ -34,7 +34,6 @@ import javax.swing.event.DocumentListener;
 import fr.soe.a3s.constant.GameExecutables;
 import fr.soe.a3s.constant.MaxMemoryValues;
 import fr.soe.a3s.dto.configuration.LauncherOptionsDTO;
-import fr.soe.a3s.exception.ProfileException;
 import fr.soe.a3s.service.AddonService;
 import fr.soe.a3s.service.ConfigurationService;
 import fr.soe.a3s.service.LaunchService;
@@ -721,8 +720,8 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener,
 				profileService.setArmA3ExePath(newArma3Exe.getAbsolutePath());
 				updateOptions();
 				JOptionPane.showMessageDialog(facade.getMainPanel(),
-						"ArmA 3 Executable Location have changed.", "Information",
-						JOptionPane.INFORMATION_MESSAGE);
+						"ArmA 3 Executable Location have changed.",
+						"Information", JOptionPane.INFORMATION_MESSAGE);
 			}
 		}
 	}
@@ -908,13 +907,7 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener,
 
 		String additionalParameters = additionalParametersTextArea.getText()
 				.trim();
-		try {
-			// System.out.println(additionalParameters);
-			profileService.setAdditionalParameters(additionalParameters);
-		} catch (ProfileException e) {
-			System.out.println(e.getMessage());
-			e.printStackTrace();
-		}
+		profileService.setAdditionalParameters(additionalParameters);
 	}
 
 	public void updateAdditionalParameters() {
@@ -1049,30 +1042,18 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener,
 	@Override
 	public void changedUpdate(DocumentEvent arg0) {
 		String additionalParameters = additionalParametersTextArea.getText();
-		try {
-			profileService.setAdditionalParameters(additionalParameters);
-		} catch (ProfileException e) {
-			e.printStackTrace();
-		}
+		profileService.setAdditionalParameters(additionalParameters);
 	}
 
 	@Override
 	public void insertUpdate(DocumentEvent arg0) {
 		String additionalParameters = additionalParametersTextArea.getText();
-		try {
-			profileService.setAdditionalParameters(additionalParameters);
-		} catch (ProfileException e) {
-			e.printStackTrace();
-		}
+		profileService.setAdditionalParameters(additionalParameters);
 	}
 
 	@Override
 	public void removeUpdate(DocumentEvent arg0) {
 		String additionalParameters = additionalParametersTextArea.getText();
-		try {
-			profileService.setAdditionalParameters(additionalParameters);
-		} catch (ProfileException e) {
-			e.printStackTrace();
-		}
+		profileService.setAdditionalParameters(additionalParameters);
 	}
 }

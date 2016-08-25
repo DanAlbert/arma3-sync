@@ -2,7 +2,6 @@ package fr.soe.a3s.service;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 
@@ -15,11 +14,10 @@ import fr.soe.a3s.domain.TreeLeaf;
 import fr.soe.a3s.domain.TreeNode;
 import fr.soe.a3s.domain.configration.LauncherOptions;
 import fr.soe.a3s.dto.TreeDirectoryDTO;
-import fr.soe.a3s.dto.TreeLeafDTO;
-import fr.soe.a3s.dto.TreeNodeDTO;
 import fr.soe.a3s.dto.configuration.LauncherOptionsDTO;
 import fr.soe.a3s.exception.LoadingException;
 import fr.soe.a3s.exception.ProfileException;
+import fr.soe.a3s.exception.WritingException;
 
 public class ProfileService extends ObjectDTOtransformer {
 
@@ -39,15 +37,15 @@ public class ProfileService extends ObjectDTOtransformer {
 	}
 
 	public void setAdditionalParameters(String additionalParameters)
-			throws ProfileException {
+			throws WritingException {
 
+		// System.out.println(additionalParameters);
 		String profileName = configurationDAO.getConfiguration()
 				.getProfileName();
 		Profile profile = profileDAO.getMap().get(profileName);
 		if (profile != null) {
 			profile.setAdditionalParameters(additionalParameters);
-		} else {
-			throw new ProfileException("Profile " + profileName + " not found!");
+			profileDAO.write(profile);
 		}
 	}
 
@@ -75,7 +73,8 @@ public class ProfileService extends ObjectDTOtransformer {
 		return list;
 	}
 
-	public void createProfile(String profileName) throws ProfileException {
+	public void createProfile(String profileName) throws ProfileException,
+			WritingException {
 
 		Profile profile = new Profile(profileName);
 		if (profileDAO.getMap().containsKey(profileName)) {
@@ -83,9 +82,11 @@ public class ProfileService extends ObjectDTOtransformer {
 					+ " already exists.");
 		}
 		profileDAO.getMap().put(profile.getName(), profile);
+		profileDAO.write(profile);
 	}
 
-	public void duplicateProfile(String profileName, String duplicateProfileName) {
+	public void duplicateProfile(String profileName, String duplicateProfileName)
+			throws WritingException {
 
 		Profile profile = profileDAO.getMap().get(profileName);
 		if (profile != null) {
@@ -101,11 +102,12 @@ public class ProfileService extends ObjectDTOtransformer {
 					duplicateProfile.getLauncherOptions());
 			profileDAO.getMap().put(duplicateProfile.getName(),
 					duplicateProfile);
+			profileDAO.write(duplicateProfile);
 		}
 	}
 
 	public void renameProfile(String initProfileName, String newProfileName)
-			throws ProfileException {
+			throws ProfileException, WritingException {
 
 		Profile profile = profileDAO.getMap().get(initProfileName);
 		if (profile == null) {
@@ -114,7 +116,9 @@ public class ProfileService extends ObjectDTOtransformer {
 		}
 		profile.setName(newProfileName);
 		profileDAO.getMap().remove(initProfileName);
+		profileDAO.delete(profile);
 		profileDAO.getMap().put(profile.getName(), profile);
+		profileDAO.write(profile);
 	}
 
 	public void removeProfile(String profileName) throws ProfileException {
@@ -125,6 +129,7 @@ public class ProfileService extends ObjectDTOtransformer {
 					+ " does not exists.");
 		}
 		profileDAO.getMap().remove(profileName);
+		profileDAO.delete(profile);
 	}
 
 	private void duplicateTree(TreeDirectory treeDirectory,
@@ -222,7 +227,8 @@ public class ProfileService extends ObjectDTOtransformer {
 		}
 	}
 
-	public void addAddonSearchDirectoryPath(String path) {
+	public void addAddonSearchDirectoryPath(String path)
+			throws WritingException {
 
 		String profileName = configurationDAO.getConfiguration()
 				.getProfileName();
@@ -230,10 +236,12 @@ public class ProfileService extends ObjectDTOtransformer {
 		Profile profile = profileDAO.getMap().get(profileName);
 		if (profile != null) {
 			profile.getAddonSearchDirectories().add(path);
+			profileDAO.write(profile);
 		}
 	}
 
-	public void removeAddonSearchDirectoryPath(String path) {
+	public void removeAddonSearchDirectoryPath(String path)
+			throws WritingException {
 
 		String profileName = configurationDAO.getConfiguration()
 				.getProfileName();
@@ -241,6 +249,7 @@ public class ProfileService extends ObjectDTOtransformer {
 		Profile profile = profileDAO.getMap().get(profileName);
 		if (profile != null) {
 			profile.getAddonSearchDirectories().remove(path);
+			profileDAO.write(profile);
 		}
 	}
 
@@ -257,7 +266,8 @@ public class ProfileService extends ObjectDTOtransformer {
 		}
 	}
 
-	public void setLastAddedAddonSearchDirectory(String path) {
+	public void setLastAddedAddonSearchDirectory(String path)
+			throws WritingException {
 
 		String profileName = configurationDAO.getConfiguration()
 				.getProfileName();
@@ -265,6 +275,7 @@ public class ProfileService extends ObjectDTOtransformer {
 		Profile profile = profileDAO.getMap().get(profileName);
 		if (profile != null) {
 			profile.setLastAddedAddonSearchDirectory(path);
+			profileDAO.write(profile);
 		}
 	}
 
@@ -274,8 +285,8 @@ public class ProfileService extends ObjectDTOtransformer {
 				.getProfileName();
 
 		if (profileName == null) {
-			configurationDAO.getConfiguration().setProfileName(
-					DefaultProfileName.DEFAULT.getDescription());
+			profileName = DefaultProfileName.DEFAULT.getDescription();
+			configurationDAO.getConfiguration().setProfileName(profileName);
 		}
 		Profile profile = profileDAO.getMap().get(profileName);
 		TreeDirectoryDTO treeDirectoryDTO = new TreeDirectoryDTO();
@@ -288,81 +299,26 @@ public class ProfileService extends ObjectDTOtransformer {
 		return treeDirectoryDTO;
 	}
 
-	public void setAddonGroupsTree(TreeDirectoryDTO treeDirectoryDTO) {
+	public void setAddonGroupsTree(TreeDirectoryDTO treeDirectoryDTO)
+			throws WritingException {
 
 		String profileName = configurationDAO.getConfiguration()
 				.getProfileName();
 
 		if (profileName == null) {
-			configurationDAO.getConfiguration().setProfileName(
-					DefaultProfileName.DEFAULT.getDescription());
+			profileName = DefaultProfileName.DEFAULT.getDescription();
+			configurationDAO.getConfiguration().setProfileName(profileName);
 		}
 		Profile profile = profileDAO.getMap().get(profileName);
 		if (profile != null) {
 			TreeDirectory treeDirectory = profile.getTree();
 			treeDirectory.getList().clear();
 			transformDTO2TreeDirectory(treeDirectoryDTO, treeDirectory);
+			profileDAO.write(profile);
 		}
 	}
 
-	public void merge(TreeDirectoryDTO sourceTreeDirectoryDTO,
-			TreeDirectoryDTO targetTreeDirectoryDTO) {
-
-		List<TreeDirectoryDTO> listSourceDirectory = new ArrayList<TreeDirectoryDTO>();
-
-		for (TreeNodeDTO node : sourceTreeDirectoryDTO.getList()) {
-			if (!node.isLeaf()) {
-				TreeDirectoryDTO directory = (TreeDirectoryDTO) node;
-				listSourceDirectory.add(directory);
-			}
-		}
-
-		List<TreeDirectoryDTO> listTargetDirectory = new ArrayList<TreeDirectoryDTO>();
-
-		for (TreeNodeDTO node : targetTreeDirectoryDTO.getList()) {
-			if (!node.isLeaf()) {
-				TreeDirectoryDTO directory = (TreeDirectoryDTO) node;
-				listTargetDirectory.add(directory);
-			}
-		}
-
-		for (TreeDirectoryDTO targetDirectory : listTargetDirectory) {
-			for (TreeDirectoryDTO sourceDirectory : listSourceDirectory) {
-				List<String> listLeafNames = new ArrayList<String>();
-				List<String> listDirectoryNames = new ArrayList<String>();
-				for (TreeNodeDTO targetNode : targetDirectory.getList()) {
-					if (targetNode.isLeaf()) {
-						listLeafNames.add(targetNode.getName());
-					} else {
-						listDirectoryNames.add(targetNode.getName());
-					}
-				}
-				if (targetDirectory.getName().equals(sourceDirectory.getName())) {
-					for (TreeNodeDTO sourceNode : sourceDirectory.getList()) {
-						if (sourceNode.isLeaf()
-								&& !listLeafNames
-										.contains(sourceNode.getName())) {
-							TreeLeafDTO treeLeafDTO = new TreeLeafDTO();
-							treeLeafDTO.setName(sourceNode.getName());
-							treeLeafDTO.setParent(targetDirectory);
-							targetDirectory.addTreeNode(treeLeafDTO);
-						} else if (!sourceNode.isLeaf()
-								&& !listDirectoryNames.contains(sourceNode
-										.getName())) {
-							TreeDirectoryDTO treeDirectoryDTO = new TreeDirectoryDTO();
-							treeDirectoryDTO.setName(sourceNode.getName());
-							treeDirectoryDTO.setParent(targetDirectory);
-							targetDirectory.addTreeNode(treeDirectoryDTO);
-						}
-					}
-				}
-				merge(sourceDirectory, targetDirectory);
-			}
-		}
-		setAddonGroupsTree(targetTreeDirectoryDTO);
-	}
-
-	public void resetAddonPriority() {
+	public void resetAddonPriority() throws WritingException {
 
 		String profileName = configurationDAO.getConfiguration()
 				.getProfileName();
@@ -370,10 +326,11 @@ public class ProfileService extends ObjectDTOtransformer {
 		Profile profile = profileDAO.getMap().get(profileName);
 		if (profile != null) {
 			profile.getAddonNamesByPriority().clear();
+			profileDAO.write(profile);
 		}
 	}
 
-	public void topAddonPriority(int index) {
+	public void topAddonPriority(int index) throws WritingException {
 
 		String profileName = configurationDAO.getConfiguration()
 				.getProfileName();
@@ -385,11 +342,12 @@ public class ProfileService extends ObjectDTOtransformer {
 				String name = list.get(index);
 				list.remove(index);
 				list.add(0, name);
+				profileDAO.write(profile);
 			}
 		}
 	}
 
-	public void upAddonPriority(int index) {
+	public void upAddonPriority(int index) throws WritingException {
 
 		String profileName = configurationDAO.getConfiguration()
 				.getProfileName();
@@ -402,11 +360,12 @@ public class ProfileService extends ObjectDTOtransformer {
 				String nextName = list.get(index - 1);
 				list.set(index, nextName);
 				list.set(index - 1, name);
+				profileDAO.write(profile);
 			}
 		}
 	}
 
-	public void downAddonPriority(int index) {
+	public void downAddonPriority(int index) throws WritingException {
 
 		String profileName = configurationDAO.getConfiguration()
 				.getProfileName();
@@ -419,11 +378,12 @@ public class ProfileService extends ObjectDTOtransformer {
 				String previousName = list.get(index + 1);
 				list.set(index, previousName);
 				list.set(index + 1, name);
+				profileDAO.write(profile);
 			}
 		}
 	}
 
-	public void upDirectoryPriority(int index) {
+	public void upDirectoryPriority(int index) throws WritingException {
 
 		String profileName = configurationDAO.getConfiguration()
 				.getProfileName();
@@ -436,11 +396,12 @@ public class ProfileService extends ObjectDTOtransformer {
 				String nextName = list.get(index - 1);
 				list.set(index, nextName);
 				list.set(index - 1, name);
+				profileDAO.write(profile);
 			}
 		}
 	}
 
-	public void downDirectoryPriority(int index) {
+	public void downDirectoryPriority(int index) throws WritingException {
 
 		String profileName = configurationDAO.getConfiguration()
 				.getProfileName();
@@ -453,11 +414,12 @@ public class ProfileService extends ObjectDTOtransformer {
 				String previousName = list.get(index + 1);
 				list.set(index, previousName);
 				list.set(index + 1, name);
+				profileDAO.write(profile);
 			}
 		}
 	}
 
-	public void setGameProfile(String gameProfileName) {
+	public void setGameProfile(String gameProfileName) throws WritingException {
 
 		String profileName = configurationDAO.getConfiguration()
 				.getProfileName();
@@ -465,10 +427,12 @@ public class ProfileService extends ObjectDTOtransformer {
 		Profile profile = profileDAO.getMap().get(profileName);
 		if (profile != null) {
 			profile.getLauncherOptions().setGameProfile(gameProfileName);
+			profileDAO.write(profile);
 		}
 	}
 
-	public void setCheckBoxShowScriptErrors(boolean selected) {
+	public void setCheckBoxShowScriptErrors(boolean selected)
+			throws WritingException {
 
 		String profileName = configurationDAO.getConfiguration()
 				.getProfileName();
@@ -476,10 +440,11 @@ public class ProfileService extends ObjectDTOtransformer {
 		Profile profile = profileDAO.getMap().get(profileName);
 		if (profile != null) {
 			profile.getLauncherOptions().setShowScriptErrors(selected);
+			profileDAO.write(profile);
 		}
 	}
 
-	public void setCheckBoxNoPause(boolean selected) {
+	public void setCheckBoxNoPause(boolean selected) throws WritingException {
 
 		String profileName = configurationDAO.getConfiguration()
 				.getProfileName();
@@ -487,10 +452,12 @@ public class ProfileService extends ObjectDTOtransformer {
 		Profile profile = profileDAO.getMap().get(profileName);
 		if (profile != null) {
 			profile.getLauncherOptions().setNoPause(selected);
+			profileDAO.write(profile);
 		}
 	}
 
-	public void setCheckBoxFilePatching(boolean selected) {
+	public void setCheckBoxFilePatching(boolean selected)
+			throws WritingException {
 
 		String profileName = configurationDAO.getConfiguration()
 				.getProfileName();
@@ -498,10 +465,11 @@ public class ProfileService extends ObjectDTOtransformer {
 		Profile profile = profileDAO.getMap().get(profileName);
 		if (profile != null) {
 			profile.getLauncherOptions().setFilePatching(selected);
+			profileDAO.write(profile);
 		}
 	}
 
-	public void setCheckBoxWindowMode(boolean selected) {
+	public void setCheckBoxWindowMode(boolean selected) throws WritingException {
 
 		String profileName = configurationDAO.getConfiguration()
 				.getProfileName();
@@ -509,10 +477,12 @@ public class ProfileService extends ObjectDTOtransformer {
 		Profile profile = profileDAO.getMap().get(profileName);
 		if (profile != null) {
 			profile.getLauncherOptions().setWindowMode(selected);
+			profileDAO.write(profile);
 		}
 	}
 
-	public void setCheckBoxCheckSignatures(boolean selected) {
+	public void setCheckBoxCheckSignatures(boolean selected)
+			throws WritingException {
 
 		String profileName = configurationDAO.getConfiguration()
 				.getProfileName();
@@ -520,10 +490,12 @@ public class ProfileService extends ObjectDTOtransformer {
 		Profile profile = profileDAO.getMap().get(profileName);
 		if (profile != null) {
 			profile.getLauncherOptions().setCheckSignatures(selected);
+			profileDAO.write(profile);
 		}
 	}
 
-	public void setCheckBoxAutoRestart(boolean selected) {
+	public void setCheckBoxAutoRestart(boolean selected)
+			throws WritingException {
 
 		String profileName = configurationDAO.getConfiguration()
 				.getProfileName();
@@ -531,6 +503,7 @@ public class ProfileService extends ObjectDTOtransformer {
 		Profile profile = profileDAO.getMap().get(profileName);
 		if (profile != null) {
 			profile.getLauncherOptions().setAutoRestart(selected);
+			profileDAO.write(profile);
 		}
 	}
 
@@ -547,7 +520,7 @@ public class ProfileService extends ObjectDTOtransformer {
 		}
 	}
 
-	public void setMaxMemory(String maxMemory) {
+	public void setMaxMemory(String maxMemory) throws WritingException {
 
 		String profileName = configurationDAO.getConfiguration()
 				.getProfileName();
@@ -555,10 +528,11 @@ public class ProfileService extends ObjectDTOtransformer {
 		Profile profile = profileDAO.getMap().get(profileName);
 		if (profile != null) {
 			profile.getLauncherOptions().setMaxMemorySelection(maxMemory);
+			profileDAO.write(profile);
 		}
 	}
 
-	public void setCpuCount(String cpuCount) {
+	public void setCpuCount(String cpuCount) throws WritingException {
 
 		String profileName = configurationDAO.getConfiguration()
 				.getProfileName();
@@ -571,10 +545,11 @@ public class ProfileService extends ObjectDTOtransformer {
 				profile.getLauncherOptions().setCpuCountSelection(
 						Integer.parseInt(cpuCount));
 			}
+			profileDAO.write(profile);
 		}
 	}
 
-	public void setEnableHT(boolean selected) {
+	public void setEnableHT(boolean selected) throws WritingException {
 
 		String profileName = configurationDAO.getConfiguration()
 				.getProfileName();
@@ -582,10 +557,11 @@ public class ProfileService extends ObjectDTOtransformer {
 		Profile profile = profileDAO.getMap().get(profileName);
 		if (profile != null) {
 			profile.getLauncherOptions().setEnableHT(selected);
+			profileDAO.write(profile);
 		}
 	}
 
-	public void setExThreads(String exThreads) {
+	public void setExThreads(String exThreads) throws WritingException {
 
 		String profileName = configurationDAO.getConfiguration()
 				.getProfileName();
@@ -593,10 +569,11 @@ public class ProfileService extends ObjectDTOtransformer {
 		Profile profile = profileDAO.getMap().get(profileName);
 		if (profile != null) {
 			profile.getLauncherOptions().setExThreadsSelection(exThreads);
+			profileDAO.write(profile);
 		}
 	}
 
-	public void setMalloc(String mallocDll) {
+	public void setMalloc(String mallocDll) throws WritingException {
 
 		String profileName = configurationDAO.getConfiguration()
 				.getProfileName();
@@ -604,10 +581,11 @@ public class ProfileService extends ObjectDTOtransformer {
 		Profile profile = profileDAO.getMap().get(profileName);
 		if (profile != null) {
 			profile.getLauncherOptions().setMallocSelection(mallocDll);
+			profileDAO.write(profile);
 		}
 	}
 
-	public void setNoSplashScreen(boolean selected) {
+	public void setNoSplashScreen(boolean selected) throws WritingException {
 
 		String profileName = configurationDAO.getConfiguration()
 				.getProfileName();
@@ -615,10 +593,11 @@ public class ProfileService extends ObjectDTOtransformer {
 		Profile profile = profileDAO.getMap().get(profileName);
 		if (profile != null) {
 			profile.getLauncherOptions().setNoSplashScreen(selected);
+			profileDAO.write(profile);
 		}
 	}
 
-	public void setDefaultWorld(boolean selected) {
+	public void setDefaultWorld(boolean selected) throws WritingException {
 
 		String profileName = configurationDAO.getConfiguration()
 				.getProfileName();
@@ -626,10 +605,11 @@ public class ProfileService extends ObjectDTOtransformer {
 		Profile profile = profileDAO.getMap().get(profileName);
 		if (profile != null) {
 			profile.getLauncherOptions().setDefaultWorld(selected);
+			profileDAO.write(profile);
 		}
 	}
 
-	public void setNoLogs(boolean selected) {
+	public void setNoLogs(boolean selected) throws WritingException {
 
 		String profileName = configurationDAO.getConfiguration()
 				.getProfileName();
@@ -637,10 +617,11 @@ public class ProfileService extends ObjectDTOtransformer {
 		Profile profile = profileDAO.getMap().get(profileName);
 		if (profile != null) {
 			profile.getLauncherOptions().setNoLogs(selected);
+			profileDAO.write(profile);
 		}
 	}
 
-	public void setArmA3ExePath(String arma3ExePath) {
+	public void setArmA3ExePath(String arma3ExePath) throws WritingException {
 
 		String profileName = configurationDAO.getConfiguration()
 				.getProfileName();
@@ -648,6 +629,7 @@ public class ProfileService extends ObjectDTOtransformer {
 		Profile profile = profileDAO.getMap().get(profileName);
 		if (profile != null) {
 			profile.getLauncherOptions().setArma3ExePath(arma3ExePath);
+			profileDAO.write(profile);
 		}
 	}
 

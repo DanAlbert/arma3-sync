@@ -86,7 +86,9 @@ public class CommonService {
 		}
 	}
 
-	public void importAutoConfig(String path) throws LoadingException, InvalidKeyException, IllegalBlockSizeException, NoSuchAlgorithmException, NoSuchPaddingException, WritingException {
+	public void importAutoConfig(String path) throws LoadingException,
+			InvalidKeyException, IllegalBlockSizeException,
+			NoSuchAlgorithmException, NoSuchPaddingException, WritingException {
 
 		AutoConfig autoConfig = null;
 		try {
@@ -103,6 +105,7 @@ public class CommonService {
 
 		for (Profile profile : listProfiles) {
 			profileDAO.getMap().put(profile.getName(), profile);
+			profileDAO.write(profile);
 		}
 
 		List<FavoriteServer> favoriteServers = autoConfig.getFavoriteServers();

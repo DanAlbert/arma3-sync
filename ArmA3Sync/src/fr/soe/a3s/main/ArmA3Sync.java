@@ -27,8 +27,6 @@ import fr.soe.a3s.console.CommandConsole;
 import fr.soe.a3s.console.CommandLine;
 import fr.soe.a3s.constant.LookAndFeel;
 import fr.soe.a3s.dao.DataAccessConstants;
-import fr.soe.a3s.exception.WritingException;
-import fr.soe.a3s.service.CommonService;
 import fr.soe.a3s.service.PreferencesService;
 import fr.soe.a3s.ui.ErrorLogDialog;
 import fr.soe.a3s.ui.Facade;
@@ -229,38 +227,37 @@ public class ArmA3Sync implements DataAccessConstants {
 					}
 				}
 			});
-
 			// Add shutdown hook
-			JVMShutdownHook jvmShutdownHook = new JVMShutdownHook();
-			Runtime.getRuntime().addShutdownHook(jvmShutdownHook);
+			// JVMShutdownHook jvmShutdownHook = new JVMShutdownHook();
+			// Runtime.getRuntime().addShutdownHook(jvmShutdownHook);
 		} else {
 			JUnique.sendMessage(appId, "");
-			System.exit(1);
+			Runtime.getRuntime().halt(1);
 		}
 	}
 
-	private static class JVMShutdownHook extends Thread {
-
-		private final Thread mainThread = Thread.currentThread();
-
-		@Override
-		public void run() {
-			System.out.println("JVM Shutdown Hook: Thread initiated.");
-			if (mainPanel.isDoSaveOnShutDown()) {
-				try {
-					System.out.println("Performing save on shutdown...");
-					mainThread.join();
-					CommonService commonService = new CommonService();
-					commonService.saveAllParameters(mainPanel.getHeight(),
-							mainPanel.getWidth());
-				} catch (InterruptedException e1) {
-					e1.printStackTrace();
-				} catch (WritingException e) {
-					e.printStackTrace();
-				}
-			}
-		}
-	}
+	// private static class JVMShutdownHook extends Thread {
+	//
+	// private final Thread mainThread = Thread.currentThread();
+	//
+	// @Override
+	// public void run() {
+	// System.out.println("JVM Shutdown Hook: Thread initiated.");
+	// try {
+	// System.out.println("Performing save on shutdown...");
+	// CommonService commonService = new CommonService();
+	// commonService.saveAllParameters(mainPanel.getHeight(),
+	// mainPanel.getWidth());
+	// mainThread.join();
+	// } catch (InterruptedException e1) {
+	// e1.printStackTrace();
+	// } catch (WritingException e) {
+	// e.printStackTrace();
+	// } finally {
+	// // Runtime.getRuntime().halt(0);
+	// }
+	// }
+	// }
 
 	@Deprecated
 	private static String lockInstance() {

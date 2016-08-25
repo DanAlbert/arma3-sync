@@ -50,5 +50,4 @@ public class PreferencesService {
 		preferencesDTO.setLookAndFeel(preferences.getLookAndFeel());
 		return preferencesDTO;
 	}
-
 }
