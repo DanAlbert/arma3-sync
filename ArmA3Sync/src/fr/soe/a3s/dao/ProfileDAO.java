@@ -64,11 +64,12 @@ public class ProfileDAO implements DataAccessConstants {
 
 		File profileFile = null;
 		File backupFile = null;
+		ObjectOutputStream fWo = null;
 		try {
 			File folder = new File(PROFILES_FOLDER_PATH);
 			folder.mkdir();
 			if (!folder.exists()) {
-				throw new CreateDirectoryException(folder.getCanonicalPath());
+				throw new CreateDirectoryException(folder);
 			}
 			String profileFilename = profile.getName() + PROFILE_EXTENSION;
 			profileFile = new File(folder, profileFilename);
@@ -77,9 +78,8 @@ public class ProfileDAO implements DataAccessConstants {
 				FileAccessMethods.deleteFile(backupFile);
 				profileFile.renameTo(backupFile);
 			}
-			ObjectOutputStream fWo = new ObjectOutputStream(
-					new GZIPOutputStream(new FileOutputStream(
-							profileFile.getCanonicalPath())));
+			fWo = new ObjectOutputStream(new GZIPOutputStream(
+					new FileOutputStream(profileFile.getCanonicalPath())));
 			fWo.writeObject(profile);
 			fWo.close();
 		} catch (Exception e) {

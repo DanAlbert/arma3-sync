@@ -1,12 +1,20 @@
 package fr.soe.a3s.exception;
 
+import java.io.File;
+import java.io.IOException;
 
-public class CreateDirectoryException extends Exception {
+public class CreateDirectoryException extends IOException {
 
-	private final String filePath;
+	private String filePath;
 
-	public CreateDirectoryException(String filePath) {
-		this.filePath = filePath;
+	public CreateDirectoryException(File file) {
+
+		this.filePath = null;
+		try {
+			this.filePath = file.getCanonicalPath();
+		} catch (IOException e) {
+			this.filePath = file.getAbsolutePath();
+		}
 	}
 
 	@Override

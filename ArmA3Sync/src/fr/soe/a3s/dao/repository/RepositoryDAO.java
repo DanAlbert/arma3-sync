@@ -120,7 +120,7 @@ public class RepositoryDAO implements DataAccessConstants {
 			File folder = new File(REPOSITORY_FOLDER_PATH);
 			folder.mkdirs();
 			if (!folder.exists()) {
-				throw new CreateDirectoryException(folder.getCanonicalPath());
+				throw new CreateDirectoryException(folder);
 			}
 			String repositoryFilename = repository.getName()
 					+ REPOSITORY_EXTENSION;
@@ -149,84 +149,74 @@ public class RepositoryDAO implements DataAccessConstants {
 		}
 	}
 
-	public SyncTreeDirectory readSync(String repositoryName) throws IOException {
+	public SyncTreeDirectory readSync(Repository repository) throws IOException {
 
-		SyncTreeDirectory sync = null;
-		Repository repository = mapRepositories.get(repositoryName);
-		if (repository != null) {
-			String path = repository.getPath();
-			String syncPath = path + "/" + SYNC_FILE_PATH;
-			File file = new File(syncPath);
-			sync = A3SFilesAccessor.readSyncFile(file);
-		}
+		assert (repository != null);
+
+		String path = repository.getPath();
+		String syncPath = path + "/" + SYNC_FILE_PATH;
+		File file = new File(syncPath);
+		SyncTreeDirectory sync = (SyncTreeDirectory) A3SFilesAccessor
+				.read(file);
 		return sync;
 	}
 
-	public ServerInfo readServerInfo(String repositoryName) throws IOException {
+	public ServerInfo readServerInfo(Repository repository) throws IOException {
 
-		ServerInfo serverInfo = null;
-		Repository repository = mapRepositories.get(repositoryName);
-		if (repository != null) {
-			String path = repository.getPath();
-			String serverInfoPath = path + "/" + SERVERINFO_FILE_PATH;
-			File file = new File(serverInfoPath);
-			serverInfo = A3SFilesAccessor.readServerInfoFile(file);
-		}
+		assert (repository != null);
+
+		String path = repository.getPath();
+		String serverInfoPath = path + "/" + SERVERINFO_FILE_PATH;
+		File file = new File(serverInfoPath);
+		ServerInfo serverInfo = (ServerInfo) A3SFilesAccessor.read(file);
 		return serverInfo;
 	}
 
-	public Changelogs readChangelogs(String repositoryName) throws IOException {
+	public Changelogs readChangelogs(Repository repository) throws IOException {
 
-		Changelogs changelogs = null;
-		Repository repository = mapRepositories.get(repositoryName);
-		if (repository != null) {
-			String path = repository.getPath();
-			String changelogsPath = path + "/" + CHANGELOGS_FILE_PATH;
-			File file = new File(changelogsPath);
-			changelogs = A3SFilesAccessor.readChangelogsFile(file);
-		}
+		assert (repository != null);
+
+		String path = repository.getPath();
+		String changelogsPath = path + "/" + CHANGELOGS_FILE_PATH;
+		File file = new File(changelogsPath);
+		Changelogs changelogs = (Changelogs) A3SFilesAccessor.read(file);
 		return changelogs;
 	}
 
-	public AutoConfig readAutoConfig(String repositoryName) throws IOException {
+	public AutoConfig readAutoConfig(Repository repository) throws IOException {
 
-		AutoConfig autoconfig = null;
-		Repository repository = mapRepositories.get(repositoryName);
-		if (repository != null) {
-			String path = repository.getPath();
-			String autocOnfigPath = path + "/" + AUTOCONFIG_FILE_PATH;
-			File file = new File(autocOnfigPath);
-			autoconfig = A3SFilesAccessor.readAutoConfigFile(file);
-		}
+		assert (repository != null);
+
+		String path = repository.getPath();
+		String autocOnfigPath = path + "/" + AUTOCONFIG_FILE_PATH;
+		File file = new File(autocOnfigPath);
+		AutoConfig autoconfig = (AutoConfig) A3SFilesAccessor.read(file);
 		return autoconfig;
 	}
 
-	public Events readEvents(String repositoryName) throws IOException {
+	public Events readEvents(Repository repository) throws IOException {
 
-		Events events = null;
-		Repository repository = mapRepositories.get(repositoryName);
-		if (repository != null) {
-			String path = repository.getPath();
-			String eventsPath = path + "/" + EVENTS_FILE_PATH;
-			File file = new File(eventsPath);
-			events = A3SFilesAccessor.readEventsFile(file);
-		}
+		String path = repository.getPath();
+		String eventsPath = path + "/" + EVENTS_FILE_PATH;
+		File file = new File(eventsPath);
+		Events events = (Events) A3SFilesAccessor.read(file);
 		return events;
 	}
 
-	public void writeEvents(String repositoryName) throws IOException {
+	public void writeEvents(Repository repository) throws IOException {
 
-		Repository repository = mapRepositories.get(repositoryName);
-		if (repository != null) {
-			Events events = repository.getEvents();
-			if (events != null) {
-				String path = repository.getPath();
-				File a3sFolder = new File(path + A3S_FOlDER_PATH);
-				a3sFolder.mkdir();
-				String eventsPath = a3sFolder.getAbsolutePath() + "/" + EVENTS;
-				File file = new File(eventsPath);
-				A3SFilesAccessor.writeEvents(events, file);
+		assert (repository != null);
+
+		Events events = repository.getEvents();
+		if (events != null) {
+			String path = repository.getPath();
+			File a3sFolder = new File(path + A3S_FOlDER_PATH);
+			a3sFolder.mkdir();
+			if (!a3sFolder.exists()) {
+				throw new CreateDirectoryException(a3sFolder);
 			}
+			File file = new File(a3sFolder, EVENTS);
+			A3SFilesAccessor.write(events, file);
 		}
 	}
 }

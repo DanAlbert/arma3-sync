@@ -36,6 +36,7 @@ import fr.soe.a3s.domain.repository.ServerInfo;
 import fr.soe.a3s.domain.repository.SyncTreeDirectory;
 import fr.soe.a3s.domain.repository.SyncTreeLeaf;
 import fr.soe.a3s.domain.repository.SyncTreeNode;
+import fr.soe.a3s.exception.CreateDirectoryException;
 
 public class RepositoryBuildProcessor implements DataAccessConstants,
 		ObservableCount, ObservableText {
@@ -75,20 +76,41 @@ public class RepositoryBuildProcessor implements DataAccessConstants,
 		assert (repository.getPath() != null);
 		assert (new File(repository.getPath()).exists());
 
-		/*
-		 * Read sync, serverInfo, changelogs and events file before .a3s folder
-		 * deletion
-		 */
-		Changelogs oldChangelogs = A3SFilesAccessor
-				.readChangelogsFile(new File(repository.getPath()
-						+ CHANGELOGS_FILE_PATH));
-		Events oldEvents = A3SFilesAccessor.readEventsFile(new File(repository
-				.getPath() + EVENTS_FILE_PATH));
-		SyncTreeDirectory oldSync = A3SFilesAccessor.readSyncFile(new File(
-				repository.getPath() + SYNC_FILE_PATH));
-		ServerInfo oldServerInfo = A3SFilesAccessor
-				.readServerInfoFile(new File(repository.getPath()
-						+ SERVERINFO_FILE_PATH));
+		// Read previous sync file
+		SyncTreeDirectory oldSync = null;
+		try {
+			oldSync = (SyncTreeDirectory) A3SFilesAccessor.read(new File(
+					repository.getPath() + SYNC_FILE_PATH));
+		} catch (IOException e) {
+			System.out.println("Build repository:" + e.getMessage());
+		}
+
+		// Read previous serverInfo file
+		ServerInfo oldServerInfo = null;
+		try {
+			oldServerInfo = (ServerInfo) A3SFilesAccessor.read(new File(
+					repository.getPath() + SERVERINFO_FILE_PATH));
+		} catch (IOException e) {
+			System.out.println("Build repository:" + e.getMessage());
+		}
+
+		// Read previous changelogs file
+		Changelogs oldChangelogs = null;
+		try {
+			oldChangelogs = (Changelogs) A3SFilesAccessor.read(new File(
+					repository.getPath() + CHANGELOGS_FILE_PATH));
+		} catch (IOException e) {
+			System.out.println("Build repository:" + e.getMessage());
+		}
+
+		// Read previous events file
+		Events oldEvents = null;
+		try {
+			oldEvents = (Events) A3SFilesAccessor.read(new File(repository
+					.getPath() + EVENTS_FILE_PATH));
+		} catch (IOException e) {
+			System.out.println("Build repository:" + e.getMessage());
+		}
 
 		/* Remove .a3s folder */
 		File folderA3S = new File(repository.getPath() + "/.a3s");
@@ -147,15 +169,16 @@ public class RepositoryBuildProcessor implements DataAccessConstants,
 		serverInfo.setRepositoryContentUpdated(contentUpdated);
 
 		int index = repository.getPath().lastIndexOf(File.separator);
-		String repositoryMainFolderName = repository.getPath().substring(index + 1);
+		String repositoryMainFolderName = repository.getPath().substring(
+				index + 1);
 
 		Iterator iterator = repository.getExcludedFoldersFromSync().iterator();
 		while (iterator.hasNext()) {
 			String path = (String) iterator.next();
 			index = path.toLowerCase().indexOf(
 					File.separator + repositoryMainFolderName.toLowerCase());
-			String folderPath = path.substring(index + repositoryMainFolderName.length()
-					+ 2);
+			String folderPath = path.substring(index
+					+ repositoryMainFolderName.length() + 2);
 			folderPath = backslashReplace(folderPath);
 			serverInfo.getHiddenFolderPaths().add(folderPath);
 		}
@@ -273,8 +296,7 @@ public class RepositoryBuildProcessor implements DataAccessConstants,
 
 		/* Determine .zsync files for HTTP based Repository */
 		if (repository.getProtocol() instanceof Http) {
-			updateObserverText("Processing *"
-					+ ZSYNC_EXTENSION + " files...");
+			updateObserverText("Processing *" + ZSYNC_EXTENSION + " files...");
 			List<SyncTreeLeaf> list = new ArrayList<SyncTreeLeaf>();
 			getZSyncFiles(leafsList, list);
 			repositoryZsyncFilesProcessor = new RepositoryZsyncProcessor();
@@ -282,8 +304,7 @@ public class RepositoryBuildProcessor implements DataAccessConstants,
 			repositoryZsyncFilesProcessor.addObserverCount(observerCount);
 			repositoryZsyncFilesProcessor.run();
 		} else {
-			updateObserverText("Deleting *"
-					+ ZSYNC_EXTENSION + " files...");
+			updateObserverText("Deleting *" + ZSYNC_EXTENSION + " files...");
 			repositoryDeleteZSyncProcessor = new RepositoryDeleteZSyncProcessor();
 			repositoryDeleteZSyncProcessor.init(leafsList);
 			repositoryDeleteZSyncProcessor.addObserverCount(observerCount);
@@ -292,8 +313,7 @@ public class RepositoryBuildProcessor implements DataAccessConstants,
 
 		/* Determine .zip files */
 		if (repository.isCompressed()) {
-			updateObserverText("Processing *"
-					+ PBO_ZIP_EXTENSION + " files...");
+			updateObserverText("Processing *" + PBO_ZIP_EXTENSION + " files...");
 			List<SyncTreeLeaf> list = new ArrayList<SyncTreeLeaf>();
 			getPboFilesForCompression(leafsList, list);
 			zipBatchProcessor = new ZipBatchProcessor();
@@ -301,8 +321,7 @@ public class RepositoryBuildProcessor implements DataAccessConstants,
 			zipBatchProcessor.addObserverCount(observerCount);
 			zipBatchProcessor.zipBatch();
 		} else {
-			observerText.update("Deleting *"
-					+ PBO_ZIP_EXTENSION + " files...");
+			observerText.update("Deleting *" + PBO_ZIP_EXTENSION + " files...");
 			List<SyncTreeLeaf> list = new ArrayList<SyncTreeLeaf>();
 			getPboFilesForDeletion(leafsList, list);
 			deleteZipBatchProcessor = new DeleteZipBatchProcessor();
@@ -312,35 +331,34 @@ public class RepositoryBuildProcessor implements DataAccessConstants,
 		}
 
 		/* Write files */
-		File folder = new File(repository.getPath() + "/.a3s");
-		folder.mkdir();
-		if (!folder.exists()) {
-			throw new IOException("Failed to create .a3s folder." + "\n"
-					+ "Permission denied.");
+		File a3sFolder = new File(repository.getPath() + A3S_FOlDER_PATH);
+		a3sFolder.mkdir();
+		if (!a3sFolder.exists()) {
+			throw new CreateDirectoryException(a3sFolder);
 		}
 
 		// Write Sync file
 		File syncFile = new File(repository.getPath() + SYNC_FILE_PATH);
-		A3SFilesAccessor.writeSync(sync, syncFile);
+		A3SFilesAccessor.write(sync, syncFile);
 
 		// Write ServerInfo file
 		File serverInfoFile = new File(repository.getPath()
 				+ SERVERINFO_FILE_PATH);
-		A3SFilesAccessor.writeServerInfo(serverInfo, serverInfoFile);
+		A3SFilesAccessor.write(serverInfo, serverInfoFile);
 
 		// Write Changelogs file
 		File changelogsFile = new File(repository.getPath()
 				+ CHANGELOGS_FILE_PATH);
-		A3SFilesAccessor.writeChangelogs(changelogs, changelogsFile);
+		A3SFilesAccessor.write(changelogs, changelogsFile);
 
 		// Write AutoConfig file
 		File autoConfigFile = new File(repository.getPath()
 				+ AUTOCONFIG_FILE_PATH);
-		A3SFilesAccessor.writeAutoConfig(autoConfig, autoConfigFile);
+		A3SFilesAccessor.write(autoConfig, autoConfigFile);
 
 		// Write Events file
 		File eventsFile = new File(repository.getPath() + EVENTS_FILE_PATH);
-		A3SFilesAccessor.writeEvents(events, eventsFile);
+		A3SFilesAccessor.write(events, eventsFile);
 	}
 
 	private String backslashReplace(String myStr) {

@@ -48,7 +48,7 @@ public class ConfigurationDAO implements DataAccessConstants {
 			File folder = new File(CONFIGURATION_FOLDER_PATH);
 			folder.mkdirs();
 			if (!folder.exists()) {
-				throw new CreateDirectoryException(folder.getCanonicalPath());
+				throw new CreateDirectoryException(folder);
 			}
 			File file = new File(CONFIGURATION_FILE_PATH);
 			ObjectOutputStream fWo = new ObjectOutputStream(

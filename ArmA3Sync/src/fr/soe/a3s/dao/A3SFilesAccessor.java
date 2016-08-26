@@ -2,7 +2,6 @@ package fr.soe.a3s.dao;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -166,132 +165,67 @@ public class A3SFilesAccessor implements DataAccessConstants {
 		return autoConfig;
 	}
 
-	public static void writeSync(SyncTreeDirectory sync, File syncFile)
-			throws IOException {
+	public static Object read(File file) throws IOException {
 
-		if (sync != null) {
-			ObjectOutputStream fWo = null;
-			try {
-				fWo = new ObjectOutputStream(new GZIPOutputStream(
-						new FileOutputStream(syncFile.getAbsolutePath())));
-				fWo.writeObject(sync);
-			} catch (IOException e) {
-				String message = "Failed to write file on disk "
-						+ SYNC_FILE_PATH;
-				if (e instanceof ZipException) {
-					message = message + "\n" + FILE_CORRUPTED;
-				} else if (e.getMessage() != null) {
-					message = message + "\n" + e.getMessage();
-				}
-				throw new IOException(message);
-			} finally {
-				if (fWo != null) {
-					fWo.close();
-				}
+		assert (file != null);
+
+		String filePath = null;
+		try {
+			filePath = file.getCanonicalPath();
+		} catch (IOException e) {
+			filePath = file.getPath();
+		}
+
+		Object object = null;
+		ObjectInputStream fRo = null;
+		try {
+			fRo = new ObjectInputStream(new GZIPInputStream(
+					new FileInputStream(file)));
+			object = fRo.readObject();
+		} catch (IOException e) {
+			String message = "Failed to read file: " + filePath;
+			if (e instanceof ZipException) {
+				message = message + "\n" + FILE_CORRUPTED;
+			} else if (e.getMessage() != null) {
+				message = message + "\n" + e.getMessage();
+			}
+			throw new IOException(message);
+		} catch (ClassNotFoundException e) {
+			throw new RuntimeException(e);
+		} finally {
+			if (fRo != null) {
+				fRo.close();
 			}
 		}
+		return object;
 	}
 
-	public static void writeServerInfo(ServerInfo serverInfo,
-			File serverInfoFile) throws IOException {
+	public static void write(Object object, File file) throws IOException {
 
-		if (serverInfo != null) {
-			ObjectOutputStream fWo = null;
-			try {
-				fWo = new ObjectOutputStream(new GZIPOutputStream(
-						new FileOutputStream(serverInfoFile.getAbsolutePath())));
-				fWo.writeObject(serverInfo);
-			} catch (IOException e) {
-				String message = "Failed to write file on disk "
-						+ SERVERINFO_FILE_PATH;
-				if (e instanceof ZipException) {
-					message = message + "\n" + FILE_CORRUPTED;
-				} else if (e.getMessage() != null) {
-					message = message + "\n" + e.getMessage();
-				}
-				throw new IOException(message);
-			} finally {
-				if (fWo != null) {
-					fWo.close();
-				}
-			}
+		assert (object != null);
+
+		String filePath = null;
+		try {
+			filePath = file.getCanonicalPath();
+		} catch (IOException e) {
+			filePath = file.getPath();
 		}
-	}
 
-	public static void writeChangelogs(Changelogs changelogs,
-			File changelogsFile) throws IOException {
-
-		if (changelogs != null) {
-			ObjectOutputStream fWo = null;
-			try {
-				fWo = new ObjectOutputStream(new GZIPOutputStream(
-						new FileOutputStream(changelogsFile.getAbsolutePath())));
-				fWo.writeObject(changelogs);
-			} catch (IOException e) {
-				String message = "Failed to write file on disk "
-						+ CHANGELOGS_FILE_PATH;
-				if (e instanceof ZipException) {
-					message = message + "\n" + FILE_CORRUPTED;
-				} else if (e.getMessage() != null) {
-					message = message + "\n" + e.getMessage();
-				}
-				throw new IOException(message);
-			} finally {
-				if (fWo != null) {
-					fWo.close();
-				}
+		ObjectOutputStream fWo = null;
+		try {
+			fWo = new ObjectOutputStream(new GZIPOutputStream(
+					new FileOutputStream(file)));
+			fWo.writeObject(object);
+		} catch (IOException e) {
+			e.printStackTrace();
+			String message = "Failed to write file: " + filePath;
+			if (e.getMessage() != null) {
+				message = message + "\n" + e.getMessage();
 			}
-		}
-	}
-
-	public static void writeAutoConfig(AutoConfig autoConfig,
-			File autoConfigFile) throws IOException {
-
-		if (autoConfig != null) {
-			ObjectOutputStream fWo = null;
-			try {
-				fWo = new ObjectOutputStream(new GZIPOutputStream(
-						new FileOutputStream(autoConfigFile.getAbsolutePath())));
-				fWo.writeObject(autoConfig);
-			} catch (IOException e) {
-				String message = "Failed to write file on disk "
-						+ AUTOCONFIG_FILE_PATH;
-				if (e instanceof ZipException) {
-					message = message + "\n" + FILE_CORRUPTED;
-				} else if (e.getMessage() != null) {
-					message = message + "\n" + e.getMessage();
-				}
-				throw new IOException(message);
-			} finally {
-				if (fWo != null) {
-					fWo.close();
-				}
-			}
-		}
-	}
-
-	public static void writeEvents(Events events, File eventsFile)
-			throws IOException {
-
-		if (events != null) {
-			ObjectOutputStream fWo = null;
-			try {
-				fWo = new ObjectOutputStream(new GZIPOutputStream(
-						new FileOutputStream(eventsFile.getAbsolutePath())));
-				fWo.writeObject(events);
-			} catch (IOException e) {
-				String message = "Failed to write file on disk "
-						+ EVENTS_FILE_PATH;
-				if (e instanceof ZipException) {
-					message = message + "\n" + FILE_CORRUPTED;
-				} else if (e.getMessage() != null) {
-					message = message + "\n" + e.getMessage();
-				}
-				throw new IOException(message);
-			} finally {
-				if (fWo != null) {
-					fWo.close();
-				}
+			throw new IOException(message);
+		} finally {
+			if (fWo != null) {
+				fWo.close();
 			}
 		}
 	}

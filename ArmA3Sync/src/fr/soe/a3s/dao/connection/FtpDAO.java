@@ -283,7 +283,7 @@ public class FtpDAO extends AbstractConnexionDAO {
 			boolean found = downloadFile(file, remotePath);
 			if (found) {
 				if (file.exists()) {
-					sync = A3SFilesAccessor.readSyncFile(file);
+					sync = (SyncTreeDirectory) A3SFilesAccessor.read(file);
 				} else {
 					throw new IOException("Failed to write file: "
 							+ file.getAbsolutePath() + "\n"

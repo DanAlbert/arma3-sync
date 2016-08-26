@@ -48,11 +48,8 @@ import fr.soe.a3s.dto.sync.SyncTreeDirectoryDTO;
 import fr.soe.a3s.exception.CheckException;
 import fr.soe.a3s.exception.LoadingException;
 import fr.soe.a3s.exception.WritingException;
-import fr.soe.a3s.exception.repository.AutoConfigFileNotFoundException;
-import fr.soe.a3s.exception.repository.ChangelogsFileNotFoundExeption;
 import fr.soe.a3s.exception.repository.RepositoryException;
 import fr.soe.a3s.exception.repository.RepositoryNotFoundException;
-import fr.soe.a3s.exception.repository.ServerInfoNotFoundException;
 import fr.soe.a3s.exception.repository.SyncFileNotFoundException;
 
 public class RepositoryService extends ObjectDTOtransformer implements
@@ -863,7 +860,11 @@ public class RepositoryService extends ObjectDTOtransformer implements
 	}
 
 	public void writeEvents(String repositoryName) throws IOException {
-		repositoryDAO.writeEvents(repositoryName);
+
+		Repository repository = repositoryDAO.getMap().get(repositoryName);
+		if (repository != null) {
+			repositoryDAO.writeEvents(repository);
+		}
 	}
 
 	public TreeDirectoryDTO getAddonTreeFromRepository(String repositoryName,
@@ -1267,33 +1268,17 @@ public class RepositoryService extends ObjectDTOtransformer implements
 			throw new RepositoryNotFoundException(repositoryName);
 		}
 
-		SyncTreeDirectory sync = repositoryDAO.readSync(repositoryName);
-		ServerInfo serverInfo = repositoryDAO.readServerInfo(repositoryName);
-		Changelogs changelogs = repositoryDAO.readChangelogs(repositoryName);
-		AutoConfig autoConfig = repositoryDAO.readAutoConfig(repositoryName);
-		Events events = repositoryDAO.readEvents(repositoryName);
+		SyncTreeDirectory sync = repositoryDAO.readSync(repository);
+		ServerInfo serverInfo = repositoryDAO.readServerInfo(repository);
+		Changelogs changelogs = repositoryDAO.readChangelogs(repository);
+		AutoConfig autoConfig = repositoryDAO.readAutoConfig(repository);
+		Events events = repositoryDAO.readEvents(repository);
 
 		repository.setLocalSync(sync);// null if not found
 		repository.setLocalServerInfo(serverInfo);// null if not found
 		repository.setLocalChangelogs(changelogs);// null if not found
 		repository.setLocalAutoConfig(autoConfig);// null if not found
 		repository.setLocalEvents(events);// null if not found
-
-		if (sync == null) {
-			throw new SyncFileNotFoundException(repositoryName);
-		}
-
-		if (serverInfo == null) {
-			throw new ServerInfoNotFoundException(repositoryName);
-		}
-
-		if (changelogs == null) {
-			throw new ChangelogsFileNotFoundExeption(repositoryName);
-		}
-
-		if (autoConfig == null) {
-			throw new AutoConfigFileNotFoundException(repositoryName);
-		}
 	}
 
 	public SyncTreeDirectoryDTO getSync(String repositoryName)
