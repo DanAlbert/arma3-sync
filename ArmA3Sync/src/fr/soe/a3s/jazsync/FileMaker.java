@@ -538,7 +538,6 @@ public class FileMaker {
 			if (is != null) {
 				is.close();
 			}
-			is.close();
 		}
 	}
 
