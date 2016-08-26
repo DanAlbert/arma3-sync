@@ -531,7 +531,6 @@ public class FileMaker {
 			}
 
 			double complete = matchControl();
-			fileMap[(fileMap.length - 1)] = -1;
 			return complete;
 		} catch (NoSuchAlgorithmException ex) {
 			throw new RuntimeException(ex);
@@ -625,6 +624,7 @@ public class FileMaker {
 	 * @return How many percent of file we have already
 	 */
 	private double matchControl() {
+		
 		missing = 0;
 		for (int i = 0; i < fileMap.length; i++) {
 			if (mfr.getSeqNum() == 2) { // pouze pokud kontrolujeme matching
@@ -648,7 +648,12 @@ public class FileMaker {
 				missing++;
 			}
 		}
-		return ((((double) fileMap.length - missing) / fileMap.length) * 100);
+
+		if (fileMap.length > 0) {
+			return ((((double) fileMap.length - missing) / fileMap.length) * 100);
+		}else {
+			return 0;
+		}
 	}
 
 	/**
