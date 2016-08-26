@@ -7,11 +7,7 @@ import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
 
-import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.NoSuchPaddingException;
 import javax.swing.Box;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
@@ -22,10 +18,7 @@ import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 import javax.swing.filechooser.FileFilter;
 
-import fr.soe.a3s.exception.LoadingException;
-import fr.soe.a3s.exception.WritingException;
 import fr.soe.a3s.service.CommonService;
-import fr.soe.a3s.service.RepositoryService;
 import fr.soe.a3s.ui.AbstractDialog;
 import fr.soe.a3s.ui.ExtensionFilter;
 import fr.soe.a3s.ui.Facade;
@@ -120,18 +113,28 @@ public class AutoConfigImportDialog extends AbstractDialog {
 		SwingUtilities.invokeLater(new Runnable() {
 			@Override
 			public void run() {
+
 				String path = textField.getText();
 
 				if (path.isEmpty()) {
 					JOptionPane.showMessageDialog(facade.getMainPanel(),
-							"Import directory is empty.", "Import auto-config",
+							"Import file path empty.", "Import auto-config",
 							JOptionPane.WARNING_MESSAGE);
+					return;
+				}
+
+				File file = new File(path);
+
+				if (!file.exists()) {
+					JOptionPane.showMessageDialog(facade.getMainPanel(),
+							"Import file does not exits.",
+							"Import auto-config", JOptionPane.ERROR_MESSAGE);
 					return;
 				}
 
 				try {
 					CommonService commonService = new CommonService();
-					commonService.importAutoConfig(path);
+					commonService.importAutoConfig(file);
 					dispose();
 					facade.getMainPanel().updateProfilesMenu();
 					facade.getSyncPanel().init();
@@ -139,9 +142,8 @@ public class AutoConfigImportDialog extends AbstractDialog {
 					facade.getLaunchPanel().init();
 				} catch (Exception e) {
 					JOptionPane.showMessageDialog(facade.getMainPanel(),
-							"An error occured. \n Failed to import auto-config."
-									+ "\n" + e.getMessage(),
-							"Import auto-config", JOptionPane.ERROR_MESSAGE);
+							e.getMessage(), "Import auto-config",
+							JOptionPane.ERROR_MESSAGE);
 				}
 			}
 		});

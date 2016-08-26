@@ -21,6 +21,7 @@ import javax.swing.border.BevelBorder;
 
 import fr.soe.a3s.constant.DefaultProfileName;
 import fr.soe.a3s.exception.ProfileException;
+import fr.soe.a3s.exception.WritingException;
 import fr.soe.a3s.service.ConfigurationService;
 import fr.soe.a3s.service.ProfileService;
 import fr.soe.a3s.ui.AbstractDialog;
@@ -210,14 +211,21 @@ public class ProfileSelectionDialog extends AbstractDialog {
 	}
 
 	private void buttonDuplicatePerformed() {
+
 		String profileName = (String) profilesList.getSelectedValue();
 		if (profileName.contains("Duplicate")) {
 			return;
 		} else {
-			String duplicateProfileName = profileName + " - Duplicate";
-			profileService.duplicateProfile(profileName, duplicateProfileName);
-			init();
-			profilesList.setSelectedValue(duplicateProfileName, true);
+			try {
+				String duplicateProfileName = profileName + " - Duplicate";
+				profileService.duplicateProfile(profileName,
+						duplicateProfileName);
+				init();
+				profilesList.setSelectedValue(duplicateProfileName, true);
+			} catch (WritingException e) {
+				JOptionPane.showMessageDialog(this, e.getMessage(), "Error",
+						JOptionPane.ERROR_MESSAGE);
+			}
 		}
 	}
 

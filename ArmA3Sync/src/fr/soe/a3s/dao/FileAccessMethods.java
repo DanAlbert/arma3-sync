@@ -15,8 +15,6 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
-import javax.management.RuntimeErrorException;
-
 public class FileAccessMethods implements DataAccessConstants {
 
 	private static final char[] HEX_CHARS = "0123456789abcdef".toCharArray();
@@ -58,6 +56,7 @@ public class FileAccessMethods implements DataAccessConstants {
 	}
 
 	public static boolean deleteDirectory(File file) {
+
 		if (file.exists()) {
 			File[] files = file.listFiles();
 			for (int i = 0; i < files.length; i++) {
@@ -96,6 +95,20 @@ public class FileAccessMethods implements DataAccessConstants {
 			response = file.delete();
 		}
 		return response;
+	}
+
+	public static void setWritePermissions(File folder) {
+
+		if (folder.exists()) {
+			File[] files = folder.listFiles();
+			for (int i = 0; i < files.length; i++) {
+				File f = files[i];
+				if (f.isDirectory()) {
+					boolean succeed = f.setWritable(true, false);
+					setWritePermissions(f);
+				}
+			}
+		}
 	}
 
 	public static void extractToFolder(File zipFile, File folder)

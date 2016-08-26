@@ -16,8 +16,6 @@ import java.awt.Toolkit;
 import java.awt.TrayIcon;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.io.File;
@@ -82,7 +80,6 @@ import fr.soe.a3s.ui.main.dialogs.InfoUpdatedRepositoryDialog;
 import fr.soe.a3s.ui.main.dialogs.WellcomeDialog;
 import fr.soe.a3s.ui.profiles.ProfileSelectionDialog;
 import fr.soe.a3s.ui.repository.RepositoryPanel;
-import fr.soe.a3s.ui.tools.acre.FirstPageACREInstallerDialog;
 import fr.soe.a3s.ui.tools.acre2.FirstPageACRE2InstallerDialog;
 import fr.soe.a3s.ui.tools.aia.AiaInstallerDialog;
 import fr.soe.a3s.ui.tools.bikey.BiKeyExtractorDialog;
@@ -118,8 +115,6 @@ public class MainPanel extends JFrame implements UIConstants {
 	/* System tray */
 	private SystemTray tray;
 	private TrayIcon trayIcon;
-	/* */
-	private MyWindowResizeListener windowResizeListener;
 	/* Services */
 	private final ConfigurationService configurationService = new ConfigurationService();
 	private final ProfileService profileService = new ProfileService();
@@ -458,9 +453,6 @@ public class MainPanel extends JFrame implements UIConstants {
 			public void windowOpened(WindowEvent e) {
 			}
 		});
-
-		//
-		this.windowResizeListener = new MyWindowResizeListener();
 	}
 
 	public void init() {
@@ -592,9 +584,6 @@ public class MainPanel extends JFrame implements UIConstants {
 
 		/* Check ArmA3 Executable location */
 		showWellcomeDialog();
-
-		/**/
-		windowResizeListener.init();
 	}
 
 	public void initBackGround() {
@@ -701,14 +690,6 @@ public class MainPanel extends JFrame implements UIConstants {
 					+ "\n" + e.getMessage(), "Export profile as shortcut",
 					JOptionPane.ERROR_MESSAGE);
 		}
-	}
-
-	private void menuItemACREwizardPerformed() {
-
-		FirstPageACREInstallerDialog firstPage = new FirstPageACREInstallerDialog(
-				facade);
-		firstPage.init();
-		firstPage.setVisible(true);
 	}
 
 	private void menuItemACRE2wizardPerformed() {
@@ -850,6 +831,7 @@ public class MainPanel extends JFrame implements UIConstants {
 	}
 
 	private void menuIconifiedPerformed() {
+
 		PreferencesDTO preferencesDTO = preferencesService.getPreferences();
 		MinimizationType type = preferencesDTO.getLaunchPanelMinimized();
 		if (type.equals(MinimizationType.TASK_BAR)) {
@@ -862,23 +844,19 @@ public class MainPanel extends JFrame implements UIConstants {
 
 	public void menuExitPerformed() {
 
-		// int close = 0;
-		// try {
-		// commonService.saveAllParameters(getHeight(), getWidth());
-		// } catch (WritingException e) {
-		// close = JOptionPane.showConfirmDialog(facade.getMainPanel(),
-		// "An error occured.\n" + e.getMessage() + "\n"
-		// + "Exit ArmA3Sync anyway?", "Error",
-		// JOptionPane.YES_NO_OPTION, JOptionPane.ERROR_MESSAGE);
-		// } finally {
-		// if (close == 0) {
-		// dispose();
-		// System.exit(0);
-		// }
-		// }
-
-		dispose();
-		System.exit(0);
+		int close = 0;
+		try {
+			commonService.save(getHeight(), getWidth());
+		} catch (WritingException e) {
+			close = JOptionPane.showConfirmDialog(facade.getMainPanel(),
+					e.getMessage() + "\n" + "Exit ArmA3Sync anyway?", "Error",
+					JOptionPane.YES_NO_OPTION, JOptionPane.ERROR_MESSAGE);
+		} finally {
+			if (close == 0) {
+				dispose();
+				System.exit(0);
+			}
+		}
 	}
 
 	private void trayIconPerformed() {
@@ -1377,38 +1355,5 @@ public class MainPanel extends JFrame implements UIConstants {
 					repositoryName, JOptionPane.INFORMATION_MESSAGE);
 		}
 		return false;
-	}
-
-	private class MyWindowResizeListener {
-
-		private final ResizeListener resizeListener;
-
-		public MyWindowResizeListener() {
-			resizeListener = new ResizeListener();
-		}
-
-		public void init() {
-			facade.getMainPanel().addComponentListener(resizeListener);
-		}
-
-		private class ResizeListener extends ComponentAdapter {
-
-			@Override
-			public void componentResized(ComponentEvent e) {
-
-				try {
-					configurationService.setHeight(facade.getMainPanel()
-							.getHeight());
-					configurationService.setWidth(facade.getMainPanel()
-							.getWidth());
-					configurationService.write();
-				} catch (WritingException ex) {
-					JOptionPane
-							.showMessageDialog(facade.getMainPanel(),
-									ex.getMessage(), "Error",
-									JOptionPane.ERROR_MESSAGE);
-				}
-			}
-		}
 	}
 }

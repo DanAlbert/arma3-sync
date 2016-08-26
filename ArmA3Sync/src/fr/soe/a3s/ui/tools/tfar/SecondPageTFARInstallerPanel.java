@@ -23,6 +23,7 @@ import javax.swing.JPanel;
 import javax.swing.border.BevelBorder;
 
 import fr.soe.a3s.dao.FileAccessMethods;
+import fr.soe.a3s.exception.WritingException;
 import fr.soe.a3s.ui.Facade;
 import fr.soe.a3s.ui.tools.WizardDialog;
 
@@ -253,7 +254,12 @@ public class SecondPageTFARInstallerPanel extends WizardDialog {
 
 	@Override
 	public void buttonSecondPerformed() {
-		this.dispose();
+		try {
+			configurationService.write();
+		} catch (WritingException e) {
+		} finally {
+			dispose();
+		}
 	}
 
 	private void buttonViewPluginPerformed() {

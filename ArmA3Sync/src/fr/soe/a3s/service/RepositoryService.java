@@ -92,7 +92,11 @@ public class RepositoryService extends ObjectDTOtransformer implements
 	public void write(String repositoryName) throws WritingException {
 
 		try {
-			repositoryDAO.write(repositoryName);
+			Repository repository = repositoryDAO.getMap().get(repositoryName);
+			if (repository != null) {
+				repositoryDAO.write(repository);
+			}
+
 		} catch (Exception e) {
 			e.printStackTrace();
 			throw new WritingException("Failed to write repository "
@@ -863,7 +867,8 @@ public class RepositoryService extends ObjectDTOtransformer implements
 	}
 
 	public TreeDirectoryDTO getAddonTreeFromRepository(String repositoryName,
-			boolean withUserconfig,boolean markDuplicate) throws RepositoryException {
+			boolean withUserconfig, boolean markDuplicate)
+			throws RepositoryException {
 
 		Repository repository = repositoryDAO.getMap().get(repositoryName);
 		if (repository != null) {
@@ -1402,7 +1407,7 @@ public class RepositoryService extends ObjectDTOtransformer implements
 		Repository repository = repositoryDAO.getMap().get(repositoryName);
 		if (repository != null) {
 			ServerInfo serverInfo = repository.getServerInfo();
-			if (serverInfo!=null){
+			if (serverInfo != null) {
 				return serverInfo.getNumberOfConnections();
 			}
 		}

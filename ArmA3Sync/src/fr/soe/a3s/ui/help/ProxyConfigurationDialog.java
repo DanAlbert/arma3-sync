@@ -14,6 +14,7 @@ import fr.soe.a3s.dao.DataAccessConstants;
 import fr.soe.a3s.dto.ProtocolDTO;
 import fr.soe.a3s.dto.configuration.ProxyDTO;
 import fr.soe.a3s.exception.CheckException;
+import fr.soe.a3s.exception.WritingException;
 import fr.soe.a3s.service.ConfigurationService;
 import fr.soe.a3s.ui.AbstractDialog;
 import fr.soe.a3s.ui.Facade;
@@ -120,27 +121,31 @@ public class ProxyConfigurationDialog extends AbstractDialog implements
 
 		try {
 			ProtocolDTO proxyProtocolDTO = new ProtocolDTO();
-			if (connectionPanel.getUrl().isEmpty()){
+			if (connectionPanel.getUrl().isEmpty()) {
 				configurationService.setProxy(null, false);
-			}else {
+			} else {
 				ProtocolType protocolType = ProtocolType
-						.getEnum((String) comboBoxProtocolModel.getSelectedItem());
+						.getEnum((String) comboBoxProtocolModel
+								.getSelectedItem());
 				proxyProtocolDTO.setUrl(connectionPanel.getUrl());
 				proxyProtocolDTO.setPort(connectionPanel.getPort());
 				proxyProtocolDTO.setLogin(connectionPanel.getLogin());
 				proxyProtocolDTO.setPassword(connectionPanel.getPassword());
 				proxyProtocolDTO.setProtocolType(protocolType);
-				configurationService.setProxy(proxyProtocolDTO, isEnableProxy());
+				configurationService
+						.setProxy(proxyProtocolDTO, isEnableProxy());
 			}
 			configurationService.loadProxy();
+			configurationService.write();
 			this.dispose();
 		} catch (CheckException e) {
 			if (isEnableProxy()) {
-				JOptionPane.showMessageDialog(this, e.getMessage(), "Warning",
-						JOptionPane.WARNING_MESSAGE);
-			} else {
-				this.dispose();
+				JOptionPane.showMessageDialog(facade.getMainPanel(),
+						e.getMessage(), "Warning", JOptionPane.WARNING_MESSAGE);
 			}
+		} catch (WritingException e) {
+			JOptionPane.showMessageDialog(facade.getMainPanel(),
+					e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
 		}
 	}
 

@@ -62,6 +62,8 @@ public class ProfileDAO implements DataAccessConstants {
 
 		assert (profile != null);
 
+		File profileFile = null;
+		File backupFile = null;
 		try {
 			File folder = new File(PROFILES_FOLDER_PATH);
 			folder.mkdir();
@@ -69,7 +71,12 @@ public class ProfileDAO implements DataAccessConstants {
 				throw new CreateDirectoryException(folder.getCanonicalPath());
 			}
 			String profileFilename = profile.getName() + PROFILE_EXTENSION;
-			File profileFile = new File(folder, profileFilename);
+			profileFile = new File(folder, profileFilename);
+			backupFile = new File(folder, profileFilename + ".backup");
+			if (profileFile.exists()) {
+				FileAccessMethods.deleteFile(backupFile);
+				profileFile.renameTo(backupFile);
+			}
 			ObjectOutputStream fWo = new ObjectOutputStream(
 					new GZIPOutputStream(new FileOutputStream(
 							profileFile.getCanonicalPath())));
@@ -77,8 +84,15 @@ public class ProfileDAO implements DataAccessConstants {
 			fWo.close();
 		} catch (Exception e) {
 			e.printStackTrace();
-			throw new WritingException("Failed to save profile." + "\n"
-					+ e.getMessage());
+			if (backupFile.exists()) {
+				backupFile.renameTo(profileFile);
+			}
+			throw new WritingException("Failed to save profile: "
+					+ profile.getName() + "\n" + e.getMessage());
+		} finally {
+			if (backupFile.exists()) {
+				FileAccessMethods.deleteFile(backupFile);
+			}
 		}
 	}
 
@@ -92,85 +106,85 @@ public class ProfileDAO implements DataAccessConstants {
 		FileAccessMethods.deleteFile(profileFile);
 	}
 
-	public void writeProfiles() throws WritingException {
-
-		/* Clear profiles folder */
-		File profilesFolder = new File(PROFILES_FOLDER_PATH);
-
-		File backup = null;
-
-		if (profilesFolder.exists()) {
-
-			backup = new File(profilesFolder.getAbsolutePath() + ".backup");
-			if (backup.exists()) {
-				boolean ok = FileAccessMethods.deleteDirectory(backup);
-				if (!ok) {
-					throw new WritingException(
-							"Failed to create a backup file while saving profiles."
-									+ "\n"
-									+ " Reason: Write access permission denied on "
-									+ backup.getAbsolutePath());
-				}
-			}
-
-			boolean ok = profilesFolder.renameTo(backup);
-			if (!ok) {
-				throw new WritingException(
-						"Failed to create a backup file while saving profiles."
-								+ "\n" + " Reason: Write access is denied on "
-								+ profilesFolder.getAbsolutePath());
-			}
-		}
-
-		boolean ok = profilesFolder.mkdir();
-		if (!ok) {
-			throw new WritingException("Failed to create Profiles folder."
-					+ "\n" + " Reason: Write access is denied on "
-					+ profilesFolder.getParentFile().getAbsolutePath());
-		}
-
-		String error = null;
-		ObjectOutputStream fWo = null;
-		try {
-			// write all, or nothing at all (better be save)
-			for (Profile profile : mapProfiles.values()) {
-
-				String profileFilename = profile.getName() + PROFILE_EXTENSION;
-				File profileFile = new File(profilesFolder, profileFilename);
-
-				/*
-				 * Write
-				 */
-				fWo = new ObjectOutputStream(new GZIPOutputStream(
-						new FileOutputStream(profileFile)));
-				fWo.writeObject(profile);
-				fWo.close();
-
-				if (!profileFile.exists()) {
-					throw new WritingException("Failed to write profile."
-							+ "\n" + " Reason: Write access is denied on "
-							+ profilesFolder.getAbsolutePath());
-				}
-			}
-
-			// don't need the backup anymore
-			if (backup != null && backup.exists()) {
-				FileAccessMethods.deleteDirectory(backup);
-			}
-		} catch (Throwable e) {
-			e.printStackTrace();
-			error = "Failed to save profile(s).\n\tReason: " + e.getMessage()
-					+ ".";
-			// delete all the garbage
-			if (profilesFolder.exists())
-				FileAccessMethods.deleteDirectory(profilesFolder);
-
-			if (backup != null) {
-				// recover from backup
-				backup.renameTo(profilesFolder);
-			}
-			// forward error message
-			throw new WritingException(error);
-		}
-	}
+	// public void writeProfiles() throws WritingException {
+	//
+	// /* Clear profiles folder */
+	// File profilesFolder = new File(PROFILES_FOLDER_PATH);
+	//
+	// File backup = null;
+	//
+	// if (profilesFolder.exists()) {
+	//
+	// backup = new File(profilesFolder.getAbsolutePath() + ".backup");
+	// if (backup.exists()) {
+	// boolean ok = FileAccessMethods.deleteDirectory(backup);
+	// if (!ok) {
+	// throw new WritingException(
+	// "Failed to create a backup file while saving profiles."
+	// + "\n"
+	// + " Reason: Write access permission denied on "
+	// + backup.getAbsolutePath());
+	// }
+	// }
+	//
+	// boolean ok = profilesFolder.renameTo(backup);
+	// if (!ok) {
+	// throw new WritingException(
+	// "Failed to create a backup file while saving profiles."
+	// + "\n" + " Reason: Write access is denied on "
+	// + profilesFolder.getAbsolutePath());
+	// }
+	// }
+	//
+	// boolean ok = profilesFolder.mkdir();
+	// if (!ok) {
+	// throw new WritingException("Failed to create Profiles folder."
+	// + "\n" + " Reason: Write access is denied on "
+	// + profilesFolder.getParentFile().getAbsolutePath());
+	// }
+	//
+	// String error = null;
+	// ObjectOutputStream fWo = null;
+	// try {
+	// // write all, or nothing at all (better be save)
+	// for (Profile profile : mapProfiles.values()) {
+	//
+	// String profileFilename = profile.getName() + PROFILE_EXTENSION;
+	// File profileFile = new File(profilesFolder, profileFilename);
+	//
+	// /*
+	// * Write
+	// */
+	// fWo = new ObjectOutputStream(new GZIPOutputStream(
+	// new FileOutputStream(profileFile)));
+	// fWo.writeObject(profile);
+	// fWo.close();
+	//
+	// if (!profileFile.exists()) {
+	// throw new WritingException("Failed to write profile."
+	// + "\n" + " Reason: Write access is denied on "
+	// + profilesFolder.getAbsolutePath());
+	// }
+	// }
+	//
+	// // don't need the backup anymore
+	// if (backup != null && backup.exists()) {
+	// FileAccessMethods.deleteDirectory(backup);
+	// }
+	// } catch (Throwable e) {
+	// e.printStackTrace();
+	// error = "Failed to save profile(s).\n\tReason: " + e.getMessage()
+	// + ".";
+	// // delete all the garbage
+	// if (profilesFolder.exists())
+	// FileAccessMethods.deleteDirectory(profilesFolder);
+	//
+	// if (backup != null) {
+	// // recover from backup
+	// backup.renameTo(profilesFolder);
+	// }
+	// // forward error message
+	// throw new WritingException(error);
+	// }
+	// }
 }

@@ -12,6 +12,7 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 
 import fr.soe.a3s.exception.ProfileException;
+import fr.soe.a3s.exception.WritingException;
 import fr.soe.a3s.service.ConfigurationService;
 import fr.soe.a3s.service.ProfileService;
 import fr.soe.a3s.ui.AbstractDialog;
@@ -115,7 +116,7 @@ public class ProfileEditionDialog extends AbstractDialog {
 			this.profileSelectionDialog.init();
 			this.profileSelectionDialog.selectProfile(newProfileName);
 			this.dispose();
-		} catch (ProfileException e) {
+		} catch (ProfileException | WritingException e) {
 			JOptionPane.showMessageDialog(this, e.getMessage(), "Error",
 					JOptionPane.ERROR_MESSAGE);
 		}

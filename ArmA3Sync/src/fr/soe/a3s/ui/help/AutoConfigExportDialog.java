@@ -213,6 +213,14 @@ public class AutoConfigExportDialog extends AbstractDialog {
 			return;
 		}
 
+		File file = new File(path);
+		if (!file.exists()) {
+			JOptionPane.showMessageDialog(facade.getMainPanel(),
+					"Destination directory does not exists.",
+					"Export auto-config", JOptionPane.ERROR_MESSAGE);
+			return;
+		}
+
 		List<String> listSelectedProfileNames = new ArrayList<String>();
 		List<String> listSelectedFavoriteServerNames = new ArrayList<String>();
 		List<String> listSelectedRepositoryNames = new ArrayList<String>();
@@ -245,15 +253,15 @@ public class AutoConfigExportDialog extends AbstractDialog {
 			CommonService commonService = new CommonService();
 			commonService.exportAutoConfig(listSelectedProfileNames,
 					listSelectedFavoriteServerNames,
-					listSelectedRepositoryNames, path);
+					listSelectedRepositoryNames, file);
 			JOptionPane.showMessageDialog(facade.getMainPanel(),
 					"Auto-config file has been exported.",
 					"Export auto-config", JOptionPane.INFORMATION_MESSAGE);
 			this.dispose();
 		} catch (WritingException e) {
 			JOptionPane.showMessageDialog(facade.getMainPanel(),
-					"An error occured. \n Failed to export auto-config.",
-					"Export auto-config", JOptionPane.ERROR_MESSAGE);
+					e.getMessage(), "Export auto-config",
+					JOptionPane.ERROR_MESSAGE);
 		}
 	}
 

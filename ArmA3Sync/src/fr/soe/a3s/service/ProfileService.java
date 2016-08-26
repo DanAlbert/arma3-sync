@@ -36,8 +36,7 @@ public class ProfileService extends ObjectDTOtransformer {
 		}
 	}
 
-	public void setAdditionalParameters(String additionalParameters)
-			throws WritingException {
+	public void setAdditionalParameters(String additionalParameters) {
 
 		// System.out.println(additionalParameters);
 		String profileName = configurationDAO.getConfiguration()
@@ -45,7 +44,10 @@ public class ProfileService extends ObjectDTOtransformer {
 		Profile profile = profileDAO.getMap().get(profileName);
 		if (profile != null) {
 			profile.setAdditionalParameters(additionalParameters);
-			profileDAO.write(profile);
+			try {
+				profileDAO.write(profile);
+			} catch (WritingException e) {
+			}
 		}
 	}
 
@@ -227,8 +229,7 @@ public class ProfileService extends ObjectDTOtransformer {
 		}
 	}
 
-	public void addAddonSearchDirectoryPath(String path)
-			throws WritingException {
+	public void addAddonSearchDirectoryPath(String path) {
 
 		String profileName = configurationDAO.getConfiguration()
 				.getProfileName();
@@ -236,12 +237,14 @@ public class ProfileService extends ObjectDTOtransformer {
 		Profile profile = profileDAO.getMap().get(profileName);
 		if (profile != null) {
 			profile.getAddonSearchDirectories().add(path);
-			profileDAO.write(profile);
+			try {
+				profileDAO.write(profile);
+			} catch (WritingException e) {
+			}
 		}
 	}
 
-	public void removeAddonSearchDirectoryPath(String path)
-			throws WritingException {
+	public void removeAddonSearchDirectoryPath(String path) {
 
 		String profileName = configurationDAO.getConfiguration()
 				.getProfileName();
@@ -249,7 +252,10 @@ public class ProfileService extends ObjectDTOtransformer {
 		Profile profile = profileDAO.getMap().get(profileName);
 		if (profile != null) {
 			profile.getAddonSearchDirectories().remove(path);
-			profileDAO.write(profile);
+			try {
+				profileDAO.write(profile);
+			} catch (WritingException e) {
+			}
 		}
 	}
 
@@ -266,8 +272,7 @@ public class ProfileService extends ObjectDTOtransformer {
 		}
 	}
 
-	public void setLastAddedAddonSearchDirectory(String path)
-			throws WritingException {
+	public void setLastAddedAddonSearchDirectory(String path) {
 
 		String profileName = configurationDAO.getConfiguration()
 				.getProfileName();
@@ -275,7 +280,10 @@ public class ProfileService extends ObjectDTOtransformer {
 		Profile profile = profileDAO.getMap().get(profileName);
 		if (profile != null) {
 			profile.setLastAddedAddonSearchDirectory(path);
-			profileDAO.write(profile);
+			try {
+				profileDAO.write(profile);
+			} catch (WritingException e) {
+			}
 		}
 	}
 
@@ -299,8 +307,7 @@ public class ProfileService extends ObjectDTOtransformer {
 		return treeDirectoryDTO;
 	}
 
-	public void setAddonGroupsTree(TreeDirectoryDTO treeDirectoryDTO)
-			throws WritingException {
+	public void setAddonGroupsTree(TreeDirectoryDTO treeDirectoryDTO) {
 
 		String profileName = configurationDAO.getConfiguration()
 				.getProfileName();
@@ -314,11 +321,14 @@ public class ProfileService extends ObjectDTOtransformer {
 			TreeDirectory treeDirectory = profile.getTree();
 			treeDirectory.getList().clear();
 			transformDTO2TreeDirectory(treeDirectoryDTO, treeDirectory);
-			profileDAO.write(profile);
+			try {
+				profileDAO.write(profile);
+			} catch (WritingException e) {
+			}
 		}
 	}
 
-	public void resetAddonPriority() throws WritingException {
+	public void resetAddonPriority() {
 
 		String profileName = configurationDAO.getConfiguration()
 				.getProfileName();
@@ -326,11 +336,14 @@ public class ProfileService extends ObjectDTOtransformer {
 		Profile profile = profileDAO.getMap().get(profileName);
 		if (profile != null) {
 			profile.getAddonNamesByPriority().clear();
-			profileDAO.write(profile);
+			try {
+				profileDAO.write(profile);
+			} catch (WritingException e) {
+			}
 		}
 	}
 
-	public void topAddonPriority(int index) throws WritingException {
+	public void topAddonPriority(int index) {
 
 		String profileName = configurationDAO.getConfiguration()
 				.getProfileName();
@@ -342,12 +355,15 @@ public class ProfileService extends ObjectDTOtransformer {
 				String name = list.get(index);
 				list.remove(index);
 				list.add(0, name);
-				profileDAO.write(profile);
+				try {
+					profileDAO.write(profile);
+				} catch (WritingException e) {
+				}
 			}
 		}
 	}
 
-	public void upAddonPriority(int index) throws WritingException {
+	public void upAddonPriority(int index) {
 
 		String profileName = configurationDAO.getConfiguration()
 				.getProfileName();
@@ -360,12 +376,15 @@ public class ProfileService extends ObjectDTOtransformer {
 				String nextName = list.get(index - 1);
 				list.set(index, nextName);
 				list.set(index - 1, name);
-				profileDAO.write(profile);
+				try {
+					profileDAO.write(profile);
+				} catch (WritingException e) {
+				}
 			}
 		}
 	}
 
-	public void downAddonPriority(int index) throws WritingException {
+	public void downAddonPriority(int index) {
 
 		String profileName = configurationDAO.getConfiguration()
 				.getProfileName();
@@ -378,12 +397,15 @@ public class ProfileService extends ObjectDTOtransformer {
 				String previousName = list.get(index + 1);
 				list.set(index, previousName);
 				list.set(index + 1, name);
-				profileDAO.write(profile);
+				try {
+					profileDAO.write(profile);
+				} catch (WritingException e) {
+				}
 			}
 		}
 	}
 
-	public void upDirectoryPriority(int index) throws WritingException {
+	public void upDirectoryPriority(int index) {
 
 		String profileName = configurationDAO.getConfiguration()
 				.getProfileName();
@@ -396,12 +418,15 @@ public class ProfileService extends ObjectDTOtransformer {
 				String nextName = list.get(index - 1);
 				list.set(index, nextName);
 				list.set(index - 1, name);
-				profileDAO.write(profile);
+				try {
+					profileDAO.write(profile);
+				} catch (WritingException e) {
+				}
 			}
 		}
 	}
 
-	public void downDirectoryPriority(int index) throws WritingException {
+	public void downDirectoryPriority(int index) {
 
 		String profileName = configurationDAO.getConfiguration()
 				.getProfileName();
@@ -414,12 +439,15 @@ public class ProfileService extends ObjectDTOtransformer {
 				String previousName = list.get(index + 1);
 				list.set(index, previousName);
 				list.set(index + 1, name);
-				profileDAO.write(profile);
+				try {
+					profileDAO.write(profile);
+				} catch (WritingException e) {
+				}
 			}
 		}
 	}
 
-	public void setGameProfile(String gameProfileName) throws WritingException {
+	public void setGameProfile(String gameProfileName) {
 
 		String profileName = configurationDAO.getConfiguration()
 				.getProfileName();
@@ -427,12 +455,14 @@ public class ProfileService extends ObjectDTOtransformer {
 		Profile profile = profileDAO.getMap().get(profileName);
 		if (profile != null) {
 			profile.getLauncherOptions().setGameProfile(gameProfileName);
-			profileDAO.write(profile);
+			try {
+				profileDAO.write(profile);
+			} catch (WritingException e) {
+			}
 		}
 	}
 
-	public void setCheckBoxShowScriptErrors(boolean selected)
-			throws WritingException {
+	public void setCheckBoxShowScriptErrors(boolean selected) {
 
 		String profileName = configurationDAO.getConfiguration()
 				.getProfileName();
@@ -440,11 +470,14 @@ public class ProfileService extends ObjectDTOtransformer {
 		Profile profile = profileDAO.getMap().get(profileName);
 		if (profile != null) {
 			profile.getLauncherOptions().setShowScriptErrors(selected);
-			profileDAO.write(profile);
+			try {
+				profileDAO.write(profile);
+			} catch (WritingException e) {
+			}
 		}
 	}
 
-	public void setCheckBoxNoPause(boolean selected) throws WritingException {
+	public void setCheckBoxNoPause(boolean selected) {
 
 		String profileName = configurationDAO.getConfiguration()
 				.getProfileName();
@@ -452,12 +485,14 @@ public class ProfileService extends ObjectDTOtransformer {
 		Profile profile = profileDAO.getMap().get(profileName);
 		if (profile != null) {
 			profile.getLauncherOptions().setNoPause(selected);
-			profileDAO.write(profile);
+			try {
+				profileDAO.write(profile);
+			} catch (WritingException e) {
+			}
 		}
 	}
 
-	public void setCheckBoxFilePatching(boolean selected)
-			throws WritingException {
+	public void setCheckBoxFilePatching(boolean selected) {
 
 		String profileName = configurationDAO.getConfiguration()
 				.getProfileName();
@@ -465,11 +500,14 @@ public class ProfileService extends ObjectDTOtransformer {
 		Profile profile = profileDAO.getMap().get(profileName);
 		if (profile != null) {
 			profile.getLauncherOptions().setFilePatching(selected);
-			profileDAO.write(profile);
+			try {
+				profileDAO.write(profile);
+			} catch (WritingException e) {
+			}
 		}
 	}
 
-	public void setCheckBoxWindowMode(boolean selected) throws WritingException {
+	public void setCheckBoxWindowMode(boolean selected) {
 
 		String profileName = configurationDAO.getConfiguration()
 				.getProfileName();
@@ -477,12 +515,14 @@ public class ProfileService extends ObjectDTOtransformer {
 		Profile profile = profileDAO.getMap().get(profileName);
 		if (profile != null) {
 			profile.getLauncherOptions().setWindowMode(selected);
-			profileDAO.write(profile);
+			try {
+				profileDAO.write(profile);
+			} catch (WritingException e) {
+			}
 		}
 	}
 
-	public void setCheckBoxCheckSignatures(boolean selected)
-			throws WritingException {
+	public void setCheckBoxCheckSignatures(boolean selected) {
 
 		String profileName = configurationDAO.getConfiguration()
 				.getProfileName();
@@ -490,12 +530,14 @@ public class ProfileService extends ObjectDTOtransformer {
 		Profile profile = profileDAO.getMap().get(profileName);
 		if (profile != null) {
 			profile.getLauncherOptions().setCheckSignatures(selected);
-			profileDAO.write(profile);
+			try {
+				profileDAO.write(profile);
+			} catch (WritingException e) {
+			}
 		}
 	}
 
-	public void setCheckBoxAutoRestart(boolean selected)
-			throws WritingException {
+	public void setCheckBoxAutoRestart(boolean selected) {
 
 		String profileName = configurationDAO.getConfiguration()
 				.getProfileName();
@@ -503,7 +545,10 @@ public class ProfileService extends ObjectDTOtransformer {
 		Profile profile = profileDAO.getMap().get(profileName);
 		if (profile != null) {
 			profile.getLauncherOptions().setAutoRestart(selected);
-			profileDAO.write(profile);
+			try {
+				profileDAO.write(profile);
+			} catch (WritingException e) {
+			}
 		}
 	}
 
@@ -520,7 +565,7 @@ public class ProfileService extends ObjectDTOtransformer {
 		}
 	}
 
-	public void setMaxMemory(String maxMemory) throws WritingException {
+	public void setMaxMemory(String maxMemory) {
 
 		String profileName = configurationDAO.getConfiguration()
 				.getProfileName();
@@ -528,11 +573,14 @@ public class ProfileService extends ObjectDTOtransformer {
 		Profile profile = profileDAO.getMap().get(profileName);
 		if (profile != null) {
 			profile.getLauncherOptions().setMaxMemorySelection(maxMemory);
-			profileDAO.write(profile);
+			try {
+				profileDAO.write(profile);
+			} catch (WritingException e) {
+			}
 		}
 	}
 
-	public void setCpuCount(String cpuCount) throws WritingException {
+	public void setCpuCount(String cpuCount) {
 
 		String profileName = configurationDAO.getConfiguration()
 				.getProfileName();
@@ -545,11 +593,14 @@ public class ProfileService extends ObjectDTOtransformer {
 				profile.getLauncherOptions().setCpuCountSelection(
 						Integer.parseInt(cpuCount));
 			}
-			profileDAO.write(profile);
+			try {
+				profileDAO.write(profile);
+			} catch (WritingException e) {
+			}
 		}
 	}
 
-	public void setEnableHT(boolean selected) throws WritingException {
+	public void setEnableHT(boolean selected) {
 
 		String profileName = configurationDAO.getConfiguration()
 				.getProfileName();
@@ -557,11 +608,14 @@ public class ProfileService extends ObjectDTOtransformer {
 		Profile profile = profileDAO.getMap().get(profileName);
 		if (profile != null) {
 			profile.getLauncherOptions().setEnableHT(selected);
-			profileDAO.write(profile);
+			try {
+				profileDAO.write(profile);
+			} catch (WritingException e) {
+			}
 		}
 	}
 
-	public void setExThreads(String exThreads) throws WritingException {
+	public void setExThreads(String exThreads) {
 
 		String profileName = configurationDAO.getConfiguration()
 				.getProfileName();
@@ -569,11 +623,14 @@ public class ProfileService extends ObjectDTOtransformer {
 		Profile profile = profileDAO.getMap().get(profileName);
 		if (profile != null) {
 			profile.getLauncherOptions().setExThreadsSelection(exThreads);
-			profileDAO.write(profile);
+			try {
+				profileDAO.write(profile);
+			} catch (WritingException e) {
+			}
 		}
 	}
 
-	public void setMalloc(String mallocDll) throws WritingException {
+	public void setMalloc(String mallocDll) {
 
 		String profileName = configurationDAO.getConfiguration()
 				.getProfileName();
@@ -581,11 +638,14 @@ public class ProfileService extends ObjectDTOtransformer {
 		Profile profile = profileDAO.getMap().get(profileName);
 		if (profile != null) {
 			profile.getLauncherOptions().setMallocSelection(mallocDll);
-			profileDAO.write(profile);
+			try {
+				profileDAO.write(profile);
+			} catch (WritingException e) {
+			}
 		}
 	}
 
-	public void setNoSplashScreen(boolean selected) throws WritingException {
+	public void setNoSplashScreen(boolean selected) {
 
 		String profileName = configurationDAO.getConfiguration()
 				.getProfileName();
@@ -593,11 +653,14 @@ public class ProfileService extends ObjectDTOtransformer {
 		Profile profile = profileDAO.getMap().get(profileName);
 		if (profile != null) {
 			profile.getLauncherOptions().setNoSplashScreen(selected);
-			profileDAO.write(profile);
+			try {
+				profileDAO.write(profile);
+			} catch (WritingException e) {
+			}
 		}
 	}
 
-	public void setDefaultWorld(boolean selected) throws WritingException {
+	public void setDefaultWorld(boolean selected) {
 
 		String profileName = configurationDAO.getConfiguration()
 				.getProfileName();
@@ -605,11 +668,14 @@ public class ProfileService extends ObjectDTOtransformer {
 		Profile profile = profileDAO.getMap().get(profileName);
 		if (profile != null) {
 			profile.getLauncherOptions().setDefaultWorld(selected);
-			profileDAO.write(profile);
+			try {
+				profileDAO.write(profile);
+			} catch (WritingException e) {
+			}
 		}
 	}
 
-	public void setNoLogs(boolean selected) throws WritingException {
+	public void setNoLogs(boolean selected) {
 
 		String profileName = configurationDAO.getConfiguration()
 				.getProfileName();
@@ -617,11 +683,14 @@ public class ProfileService extends ObjectDTOtransformer {
 		Profile profile = profileDAO.getMap().get(profileName);
 		if (profile != null) {
 			profile.getLauncherOptions().setNoLogs(selected);
-			profileDAO.write(profile);
+			try {
+				profileDAO.write(profile);
+			} catch (WritingException e) {
+			}
 		}
 	}
 
-	public void setArmA3ExePath(String arma3ExePath) throws WritingException {
+	public void setArmA3ExePath(String arma3ExePath) {
 
 		String profileName = configurationDAO.getConfiguration()
 				.getProfileName();
@@ -629,7 +698,10 @@ public class ProfileService extends ObjectDTOtransformer {
 		Profile profile = profileDAO.getMap().get(profileName);
 		if (profile != null) {
 			profile.getLauncherOptions().setArma3ExePath(arma3ExePath);
-			profileDAO.write(profile);
+			try {
+				profileDAO.write(profile);
+			} catch (WritingException e) {
+			}
 		}
 	}
 

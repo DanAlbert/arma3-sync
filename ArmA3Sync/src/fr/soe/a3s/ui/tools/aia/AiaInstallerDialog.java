@@ -24,6 +24,7 @@ import javax.swing.JTextField;
 import javax.swing.border.BevelBorder;
 
 import fr.soe.a3s.dto.configuration.AiAOptionsDTO;
+import fr.soe.a3s.exception.WritingException;
 import fr.soe.a3s.service.AddonService;
 import fr.soe.a3s.service.ConfigurationService;
 import fr.soe.a3s.ui.Facade;
@@ -402,7 +403,12 @@ public class AiaInstallerDialog extends JDialog implements UIConstants {
 		aiAOptionsDTO.setArmaPath(textFieldArmAInstallationDirectory.getText());
 		aiAOptionsDTO.setTohPath(textFieldTOHInstallationDirectory.getText());
 		configurationService.setAiAOptions(aiAOptionsDTO);
-		this.dispose();
+		try {
+			configurationService.write();
+		} catch (WritingException e) {
+		} finally {
+			dispose();
+		}
 	}
 
 	private void buttonCancelPerformed() {

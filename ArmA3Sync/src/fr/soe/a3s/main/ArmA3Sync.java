@@ -9,12 +9,8 @@ import java.awt.GraphicsEnvironment;
 import java.io.File;
 import java.io.RandomAccessFile;
 import java.nio.channels.FileLock;
-import java.nio.file.FileSystems;
-import java.nio.file.Files;
 import java.util.Properties;
 
-import javax.swing.JFrame;
-import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 
@@ -27,6 +23,7 @@ import fr.soe.a3s.console.CommandConsole;
 import fr.soe.a3s.console.CommandLine;
 import fr.soe.a3s.constant.LookAndFeel;
 import fr.soe.a3s.dao.DataAccessConstants;
+import fr.soe.a3s.dao.FileAccessMethods;
 import fr.soe.a3s.service.PreferencesService;
 import fr.soe.a3s.ui.ErrorLogDialog;
 import fr.soe.a3s.ui.Facade;
@@ -73,53 +70,15 @@ public class ArmA3Sync implements DataAccessConstants {
 
 		File profilesFolder = new File(PROFILES_FOLDER_PATH);
 		profilesFolder.mkdir();
-		boolean profilesOK = Files.isWritable(FileSystems.getDefault().getPath(
-				profilesFolder.getAbsolutePath()));
-		//
 		File configurationFolder = new File(CONFIGURATION_FOLDER_PATH);
 		configurationFolder.mkdirs();
-		boolean configurationOK = Files.isWritable(FileSystems.getDefault()
-				.getPath(configurationFolder.getAbsolutePath()));
-		//
-		File ftpFolder = new File(REPOSITORY_FOLDER_PATH);
-		ftpFolder.mkdirs();
-		boolean ftpOK = Files.isWritable(FileSystems.getDefault().getPath(
-				ftpFolder.getAbsolutePath()));
-		//
+		File repositoryFolder = new File(REPOSITORY_FOLDER_PATH);
+		repositoryFolder.mkdirs();
 		File tempFolder = new File(TEMP_FOLDER_PATH);
 		tempFolder.mkdirs();
-		boolean tempOK = Files.isWritable(FileSystems.getDefault().getPath(
-				tempFolder.getAbsolutePath()));
 
-		String message = "";
-		if (!profilesOK) {
-			message = "Cannot write into directory: profiles";
-		} else if (!configurationOK) {
-			message = "Cannot write into directory: resources" + File.separator
-					+ "configuration";
-		} else if (!ftpOK) {
-			message = "Cannot write into directory: resources" + File.separator
-					+ "ftp";
-		} else if (!tempOK) {
-			message = "Cannot write into directory: resources" + File.separator
-					+ "temp";
-		}
-
-		if (!message.isEmpty()) {
-			message = message
-					+ "\n"
-					+ "ArmA3Sync requires full write permissions on its whole installation directory."
-					+ "\n"
-					+ "Try to run with administator priviledges and checkout file access permissions.";
-
-			System.out.println(message);
-			if (!GraphicsEnvironment.isHeadless()) {
-				JFrame frame = new JFrame();
-				JOptionPane.showMessageDialog(frame, message, "ArmA3Sync",
-						JOptionPane.INFORMATION_MESSAGE);
-			}
-			System.exit(0);
-		}
+		File folder = new File(INSTALLATION_PATH);
+		FileAccessMethods.setWritePermissions(folder);
 	}
 
 	private static void runArmA3Sync(String[] args) {
@@ -227,37 +186,11 @@ public class ArmA3Sync implements DataAccessConstants {
 					}
 				}
 			});
-			// Add shutdown hook
-			// JVMShutdownHook jvmShutdownHook = new JVMShutdownHook();
-			// Runtime.getRuntime().addShutdownHook(jvmShutdownHook);
 		} else {
 			JUnique.sendMessage(appId, "");
 			Runtime.getRuntime().halt(1);
 		}
 	}
-
-	// private static class JVMShutdownHook extends Thread {
-	//
-	// private final Thread mainThread = Thread.currentThread();
-	//
-	// @Override
-	// public void run() {
-	// System.out.println("JVM Shutdown Hook: Thread initiated.");
-	// try {
-	// System.out.println("Performing save on shutdown...");
-	// CommonService commonService = new CommonService();
-	// commonService.saveAllParameters(mainPanel.getHeight(),
-	// mainPanel.getWidth());
-	// mainThread.join();
-	// } catch (InterruptedException e1) {
-	// e1.printStackTrace();
-	// } catch (WritingException e) {
-	// e.printStackTrace();
-	// } finally {
-	// // Runtime.getRuntime().halt(0);
-	// }
-	// }
-	// }
 
 	@Deprecated
 	private static String lockInstance() {

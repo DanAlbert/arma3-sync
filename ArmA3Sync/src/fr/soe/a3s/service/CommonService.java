@@ -1,13 +1,9 @@
 package fr.soe.a3s.service;
 
+import java.io.File;
 import java.io.IOException;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
 import java.util.Date;
 import java.util.List;
-
-import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.NoSuchPaddingException;
 
 import net.jimmc.jshortcut.JShellLink;
 import fr.soe.a3s.dao.CommonDAO;
@@ -34,19 +30,23 @@ public class CommonService {
 	private static String BIS = "http://forums.bistudio.com/showthread.php?162236-ArmA3Sync-launcher-and-addons-synchronization-software-for-ArmA-3&p=2477805#post2477805";
 	private static String PayPal = "https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=JS65JS4FUGZWC";
 
-	public void saveAllParameters(int height, int width)
-			throws WritingException {
+	public void save(int height, int width) throws WritingException {
 
 		configurationDAO.getConfiguration().setHeight(height);
 		configurationDAO.getConfiguration().setWidth(width);
 		configurationDAO.write();
-		profileDAO.writeProfiles();
 		preferencesDAO.write();
+		String profileName = configurationDAO.getConfiguration()
+				.getProfileName();
+		Profile profile = profileDAO.getMap().get(profileName);
+		if (profile != null) {
+			profileDAO.write(profile);
+		}
 	}
 
 	public void exportAutoConfig(List<String> listSelectedProfileNames,
 			List<String> listSelectedFavoriteServerNames,
-			List<String> listSelectedRepositoryNames, String path)
+			List<String> listSelectedRepositoryNames, File file)
 			throws WritingException {
 
 		AutoConfig autoConfig = new AutoConfig();
@@ -78,28 +78,13 @@ public class CommonService {
 			}
 		}
 
-		try {
-			commonDAO.exportAutoConfig(autoConfig, path);
-		} catch (Exception e) {
-			e.printStackTrace();
-			throw new WritingException();
-		}
+		commonDAO.exportAutoConfig(autoConfig, file);
 	}
 
-	public void importAutoConfig(String path) throws LoadingException,
-			InvalidKeyException, IllegalBlockSizeException,
-			NoSuchAlgorithmException, NoSuchPaddingException, WritingException {
+	public void importAutoConfig(File file) throws WritingException,
+			LoadingException {
 
-		AutoConfig autoConfig = null;
-		try {
-			autoConfig = commonDAO.importAutoConfig(path);
-			if (autoConfig == null) {
-				throw new LoadingException();
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-			throw new LoadingException();
-		}
+		AutoConfig autoConfig = commonDAO.importAutoConfig(file);
 
 		List<Profile> listProfiles = autoConfig.getProfiles();
 
@@ -121,7 +106,7 @@ public class CommonService {
 			if (!repositoryDAO.getMap().containsKey(repository.getName())) {
 				repositoryDAO.getMap().put(repository.getName(), repository);
 			}
-			repositoryDAO.write(repository.getName());
+			repositoryDAO.write(repository);
 		}
 	}
 

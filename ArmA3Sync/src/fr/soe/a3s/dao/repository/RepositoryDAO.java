@@ -15,7 +15,6 @@ import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
 import javax.crypto.Cipher;
-import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SealedObject;
 
@@ -29,6 +28,7 @@ import fr.soe.a3s.domain.repository.Events;
 import fr.soe.a3s.domain.repository.Repository;
 import fr.soe.a3s.domain.repository.ServerInfo;
 import fr.soe.a3s.domain.repository.SyncTreeDirectory;
+import fr.soe.a3s.exception.CreateDirectoryException;
 import fr.soe.a3s.exception.WritingException;
 
 public class RepositoryDAO implements DataAccessConstants {
@@ -109,79 +109,42 @@ public class RepositoryDAO implements DataAccessConstants {
 		return repositoriesFailedToLoad;
 	}
 
-	public void write(String repositoryName) throws IllegalBlockSizeException,
-			InvalidKeyException, NoSuchAlgorithmException,
-			NoSuchPaddingException, WritingException {
+	public void write(Repository repository) throws WritingException {
 
-		Cipher cipher = EncryptionProvider.getEncryptionCipher();
+		assert (repository != null);
 
-		File repositoryFolder = new File(REPOSITORY_FOLDER_PATH);
-		
-		boolean ok = repositoryFolder.mkdirs();
-		if (!ok){
-			throw new WritingException("Failed to save repository."
-					+ "\n" + " Reason: Write access is denied on "
-					+ repositoryFolder.getParentFile().getAbsolutePath());
-		}
-		
-
-		Repository repository = mapRepositories.get(repositoryName);
-		if (repository != null) {
-			String concatName = repository.getName().replaceAll(" ", "");
-			String repositoryFilePath = REPOSITORY_FOLDER_PATH + "/"
-					+ concatName + REPOSITORY_EXTENSION;
-			File repositoryFile = new File(repositoryFilePath);
-			File backup = new File(repositoryFile.getAbsolutePath() + ".backup");
-
-			if (backup.exists()) {
-				ok = FileAccessMethods.deleteFile(backup);
-				if (!ok) {
-					throw new WritingException(
-							"Failed to create a backup file while saving repository."
-									+ "\n"
-									+ " Reason:Write access permission denied on "
-									+ backup.getAbsolutePath());
-				}
+		File repositoryFile = null;
+		File backupFile = null;
+		try {
+			Cipher cipher = EncryptionProvider.getEncryptionCipher();
+			File folder = new File(REPOSITORY_FOLDER_PATH);
+			folder.mkdirs();
+			if (!folder.exists()) {
+				throw new CreateDirectoryException(folder.getCanonicalPath());
 			}
-
+			String repositoryFilename = repository.getName()
+					+ REPOSITORY_EXTENSION;
+			repositoryFile = new File(folder, repositoryFilename);
+			backupFile = new File(folder, repositoryFilename + ".backup");
 			if (repositoryFile.exists()) {
-				ok = repositoryFile.renameTo(backup);
-				if (!ok) {
-					throw new WritingException(
-							"Failed to create a backup file while saving repository."
-									+ "\n"
-									+ " Reason: Write access permission denied on "
-									+ repositoryFolder.getAbsolutePath());
-				}
+				FileAccessMethods.deleteFile(backupFile);
+				repositoryFile.renameTo(backupFile);
 			}
-
-			ObjectOutputStream fWo = null;
-			try {
-				SealedObject sealedObject = new SealedObject(repository, cipher);
-				fWo = new ObjectOutputStream(new GZIPOutputStream(
-						new FileOutputStream(repositoryFilePath)));
-				if (sealedObject != null) {
-					fWo.writeObject(sealedObject);
-				}
-				fWo.close();
-				
-				if (!repositoryFile.exists()){
-					throw new WritingException(
-							"Failed to save repository."
-									+ "\n"
-									+ " Reason: Write access permission denied on "
-									+ repositoryFolder.getAbsolutePath());
-				}
-				
-				FileAccessMethods.deleteFile(backup);
-			} catch (Throwable e) {
-				e.printStackTrace();
-				File newRepositoryFile = new File(repositoryFilePath);
-				if (newRepositoryFile.exists()) {
-					FileAccessMethods.deleteFile(newRepositoryFile);
-				}
-				backup.renameTo(repositoryFile);
-				throw new WritingException(e.getMessage());
+			ObjectOutputStream fWo = new ObjectOutputStream(
+					new GZIPOutputStream(new FileOutputStream(
+							repositoryFile.getCanonicalPath())));
+			fWo.writeObject(repository);
+			fWo.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+			if (backupFile.exists()) {
+				backupFile.renameTo(repositoryFile);
+			}
+			throw new WritingException("Failed to save repository: "
+					+ repository.getName() + "\n" + e.getMessage());
+		} finally {
+			if (backupFile.exists()) {
+				FileAccessMethods.deleteFile(backupFile);
 			}
 		}
 	}

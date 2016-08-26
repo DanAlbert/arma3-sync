@@ -49,6 +49,10 @@ public class ConfigurationService extends ObjectDTOtransformer {
 
 	public void setProfileName(String profileName) {
 		configurationDAO.getConfiguration().setProfileName(profileName);
+		try {
+			configurationDAO.write();
+		} catch (WritingException e) {
+		}
 	}
 
 	public String getServerName() {
@@ -57,6 +61,10 @@ public class ConfigurationService extends ObjectDTOtransformer {
 
 	public void setServerName(String serverName) {
 		configurationDAO.getConfiguration().setServerName(serverName);
+		try {
+			configurationDAO.write();
+		} catch (WritingException e) {
+		}
 	}
 
 	public String getDefaultModset() {
@@ -65,6 +73,10 @@ public class ConfigurationService extends ObjectDTOtransformer {
 
 	public void setDefautlModset(String defaultModset) {
 		configurationDAO.getConfiguration().setDefaultModset(defaultModset);
+		try {
+			configurationDAO.write();
+		} catch (WritingException e) {
+		}
 	}
 
 	public String getGameVersion() {
@@ -73,6 +85,10 @@ public class ConfigurationService extends ObjectDTOtransformer {
 
 	public void setGameVersion(String gameVersion) {
 		configurationDAO.getConfiguration().setGameVersion(gameVersion);
+		try {
+			configurationDAO.write();
+		} catch (WritingException e) {
+		}
 	}
 
 	/* Addons panel */
@@ -82,10 +98,10 @@ public class ConfigurationService extends ObjectDTOtransformer {
 
 	public void setViewModeTree(boolean value) {
 		configurationDAO.getConfiguration().setViewModeTree(value);
-	}
-
-	public void setViewMode(boolean viewModeTree) {
-		configurationDAO.getConfiguration().setViewModeTree(viewModeTree);
+		try {
+			configurationDAO.write();
+		} catch (WritingException e) {
+		}
 	}
 
 	/* online panel */
@@ -113,6 +129,10 @@ public class ConfigurationService extends ObjectDTOtransformer {
 		for (FavoriteServer favoriteServer : favoriteServers) {
 			configurationDAO.getConfiguration().getFavoriteServers()
 					.add(favoriteServer);
+		}
+		try {
+			configurationDAO.write();
+		} catch (WritingException e) {
 		}
 	}
 
@@ -143,54 +163,17 @@ public class ConfigurationService extends ObjectDTOtransformer {
 			configurationDAO.getConfiguration().getExternalApplications()
 					.add(externalApplication);
 		}
+		try {
+			configurationDAO.write();
+		} catch (WritingException e) {
+		}
 	}
 
 	public String determineArmA3Path() {
 		return configurationDAO.determineArmA3Path();
 	}
 
-	/* ACRE */
-	public String getAcreTS3installationFodler() {
-
-		String ts3Path = configurationDAO.getConfiguration().getAcreOptions()
-				.getTs3Path();
-
-		if (ts3Path != null) {
-			return ts3Path;
-		} else {
-			String path = configurationDAO.determineTS3path();
-			return path;
-		}
-	}
-
-	public void setAcreTS3installationFodler(String ts3Path) {
-		configurationDAO.getConfiguration().getAcreOptions()
-				.setTs3Path(ts3Path);
-	}
-
-	public String getAcrePluginPath() {
-		String acrePluginPath = configurationDAO.getConfiguration()
-				.getAcreOptions().getAcrePluginPath();
-		return acrePluginPath;
-	}
-
-	public void setAcrePluginPath(String acrePluginPath) {
-		configurationDAO.getConfiguration().getAcreOptions()
-				.setAcrePluginPath(acrePluginPath);
-	}
-
-	public String getAcreUserconfigPath() {
-		String acreUserconfigPath = configurationDAO.getConfiguration()
-				.getAcreOptions().getAcreUserconfigPath();
-		return acreUserconfigPath;
-	}
-
-	public void setAcreUserconfigPath(String acreUserconfigPath) {
-		configurationDAO.getConfiguration().getAcreOptions()
-				.setAcreUserconfigPath(acreUserconfigPath);
-	}
-
-	/* ACRE 2 */
+	/* ACRE2 */
 	public String getAcre2TS3installationFodler() {
 
 		String ts3Path = configurationDAO.getConfiguration().getAcre2Options()

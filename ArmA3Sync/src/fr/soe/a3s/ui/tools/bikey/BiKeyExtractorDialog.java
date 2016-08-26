@@ -26,6 +26,7 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.border.BevelBorder;
 
+import fr.soe.a3s.exception.WritingException;
 import fr.soe.a3s.service.ConfigurationService;
 import fr.soe.a3s.ui.Facade;
 import fr.soe.a3s.ui.ImagePanel;
@@ -173,7 +174,7 @@ public class BiKeyExtractorDialog extends JDialog implements UIConstants {
 		buttonClose.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				menuExitPerformed();
+				buttonClosePerformed();
 			}
 		});
 		// Add Listeners
@@ -252,9 +253,6 @@ public class BiKeyExtractorDialog extends JDialog implements UIConstants {
 			extractProgressPanel.setVisible(true);
 			extractProgressPanel.init(sourceDirectoryPath, targetDirectoryPath);
 		}
-	}
-
-	private void menuExitPerformed() {
 
 		configurationService
 				.setBiketyExtractSourceDirectoryPath(textFieldSourceDirectory
@@ -262,6 +260,18 @@ public class BiKeyExtractorDialog extends JDialog implements UIConstants {
 		configurationService
 				.setBiketyExtractTargetDirectoryPath(textFieldTargetDirectory
 						.getText());
+	}
+
+	private void menuExitPerformed() {
 		this.dispose();
+	}
+
+	private void buttonClosePerformed() {
+		try {
+			configurationService.write();
+		} catch (WritingException e) {
+		} finally {
+			this.dispose();
+		}
 	}
 }

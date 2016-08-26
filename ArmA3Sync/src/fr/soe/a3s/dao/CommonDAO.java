@@ -2,7 +2,6 @@ package fr.soe.a3s.dao;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -16,6 +15,8 @@ import java.util.zip.GZIPOutputStream;
 
 import fr.soe.a3s.domain.AutoConfig;
 import fr.soe.a3s.exception.CheckException;
+import fr.soe.a3s.exception.LoadingException;
+import fr.soe.a3s.exception.WritingException;
 
 public class CommonDAO implements DataAccessConstants {
 
@@ -24,28 +25,39 @@ public class CommonDAO implements DataAccessConstants {
 	/* Data */
 	private List<File> extractedBikeyFiles = null;
 
-	public AutoConfig importAutoConfig(String path)
-			throws FileNotFoundException, IOException, ClassNotFoundException {
+	public AutoConfig importAutoConfig(File file) throws LoadingException {
 
-		File file = new File(path);
+		assert (file != null);
+
 		AutoConfig autoConfig = null;
-		if (file.exists()) {
+		try {
 			ObjectInputStream fRo = new ObjectInputStream(new GZIPInputStream(
 					new FileInputStream(file.getAbsolutePath())));
 			autoConfig = (AutoConfig) fRo.readObject();
 			fRo.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new LoadingException("Failed to read autoconfig file." + "\n"
+					+ e.getMessage());
 		}
 		return autoConfig;
 	}
 
-	public void exportAutoConfig(AutoConfig autoConfig, String path)
-			throws FileNotFoundException, IOException {
+	public void exportAutoConfig(AutoConfig autoConfig, File file)
+			throws WritingException {
 
-		ObjectOutputStream fWo = new ObjectOutputStream(new GZIPOutputStream(
-				new FileOutputStream(path + "/auto-config"
-						+ AUTOCONFIG_EXTENSION)));
-		fWo.writeObject(autoConfig);
-		fWo.close();
+		try {
+			ObjectOutputStream fWo = new ObjectOutputStream(
+					new GZIPOutputStream(new FileOutputStream(
+							file.getAbsolutePath() + "/auto-config"
+									+ AUTOCONFIG_EXTENSION)));
+			fWo.writeObject(autoConfig);
+			fWo.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new WritingException("Failed to write autoconfig file."
+					+ "\n" + e.getMessage());
+		}
 	}
 
 	/**
