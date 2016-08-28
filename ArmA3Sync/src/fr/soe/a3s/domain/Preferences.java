@@ -2,6 +2,7 @@ package fr.soe.a3s.domain;
 
 import java.io.Serializable;
 
+import fr.soe.a3s.constant.IconResize;
 import fr.soe.a3s.constant.LookAndFeel;
 import fr.soe.a3s.constant.MinimizationType;
 
@@ -15,6 +16,7 @@ public class Preferences implements Serializable {
 	private MinimizationType launchPanelMinimized = MinimizationType.TASK_BAR;
 	private final MinimizationType syncPanelMinimized = MinimizationType.TRAY;
 	private LookAndFeel lookAndFeel = LookAndFeel.LAF_DEFAULT;
+	private IconResize iconResizeSize = IconResize.AUTO;
 
 	public MinimizationType getLaunchPanelGameLaunch() {
 		return launchPanelGameLaunch;
@@ -41,5 +43,16 @@ public class Preferences implements Serializable {
 
 	public void setLookAndFeel(LookAndFeel lookAndFeel) {
 		this.lookAndFeel = lookAndFeel;
+	}
+
+	public IconResize getIconResizeSize() {
+		if (iconResizeSize == null) {
+			iconResizeSize = IconResize.AUTO;
+		}
+		return iconResizeSize;
+	}
+
+	public void setIconResizeSize(IconResize iconResizeSize) {
+		this.iconResizeSize = iconResizeSize;
 	}
 }

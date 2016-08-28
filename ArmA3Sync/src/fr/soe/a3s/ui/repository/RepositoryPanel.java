@@ -12,8 +12,6 @@ import javax.swing.JButton;
 import javax.swing.JPanel;
 
 import fr.soe.a3s.ui.Facade;
-import fr.soe.a3s.ui.ImageResizer;
-import fr.soe.a3s.ui.ImageResizer.Resizing;
 import fr.soe.a3s.ui.UIConstants;
 
 public class RepositoryPanel extends JPanel implements UIConstants {
@@ -51,20 +49,15 @@ public class RepositoryPanel extends JPanel implements UIConstants {
 		Box vertBox2 = Box.createVerticalBox();
 		vertBox2.add(Box.createVerticalStrut(25));
 		buttonDownload = new JButton();
-		ImageIcon downloadIcon = new ImageIcon(
-				ImageResizer
-						.resizeToScreenResolution(DOWNLOAD, Resizing.MEDIUM));
+		ImageIcon downloadIcon = new ImageIcon((DOWNLOAD));
 		buttonDownload.setIcon(downloadIcon);
 		vertBox2.add(buttonDownload);
 		buttonRepository = new JButton();
-		ImageIcon repositoryIcon = new ImageIcon(
-				ImageResizer.resizeToScreenResolution(REPOSITORY,
-						Resizing.MEDIUM));
+		ImageIcon repositoryIcon = new ImageIcon(REPOSITORY);
 		buttonRepository.setIcon(repositoryIcon);
 		vertBox2.add(buttonRepository);
 		buttonEvents = new JButton();
-		ImageIcon eventsIcon = new ImageIcon(
-				ImageResizer.resizeToScreenResolution(EVENTS, Resizing.MEDIUM));
+		ImageIcon eventsIcon = new ImageIcon(EVENTS);
 		buttonEvents.setIcon(eventsIcon);
 		vertBox2.add(buttonEvents);
 		this.add(vertBox2, BorderLayout.EAST);

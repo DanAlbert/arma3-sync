@@ -1,5 +1,6 @@
 package fr.soe.a3s.dto.configuration;
 
+import fr.soe.a3s.constant.IconResize;
 import fr.soe.a3s.constant.LookAndFeel;
 import fr.soe.a3s.constant.MinimizationType;
 
@@ -10,6 +11,8 @@ public class PreferencesDTO {
 	private MinimizationType launchPanelMinimized;
 
 	private LookAndFeel lookAndFeel;
+	
+	private IconResize iconResizeSize;
 
 	public MinimizationType getLaunchPanelGameLaunch() {
 		return launchPanelGameLaunch;
@@ -33,5 +36,13 @@ public class PreferencesDTO {
 
 	public void setLookAndFeel(LookAndFeel lookAndFeel) {
 		this.lookAndFeel = lookAndFeel;
+	}
+
+	public IconResize getIconResizeSize() {
+		return iconResizeSize;
+	}
+
+	public void setIconResizeSize(IconResize iconResizeSize) {
+		this.iconResizeSize = iconResizeSize;
 	}
 }

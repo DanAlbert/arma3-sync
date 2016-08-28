@@ -37,6 +37,7 @@ public class PreferencesService {
 		preferences.setLaunchPanelMinimized(preferencesDTO
 				.getLaunchPanelMinimized());
 		preferences.setLookAndFeel(preferencesDTO.getLookAndFeel());
+		preferences.setIconResizeSize(preferencesDTO.getIconResizeSize());
 		return preferences;
 	}
 
@@ -48,6 +49,7 @@ public class PreferencesService {
 		preferencesDTO.setLaunchPanelMinimized(preferences
 				.getLaunchPanelMinimized());
 		preferencesDTO.setLookAndFeel(preferences.getLookAndFeel());
+		preferencesDTO.setIconResizeSize(preferences.getIconResizeSize());
 		return preferencesDTO;
 	}
 }

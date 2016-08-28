@@ -42,7 +42,6 @@ import fr.soe.a3s.service.ProfileService;
 import fr.soe.a3s.service.RepositoryService;
 import fr.soe.a3s.ui.Facade;
 import fr.soe.a3s.ui.ImageResizer;
-import fr.soe.a3s.ui.ImageResizer.Resizing;
 import fr.soe.a3s.ui.UIConstants;
 
 /**
@@ -122,12 +121,12 @@ public class OnlinePanel extends JPanel implements UIConstants {
 		vertBox2.add(Box.createVerticalStrut(25));
 		buttonAdd = new JButton();
 		ImageIcon addIcon = new ImageIcon(
-				ImageResizer.resizeToScreenResolution(ADD, Resizing.SMALL));
+				ImageResizer.resizeToScreenResolution(ADD));
 		buttonAdd.setIcon(addIcon);
 		vertBox2.add(buttonAdd);
 		buttonDelete = new JButton();
 		ImageIcon deleteIcon = new ImageIcon(
-				ImageResizer.resizeToScreenResolution(DELETE, Resizing.SMALL));
+				ImageResizer.resizeToScreenResolution(DELETE));
 		buttonDelete.setIcon(deleteIcon);
 		vertBox2.add(buttonDelete);
 		this.add(vertBox2, BorderLayout.EAST);

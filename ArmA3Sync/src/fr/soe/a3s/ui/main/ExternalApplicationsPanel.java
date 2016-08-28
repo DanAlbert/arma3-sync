@@ -32,7 +32,6 @@ import fr.soe.a3s.dto.configuration.ExternalApplicationDTO;
 import fr.soe.a3s.service.ConfigurationService;
 import fr.soe.a3s.ui.Facade;
 import fr.soe.a3s.ui.ImageResizer;
-import fr.soe.a3s.ui.ImageResizer.Resizing;
 import fr.soe.a3s.ui.UIConstants;
 import fr.soe.a3s.ui.main.dialogs.ExternalApplicationsEditionDialog;
 
@@ -105,22 +104,22 @@ public class ExternalApplicationsPanel extends JPanel implements UIConstants {
 		vertBox2.add(Box.createVerticalStrut(25));
 		buttonAdd = new JButton();
 		ImageIcon addIcon = new ImageIcon(
-				ImageResizer.resizeToScreenResolution(ADD, Resizing.SMALL));
+				ImageResizer.resizeToScreenResolution(ADD));
 		buttonAdd.setIcon(addIcon);
 		vertBox2.add(buttonAdd);
 		buttonEdit = new JButton();
 		ImageIcon editIcon = new ImageIcon(
-				ImageResizer.resizeToScreenResolution(EDIT, Resizing.SMALL));
+				ImageResizer.resizeToScreenResolution(EDIT));
 		buttonEdit.setIcon(editIcon);
 		vertBox2.add(buttonEdit);
 		buttonDelete = new JButton();
 		ImageIcon deleteIcon = new ImageIcon(
-				ImageResizer.resizeToScreenResolution(DELETE, Resizing.SMALL));
+				ImageResizer.resizeToScreenResolution(DELETE));
 		buttonDelete.setIcon(deleteIcon);
 		vertBox2.add(buttonDelete);
 		buttonEnable = new JButton();
 		ImageIcon enableIcon = new ImageIcon(
-				ImageResizer.resizeToScreenResolution(ONOFF, Resizing.SMALL));
+				ImageResizer.resizeToScreenResolution(ONOFF));
 		buttonEnable.setIcon(enableIcon);
 		vertBox2.add(buttonEnable);
 		this.add(vertBox2, BorderLayout.EAST);

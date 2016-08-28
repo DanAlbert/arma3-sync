@@ -50,7 +50,6 @@ import fr.soe.a3s.service.RepositoryService;
 import fr.soe.a3s.ui.ColumnsAutoSizer;
 import fr.soe.a3s.ui.Facade;
 import fr.soe.a3s.ui.ImageResizer;
-import fr.soe.a3s.ui.ImageResizer.Resizing;
 import fr.soe.a3s.ui.UIConstants;
 import fr.soe.a3s.ui.repository.RepositoryPanel;
 import fr.soe.a3s.ui.repository.dialogs.connection.RepositoryEditionDialog;
@@ -162,38 +161,32 @@ public class SyncPanel extends JPanel implements UIConstants {
 				vertBox.add(Box.createVerticalStrut(15));
 				buttonNew = new JButton("");
 				ImageIcon addIcon = new ImageIcon(
-						ImageResizer.resizeToScreenResolution(ADD,
-								Resizing.SMALL));
+						ImageResizer.resizeToScreenResolution(ADD));
 				buttonNew.setIcon(addIcon);
 				vertBox.add(buttonNew);
 				buttonEdit = new JButton("");
 				ImageIcon editIcon = new ImageIcon(
-						ImageResizer.resizeToScreenResolution(EDIT,
-								Resizing.SMALL));
+						ImageResizer.resizeToScreenResolution(EDIT));
 				buttonEdit.setIcon(editIcon);
 				vertBox.add(buttonEdit);
 				buttonRemove = new JButton("");
 				ImageIcon deleteIcon = new ImageIcon(
-						ImageResizer.resizeToScreenResolution(DELETE,
-								Resizing.SMALL));
+						ImageResizer.resizeToScreenResolution(DELETE));
 				buttonRemove.setIcon(deleteIcon);
 				vertBox.add(buttonRemove);
 				buttonSync1 = new JButton("");
 				ImageIcon syncIcon = new ImageIcon(
-						ImageResizer.resizeToScreenResolution(REFRESH,
-								Resizing.SMALL));
+						ImageResizer.resizeToScreenResolution(REFRESH));
 				buttonSync1.setIcon(syncIcon);
 				vertBox.add(buttonSync1);
 				buttonAdmin = new JButton("");
 				ImageIcon adminIcon = new ImageIcon(
-						ImageResizer.resizeToScreenResolution(ADMIN,
-								Resizing.SMALL));
+						ImageResizer.resizeToScreenResolution(ADMIN));
 				buttonAdmin.setIcon(adminIcon);
 				vertBox.add(buttonAdmin);
 				buttonConnectToRepository = new JButton("");
 				ImageIcon joinIcon = new ImageIcon(
-						ImageResizer.resizeToScreenResolution(CONNECT,
-								Resizing.SMALL));
+						ImageResizer.resizeToScreenResolution(CONNECT));
 				buttonConnectToRepository.setIcon(joinIcon);
 				vertBox.add(buttonConnectToRepository);
 				addonRepositoriesPanel.add(vertBox, BorderLayout.EAST);
@@ -218,14 +211,12 @@ public class SyncPanel extends JPanel implements UIConstants {
 				vertBox.add(Box.createVerticalStrut(15));
 				buttonSync2 = new JButton("");
 				ImageIcon syncIcon = new ImageIcon(
-						ImageResizer.resizeToScreenResolution(REFRESH,
-								Resizing.SMALL));
+						ImageResizer.resizeToScreenResolution(REFRESH));
 				buttonSync2.setIcon(syncIcon);
 				vertBox.add(buttonSync2);
 				buttonCheckEvent = new JButton("");
 				ImageIcon checkIcon = new ImageIcon(
-						ImageResizer.resizeToScreenResolution(CONNECT,
-								Resizing.SMALL));
+						ImageResizer.resizeToScreenResolution(CONNECT));
 				buttonCheckEvent.setIcon(checkIcon);
 				vertBox.add(buttonCheckEvent);
 				eventsPanel.add(vertBox, BorderLayout.EAST);

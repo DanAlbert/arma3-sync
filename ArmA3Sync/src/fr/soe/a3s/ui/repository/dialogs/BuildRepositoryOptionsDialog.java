@@ -44,7 +44,6 @@ import fr.soe.a3s.ui.AbstractDialog;
 import fr.soe.a3s.ui.CheckBoxList;
 import fr.soe.a3s.ui.Facade;
 import fr.soe.a3s.ui.ImageResizer;
-import fr.soe.a3s.ui.ImageResizer.Resizing;
 
 public class BuildRepositoryOptionsDialog extends AbstractDialog implements
 		DataAccessConstants {
@@ -194,8 +193,7 @@ public class BuildRepositoryOptionsDialog extends AbstractDialog implements
 					JPanel panel = new JPanel();
 					buttonAdd1 = new JButton("");
 					ImageIcon addIcon = new ImageIcon(
-							ImageResizer.resizeToScreenResolution(ADD,
-									Resizing.SMALL));
+							ImageResizer.resizeToScreenResolution(ADD));
 					buttonAdd1.setIcon(addIcon);
 					panel.setPreferredSize(new Dimension(buttonAdd1
 							.getPreferredSize()));
@@ -252,8 +250,7 @@ public class BuildRepositoryOptionsDialog extends AbstractDialog implements
 					vertBox.add(buttonAdd2);
 					buttonRemove2 = new JButton("");
 					ImageIcon deleteIcon = new ImageIcon(
-							ImageResizer.resizeToScreenResolution(DELETE,
-									Resizing.SMALL));
+							ImageResizer.resizeToScreenResolution(DELETE));
 					buttonRemove2.setIcon(deleteIcon);
 					vertBox.add(buttonRemove2);
 					vertBox.add(Box.createVerticalStrut(60));

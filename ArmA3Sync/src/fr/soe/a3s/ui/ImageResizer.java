@@ -6,11 +6,12 @@ import java.awt.Toolkit;
 
 import javax.swing.ImageIcon;
 
+import fr.soe.a3s.constant.IconResize;
+import fr.soe.a3s.service.PreferencesService;
+
 public class ImageResizer {
 
-	public enum Resizing {
-		SMALL, MEDIUM
-	};
+	private static final PreferencesService preferencesService = new PreferencesService();
 
 	public static Image resizeToNewWidth(Image image, int newWidth) {
 
@@ -42,7 +43,7 @@ public class ImageResizer {
 		return newImage;
 	}
 
-	public static Image resizeToScreenResolution(Image image, Resizing resizing) {
+	public static Image resizeToScreenResolution(Image image) {
 
 		ImageIcon imageIcon = new ImageIcon(image);
 		int imageHeight = imageIcon.getIconHeight();
@@ -55,26 +56,17 @@ public class ImageResizer {
 		// int screenHeight = 2160;
 		// int screenWidth = 3840;
 
-		int newImageHeight = 0;
-		int newImageWidth = 0;
+		int newImageHeight = imageHeight;
+		int newImageWidth = imageWidth;
 
-		if (resizing.equals(Resizing.SMALL)) {
-			newImageHeight = screenHeight * 16 / 1050;
-			newImageWidth = screenWidth * 16 / 1680;
-		} else if (resizing.equals(Resizing.MEDIUM)) {
-			newImageHeight = screenHeight * 24 / 1050;
-			newImageWidth = screenWidth * 24 / 1680;
-		}
-
-		if (newImageHeight > newImageWidth) {
-			newImageWidth = newImageHeight;
+		IconResize iconResize = preferencesService.getPreferences()
+				.getIconResizeSize();
+		if (iconResize.equals(IconResize.AUTO)) {
+			newImageHeight = screenHeight * imageHeight / 1050;
+			newImageWidth = screenWidth * imageWidth / 1680;
 		} else {
-			newImageHeight = newImageWidth;
-		}
-
-		if (newImageHeight < 16 || newImageWidth < 16) {
-			newImageHeight = 16;
-			newImageWidth = 16;
+			newImageHeight = (int) (imageHeight * iconResize.getValue());
+			newImageWidth = (int) (imageWidth * iconResize.getValue());
 		}
 
 		Image newImage = image.getScaledInstance(newImageWidth, newImageHeight,

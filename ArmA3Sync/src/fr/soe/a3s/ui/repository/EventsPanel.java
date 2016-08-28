@@ -52,7 +52,6 @@ import fr.soe.a3s.exception.repository.RepositoryException;
 import fr.soe.a3s.service.RepositoryService;
 import fr.soe.a3s.ui.Facade;
 import fr.soe.a3s.ui.ImageResizer;
-import fr.soe.a3s.ui.ImageResizer.Resizing;
 import fr.soe.a3s.ui.UIConstants;
 import fr.soe.a3s.ui.main.tree.AddonTreeModel;
 import fr.soe.a3s.ui.main.tree.CheckTreeCellRenderer;
@@ -108,38 +107,32 @@ public class EventsPanel extends JPanel implements UIConstants {
 				listEventsPanel.add(hBox, BorderLayout.NORTH);
 				buttonNew = new JButton("");
 				ImageIcon addIcon = new ImageIcon(
-						ImageResizer.resizeToScreenResolution(ADD,
-								Resizing.SMALL));
+						ImageResizer.resizeToScreenResolution(ADD));
 				buttonNew.setIcon(addIcon);
 				hBox.add(buttonNew);
 				buttonEdit = new JButton("");
 				ImageIcon editIcon = new ImageIcon(
-						ImageResizer.resizeToScreenResolution(EDIT,
-								Resizing.SMALL));
+						ImageResizer.resizeToScreenResolution(EDIT));
 				buttonEdit.setIcon(editIcon);
 				hBox.add(buttonEdit);
 				buttonRemove = new JButton("");
 				ImageIcon deleteIcon = new ImageIcon(
-						ImageResizer.resizeToScreenResolution(DELETE,
-								Resizing.SMALL));
+						ImageResizer.resizeToScreenResolution(DELETE));
 				buttonRemove.setIcon(deleteIcon);
 				hBox.add(buttonRemove);
 				buttonUpload = new JButton("");
 				ImageIcon saveUploadIcon = new ImageIcon(
-						ImageResizer.resizeToScreenResolution(UPLOAD,
-								Resizing.SMALL));
+						ImageResizer.resizeToScreenResolution(UPLOAD));
 				buttonUpload.setIcon(saveUploadIcon);
 				hBox.add(buttonUpload);
 				buttonUploadOptions = new JButton();
 				ImageIcon uploadOptionIcon = new ImageIcon(
-						ImageResizer.resizeToScreenResolution(PREFERENCES,
-								Resizing.SMALL));
+						ImageResizer.resizeToScreenResolution(PREFERENCES));
 				buttonUploadOptions.setIcon(uploadOptionIcon);
 				hBox.add(buttonUploadOptions);
 				buttonSaveToDisk = new JButton("");
 				ImageIcon saveToDiskIcon = new ImageIcon(
-						ImageResizer.resizeToScreenResolution(SAVE,
-								Resizing.SMALL));
+						ImageResizer.resizeToScreenResolution(SAVE));
 				buttonSaveToDisk.setIcon(saveToDiskIcon);
 				hBox.add(buttonSaveToDisk);
 			}

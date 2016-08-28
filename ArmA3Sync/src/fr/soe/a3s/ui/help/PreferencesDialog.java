@@ -1,6 +1,7 @@
 package fr.soe.a3s.ui.help;
 
 import java.awt.BorderLayout;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -15,6 +16,7 @@ import javax.swing.JComboBox;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
+import fr.soe.a3s.constant.IconResize;
 import fr.soe.a3s.constant.LookAndFeel;
 import fr.soe.a3s.constant.MinimizationType;
 import fr.soe.a3s.dto.configuration.PreferencesDTO;
@@ -41,6 +43,8 @@ public class PreferencesDialog extends AbstractDialog {
 	private JCheckBox checkBoxLookAndFeel;
 	private JComboBox comboBoxGameLaunch;
 	private JCheckBox checkBoxGameLaunch;
+	private JComboBox comboBoxIconResize;
+	private JCheckBox checkBoxIconResize;
 	// Service
 	private final PreferencesService preferencesServices = new PreferencesService();
 
@@ -114,7 +118,14 @@ public class PreferencesDialog extends AbstractDialog {
 				checkBoxLookAndFeel.setText("Look & Feel:");
 			}
 			{
-				String[] tab = new String[] { "Default",
+				checkBoxIconResize = new JCheckBox();
+				checkBoxIconResize.setSelected(true);
+				checkBoxIconResize.setFocusable(false);
+				checkBoxIconResize.setText("Resize icons:");
+			}
+			{
+				String[] tab = new String[] {
+						LookAndFeel.LAF_DEFAULT.getName(),
 						LookAndFeel.LAF_ALUMINIUM.getName(),
 						LookAndFeel.LAF_GRAPHITE.getName(),
 						LookAndFeel.LAF_HIFI.getName(),
@@ -125,6 +136,18 @@ public class PreferencesDialog extends AbstractDialog {
 				comboBoxLookAndFeel = new JComboBox();
 				comboBoxLookAndFeel.setModel(comboBoxLookAndFeelModel);
 				comboBoxLookAndFeel.setFocusable(false);
+			}
+			{
+				String[] tab = new String[] { IconResize.NONE.getDescription(),
+						IconResize.SIZE1.getDescription(),
+						IconResize.SIZE2.getDescription(),
+						IconResize.AUTO.getDescription() };
+
+				ComboBoxModel comboBoxIconResizeModel = new DefaultComboBoxModel(
+						tab);
+				comboBoxIconResize = new JComboBox();
+				comboBoxIconResize.setModel(comboBoxIconResizeModel);
+				comboBoxIconResize.setFocusable(false);
 			}
 			{
 				GridBagConstraints c = new GridBagConstraints();
@@ -186,17 +209,39 @@ public class PreferencesDialog extends AbstractDialog {
 				c.insets = new Insets(5, 10, 5, 10);
 				panel.add(comboBoxLookAndFeel, c);
 			}
+			{
+				GridBagConstraints c = new GridBagConstraints();
+				c.fill = GridBagConstraints.HORIZONTAL;
+				c.weightx = 0.5;
+				c.weighty = 0;
+				c.gridx = 0;
+				c.gridy = 3;
+				c.insets = new Insets(5, 10, 5, 10);
+				panel.add(checkBoxIconResize, c);
+			}
+			{
+				GridBagConstraints c = new GridBagConstraints();
+				c.fill = GridBagConstraints.BOTH;
+				c.weightx = 0.5;
+				c.weighty = 0;
+				c.gridx = 1;
+				c.gridy = 3;
+				c.insets = new Insets(5, 10, 5, 10);
+				panel.add(comboBoxIconResize, c);
+			}
 		}
 
 		this.pack();
 		int width = this.getBounds().width;
 		if (comboBoxGameLaunch.getBounds().height < 25
 				&& comboBoxLauncherMinimized.getBounds().height < 25
-				&& comboBoxLookAndFeel.getBounds().height < 25) {
+				&& comboBoxLookAndFeel.getBounds().height < 25
+				&& comboBoxIconResize.getBounds().height < 25) {
 			comboBoxGameLaunch.setPreferredSize(new Dimension(width, 25));
 			comboBoxLauncherMinimized
 					.setPreferredSize(new Dimension(width, 25));
 			comboBoxLookAndFeel.setPreferredSize(new Dimension(width, 25));
+			comboBoxIconResize.setPreferredSize(new Dimension(width, 25));
 		}
 		this.setMinimumSize(new Dimension(width, this.getBounds().height));
 		this.setPreferredSize(new Dimension(width, this.getBounds().height));
@@ -221,6 +266,10 @@ public class PreferencesDialog extends AbstractDialog {
 		if (lookAndFeel != null) {
 			comboBoxLookAndFeel.setSelectedItem(lookAndFeel);
 		}
+		String iconResize = preferencesDTO.getIconResizeSize().getDescription();
+		if (iconResize != null) {
+			comboBoxIconResize.setSelectedItem(iconResize);
+		}
 	}
 
 	@Override
@@ -237,14 +286,28 @@ public class PreferencesDialog extends AbstractDialog {
 		String lookAndFeel = (String) comboBoxLookAndFeel.getSelectedItem();
 		LookAndFeel newLookAndFeel = LookAndFeel.getEnum(lookAndFeel);
 		preferencesDTO.setLookAndFeel(newLookAndFeel);
+		String iconResize = (String) comboBoxIconResize.getSelectedItem();
+		IconResize newIconResize = IconResize.getEnum(iconResize);
+		preferencesDTO.setIconResizeSize(newIconResize);
 
 		/* Warning user to restart app if L&F has changed */
 		LookAndFeel currentLookAndFeel = preferencesServices.getPreferences()
 				.getLookAndFeel();
 
 		if (!newLookAndFeel.equals(currentLookAndFeel)) {
+			JOptionPane
+					.showMessageDialog(
+							facade.getMainPanel(),
+							"ArmA3Sync must be restarted to apply the new look & feel.",
+							"Information", JOptionPane.INFORMATION_MESSAGE);
+		}
+
+		IconResize currentIconResieze = preferencesServices.getPreferences()
+				.getIconResizeSize();
+
+		if (!newIconResize.equals(currentIconResieze)) {
 			JOptionPane.showMessageDialog(facade.getMainPanel(),
-					"ArmA3Sync must be restart to apply the new look & feel.",
+					"ArmA3Sync must be restarted to apply the new icon size.",
 					"Information", JOptionPane.INFORMATION_MESSAGE);
 		}
 

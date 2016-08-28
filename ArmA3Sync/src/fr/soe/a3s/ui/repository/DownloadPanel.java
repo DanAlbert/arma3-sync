@@ -65,7 +65,6 @@ import fr.soe.a3s.service.RepositoryService;
 import fr.soe.a3s.ui.Facade;
 import fr.soe.a3s.ui.FileSizeComputer;
 import fr.soe.a3s.ui.ImageResizer;
-import fr.soe.a3s.ui.ImageResizer.Resizing;
 import fr.soe.a3s.ui.UIConstants;
 import fr.soe.a3s.ui.UnitConverter;
 import fr.soe.a3s.ui.repository.dialogs.DownloadSettingsDialog;
@@ -194,11 +193,10 @@ public class DownloadPanel extends JPanel implements UIConstants {
 			hBox.add(buttonCheckForAddonsCancel);
 			ImageIcon addIcon = new ImageIcon(
 					ImageResizer
-							.resizeToScreenResolution(CHECK, Resizing.SMALL));
+							.resizeToScreenResolution(CHECK));
 			buttonCheckForAddonsStart.setIcon(addIcon);
 			ImageIcon cancelIcon = new ImageIcon(
-					ImageResizer.resizeToScreenResolution(DELETE,
-							Resizing.SMALL));
+					ImageResizer.resizeToScreenResolution(DELETE));
 			buttonCheckForAddonsCancel.setIcon(cancelIcon);
 			checkForAddonsControls.add(hBox, BorderLayout.EAST);
 			vBox.add(checkForAddonsControls);
@@ -295,19 +293,17 @@ public class DownloadPanel extends JPanel implements UIConstants {
 			hBox.add(buttonDownloadReport);
 			ImageIcon addIcon = new ImageIcon(
 					ImageResizer
-							.resizeToScreenResolution(START, Resizing.SMALL));
+							.resizeToScreenResolution(START));
 			buttonDownloadStart.setIcon(addIcon);
 			ImageIcon pauseIcon = new ImageIcon(
 					ImageResizer
-							.resizeToScreenResolution(PAUSE, Resizing.SMALL));
+							.resizeToScreenResolution(PAUSE));
 			buttonDownloadPause.setIcon(pauseIcon);
 			ImageIcon cancelIcon = new ImageIcon(
-					ImageResizer.resizeToScreenResolution(DELETE,
-							Resizing.SMALL));
+					ImageResizer.resizeToScreenResolution(DELETE));
 			buttonDownloadCancel.setIcon(cancelIcon);
 			ImageIcon reportIcon = new ImageIcon(
-					ImageResizer.resizeToScreenResolution(REPORT,
-							Resizing.SMALL));
+					ImageResizer.resizeToScreenResolution(REPORT));
 			buttonDownloadReport.setIcon(reportIcon);
 			downloadControls.add(hBox, BorderLayout.EAST);
 			vBox.add(downloadControls);

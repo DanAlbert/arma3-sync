@@ -20,11 +20,11 @@ import javax.swing.JScrollPane;
 import javax.swing.ListSelectionModel;
 import javax.swing.border.BevelBorder;
 
+import fr.soe.a3s.constant.IconResize;
 import fr.soe.a3s.service.AddonService;
 import fr.soe.a3s.service.ProfileService;
 import fr.soe.a3s.ui.Facade;
 import fr.soe.a3s.ui.ImageResizer;
-import fr.soe.a3s.ui.ImageResizer.Resizing;
 import fr.soe.a3s.ui.UIConstants;
 
 /**
@@ -85,23 +85,22 @@ public class AddonOptionsPanel extends JPanel implements UIConstants {
 			vertBox2.add(Box.createVerticalStrut(15));
 			add = new JButton();
 			ImageIcon addIcon = new ImageIcon(
-					ImageResizer.resizeToScreenResolution(ADD, Resizing.SMALL));
+					ImageResizer.resizeToScreenResolution(ADD));
 			add.setIcon(addIcon);
 			vertBox2.add(add);
 			delete = new JButton();
 			ImageIcon deleteIcon = new ImageIcon(
-					ImageResizer.resizeToScreenResolution(DELETE,
-							Resizing.SMALL));
+					ImageResizer.resizeToScreenResolution(DELETE));
 			delete.setIcon(deleteIcon);
 			vertBox2.add(delete);
 			upDirectoryPriority = new JButton();
 			ImageIcon upIcon = new ImageIcon(
-					ImageResizer.resizeToScreenResolution(UP, Resizing.SMALL));
+					ImageResizer.resizeToScreenResolution(UP));
 			upDirectoryPriority.setIcon(upIcon);
 			vertBox2.add(upDirectoryPriority);
 			downDirectoryPriority = new JButton();
 			ImageIcon downIcon = new ImageIcon(
-					ImageResizer.resizeToScreenResolution(DOWN, Resizing.SMALL));
+					ImageResizer.resizeToScreenResolution(DOWN));
 			downDirectoryPriority.setIcon(downIcon);
 			vertBox2.add(downDirectoryPriority);
 			addonSearchDirectoriesPanel.add(vertBox2, BorderLayout.EAST);
@@ -129,23 +128,22 @@ public class AddonOptionsPanel extends JPanel implements UIConstants {
 			vertBox2.add(Box.createVerticalStrut(15));
 			resetAddonPriority = new JButton();
 			ImageIcon resetIcon = new ImageIcon(
-					ImageResizer.resizeToScreenResolution(DELETE,
-							Resizing.SMALL));
+					ImageResizer.resizeToScreenResolution(DELETE));
 			resetAddonPriority.setIcon(resetIcon);
 			vertBox2.add(resetAddonPriority);
 			topAddonPriority = new JButton();
 			ImageIcon topIcon = new ImageIcon(
-					ImageResizer.resizeToScreenResolution(TOP, Resizing.SMALL));
+					ImageResizer.resizeToScreenResolution(TOP));
 			topAddonPriority.setIcon(topIcon);
 			vertBox2.add(topAddonPriority);
 			upAddonPriority = new JButton();
 			ImageIcon upIcon = new ImageIcon(
-					ImageResizer.resizeToScreenResolution(UP, Resizing.SMALL));
+					ImageResizer.resizeToScreenResolution(UP));
 			upAddonPriority.setIcon(upIcon);
 			vertBox2.add(upAddonPriority);
 			downAddonPriority = new JButton();
 			ImageIcon downIcon = new ImageIcon(
-					ImageResizer.resizeToScreenResolution(DOWN, Resizing.SMALL));
+					ImageResizer.resizeToScreenResolution(DOWN));
 			downAddonPriority.setIcon(downIcon);
 			vertBox2.add(downAddonPriority);
 			addonPrioritiesPanel.add(vertBox2, BorderLayout.EAST);
