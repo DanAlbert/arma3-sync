@@ -2,11 +2,9 @@ package fr.soe.a3s.dao;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.util.zip.GZIPInputStream;
-import java.util.zip.GZIPOutputStream;
 
 import fr.soe.a3s.domain.Preferences;
 import fr.soe.a3s.exception.CreateDirectoryException;
@@ -19,42 +17,35 @@ public class PreferencesDAO implements DataAccessConstants {
 
 	public void read() throws LoadingException {
 
+		File file = new File(PREFERENCES_FILE_PATH);
 		try {
-			File file = new File(PREFERENCES_FILE_PATH);
 			if (file.exists()) {
-				ObjectInputStream fRo = new ObjectInputStream(
-						new GZIPInputStream(new FileInputStream(
-								file.getAbsolutePath())));
-				Preferences prefs = (Preferences) fRo.readObject();
-				fRo.close();
+				Preferences prefs = (Preferences) A3SFilesAccessor.read(file);
 				if (prefs != null) {
 					preferences = prefs;
 				}
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
-			throw new LoadingException();
+			throw new LoadingException("Failed to read file: "
+					+ FileAccessMethods.getCanonicalPath(file));
 		}
 	}
 
 	public void write() throws WritingException {
 
+		File file = new File(PREFERENCES_FILE_PATH);
+		File folder = new File(CONFIGURATION_FOLDER_PATH);
 		try {
-			File folder = new File(CONFIGURATION_FOLDER_PATH);
 			folder.mkdirs();
 			if (!folder.exists()) {
 				throw new CreateDirectoryException(folder);
 			}
-			File file = new File(PREFERENCES_FILE_PATH);
-			ObjectOutputStream fWo = new ObjectOutputStream(
-					new GZIPOutputStream(new FileOutputStream(
-							file.getCanonicalPath())));
-			fWo.writeObject(preferences);
-			fWo.close();
-		} catch (Exception e) {
+			A3SFilesAccessor.write(preferences, file);
+		} catch (IOException e) {
 			e.printStackTrace();
-			throw new WritingException("Failed to save preferences." + "\n"
-					+ e.getMessage());
+			String message = "Failed to write file: "
+					+ FileAccessMethods.getCanonicalPath(file);
+			throw new WritingException(e.getMessage());
 		}
 	}
 

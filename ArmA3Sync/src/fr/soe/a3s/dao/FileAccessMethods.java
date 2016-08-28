@@ -110,6 +110,17 @@ public class FileAccessMethods implements DataAccessConstants {
 			}
 		}
 	}
+	
+	public static String getCanonicalPath(File file) {
+
+		String filePath = null;
+		try {
+			filePath = file.getCanonicalPath();
+		} catch (IOException e) {
+			filePath = file.getAbsolutePath();
+		}
+		return filePath;
+	}
 
 	public static void extractToFolder(File zipFile, File folder)
 			throws IOException {

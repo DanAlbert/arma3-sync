@@ -304,7 +304,7 @@ public class ArmA3Sync implements DataAccessConstants {
 				}
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
+			System.out.println(e.getMessage());
 		}
 	}
 }

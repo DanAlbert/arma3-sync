@@ -36,6 +36,7 @@ import fr.soe.a3s.domain.repository.ServerInfo;
 import fr.soe.a3s.domain.repository.SyncTreeDirectory;
 import fr.soe.a3s.dto.sync.SyncTreeLeafDTO;
 import fr.soe.a3s.dto.sync.SyncTreeNodeDTO;
+import fr.soe.a3s.exception.CreateDirectoryException;
 import fr.soe.a3s.exception.FtpException;
 
 public class FtpDAO extends AbstractConnexionDAO {
@@ -276,18 +277,12 @@ public class FtpDAO extends AbstractConnexionDAO {
 		try {
 			directory.mkdir();
 			if (!directory.exists()) {
-				throw new IOException("Failed to write file: "
-						+ directory.getAbsolutePath() + "\n"
-						+ "Permission dinied.");
+				throw new CreateDirectoryException(directory);
 			}
 			boolean found = downloadFile(file, remotePath);
 			if (found) {
 				if (file.exists()) {
 					sync = (SyncTreeDirectory) A3SFilesAccessor.read(file);
-				} else {
-					throw new IOException("Failed to write file: "
-							+ file.getAbsolutePath() + "\n"
-							+ "Permission dinied.");
 				}
 			}
 		} finally {
@@ -307,18 +302,12 @@ public class FtpDAO extends AbstractConnexionDAO {
 		try {
 			directory.mkdir();
 			if (!directory.exists()) {
-				throw new IOException("Failed to write file: "
-						+ directory.getAbsolutePath() + "\n"
-						+ "Permission dinied.");
+				throw new CreateDirectoryException(directory);
 			}
 			boolean found = downloadFile(file, remotePath);
 			if (found) {
 				if (file.exists()) {
-					serverInfo = A3SFilesAccessor.readServerInfoFile(file);
-				} else {
-					throw new IOException("Failed to write file: "
-							+ file.getAbsolutePath() + "\n"
-							+ "Permission dinied.");
+					serverInfo = (ServerInfo) A3SFilesAccessor.read(file);
 				}
 			}
 		} finally {
@@ -338,18 +327,12 @@ public class FtpDAO extends AbstractConnexionDAO {
 		try {
 			directory.mkdir();
 			if (!directory.exists()) {
-				throw new IOException("Failed to write file: "
-						+ directory.getAbsolutePath() + "\n"
-						+ "Permission dinied.");
+				throw new CreateDirectoryException(directory);
 			}
 			boolean found = downloadFile(file, remotePath);
 			if (found) {
 				if (file.exists()) {
-					changelogs = A3SFilesAccessor.readChangelogsFile(file);
-				} else {
-					throw new IOException("Failed to write file: "
-							+ file.getAbsolutePath() + "\n"
-							+ "Permission dinied.");
+					changelogs = (Changelogs) A3SFilesAccessor.read(file);
 				}
 			}
 		} finally {
@@ -369,18 +352,12 @@ public class FtpDAO extends AbstractConnexionDAO {
 		try {
 			directory.mkdir();
 			if (!directory.exists()) {
-				throw new IOException("Failed to write file: "
-						+ directory.getAbsolutePath() + "\n"
-						+ "Permission dinied.");
+				throw new CreateDirectoryException(directory);
 			}
 			boolean found = downloadFile(file, remotePath);
 			if (found) {
 				if (file.exists()) {
-					events = A3SFilesAccessor.readEventsFile(file);
-				} else {
-					throw new IOException("Failed to write file: "
-							+ file.getAbsolutePath() + "\n"
-							+ "Permission dinied.");
+					events = (Events) A3SFilesAccessor.read(file);
 				}
 			}
 		} finally {
@@ -400,18 +377,12 @@ public class FtpDAO extends AbstractConnexionDAO {
 		try {
 			directory.mkdir();
 			if (!directory.exists()) {
-				throw new IOException("Failed to write file: "
-						+ directory.getAbsolutePath() + "\n"
-						+ "Permission dinied.");
+				throw new CreateDirectoryException(directory);
 			}
 			boolean found = downloadFile(file, remotePath);
 			if (found) {
 				if (file.exists()) {
-					autoConfig = A3SFilesAccessor.readAutoConfigFile(file);
-				} else {
-					throw new IOException("Failed to write file: "
-							+ file.getAbsolutePath() + "\n"
-							+ "Permission dinied.");
+					autoConfig = (AutoConfig) A3SFilesAccessor.read(file);
 				}
 			}
 		} finally {
@@ -450,18 +421,12 @@ public class FtpDAO extends AbstractConnexionDAO {
 
 			directory.mkdir();
 			if (!directory.exists()) {
-				throw new IOException("Failed to write file: "
-						+ directory.getAbsolutePath() + "\n"
-						+ "Permission dinied.");
+				throw new CreateDirectoryException(directory);
 			}
 			boolean found = downloadFile(file, protocol.getRemotePath());
 			if (found) {
 				if (file.exists()) {
-					autoConfig = A3SFilesAccessor.readAutoConfigFile(file);
-				} else {
-					throw new IOException("Failed to write file: "
-							+ file.getAbsolutePath() + "\n"
-							+ "Permission dinied.");
+					autoConfig = (AutoConfig) A3SFilesAccessor.read(file);
 				}
 			}
 		} finally {
@@ -514,10 +479,6 @@ public class FtpDAO extends AbstractConnexionDAO {
 					String message = "File not found on repository: "
 							+ remotePath + "/" + downloadedFile.getName();
 					throw new FileNotFoundException(message);
-				} else if (!downloadedFile.exists()) {
-					throw new IOException("Failed to write file: "
-							+ downloadedFile.getAbsolutePath() + "\n"
-							+ "Permission dinied.");
 				}
 				if (!canceled) {
 					updateObserverDownloadTotalSizeProgress();
@@ -543,9 +504,7 @@ public class FtpDAO extends AbstractConnexionDAO {
 			downloadedFile.mkdir();
 			node.setDownloadStatus(DownloadStatus.DONE);
 			if (!downloadedFile.exists()) {
-				throw new IOException("Failed to write file: "
-						+ downloadedFile.getAbsolutePath() + "\n"
-						+ "Permission dinied.");
+				throw new CreateDirectoryException(downloadedFile);
 			}
 		}
 

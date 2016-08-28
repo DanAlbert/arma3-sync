@@ -1,22 +1,13 @@
 package fr.soe.a3s.dao.repository;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.TreeMap;
-import java.util.zip.GZIPInputStream;
-import java.util.zip.GZIPOutputStream;
 
 import javax.crypto.Cipher;
-import javax.crypto.NoSuchPaddingException;
-import javax.crypto.SealedObject;
 
 import fr.soe.a3s.dao.A3SFilesAccessor;
 import fr.soe.a3s.dao.DataAccessConstants;
@@ -29,6 +20,7 @@ import fr.soe.a3s.domain.repository.Repository;
 import fr.soe.a3s.domain.repository.ServerInfo;
 import fr.soe.a3s.domain.repository.SyncTreeDirectory;
 import fr.soe.a3s.exception.CreateDirectoryException;
+import fr.soe.a3s.exception.LoadingException;
 import fr.soe.a3s.exception.WritingException;
 
 public class RepositoryDAO implements DataAccessConstants {
@@ -74,38 +66,50 @@ public class RepositoryDAO implements DataAccessConstants {
 		}
 	}
 
-	public Map<String, Exception> readAll() throws InvalidKeyException,
-			NoSuchAlgorithmException, NoSuchPaddingException {
+	public Map<String, Exception> readAll() throws LoadingException {
 
-		Cipher cipher = EncryptionProvider.getDecryptionCipher();
-
-		File directory = new File(REPOSITORY_FOLDER_PATH);
-		File[] subfiles = directory.listFiles();
-		Map<String, Exception> repositoriesFailedToLoad = new TreeMap<String, Exception>();
-		mapRepositories.clear();
-		if (subfiles != null) {
-			for (File file : subfiles) {
-				if (file.isFile()
-						&& file.getName().contains(REPOSITORY_EXTENSION)) {
-					try {
-						ObjectInputStream fRo = new ObjectInputStream(
-								new GZIPInputStream(new FileInputStream(file)));
-						SealedObject sealedObject = (SealedObject) fRo
-								.readObject();
-						Repository repository = (Repository) sealedObject
-								.getObject(cipher);
-						fRo.close();
-						if (repository != null) {
-							mapRepositories.put(repository.getName(),
-									repository);
+		Map<String, Exception> repositoriesFailedToLoad;
+		try {
+			Cipher cipher = EncryptionProvider.getDecryptionCipher();
+			File directory = new File(REPOSITORY_FOLDER_PATH);
+			File[] subfiles = directory.listFiles();
+			repositoriesFailedToLoad = new TreeMap<String, Exception>();
+			mapRepositories.clear();
+			if (subfiles != null) {
+				for (File file : subfiles) {
+					if (file.isFile()
+							&& file.getName().contains(REPOSITORY_EXTENSION)) {
+						try {
+							Repository repository = (Repository) A3SFilesAccessor
+									.read(cipher, file);
+							if (repository != null) {
+								mapRepositories.put(repository.getName(),
+										repository);
+							}
+						} catch (IOException e) {
+							repositoriesFailedToLoad.put(file.getName(), e);
 						}
-					} catch (Exception e) {
-						e.printStackTrace();
-						repositoriesFailedToLoad.put(file.getName(), e);
 					}
 				}
 			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			String message = "Failded to read repository files:";
+			throw new LoadingException(message + "\n" + e.getMessage());
 		}
+
+		if (!repositoriesFailedToLoad.isEmpty()) {
+			String message = "Failded to read repository files:";
+			for (Iterator<String> iter = repositoriesFailedToLoad.keySet()
+					.iterator(); iter.hasNext();) {
+				String repositoryName = iter.next();
+				Exception e = repositoriesFailedToLoad.get(repositoryName);
+				message = message + "\n" + " - " + repositoryName + ": "
+						+ e.getMessage();
+			}
+			throw new LoadingException(message);
+		}
+
 		return repositoriesFailedToLoad;
 	}
 
@@ -113,35 +117,31 @@ public class RepositoryDAO implements DataAccessConstants {
 
 		assert (repository != null);
 
-		File repositoryFile = null;
-		File backupFile = null;
+		File folder = new File(REPOSITORY_FOLDER_PATH);
+		String repositoryFilename = repository.getName().replaceAll(" ", "")
+				+ REPOSITORY_EXTENSION;
+		File repositoryFile = new File(folder, repositoryFilename);
+		File backupFile = new File(folder, repositoryFilename + ".backup");
+
 		try {
-			Cipher cipher = EncryptionProvider.getEncryptionCipher();
-			File folder = new File(REPOSITORY_FOLDER_PATH);
 			folder.mkdirs();
 			if (!folder.exists()) {
 				throw new CreateDirectoryException(folder);
 			}
-			String repositoryFilename = repository.getName()
-					+ REPOSITORY_EXTENSION;
-			repositoryFile = new File(folder, repositoryFilename);
-			backupFile = new File(folder, repositoryFilename + ".backup");
 			if (repositoryFile.exists()) {
 				FileAccessMethods.deleteFile(backupFile);
 				repositoryFile.renameTo(backupFile);
 			}
-			ObjectOutputStream fWo = new ObjectOutputStream(
-					new GZIPOutputStream(new FileOutputStream(
-							repositoryFile.getCanonicalPath())));
-			fWo.writeObject(repository);
-			fWo.close();
+			Cipher cipher = EncryptionProvider.getEncryptionCipher();
+			A3SFilesAccessor.write(repository, cipher, repositoryFile);
 		} catch (Exception e) {
 			e.printStackTrace();
 			if (backupFile.exists()) {
 				backupFile.renameTo(repositoryFile);
 			}
-			throw new WritingException("Failed to save repository: "
-					+ repository.getName() + "\n" + e.getMessage());
+			String message = "Failed to write file: "
+					+ FileAccessMethods.getCanonicalPath(repositoryFile);
+			throw new WritingException(e.getMessage());
 		} finally {
 			if (backupFile.exists()) {
 				FileAccessMethods.deleteFile(backupFile);
@@ -203,7 +203,7 @@ public class RepositoryDAO implements DataAccessConstants {
 		return events;
 	}
 
-	public void writeEvents(Repository repository) throws IOException {
+	public void writeEvents(Repository repository) throws WritingException {
 
 		assert (repository != null);
 
@@ -211,12 +211,19 @@ public class RepositoryDAO implements DataAccessConstants {
 		if (events != null) {
 			String path = repository.getPath();
 			File a3sFolder = new File(path + A3S_FOlDER_PATH);
-			a3sFolder.mkdir();
-			if (!a3sFolder.exists()) {
-				throw new CreateDirectoryException(a3sFolder);
-			}
 			File file = new File(a3sFolder, EVENTS);
-			A3SFilesAccessor.write(events, file);
+			try {
+				a3sFolder.mkdir();
+				if (!a3sFolder.exists()) {
+					throw new CreateDirectoryException(a3sFolder);
+				}
+				A3SFilesAccessor.write(events, file);
+			} catch (IOException e) {
+				e.printStackTrace();
+				String message = "Failed to write file: "
+						+ FileAccessMethods.getCanonicalPath(file);
+				throw new WritingException(e.getMessage());
+			}
 		}
 	}
 }

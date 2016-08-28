@@ -37,6 +37,7 @@ import fr.soe.a3s.domain.repository.SyncTreeDirectory;
 import fr.soe.a3s.domain.repository.SyncTreeLeaf;
 import fr.soe.a3s.domain.repository.SyncTreeNode;
 import fr.soe.a3s.exception.CreateDirectoryException;
+import fr.soe.a3s.exception.DeleteDirectoryException;
 
 public class RepositoryBuildProcessor implements DataAccessConstants,
 		ObservableCount, ObservableText {
@@ -113,12 +114,11 @@ public class RepositoryBuildProcessor implements DataAccessConstants,
 		}
 
 		/* Remove .a3s folder */
-		File folderA3S = new File(repository.getPath() + "/.a3s");
+		File folderA3S = new File(repository.getPath() + A3S_FOlDER_PATH);
 		if (folderA3S.exists()) {
 			boolean deleted = FileAccessMethods.deleteDirectory(folderA3S);
 			if (!deleted) {
-				throw new IOException("Failed to delete .a3s folder." + "\n"
-						+ "Permission denied.");
+				throw new DeleteDirectoryException(folderA3S);
 			}
 		}
 

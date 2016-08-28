@@ -31,12 +31,8 @@ public class CommonDAO implements DataAccessConstants {
 
 		AutoConfig autoConfig = null;
 		try {
-			ObjectInputStream fRo = new ObjectInputStream(new GZIPInputStream(
-					new FileInputStream(file.getAbsolutePath())));
-			autoConfig = (AutoConfig) fRo.readObject();
-			fRo.close();
-		} catch (Exception e) {
-			e.printStackTrace();
+			autoConfig = (AutoConfig) A3SFilesAccessor.read(file);
+		} catch (IOException e) {
 			throw new LoadingException("Failed to read autoconfig file." + "\n"
 					+ e.getMessage());
 		}
@@ -46,14 +42,11 @@ public class CommonDAO implements DataAccessConstants {
 	public void exportAutoConfig(AutoConfig autoConfig, File file)
 			throws WritingException {
 
+		assert (autoConfig != null);
+
 		try {
-			ObjectOutputStream fWo = new ObjectOutputStream(
-					new GZIPOutputStream(new FileOutputStream(
-							file.getAbsolutePath() + "/auto-config"
-									+ AUTOCONFIG_EXTENSION)));
-			fWo.writeObject(autoConfig);
-			fWo.close();
-		} catch (Exception e) {
+			A3SFilesAccessor.write(autoConfig, file);
+		} catch (IOException e) {
 			e.printStackTrace();
 			throw new WritingException("Failed to write autoconfig file."
 					+ "\n" + e.getMessage());

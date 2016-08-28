@@ -62,42 +62,14 @@ public class RepositoryService extends ObjectDTOtransformer implements
 
 	public void readAll() throws LoadingException {
 
-		try {
-			Map<String, Exception> repositoriesFailedToLoad = repositoryDAO
-					.readAll();
-
-			if (!repositoriesFailedToLoad.isEmpty()) {
-				String message = "Failded to load repositories:";
-				for (Iterator<String> iter = repositoriesFailedToLoad.keySet()
-						.iterator(); iter.hasNext();) {
-					String repositoryName = iter.next();
-					Exception e = repositoriesFailedToLoad.get(repositoryName);
-					message = message + "\n" + " - " + repositoryName + ": "
-							+ e.getMessage();
-				}
-				throw new LoadingException(message);
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-
-			String message = "Failded to load repositories." + "\n"
-					+ e.getMessage();
-			throw new LoadingException(message);
-		}
+		repositoryDAO.readAll();
 	}
 
 	public void write(String repositoryName) throws WritingException {
 
-		try {
-			Repository repository = repositoryDAO.getMap().get(repositoryName);
-			if (repository != null) {
-				repositoryDAO.write(repository);
-			}
-
-		} catch (Exception e) {
-			e.printStackTrace();
-			throw new WritingException("Failed to write repository "
-					+ repositoryName + "\n" + e.getMessage());
+		Repository repository = repositoryDAO.getMap().get(repositoryName);
+		if (repository != null) {
+			repositoryDAO.write(repository);
 		}
 	}
 
@@ -859,7 +831,7 @@ public class RepositoryService extends ObjectDTOtransformer implements
 		}
 	}
 
-	public void writeEvents(String repositoryName) throws IOException {
+	public void writeEvents(String repositoryName) throws WritingException {
 
 		Repository repository = repositoryDAO.getMap().get(repositoryName);
 		if (repository != null) {
@@ -1268,17 +1240,24 @@ public class RepositoryService extends ObjectDTOtransformer implements
 			throw new RepositoryNotFoundException(repositoryName);
 		}
 
-		SyncTreeDirectory sync = repositoryDAO.readSync(repository);
-		ServerInfo serverInfo = repositoryDAO.readServerInfo(repository);
-		Changelogs changelogs = repositoryDAO.readChangelogs(repository);
-		AutoConfig autoConfig = repositoryDAO.readAutoConfig(repository);
-		Events events = repositoryDAO.readEvents(repository);
-
-		repository.setLocalSync(sync);// null if not found
-		repository.setLocalServerInfo(serverInfo);// null if not found
-		repository.setLocalChangelogs(changelogs);// null if not found
-		repository.setLocalAutoConfig(autoConfig);// null if not found
-		repository.setLocalEvents(events);// null if not found
+		SyncTreeDirectory sync = null;
+		ServerInfo serverInfo = null;
+		Changelogs changelogs = null;
+		AutoConfig autoConfig = null;
+		Events events = null;
+		try {
+			sync = repositoryDAO.readSync(repository);
+			serverInfo = repositoryDAO.readServerInfo(repository);
+			changelogs = repositoryDAO.readChangelogs(repository);
+			autoConfig = repositoryDAO.readAutoConfig(repository);
+			events = repositoryDAO.readEvents(repository);
+		} finally {
+			repository.setLocalSync(sync);// null if not found
+			repository.setLocalServerInfo(serverInfo);// null if not found
+			repository.setLocalChangelogs(changelogs);// null if not found
+			repository.setLocalAutoConfig(autoConfig);// null if not found
+			repository.setLocalEvents(events);// null if not found
+		}
 	}
 
 	public SyncTreeDirectoryDTO getSync(String repositoryName)

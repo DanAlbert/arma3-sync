@@ -3,12 +3,10 @@ package fr.soe.a3s.dao;
 import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.util.StringTokenizer;
 import java.util.zip.GZIPInputStream;
-import java.util.zip.GZIPOutputStream;
 
 import fr.soe.a3s.domain.configration.Configuration;
 import fr.soe.a3s.exception.CreateDirectoryException;
@@ -23,43 +21,36 @@ public class ConfigurationDAO implements DataAccessConstants {
 
 	public void read() throws LoadingException {
 
+		File file = new File(CONFIGURATION_FILE_PATH);
 		try {
-			File file = new File(CONFIGURATION_FILE_PATH);
 			if (file.exists()) {
-				ObjectInputStream fRo = new ObjectInputStream(
-						new GZIPInputStream(new FileInputStream(
-								file.getAbsolutePath())));
-				Configuration config = (Configuration) fRo.readObject();
-				fRo.close();
+				Configuration config = (Configuration) A3SFilesAccessor
+						.read(file);
 				if (config != null) {
 					configuration = config;
 				}
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
-			throw new LoadingException(
-					"Failded to load configuration settings.");
+			throw new LoadingException("Failed to read file: "
+					+ FileAccessMethods.getCanonicalPath(file));
 		}
 	}
 
 	public void write() throws WritingException {
 
+		File file = new File(CONFIGURATION_FILE_PATH);
+		File folder = new File(CONFIGURATION_FOLDER_PATH);
 		try {
-			File folder = new File(CONFIGURATION_FOLDER_PATH);
 			folder.mkdirs();
 			if (!folder.exists()) {
 				throw new CreateDirectoryException(folder);
 			}
-			File file = new File(CONFIGURATION_FILE_PATH);
-			ObjectOutputStream fWo = new ObjectOutputStream(
-					new GZIPOutputStream(new FileOutputStream(
-							file.getCanonicalPath())));
-			fWo.writeObject(configuration);
-			fWo.close();
-		} catch (Exception e) {
+			A3SFilesAccessor.write(configuration, file);
+		} catch (IOException e) {
 			e.printStackTrace();
-			throw new WritingException("Failed to save configuration." + "\n"
-					+ e.getMessage());
+			String message = "Failed to write file: "
+					+ FileAccessMethods.getCanonicalPath(file);
+			throw new WritingException(e.getMessage());
 		}
 	}
 
@@ -77,7 +68,6 @@ public class ConfigurationDAO implements DataAccessConstants {
 		String steamPath = null;
 
 		try {
-
 			Process process = Runtime.getRuntime().exec(
 					REGQUERY_UTIL
 							+ "\"HKLM\\SOFTWARE\\Wow6432Node\\Valve\\Steam");

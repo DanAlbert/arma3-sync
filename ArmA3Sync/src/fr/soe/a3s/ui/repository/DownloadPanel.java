@@ -15,6 +15,8 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -956,7 +958,7 @@ public class DownloadPanel extends JPanel implements UIConstants {
 					.showConfirmDialog(
 							facade.getMainPanel(),
 							"ArmA 3 is currently running. \n "
-									+ "Update of files will failed if selected files are in use by the game.",
+									+ "Update of files may failed if selected files are currently in use.",
 							"Download", JOptionPane.WARNING_MESSAGE);
 			if (ok != 0) {
 				return;
@@ -970,16 +972,41 @@ public class DownloadPanel extends JPanel implements UIConstants {
 							"A default destination folder must be set. \n Please checkout Addon Options panel.",
 							"Download", JOptionPane.WARNING_MESSAGE);
 			return;
+		}
+
+		String defaultDownloadLocation = (String) comBoxDestinationFolder
+				.getSelectedItem();
+		repositoryService.setDefaultDownloadLocation(repositoryName,
+				defaultDownloadLocation);
+		List<String> list = profileService.getAddonSearchDirectoryPaths();
+
+		// Add default download location to addon search directory list
+		if (!list.contains(defaultDownloadLocation)) {
+			profileService.addAddonSearchDirectoryPath(defaultDownloadLocation);
+			facade.getAddonOptionsPanel().updateAddonSearchDirectories();
+		}
+
+		// Check if destination folder is writable
+		if (checkBoxExactMatch.isSelected()) {
+			for (String filePath : list) {
+				Path path = new File(filePath).toPath();
+				boolean canWrite = Files.isWritable(path);
+				if (!canWrite) {
+					JOptionPane.showMessageDialog(facade.getMainPanel(),
+							"Write permission is denied on: " + filePath,
+							"Download", JOptionPane.ERROR_MESSAGE);
+					return;
+				}
+			}
 		} else {
-			String defaultDownloadLocation = (String) comBoxDestinationFolder
-					.getSelectedItem();
-			repositoryService.setDefaultDownloadLocation(repositoryName,
-					defaultDownloadLocation);
-			List<String> list = profileService.getAddonSearchDirectoryPaths();
-			if (!list.contains(defaultDownloadLocation)) {
-				profileService
-						.addAddonSearchDirectoryPath(defaultDownloadLocation);
-				facade.getAddonOptionsPanel().updateAddonSearchDirectories();
+			Path path = new File(defaultDownloadLocation).toPath();
+			boolean canWrite = Files.isWritable(path);
+			if (!canWrite) {
+				JOptionPane.showMessageDialog(facade.getMainPanel(),
+						"Write permission is denied on: "
+								+ defaultDownloadLocation, "Download",
+						JOptionPane.ERROR_MESSAGE);
+				return;
 			}
 		}
 
