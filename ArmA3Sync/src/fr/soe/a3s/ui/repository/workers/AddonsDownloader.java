@@ -45,6 +45,7 @@ public class AddonsDownloader extends Thread implements DataAccessConstants {
 	private final SyncTreeDirectoryDTO racine;
 	private SyncTreeDirectoryDTO userconfigNode;
 	private long incrementedFilesSize;
+	private long initialFilesSize;
 	private long totalExpectedFilesSize;
 	private long totalDiskFilesSize;
 	private long totalCompressedFilesSize;
@@ -58,6 +59,7 @@ public class AddonsDownloader extends Thread implements DataAccessConstants {
 	private int maxActiveconnections;
 	private int unCompleteFiles;
 	private int compressedFiles;
+	private long startTime;
 	/* Tests */
 	private boolean canceled = false;
 	private boolean tfarIsUpdated = false;
@@ -261,6 +263,7 @@ public class AddonsDownloader extends Thread implements DataAccessConstants {
 			}
 
 			// Synchronize
+			startTime = System.nanoTime();
 			connexionService.synchronize(repositoryName, list);
 
 		} catch (Exception e) {
@@ -362,8 +365,9 @@ public class AddonsDownloader extends Thread implements DataAccessConstants {
 
 	private synchronized void executeUpdateTotalSizeProgress(long value) {
 
+		incrementedFilesSize = incrementedFilesSize + value;
+
 		if (totalExpectedFilesSize != 0) {// division by 0!
-			incrementedFilesSize = incrementedFilesSize + value;
 			SwingUtilities.invokeLater(new Runnable() {
 				@Override
 				public void run() {
@@ -373,6 +377,18 @@ public class AddonsDownloader extends Thread implements DataAccessConstants {
 									(int) (((incrementedFilesSize) * 100) / totalExpectedFilesSize));
 				}
 			});
+		}
+
+		if (incrementedFilesSize != 0 && value != 0) {
+			double endTime = System.nanoTime();
+			double elapsedTime = endTime - startTime;
+			long remainingFilesSize = totalExpectedFilesSize
+					- incrementedFilesSize;
+			long downloadedFilesSize = incrementedFilesSize - initialFilesSize;
+			final long remaininTime = (long) ((remainingFilesSize * elapsedTime) / (downloadedFilesSize));
+			downloadPanel.getLabelRemainingTimeValue().setText(
+					UnitConverter.convertTime((long) (remaininTime * Math.pow(
+							10, -9))));
 		}
 	}
 
@@ -392,6 +408,19 @@ public class AddonsDownloader extends Thread implements DataAccessConstants {
 										+ value));
 			}
 		});
+
+		if (incrementedFilesSize != 0 && value != 0) {
+			double endTime = System.nanoTime();
+			double elapsedTime = endTime - startTime;
+			long remainingFilesSize = totalExpectedFilesSize
+					- incrementedFilesSize - value;
+			long downloadedFilesSize = incrementedFilesSize + value
+					- initialFilesSize;
+			final long remainingTime = (long) ((remainingFilesSize * elapsedTime) / (downloadedFilesSize));
+			downloadPanel.getLabelRemainingTimeValue().setText(
+					UnitConverter.convertTime((long) (remainingTime * Math.pow(
+							10, -9))));
+		}
 	}
 
 	private synchronized void executeUpdateDownloadSpeed() {
@@ -399,6 +428,7 @@ public class AddonsDownloader extends Thread implements DataAccessConstants {
 		long speed = 0;
 		long offset = 0;
 		long countFileSize = 0;
+		long endTime = System.nanoTime();
 		for (AbstractConnexionDAO connect : connexionService.getConnexionDAOs()) {
 			if (connect.isActiveConnection()) {
 				speed = speed + connect.getSpeed();
@@ -406,19 +436,16 @@ public class AddonsDownloader extends Thread implements DataAccessConstants {
 				countFileSize = countFileSize + connect.getCountFileSize();
 			}
 		}
-		if (speed != 0) {// division by 0
-			downloadPanel.getLabelSpeedValue().setText(
-					UnitConverter.convertSpeed(speed));
+
+		downloadPanel.getLabelSpeedValue().setText(
+				UnitConverter.convertSpeed(speed));
+
+		if (speed != 0) {
 			if (averageDownloadSpeed > 0) {
 				averageDownloadSpeed = (averageDownloadSpeed + speed) / 2;
 			} else {
 				averageDownloadSpeed = speed;
 			}
-			long remainingFileSize = totalExpectedFilesSize
-					- incrementedFilesSize - (offset + countFileSize);
-			long time = remainingFileSize / speed;
-			downloadPanel.getLabelRemainingTimeValue().setText(
-					UnitConverter.convertTime(time));
 		}
 	}
 
@@ -910,7 +937,6 @@ public class AddonsDownloader extends Thread implements DataAccessConstants {
 	private void determineFilesVariables() {
 
 		incrementedFilesSize = 0;
-
 		totalDiskFilesSize = 0;
 		totalCompressedFilesSize = 0;
 		totalUncompressedFilesSize = 0;
@@ -945,6 +971,7 @@ public class AddonsDownloader extends Thread implements DataAccessConstants {
 				}
 			}
 		}
+		initialFilesSize = incrementedFilesSize;
 	}
 
 	private void determineTotalExpectedFileSize() {
