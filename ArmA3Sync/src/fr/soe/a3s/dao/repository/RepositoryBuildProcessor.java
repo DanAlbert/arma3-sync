@@ -78,39 +78,35 @@ public class RepositoryBuildProcessor implements DataAccessConstants,
 		assert (new File(repository.getPath()).exists());
 
 		// Read previous sync file
+		File oldSyncFile = new File(repository.getPath() + SYNC_FILE_PATH);
 		SyncTreeDirectory oldSync = null;
-		try {
-			oldSync = (SyncTreeDirectory) A3SFilesAccessor.read(new File(
-					repository.getPath() + SYNC_FILE_PATH));
-		} catch (IOException e) {
-			System.out.println("Build repository:" + e.getMessage());
+		if (oldSyncFile.exists()) {
+			oldSync = (SyncTreeDirectory) A3SFilesAccessor.read(oldSyncFile);
 		}
 
 		// Read previous serverInfo file
+		File oldServerInfoFile = new File(repository.getPath()
+				+ SERVERINFO_FILE_PATH);
 		ServerInfo oldServerInfo = null;
-		try {
-			oldServerInfo = (ServerInfo) A3SFilesAccessor.read(new File(
-					repository.getPath() + SERVERINFO_FILE_PATH));
-		} catch (IOException e) {
-			System.out.println("Build repository:" + e.getMessage());
+		if (oldServerInfoFile.exists()) {
+			oldServerInfo = (ServerInfo) A3SFilesAccessor
+					.read(oldServerInfoFile);
 		}
 
 		// Read previous changelogs file
+		File oldChangelogsFile = new File(repository.getPath()
+				+ CHANGELOGS_FILE_PATH);
 		Changelogs oldChangelogs = null;
-		try {
-			oldChangelogs = (Changelogs) A3SFilesAccessor.read(new File(
-					repository.getPath() + CHANGELOGS_FILE_PATH));
-		} catch (IOException e) {
-			System.out.println("Build repository:" + e.getMessage());
+		if (oldChangelogsFile.exists()) {
+			oldChangelogs = (Changelogs) A3SFilesAccessor
+					.read(oldChangelogsFile);
 		}
 
 		// Read previous events file
+		File oldEventsFile = new File(repository.getPath() + EVENTS_FILE_PATH);
 		Events oldEvents = null;
-		try {
-			oldEvents = (Events) A3SFilesAccessor.read(new File(repository
-					.getPath() + EVENTS_FILE_PATH));
-		} catch (IOException e) {
-			System.out.println("Build repository:" + e.getMessage());
+		if (oldEventsFile.exists()) {
+			oldEvents = (Events) A3SFilesAccessor.read(oldEventsFile);
 		}
 
 		/* Remove .a3s folder */
