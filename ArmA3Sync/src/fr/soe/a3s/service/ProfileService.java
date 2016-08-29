@@ -26,14 +26,7 @@ public class ProfileService extends ObjectDTOtransformer {
 
 	public void readAll() throws LoadingException {
 
-		List<String> profilesFailedToLoad = profileDAO.readProfiles();
-		if (!profilesFailedToLoad.isEmpty()) {
-			String message = "Failded to load profile:";
-			for (String name : profilesFailedToLoad) {
-				message = message + "\n" + " - " + name;
-			}
-			throw new LoadingException(message);
-		}
+		profileDAO.readProfiles();
 	}
 
 	public void setAdditionalParameters(String additionalParameters) {

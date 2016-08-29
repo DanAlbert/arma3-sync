@@ -1,19 +1,16 @@
 package fr.soe.a3s.dao;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.zip.GZIPInputStream;
 
 import fr.soe.a3s.constant.DefaultProfileName;
 import fr.soe.a3s.domain.Profile;
 import fr.soe.a3s.exception.CreateDirectoryException;
+import fr.soe.a3s.exception.LoadingException;
 import fr.soe.a3s.exception.WritingException;
 
 public class ProfileDAO implements DataAccessConstants {
@@ -24,7 +21,7 @@ public class ProfileDAO implements DataAccessConstants {
 		return mapProfiles;
 	}
 
-	public List<String> readProfiles() {
+	public void readProfiles() throws LoadingException {
 
 		File directory = new File(PROFILES_FOLDER_PATH);
 		File[] subfiles = directory.listFiles();
@@ -50,7 +47,13 @@ public class ProfileDAO implements DataAccessConstants {
 			mapProfiles.put(profile.getName(), profile);
 		}
 
-		return profilesFailedToLoad;
+		if (!profilesFailedToLoad.isEmpty()) {
+			String message = "Failded to load profiles:";
+			for (String name : profilesFailedToLoad) {
+				message = message + "\n" + " - " + name;
+			}
+			throw new LoadingException(message);
+		}
 	}
 
 	public void write(Profile profile) throws WritingException {
