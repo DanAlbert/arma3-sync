@@ -69,7 +69,7 @@ public class HttpDAO extends AbstractConnexionDAO {
 			myHttpConnection.downloadFile(file);
 		} catch (IOException e) {
 			if (!canceled) {
-				String coreMessage = "Failed to retreive file " + relativePath;
+				String coreMessage = "Failed to retrieve file " + relativePath;
 				IOException ioe = transferIOExceptionFactory(coreMessage, e);
 				throw ioe;
 			}
@@ -88,7 +88,7 @@ public class HttpDAO extends AbstractConnexionDAO {
 		try {
 			myHttpConnection.downloadFileWithRecordProgress(file);
 		} catch (IOException e) {
-			String coreMessage = "Failed to retreive file " + relativePath;
+			String coreMessage = "Failed to retrieve file " + relativePath;
 			IOException ioe = transferIOExceptionFactory(coreMessage, e);
 			throw ioe;
 		} catch (HttpException e) {
@@ -106,7 +106,7 @@ public class HttpDAO extends AbstractConnexionDAO {
 			Jazsync.sync(file, sha1, relativeFileUrl, relativeZsyncFileUrl,
 					protocole, this);
 		} catch (IOException e) {
-			String coreMessage = "Failed to retreive file " + relativeFileUrl;
+			String coreMessage = "Failed to retrieve file " + relativeFileUrl;
 			IOException ioe = transferIOExceptionFactory(coreMessage, e);
 			throw ioe;
 		} catch (HttpException e) {
@@ -276,7 +276,7 @@ public class HttpDAO extends AbstractConnexionDAO {
 		try {
 			connect(protocole, "/" + DataAccessConstants.AUTOCONFIG);
 		} catch (IOException e) {
-			String coreMessage = "Failed to retreive file " + relativePath;
+			String coreMessage = "Failed to retrieve file " + relativePath;
 			IOException ioe = transferIOExceptionFactory(coreMessage, e);
 			throw ioe;
 		}
@@ -447,7 +447,7 @@ public class HttpDAO extends AbstractConnexionDAO {
 			complete = Jazsync.getCompletion(targetFile, sha1,
 					relativeZsyncFileUrl, repository.getProtocol(), this);
 		} catch (IOException e) {
-			String coreMessage = "Failed to retreive file "
+			String coreMessage = "Failed to retrieve file "
 					+ relativeZsyncFileUrl;
 			IOException ioe = transferIOExceptionFactory(coreMessage, e);
 			throw ioe;
