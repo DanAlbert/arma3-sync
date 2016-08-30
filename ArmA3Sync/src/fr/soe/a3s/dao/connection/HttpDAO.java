@@ -348,11 +348,6 @@ public class HttpDAO extends AbstractConnexionDAO {
 				try {
 					connectToRepository(repository.getProtocol(), relativePath);
 					downloadFileWithRecordProgress(downloadedFile, relativePath);
-					if (!downloadedFile.exists()) {
-						throw new IOException("Failed to write file: "
-								+ downloadedFile.getAbsolutePath() + "\n"
-								+ "Permission dinied.");
-					}
 					if (!canceled) {
 						updateObserverDownloadTotalSizeProgress();
 						node.setDownloadStatus(DownloadStatus.DONE);
@@ -393,11 +388,6 @@ public class HttpDAO extends AbstractConnexionDAO {
 					downloadPartialFileWithRecordProgress(downloadedFile, sha1,
 							relativeFileUrl, relativeZsyncFileUrl,
 							repository.getProtocol());
-					if (!downloadedFile.exists()) {
-						throw new IOException("Failed to write file: "
-								+ downloadedFile.getAbsolutePath() + "\n"
-								+ "Permission dinied.");
-					}
 					if (!canceled) {
 						updateObserverDownloadTotalSizeProgress();
 						node.setDownloadStatus(DownloadStatus.DONE);
