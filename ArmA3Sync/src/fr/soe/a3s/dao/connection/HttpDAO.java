@@ -447,8 +447,8 @@ public class HttpDAO extends AbstractConnexionDAO {
 			throw new ConnectException(message);
 		}
 
-		this.count++;
-		updateObserverCount();
+		// this.count++;
+		// updateObserverCount();
 		return complete;
 	}
 

@@ -81,6 +81,11 @@ public class BitTorrentService extends AbstractConnexionService implements
 	}
 
 	@Override
+	public String getServerRangeRequestResponseHeader(String repositoryName) {
+		return null;
+	}
+
+	@Override
 	public String determineFilesCompletion(String repositoryName,
 			SyncTreeDirectoryDTO parent) throws RepositoryException,
 			IOException {
@@ -132,9 +137,8 @@ public class BitTorrentService extends AbstractConnexionService implements
 			connectionDAOs.add(bitTorrentDAO);
 		}
 
-		ConnectionDownloadProcessor downloadProcessor = new ConnectionDownloadProcessor();
-		downloadProcessor.init(filesToDownload, connectionDAOs, repository,
-				unZipFlowProcessor);
+		ConnectionDownloadProcessor downloadProcessor = new ConnectionDownloadProcessor(
+				filesToDownload, connectionDAOs, repository, unZipFlowProcessor);
 		downloadProcessor.run();
 	}
 

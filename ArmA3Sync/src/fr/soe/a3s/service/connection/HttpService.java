@@ -9,6 +9,7 @@ import fr.soe.a3s.dao.DataAccessConstants;
 import fr.soe.a3s.dao.connection.AbstractConnexionDAO;
 import fr.soe.a3s.dao.connection.HttpDAO;
 import fr.soe.a3s.dao.connection.processors.ConnectionCheckProcessor;
+import fr.soe.a3s.dao.connection.processors.ConnectionCompletionProcessor;
 import fr.soe.a3s.dao.connection.processors.ConnectionDownloadProcessor;
 import fr.soe.a3s.dao.repository.RepositoryDAO;
 import fr.soe.a3s.dao.zip.UnZipFlowProcessor;
@@ -223,6 +224,18 @@ public class HttpService extends AbstractConnexionService implements
 	/* Determine file completion */
 
 	@Override
+	public String getServerRangeRequestResponseHeader(String repositoryName)
+			throws RepositoryNotFoundException {
+
+		Repository repository = repositoryDAO.getMap().get(repositoryName);
+		if (repository == null) {
+			throw new RepositoryNotFoundException(repositoryName);
+		}
+
+		return null;
+	}
+
+	@Override
 	public String determineFilesCompletion(String repositoryName,
 			SyncTreeDirectoryDTO parent) throws RepositoryException,
 			IOException {
@@ -259,7 +272,7 @@ public class HttpService extends AbstractConnexionService implements
 			noPartialFileTransfer = true;
 		}
 
-		List<SyncTreeLeafDTO> list2 = new ArrayList<SyncTreeLeafDTO>();
+		List<SyncTreeLeafDTO> filesToDownload = new ArrayList<SyncTreeLeafDTO>();
 
 		for (SyncTreeLeafDTO leaf : list) {
 			if (leaf.isUpdated()) {
@@ -295,7 +308,7 @@ public class HttpService extends AbstractConnexionService implements
 					if (!targetFile.exists()) {
 						leaf.setComplete(0);
 					} else {
-						list2.add(leaf);
+						filesToDownload.add(leaf);
 					}
 				}
 			} else {
@@ -303,19 +316,24 @@ public class HttpService extends AbstractConnexionService implements
 			}
 		}
 
-		httpDAOPool.get(0).setTotalCount(list2.size());
+		/*
+		 * httpDAOPool.get(0).setTotalCount(list2.size());
+		 * 
+		 * for (SyncTreeLeafDTO leaf : list2) { if
+		 * (httpDAOPool.get(0).isCanceled()) { break; } else { double complete =
+		 * httpDAOPool.get(0).getFileCompletion( leaf.getRemotePath(),
+		 * leaf.getDestinationPath(), leaf, repository);
+		 * leaf.setComplete(complete); } }
+		 */
 
-		for (SyncTreeLeafDTO leaf : list2) {
-			if (httpDAOPool.get(0).isCanceled()) {
-				break;
-			} else {
-				double complete = httpDAOPool.get(0).getFileCompletion(
-						leaf.getRemotePath(), leaf.getDestinationPath(), leaf,
-						repository);
-				leaf.setComplete(complete);
-			}
+		List<AbstractConnexionDAO> connectionDAOs = new ArrayList<AbstractConnexionDAO>();
+		for (HttpDAO httpDAO : httpDAOPool) {
+			connectionDAOs.add(httpDAO);
 		}
 
+		ConnectionCompletionProcessor completionProcessor = new ConnectionCompletionProcessor(
+				filesToDownload, httpDAOPool, repository);
+		completionProcessor.run();
 		return header;
 	}
 
@@ -339,14 +357,13 @@ public class HttpService extends AbstractConnexionService implements
 				+ repository.getProtocol().getPort()
 				+ repository.getProtocol().getRemotePath());
 
-		List<AbstractConnexionDAO> connectionDAOs = new ArrayList<AbstractConnexionDAO>();
+		List<AbstractConnexionDAO> connexionDAOs = new ArrayList<AbstractConnexionDAO>();
 		for (HttpDAO httpDAO : httpDAOPool) {
-			connectionDAOs.add(httpDAO);
+			connexionDAOs.add(httpDAO);
 		}
 
-		ConnectionDownloadProcessor downloadProcessor = new ConnectionDownloadProcessor();
-		downloadProcessor.init(filesToDownload, connectionDAOs, repository,
-				unZipFlowProcessor);
+		ConnectionDownloadProcessor downloadProcessor = new ConnectionDownloadProcessor(
+				filesToDownload, connexionDAOs, repository, unZipFlowProcessor);
 		downloadProcessor.run();
 	}
 

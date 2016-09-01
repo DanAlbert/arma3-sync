@@ -237,6 +237,11 @@ public class FtpService extends AbstractConnexionService implements
 	/* Determine file completion */
 
 	@Override
+	public String getServerRangeRequestResponseHeader(String repositoryName) {
+		return null;
+	}
+
+	@Override
 	public String determineFilesCompletion(String repositoryName,
 			SyncTreeDirectoryDTO parent) {
 
@@ -248,6 +253,8 @@ public class FtpService extends AbstractConnexionService implements
 				leaf.setComplete(100);
 			}
 		}
+
+		ftpDAOPool.get(0).updateObserverEnd();
 		return null;
 	}
 
@@ -271,14 +278,13 @@ public class FtpService extends AbstractConnexionService implements
 				+ repository.getProtocol().getPort()
 				+ repository.getProtocol().getRemotePath());
 
-		List<AbstractConnexionDAO> connectionDAOs = new ArrayList<AbstractConnexionDAO>();
+		List<AbstractConnexionDAO> connexionDAOs = new ArrayList<AbstractConnexionDAO>();
 		for (FtpDAO ftpDAO : ftpDAOPool) {
-			connectionDAOs.add(ftpDAO);
+			connexionDAOs.add(ftpDAO);
 		}
 
-		ConnectionDownloadProcessor downloadProcessor = new ConnectionDownloadProcessor();
-		downloadProcessor.init(filesToDownload, connectionDAOs, repository,
-				unZipFlowProcessor);
+		ConnectionDownloadProcessor downloadProcessor = new ConnectionDownloadProcessor(
+				filesToDownload, connexionDAOs, repository, unZipFlowProcessor);
 		downloadProcessor.run();
 	}
 

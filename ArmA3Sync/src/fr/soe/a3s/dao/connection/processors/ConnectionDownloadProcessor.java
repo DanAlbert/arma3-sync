@@ -26,13 +26,13 @@ public class ConnectionDownloadProcessor implements DataAccessConstants {
 	private Repository repository = null;
 	private UnZipFlowProcessor unZipFlowProcessor = null;
 
-	public void init(List<SyncTreeNodeDTO> listFiles,
+	public ConnectionDownloadProcessor(List<SyncTreeNodeDTO> filesToDownload,
 			List<AbstractConnexionDAO> connexionDAOs, Repository repository,
 			UnZipFlowProcessor unZipFlowProcessor) {
 
 		this.connexionDAOs = connexionDAOs;
 		this.downloadFilesStack = new Stack<SyncTreeNodeDTO>();
-		this.downloadFilesStack.addAll(listFiles);
+		this.downloadFilesStack.addAll(filesToDownload);
 		this.downloadErrors = new ArrayList<Exception>();
 		this.downloadTimeouterrors = new ArrayList<Exception>();
 		this.semaphore = 1;
@@ -173,7 +173,8 @@ public class ConnectionDownloadProcessor implements DataAccessConstants {
 					try {
 						if (connexionDAO instanceof FtpDAO) {
 							((FtpDAO) connexionDAO)
-									.connectToRepository(repository.getProtocol());
+									.connectToRepository(repository
+											.getProtocol());
 						} else if (connexionDAO instanceof HttpDAO) {
 							((HttpDAO) connexionDAO).connectToRepository(
 									repository.getProtocol(), SYNC_FILE_PATH);

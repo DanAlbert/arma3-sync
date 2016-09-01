@@ -11,11 +11,15 @@ import java.util.List;
 import fr.soe.a3s.controller.ObservableCount;
 import fr.soe.a3s.controller.ObservableCountErrors;
 import fr.soe.a3s.controller.ObservableDownload;
+import fr.soe.a3s.controller.ObservableEnd;
+import fr.soe.a3s.controller.ObservableError;
 import fr.soe.a3s.controller.ObservableProceed;
 import fr.soe.a3s.controller.ObservableText;
 import fr.soe.a3s.controller.ObservableUpload;
 import fr.soe.a3s.controller.ObserverCount;
 import fr.soe.a3s.controller.ObserverDownload;
+import fr.soe.a3s.controller.ObserverEnd;
+import fr.soe.a3s.controller.ObserverError;
 import fr.soe.a3s.controller.ObserverProceed;
 import fr.soe.a3s.controller.ObserverText;
 import fr.soe.a3s.controller.ObserverUpload;
@@ -26,13 +30,16 @@ import fr.soe.a3s.dto.sync.SyncTreeLeafDTO;
 import fr.soe.a3s.dto.sync.SyncTreeNodeDTO;
 
 public abstract class AbstractConnexionDAO implements DataAccessConstants,
-		ObservableCount, ObservableCountErrors, ObservableText,
-		ObservableUpload, ObservableProceed, ObservableDownload {
+		ObservableCount, ObservableCountErrors, ObservableText, ObservableEnd,
+		ObservableError, ObservableUpload, ObservableProceed,
+		ObservableDownload {
 
 	/***/
 	private ObserverCount observerCount;
 	private ObserverCount observerCountErrors;
 	private ObserverText observerText;
+	private ObserverEnd observerEnd;
+	private ObserverError observerError;
 	private ObserverUpload observerUpload;
 	private ObserverProceed observerProceed;
 	private ObserverDownload observerDownload;
@@ -250,6 +257,30 @@ public abstract class AbstractConnexionDAO implements DataAccessConstants,
 	@Override
 	public void updateObserverText(String text) {
 		this.observerText.update(text);
+	}
+
+	/* End observable Interface */
+
+	@Override
+	public void addObserverEnd(ObserverEnd obs) {
+		this.observerEnd = obs;
+	}
+
+	@Override
+	public void updateObserverEnd() {
+		this.observerEnd.end();
+	}
+
+	/* error observable Interface */
+
+	@Override
+	public void addObserverError(ObserverError obs) {
+		this.observerError = obs;
+	}
+
+	@Override
+	public void updateObserverError(List<Exception> errors) {
+		this.observerError.error(errors);
 	}
 
 	/* Upload observable Interface */

@@ -10,6 +10,7 @@ import fr.soe.a3s.dto.AutoConfigDTO;
 import fr.soe.a3s.dto.sync.SyncTreeDirectoryDTO;
 import fr.soe.a3s.dto.sync.SyncTreeNodeDTO;
 import fr.soe.a3s.exception.repository.RepositoryException;
+import fr.soe.a3s.exception.repository.RepositoryNotFoundException;
 
 public interface ConnexionService {
 
@@ -38,6 +39,9 @@ public interface ConnexionService {
 			throws IOException;
 
 	/* Determine file completion */
+	public String getServerRangeRequestResponseHeader(String repositoryName)
+			throws RepositoryNotFoundException;
+
 	public String determineFilesCompletion(String repositoryName,
 			SyncTreeDirectoryDTO parent) throws RepositoryException,
 			IOException;
