@@ -17,7 +17,7 @@ public class ConnectionCompletionProcessor implements DataAccessConstants {
 	private final Stack<SyncTreeLeafDTO> downloadFilesStack;
 	private final Repository repository;
 	private IOException ex;
-	private final int totalCount;
+	private int count, totalCount;
 
 	public ConnectionCompletionProcessor(List<SyncTreeLeafDTO> filesToDownload,
 			List<HttpDAO> httpDAOs, Repository repository) {
@@ -26,6 +26,7 @@ public class ConnectionCompletionProcessor implements DataAccessConstants {
 		this.downloadFilesStack.addAll(filesToDownload);
 		this.repository = repository;
 		ex = null;
+		this.count = 0;
 		this.totalCount = 0;
 	}
 
@@ -137,6 +138,9 @@ public class ConnectionCompletionProcessor implements DataAccessConstants {
 	}
 
 	private synchronized void updateCount() {
+
+		this.count++;
+		httpDAOs.get(0).setCount(count);
 		httpDAOs.get(0).updateObserverCount();
 	}
 }
