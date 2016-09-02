@@ -19,8 +19,8 @@ public class Configuration implements Serializable {
 	private String serverName;
 	private String defaultModset;
 	private boolean viewModeTree = true;
-	private List<FavoriteServer> favoriteServers = new ArrayList<FavoriteServer>();
-	private List<ExternalApplication> externalApplications = new ArrayList<ExternalApplication>();
+	private final List<FavoriteServer> favoriteServers = new ArrayList<FavoriteServer>();
+	private final List<ExternalApplication> externalApplications = new ArrayList<ExternalApplication>();
 	private AcreOptions acreOptions = new AcreOptions();
 	private Acre2Options acre2Options = new Acre2Options();
 	private TfarOptions tfarOptions = new TfarOptions();
@@ -63,15 +63,6 @@ public class Configuration implements Serializable {
 
 	public List<ExternalApplication> getExternalApplications() {
 		return externalApplications;
-	}
-
-	public void setFavoriteServers(List<FavoriteServer> favoriteServers) {
-		this.favoriteServers = favoriteServers;
-	}
-
-	public void setExternalApplications(
-			List<ExternalApplication> externalApplications) {
-		this.externalApplications = externalApplications;
 	}
 
 	public boolean isViewModeTree() {
