@@ -26,12 +26,17 @@ public class AddonDAO {
 
 	public boolean hasDuplicate(String name) {
 
-		if (name.contains("*")) {
-			return true;
+		String key = name.toLowerCase();
+		if (!mapAddons.containsKey(key)) {
+			return false;
 		} else {
-			String key = name.toLowerCase() + "*";
-			if (mapAddons.containsKey(key)) {
+			if (name.contains("*")) {
 				return true;
+			} else {
+				key = name.toLowerCase() + "*";
+				if (mapAddons.containsKey(key)) {
+					return true;
+				}
 			}
 		}
 		return false;

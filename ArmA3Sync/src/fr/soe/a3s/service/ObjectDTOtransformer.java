@@ -136,7 +136,7 @@ public class ObjectDTOtransformer {
 		aiaOptionsDTO.setAllinArmaPath(aiaOptions.getAllinArmaPath());
 		return aiaOptionsDTO;
 	}
-	
+
 	protected ProxyDTO transformProxy2DTO(Proxy proxy) {
 
 		final ProxyDTO proxyDTO = new ProxyDTO();
@@ -191,7 +191,6 @@ public class ObjectDTOtransformer {
 		treeLeafDTO.setName(treeLeaf.getName());
 		treeLeafDTO.setSelected(treeLeaf.isSelected());
 		treeLeafDTO.setOptional(treeLeaf.isOptional());
-		treeLeafDTO.setDuplicate(treeLeaf.isDuplicate());
 		return treeLeafDTO;
 	}
 
@@ -227,7 +226,6 @@ public class ObjectDTOtransformer {
 		treeLeaf.setName(treeLeafDTO.getName());
 		treeLeaf.setSelected(treeLeafDTO.isSelected());
 		treeLeaf.setOptional(treeLeafDTO.isOptional());
-		treeLeaf.setDuplicate(treeLeafDTO.isDuplicate());
 		return treeLeaf;
 	}
 

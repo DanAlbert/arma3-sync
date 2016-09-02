@@ -17,7 +17,6 @@ import fr.soe.a3s.domain.TreeDirectory;
 import fr.soe.a3s.domain.TreeLeaf;
 import fr.soe.a3s.domain.TreeNode;
 import fr.soe.a3s.dto.TreeDirectoryDTO;
-import fr.soe.a3s.dto.TreeLeafDTO;
 import fr.soe.a3s.dto.TreeNodeDTO;
 
 public class AddonService extends ObjectDTOtransformer {
@@ -300,8 +299,6 @@ public class AddonService extends ObjectDTOtransformer {
 			directoryCleaned.addTreeNode(newTreelLeaf);
 		}
 	}
-	
-
 
 	public List<String> getAddonsByPriorityList() {
 

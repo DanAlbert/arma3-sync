@@ -20,7 +20,6 @@ import java.awt.dnd.DropTargetEvent;
 import java.awt.dnd.DropTargetListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.io.IOException;
 import java.util.List;
 
@@ -32,21 +31,20 @@ import javax.swing.tree.TreePath;
 import fr.soe.a3s.dto.TreeDirectoryDTO;
 import fr.soe.a3s.dto.TreeLeafDTO;
 import fr.soe.a3s.dto.TreeNodeDTO;
-import fr.soe.a3s.service.ProfileService;
 import fr.soe.a3s.ui.Facade;
 
 public class TreeDnD {
 
-	private JTree arbre1, arbre2;
+	private final JTree arbre1, arbre2;
 	@SuppressWarnings("unused")
-	private TreeDragSource ds1, ds2;
+	private final TreeDragSource ds1, ds2;
 	@SuppressWarnings("unused")
-	private TreeDropTarget dt;
+	private final TreeDropTarget dt;
 	public static DataFlavor TREE_PATH_FLAVOR = new DataFlavor(TreePath.class,
 			"Tree Path");
 	private TreePath newPath;
 	private TreePath[] oldPaths;
-	private Facade facade;
+	private final Facade facade;
 	private boolean isLeftClick = false;
 
 	public TreeDnD(JTree arbre1, JTree arbre2, Facade facade) {
@@ -78,12 +76,12 @@ public class TreeDnD {
 	private class TreeDragSource implements DragSourceListener,
 			DragGestureListener {
 
-		private DragSource source;
-		private int actions;
+		private final DragSource source;
+		private final int actions;
 		private TransferableTreeNode transferable;
-		private JTree tree;
+		private final JTree tree;
 		@SuppressWarnings("unused")
-		private DragGestureRecognizer recognizer;
+		private final DragGestureRecognizer recognizer;
 
 		public TreeDragSource(JTree _tree, int actions) {
 			this.tree = _tree;
@@ -158,8 +156,8 @@ public class TreeDnD {
 	private class TreeDropTarget implements DropTargetListener {
 
 		@SuppressWarnings("unused")
-		private DropTarget target;
-		private JTree tree;
+		private final DropTarget target;
+		private final JTree tree;
 
 		public TreeDropTarget(JTree _tree) {
 			tree = _tree;
@@ -313,7 +311,6 @@ public class TreeDnD {
 							TreeLeafDTO newTreeLeaf = new TreeLeafDTO();
 							newTreeLeaf.setName(sourceTreeLeaf.getName());
 							newTreeLeaf.setSelected(false);
-							newTreeLeaf.setDuplicate(sourceTreeLeaf.isDuplicate());
 							newTreeLeaf.setParent(targetDirectory);
 							targetDirectory.addTreeNode(newTreeLeaf);
 							if (oldPaths[i].toString().contains("racine2")) {
@@ -334,7 +331,7 @@ public class TreeDnD {
 			facade.getAddonsPanel().refreshViewArbre2();
 			if (oldTreeNodeDTO.isLeaf()) {
 				facade.getAddonsPanel().expand(newPath);
-			} 
+			}
 			facade.getAddonsPanel().highlightDuplicatedAddons();
 			facade.getAddonOptionsPanel().updateAddonPriorities();
 			facade.getLaunchOptionsPanel().updateRunParameters();
@@ -389,25 +386,28 @@ public class TreeDnD {
 	 */
 	private class TransferableTreeNode implements Transferable {
 
-		private DataFlavor flavors[] = { TREE_PATH_FLAVOR };
-		private TreePath[] path;
+		private final DataFlavor flavors[] = { TREE_PATH_FLAVOR };
+		private final TreePath[] path;
 
 		public TransferableTreeNode(TreePath[] tp) {
 			path = tp;
 		}
 
+		@Override
 		public synchronized DataFlavor[] getTransferDataFlavors() {
 			return flavors;
 		}
 
+		@Override
 		public boolean isDataFlavorSupported(DataFlavor flavor) {
 			return (flavor.getRepresentationClass() == TreePath.class);
 		}
 
+		@Override
 		public synchronized Object[] getTransferData(DataFlavor flavor)
 				throws UnsupportedFlavorException, IOException {
 			if (isDataFlavorSupported(flavor)) {
-				return (Object[]) path;
+				return path;
 			} else {
 				throw new UnsupportedFlavorException(flavor);
 			}

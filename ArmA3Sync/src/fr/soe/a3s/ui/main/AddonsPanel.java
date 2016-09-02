@@ -498,6 +498,7 @@ public class AddonsPanel extends JPanel implements UIConstants {
 	}
 
 	private void markAsDuplicated(TreeNodeDTO treeNodeDTO) {
+
 		if (treeNodeDTO.isLeaf()) {
 			TreeLeafDTO leaf = (TreeLeafDTO) treeNodeDTO;
 			boolean duplicated = addonService.hasDuplicate(treeNodeDTO
@@ -1127,6 +1128,8 @@ public class AddonsPanel extends JPanel implements UIConstants {
 		facade.getAddonOptionsPanel().updateAddonPriorities();
 		facade.getLaunchOptionsPanel().updateRunParameters();
 		this.arbre2.setEnabled(true);
+
+		System.out.println("Addon groups update done.");
 
 		return change;
 	}
