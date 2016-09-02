@@ -902,7 +902,7 @@ public class AddonsPanel extends JPanel implements UIConstants {
 		for (String repositoryName : repositoryNames) {
 			try {
 				TreeDirectoryDTO directory = repositoryService
-						.getAddonTreeFromRepository(repositoryName, false, true);
+						.getAddonTreeFromRepository(repositoryName, false);
 				if (directory != null) {
 					TreeNodeDTO nodeToRemove = null;
 					for (TreeNodeDTO node : racine2.getList()) {
@@ -1033,8 +1033,7 @@ public class AddonsPanel extends JPanel implements UIConstants {
 					getSelectedAddonPaths(treeDirectoryDTO, selectdAddonPaths);
 					racine2.removeTreeNode(treeDirectoryDTO);
 					TreeDirectoryDTO newTreeDirectoryDTO = repositoryService
-							.getAddonTreeFromRepository(repositoryName, false,
-									true);
+							.getAddonTreeFromRepository(repositoryName, false);
 					if (newTreeDirectoryDTO != null) {
 						newTreeDirectoryDTO.setName(repositoryName);
 						newTreeDirectoryDTO.setParent(racine2);

@@ -840,8 +840,7 @@ public class RepositoryService extends ObjectDTOtransformer implements
 	}
 
 	public TreeDirectoryDTO getAddonTreeFromRepository(String repositoryName,
-			boolean withUserconfig, boolean markDuplicate)
-			throws RepositoryException {
+			boolean withUserconfig) throws RepositoryException {
 
 		Repository repository = repositoryDAO.getMap().get(repositoryName);
 		if (repository != null) {

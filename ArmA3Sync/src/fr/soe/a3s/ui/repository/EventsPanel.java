@@ -168,7 +168,7 @@ public class EventsPanel extends JPanel implements UIConstants {
 				int fontHeight = metrics.getAscent() + metrics.getDescent()
 						+ metrics.getLeading();
 				arbre.setRowHeight(fontHeight);
-				
+
 				MyRenderer myRenderer = new MyRenderer();
 				CheckTreeCellRenderer renderer = new CheckTreeCellRenderer(
 						myRenderer);
@@ -499,7 +499,7 @@ public class EventsPanel extends JPanel implements UIConstants {
 
 		try {
 			TreeDirectoryDTO treeDirectoryDTO = repositoryService
-					.getAddonTreeFromRepository(repositoryName, true,false);
+					.getAddonTreeFromRepository(repositoryName, true);
 
 			if (treeDirectoryDTO != null) {
 				arbre.removeAll();
