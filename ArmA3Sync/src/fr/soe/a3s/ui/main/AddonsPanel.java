@@ -473,6 +473,7 @@ public class AddonsPanel extends JPanel implements UIConstants {
 
 	/* Highlight missing selected addons into Addon Groups */
 	private void highlightMissingAddons() {
+
 		List<String> missingAddonNames = launchService.getMissingAddons();
 		for (TreeNodeDTO treeNodeDTO : racine2.getList()) {
 			markAsMissing(treeNodeDTO, missingAddonNames);
@@ -480,6 +481,7 @@ public class AddonsPanel extends JPanel implements UIConstants {
 	}
 
 	private void markAsMissing(TreeNodeDTO treeNodeDTO, List<String> addonNames) {
+
 		if (treeNodeDTO.isLeaf() && addonNames.contains(treeNodeDTO.getName())) {
 			treeNodeDTO.setMissing(true);
 		} else if (!treeNodeDTO.isLeaf()) {
@@ -504,10 +506,43 @@ public class AddonsPanel extends JPanel implements UIConstants {
 			boolean duplicated = addonService.hasDuplicate(treeNodeDTO
 					.getName());
 			leaf.setDuplicate(duplicated);
+			if (duplicated) {
+				findSourceRelativePath(leaf, racine1);
+			} else {
+				leaf.setSourceRelativePath(null);
+			}
 		} else if (!treeNodeDTO.isLeaf()) {
 			TreeDirectoryDTO treeDirectoryDTO = (TreeDirectoryDTO) treeNodeDTO;
 			for (TreeNodeDTO t : treeDirectoryDTO.getList()) {
 				markAsDuplicated(t);
+			}
+		}
+	}
+
+	private void findSourceRelativePath(TreeLeafDTO leafDTO,
+			TreeNodeDTO treeNodeDTO) {
+
+		if (treeNodeDTO.isLeaf()) {
+			TreeLeafDTO leaf = (TreeLeafDTO) treeNodeDTO;
+			if (leaf.getName().equals(leafDTO.getName())) {
+				TreeNodeDTO parent = leaf.getParent();
+				String path = null;
+				while (parent != null) {
+					if (!parent.getName().contains("racine")) {
+						if (path == null) {
+							path = parent.getName();
+						} else {
+							path = parent.getName() + "/" + path;
+						}
+					}
+					parent = parent.getParent();
+				}
+				leafDTO.setSourceRelativePath(path);
+			}
+		} else {
+			TreeDirectoryDTO treeDirectoryDTO = (TreeDirectoryDTO) treeNodeDTO;
+			for (TreeNodeDTO t : treeDirectoryDTO.getList()) {
+				findSourceRelativePath(leafDTO, t);
 			}
 		}
 	}
