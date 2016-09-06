@@ -12,6 +12,7 @@ import javax.swing.tree.TreeCellRenderer;
 import javax.swing.tree.TreePath;
 
 import fr.soe.a3s.dto.TreeDirectoryDTO;
+import fr.soe.a3s.dto.TreeLeafDTO;
 import fr.soe.a3s.dto.TreeNodeDTO;
 
 public class CheckTreeCellRenderer extends JPanel implements TreeCellRenderer {
@@ -36,12 +37,12 @@ public class CheckTreeCellRenderer extends JPanel implements TreeCellRenderer {
 		if (path != null) {
 			TreeNodeDTO treeNodeDTO = (TreeNodeDTO) value;
 			// Missing selected addons
-			if (treeNodeDTO.isLeaf() && treeNodeDTO.isMissing()
-					&& treeNodeDTO.isSelected()) {
-				renderer.setForeground(Color.RED);
-			} else {
-				renderer.setBackground(UIManager
-						.getColor("Tree.textBackground"));
+			renderer.setBackground(UIManager.getColor("Tree.textBackground"));
+			if (treeNodeDTO.isLeaf() && treeNodeDTO.isSelected()) {
+				TreeLeafDTO leafDTO = (TreeLeafDTO) treeNodeDTO;
+				if (leafDTO.isMissing()) {
+					renderer.setForeground(Color.RED);
+				}
 			}
 			// Selected addons
 			if (treeNodeDTO.isSelected()) {

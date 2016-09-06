@@ -19,11 +19,7 @@ public interface TreeNodeDTO extends java.lang.Comparable {
 
 	public void setParent(TreeDirectoryDTO treeDirectory);
 
-	public void setMissing(boolean value);
-
-	public boolean isMissing();
-
-	public void setOptional(boolean value);
-
-	public boolean isOptional();
+	// public void setOptional(boolean value);
+	//
+	// public boolean isOptional();
 }

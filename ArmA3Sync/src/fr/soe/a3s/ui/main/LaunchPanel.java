@@ -270,17 +270,17 @@ public class LaunchPanel extends JPanel implements UIConstants {
 		/* AiA */
 		configurationService.determineAiAOptions();
 
+		// Update join server addons selection
+		serverSelectionPerformed();
+
 		/* Blocking messages */
 		try {
-			// Update join server addons selection
-			serverSelectionPerformed();
-
 			// Check selected addons
 			facade.getAddonsPanel().updateAvailableAddons();
 			facade.getAddonsPanel().updateAddonGroups();
-			String message = launchService.checkSelectedAddons();
-			if (message != null) {
-				throw new LaunchException(message);
+			List<String> missingAddons = launchService.getMissingAddons();
+			if (missingAddons.size() != 0) {
+				throw new LaunchException("Some addons are missing.");
 			}
 
 			// Check ArmA 3 executable location

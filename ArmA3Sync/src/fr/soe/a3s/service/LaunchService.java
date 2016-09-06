@@ -41,7 +41,6 @@ public class LaunchService {
 	private static final ConfigurationDAO configurationDAO = new ConfigurationDAO();
 	private static final ProfileDAO profileDAO = new ProfileDAO();
 	private static final AddonDAO addonDAO = new AddonDAO();
-	private List<String> missingAddonNames = new ArrayList<String>();
 
 	public void checkArmA3ExecutableLocation() throws LaunchException {
 
@@ -241,14 +240,9 @@ public class LaunchService {
 	}
 
 	public List<String> getMissingAddons() {
-		checkSelectedAddons();
-		return this.missingAddonNames;
-	}
 
-	public String checkSelectedAddons() {
-
-		this.missingAddonNames = new ArrayList<String>();
 		Configuration configuration = configurationDAO.getConfiguration();
+		List<String> missingAddonNames = new ArrayList<String>();
 
 		String profileName = configuration.getProfileName();
 		Profile profile = profileDAO.getMap().get(profileName);
@@ -269,21 +263,9 @@ public class LaunchService {
 			}
 		}
 
-		String message = null;
-		if (missingAddonNames.size() != 0) {
-			StringBuffer stb = new StringBuffer();
-			for (int i = 0; i < missingAddonNames.size() - 1; i++) {
-				stb.append(missingAddonNames.get(i) + ";");
-			}
-			String name = missingAddonNames.get(missingAddonNames.size() - 1);
-			stb.append(name);
-
-			message = "The following selected addons are missing:" + "\n" + stb
-					+ ".";
-		}
-		return message;
+		return missingAddonNames;
 	}
-
+	
 	public List<String> getRunParameters() {
 
 		List<String> params = new ArrayList<String>();

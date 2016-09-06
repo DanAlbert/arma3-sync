@@ -75,22 +75,18 @@ public class TreeLeafDTO implements TreeNodeDTO {
 		return stg;
 	}
 
-	@Override
 	public boolean isMissing() {
 		return missing;
 	}
 
-	@Override
 	public void setMissing(boolean missing) {
 		this.missing = missing;
 	}
 
-	@Override
 	public void setOptional(boolean value) {
 		this.optional = value;
 	}
 
-	@Override
 	public boolean isOptional() {
 		return optional;
 	}

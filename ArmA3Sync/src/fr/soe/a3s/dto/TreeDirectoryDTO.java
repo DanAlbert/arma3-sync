@@ -10,8 +10,7 @@ public class TreeDirectoryDTO implements TreeNodeDTO {
 
 	private String name;
 	private boolean selected = false;
-	private boolean missing = false;
-	private boolean optional = false;
+	//private boolean optional = false;
 	private boolean duplicate = false;
 	private ModsetType modsetType;
 	private String modsetRepositoryName;
@@ -98,25 +97,15 @@ public class TreeDirectoryDTO implements TreeNodeDTO {
 		return name;
 	}
 
-	@Override
-	public void setMissing(boolean value) {
-		missing = value;
-	}
-
-	@Override
-	public boolean isMissing() {
-		return missing;
-	}
-
-	@Override
-	public void setOptional(boolean value) {
-		this.optional = value;
-	}
-
-	@Override
-	public boolean isOptional() {
-		return optional;
-	}
+	// @Override
+	// public void setOptional(boolean value) {
+	// this.optional = value;
+	// }
+	//
+	// @Override
+	// public boolean isOptional() {
+	// return optional;
+	// }
 
 	public ModsetType getModsetType() {
 		return modsetType;
