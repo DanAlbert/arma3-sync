@@ -10,7 +10,6 @@ public class TreeDirectoryDTO implements TreeNodeDTO {
 
 	private String name;
 	private boolean selected = false;
-	private boolean duplicate = false;
 	private ModsetType modsetType;
 	private String modsetRepositoryName;
 	private TreeDirectoryDTO parent;
