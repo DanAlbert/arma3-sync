@@ -282,6 +282,10 @@ public class LaunchPanel extends JPanel implements UIConstants {
 			if (missingAddons.size() != 0) {
 				throw new LaunchException("Some addons are missing.");
 			}
+			List<String> duplicatedAddons = launchService.getDuplicatedAddons();
+			if (duplicatedAddons.size() != 0) {
+				throw new LaunchException("Duplicate addons selection.");
+			}
 
 			// Check ArmA 3 executable location
 			launchService.checkArmA3ExecutableLocation();

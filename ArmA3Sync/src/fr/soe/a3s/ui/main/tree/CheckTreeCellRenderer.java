@@ -36,11 +36,11 @@ public class CheckTreeCellRenderer extends JPanel implements TreeCellRenderer {
 		TreePath path = tree.getPathForRow(row);
 		if (path != null) {
 			TreeNodeDTO treeNodeDTO = (TreeNodeDTO) value;
-			// Missing selected addons
+			// Missing and duplicated selected addons
 			renderer.setBackground(UIManager.getColor("Tree.textBackground"));
 			if (treeNodeDTO.isLeaf() && treeNodeDTO.isSelected()) {
 				TreeLeafDTO leafDTO = (TreeLeafDTO) treeNodeDTO;
-				if (leafDTO.isMissing()) {
+				if (leafDTO.isMissing() || leafDTO.isDuplicatedSelection()) {
 					renderer.setForeground(Color.RED);
 				}
 			}

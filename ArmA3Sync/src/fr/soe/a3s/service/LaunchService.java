@@ -248,7 +248,7 @@ public class LaunchService {
 		Profile profile = profileDAO.getMap().get(profileName);
 		if (profile != null) {
 			TreeDirectory racine = profile.getTree();
-			Set<String> addonNames = new TreeSet<String>();
+			List<String> addonNames = new ArrayList<String>();
 			getSelectedAddonNames(racine, addonNames);
 			if (addonNames.size() != 0) {
 				Iterator<String> iterator = addonNames.iterator();
@@ -265,7 +265,52 @@ public class LaunchService {
 
 		return missingAddonNames;
 	}
-	
+
+	public List<String> getDuplicatedAddons() {
+
+		Configuration configuration = configurationDAO.getConfiguration();
+		List<String> duplicatedAddonNames = new ArrayList<String>();
+
+		String profileName = configuration.getProfileName();
+		Profile profile = profileDAO.getMap().get(profileName);
+		if (profile != null) {
+			TreeDirectory racine = profile.getTree();
+			List<String> addonNames = new ArrayList<String>();
+			getSelectedAddonNames(racine, addonNames);
+			List<String> list = new ArrayList<String>();
+			if (addonNames.size() != 0) {
+				Iterator<String> iterator = addonNames.iterator();
+				while (iterator.hasNext()) {
+					String addonName = iterator.next();
+					Addon addon = addonDAO.getMap()
+							.get(addonName.toLowerCase());
+					if (addon != null) {
+						String name = addonName.replaceAll("\\*", "");
+						list.add(name);
+					}
+				}
+			}
+			for (int i = 0; i < list.size(); i++) {
+				int count = 0;
+				String name = list.get(i);
+				for (int j = 0; j < list.size(); j++) {
+					if (name.equals(list.get(j))) {
+						count++;
+					}
+				}
+				if (count > 1) {
+					for (String addonName : addonNames) {
+						if (addonName.replaceAll("\\*", "").equals(name)) {
+							duplicatedAddonNames.add(addonName);
+						}
+					}
+				}
+			}
+		}
+
+		return duplicatedAddonNames;
+	}
+
 	public List<String> getRunParameters() {
 
 		List<String> params = new ArrayList<String>();
@@ -351,7 +396,7 @@ public class LaunchService {
 				.getAddonNamesByPriority();
 		TreeDirectory racine = profile.getTree();
 
-		Set<String> selectedAddonNames = new TreeSet<String>();
+		List<String> selectedAddonNames = new ArrayList<String>();
 		getSelectedAddonNames(racine, selectedAddonNames);
 
 		// Lowercase
@@ -557,7 +602,7 @@ public class LaunchService {
 	}
 
 	private void getSelectedAddonNames(TreeDirectory treeDirectory,
-			Set<String> addonNames) {
+			List<String> addonNames) {
 
 		for (TreeNode treeNode : treeDirectory.getList()) {
 			if (treeNode instanceof TreeLeaf) {

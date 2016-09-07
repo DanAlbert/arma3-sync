@@ -464,15 +464,15 @@ public class AddonsPanel extends JPanel implements UIConstants {
 		racine2 = profileService.getAddonGroupsTree();
 		addonTreeModel2 = new AddonTreeModel(racine2);
 		arbre2.setModel(addonTreeModel2);
-		highlightMissingAddons();
+		highlightMissingAddonsSelection();
 		highlightDuplicatedAddons();
-		highlightMultipleSelection();
+		highlightDuplicatedAddonsSelection();
 		expandAddonGroups();
 		refreshViewArbre2();
 		arbre2.setEnabled(true);
 	}
 
-	private void highlightMissingAddons() {
+	private void highlightMissingAddonsSelection() {
 
 		List<String> missingAddonNames = launchService.getMissingAddons();
 		for (TreeNodeDTO treeNodeDTO : racine2.getList()) {
@@ -482,10 +482,14 @@ public class AddonsPanel extends JPanel implements UIConstants {
 
 	private void markAsMissing(TreeNodeDTO treeNodeDTO, List<String> addonNames) {
 
-		if (treeNodeDTO.isLeaf() && addonNames.contains(treeNodeDTO.getName())) {
+		if (treeNodeDTO.isLeaf()) {
 			TreeLeafDTO leaf = (TreeLeafDTO) treeNodeDTO;
-			leaf.setMissing(true);
-		} else if (!treeNodeDTO.isLeaf()) {
+			if (addonNames.contains(treeNodeDTO.getName())) {
+				leaf.setMissing(true);
+			} else {
+				leaf.setMissing(false);
+			}
+		} else {
 			TreeDirectoryDTO treeDirectoryDTO = (TreeDirectoryDTO) treeNodeDTO;
 			for (TreeNodeDTO t : treeDirectoryDTO.getList()) {
 				markAsMissing(t, addonNames);
@@ -512,7 +516,7 @@ public class AddonsPanel extends JPanel implements UIConstants {
 			} else {
 				leaf.setSourceRelativePath(null);
 			}
-		} else if (!treeNodeDTO.isLeaf()) {
+		} else {
 			TreeDirectoryDTO treeDirectoryDTO = (TreeDirectoryDTO) treeNodeDTO;
 			for (TreeNodeDTO t : treeDirectoryDTO.getList()) {
 				markAsDuplicated(t);
@@ -548,8 +552,31 @@ public class AddonsPanel extends JPanel implements UIConstants {
 		}
 	}
 
-	private void highlightMultipleSelection() {
+	private void highlightDuplicatedAddonsSelection() {
 
+		List<String> duplicatedAddonNames = launchService.getDuplicatedAddons();
+		for (TreeNodeDTO treeNodeDTO : racine2.getList()) {
+			markAsDuplicatedSelection(treeNodeDTO, duplicatedAddonNames);
+		}
+	}
+
+	private void markAsDuplicatedSelection(TreeNodeDTO treeNodeDTO,
+			List<String> duplicatedAddonNames) {
+
+		if (treeNodeDTO.isLeaf()) {
+			TreeLeafDTO leaf = (TreeLeafDTO) treeNodeDTO;
+			if (leaf.isSelected()
+					&& duplicatedAddonNames.contains(treeNodeDTO.getName())) {
+				leaf.setDuplicatedSelection(true);
+			} else {
+				leaf.setDuplicatedSelection(false);
+			}
+		} else {
+			TreeDirectoryDTO treeDirectoryDTO = (TreeDirectoryDTO) treeNodeDTO;
+			for (TreeNodeDTO t : treeDirectoryDTO.getList()) {
+				markAsDuplicatedSelection(t, duplicatedAddonNames);
+			}
+		}
 	}
 
 	public void saveAddonGroups() {
@@ -682,7 +709,9 @@ public class AddonsPanel extends JPanel implements UIConstants {
 			}
 		}
 		saveAddonGroups();
-		highlightMissingAddons();
+		highlightMissingAddonsSelection();
+		highlightDuplicatedAddons();
+		highlightDuplicatedAddonsSelection();
 		refreshViewArbre2();
 		facade.getLaunchOptionsPanel().updateRunParameters();
 	}
@@ -896,18 +925,22 @@ public class AddonsPanel extends JPanel implements UIConstants {
 	}
 
 	private void checkBoxSelectAllPerformed() {
+
 		if (checkBoxSelectAll.isSelected()) {
 			selectAllDescending(racine2);
 		} else {
 			deselectAllDescending(racine2);
 		}
 		saveAddonGroups();
-		highlightMissingAddons();
+		highlightMissingAddonsSelection();
+		highlightDuplicatedAddons();
+		highlightDuplicatedAddonsSelection();
 		refreshViewArbre2();
 		facade.getLaunchOptionsPanel().updateRunParameters();
 	}
 
 	private void checkBoxExpandAllPerformed() {
+
 		Set<TreePath> paths = new HashSet<TreePath>();
 		if (checkBoxExpandAll.isSelected()) {
 			getPathDirectories(new TreePath(arbre2.getModel().getRoot()), paths);

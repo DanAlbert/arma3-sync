@@ -7,6 +7,7 @@ public class TreeLeafDTO implements TreeNodeDTO {
 	private boolean missing = false;
 	private boolean optional = false;
 	private boolean duplicate = false;
+	private boolean duplicatedSelection = false;
 	private String sourceRelativePath;
 	private TreeDirectoryDTO parent;
 
@@ -69,8 +70,11 @@ public class TreeLeafDTO implements TreeNodeDTO {
 				stg = stg + " " + "(from / " + ")";
 			}
 		}
-		if (missing && !optional) {
+		if (missing) {
 			stg = stg + " " + "(missing)";
+		}
+		if (duplicatedSelection) {
+			stg = stg + " " + "(duplicate selection)";
 		}
 		return stg;
 	}
@@ -105,5 +109,13 @@ public class TreeLeafDTO implements TreeNodeDTO {
 
 	public void setSourceRelativePath(String sourceRelativePath) {
 		this.sourceRelativePath = sourceRelativePath;
+	}
+
+	public boolean isDuplicatedSelection() {
+		return duplicatedSelection;
+	}
+
+	public void setDuplicatedSelection(boolean value) {
+		this.duplicatedSelection = value;
 	}
 }
