@@ -2,7 +2,8 @@ package fr.soe.a3s.constant;
 
 public enum RepositoryStatus {
 
-	UPDATED("UPDATED"), OK("OK"), INDETERMINATED("-"), ERROR("ERROR");
+	UPDATED("UPDATED"), UPDATING("UPDATING"), OK("OK"), INDETERMINATED("-"), ERROR(
+			"ERROR");
 
 	private String description;
 

@@ -408,6 +408,30 @@ public class SyncPanel extends JPanel implements UIConstants {
 		isModifying = false;
 	}
 
+	public void setRepositorySatusUpdating(String repositoryName, int value) {
+
+		List<RepositoryDTO> repositoryDTOs = repositoryService
+				.getRepositories();
+		Collections.sort(repositoryDTOs);
+		Iterator<RepositoryDTO> iter = repositoryDTOs.iterator();
+		int row = 0;
+		while (iter.hasNext()) {
+			RepositoryDTO repositoryDTO = iter.next();
+			if (repositoryName.equals(repositoryDTO.getName())) {
+				model.setValueAt(RepositoryStatus.UPDATING.getDescription()
+						+ " " + value + "%", row, 2);
+				break;
+			}
+			row++;
+		}
+
+		// Re-adjust columns size
+		List<Integer> columnIndexes = new ArrayList<Integer>();
+		columnIndexes.add(1);
+		columnIndexes.add(2);
+		ColumnsAutoSizer.sizeColumnsToFit(tableRepositories, columnIndexes);
+	}
+
 	private void refresh() {
 
 		init();
@@ -699,6 +723,9 @@ public class SyncPanel extends JPanel implements UIConstants {
 			} else if (value.toString().equals(
 					RepositoryStatus.UPDATED.getDescription())) {
 				c.setForeground(Color.RED);
+			} else if (value.toString().contains(
+					RepositoryStatus.UPDATING.getDescription())) {
+				c.setForeground(Color.DARK_GRAY);
 			} else {
 				c.setForeground(Color.BLACK);
 			}

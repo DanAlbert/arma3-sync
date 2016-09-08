@@ -264,6 +264,7 @@ public class AddonsDownloader extends Thread implements DataAccessConstants {
 
 			// Synchronize
 			startTime = System.nanoTime();
+			facade.getSyncPanel().setRepositorySatusUpdating(repositoryName, 0);
 			connexionService.synchronize(repositoryName, list);
 
 		} catch (Exception e) {
@@ -371,21 +372,21 @@ public class AddonsDownloader extends Thread implements DataAccessConstants {
 			SwingUtilities.invokeLater(new Runnable() {
 				@Override
 				public void run() {
-					downloadPanel
-							.getProgressBarDownloadAddons()
-							.setValue(
-									(int) (((incrementedFilesSize) * 100) / totalExpectedFilesSize));
+					int pourcentage = (int) (((incrementedFilesSize) * 100) / totalExpectedFilesSize);
+					downloadPanel.getProgressBarDownloadAddons().setValue(
+							pourcentage);
+					facade.getSyncPanel().setRepositorySatusUpdating(
+							repositoryName, pourcentage);
 				}
 			});
 		}
 
-		if (incrementedFilesSize != 0 && value != 0) {
-			double endTime = System.nanoTime();
-			double elapsedTime = endTime - startTime;
-			long remainingFilesSize = totalExpectedFilesSize
-					- incrementedFilesSize;
-			long downloadedFilesSize = incrementedFilesSize - initialFilesSize;
-			final long remaininTime = (long) ((remainingFilesSize * elapsedTime) / (downloadedFilesSize));
+		double endTime = System.nanoTime();
+		double elapsedTime = endTime - startTime;
+		long remainingFilesSize = totalExpectedFilesSize - incrementedFilesSize;
+		long downloadedFilesSize = incrementedFilesSize - initialFilesSize;
+		if (downloadedFilesSize != 0) {
+			final long remaininTime = (long) ((remainingFilesSize * elapsedTime) / downloadedFilesSize);
 			downloadPanel.getLabelRemainingTimeValue().setText(
 					UnitConverter.convertTime((long) (remaininTime * Math.pow(
 							10, -9))));
@@ -409,14 +410,14 @@ public class AddonsDownloader extends Thread implements DataAccessConstants {
 			}
 		});
 
-		if (incrementedFilesSize != 0 && value != 0) {
-			double endTime = System.nanoTime();
-			double elapsedTime = endTime - startTime;
-			long remainingFilesSize = totalExpectedFilesSize
-					- incrementedFilesSize - value;
-			long downloadedFilesSize = incrementedFilesSize + value
-					- initialFilesSize;
-			final long remainingTime = (long) ((remainingFilesSize * elapsedTime) / (downloadedFilesSize));
+		double endTime = System.nanoTime();
+		double elapsedTime = endTime - startTime;
+		long remainingFilesSize = totalExpectedFilesSize - incrementedFilesSize
+				- value;
+		long downloadedFilesSize = incrementedFilesSize + value
+				- initialFilesSize;
+		if (downloadedFilesSize != 0) {
+			final long remainingTime = (long) ((remainingFilesSize * elapsedTime) / downloadedFilesSize);
 			downloadPanel.getLabelRemainingTimeValue().setText(
 					UnitConverter.convertTime((long) (remainingTime * Math.pow(
 							10, -9))));
