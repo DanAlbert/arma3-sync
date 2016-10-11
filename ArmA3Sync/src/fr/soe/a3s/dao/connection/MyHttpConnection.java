@@ -44,7 +44,6 @@ public class MyHttpConnection {
 	private long contLen;
 	private static final int BUFFER_SIZE = 4096;// 4KB
 	private int bufferSize = BUFFER_SIZE;
-	private long elapsedTime = 0;
 	private long allData = 0;
 
 	public MyHttpConnection(AbstractProtocole protocole, HttpDAO httpDAO) {
@@ -285,7 +284,6 @@ public class MyHttpConnection {
 			fos = new FileOutputStream(targetFile, resume);
 
 			final long startTime = System.nanoTime();
-			this.elapsedTime = 0;
 			this.httpDAO.setSpeed(0);
 
 			dos = new CountingOutputStream(fos) {
@@ -296,7 +294,6 @@ public class MyHttpConnection {
 					httpDAO.setCountFileSize(nbBytes);
 					long endTime = System.nanoTime();
 					long totalTime = endTime - startTime;
-					long deltaTime = totalTime - elapsedTime;
 					long speed = (long) (nbBytes / (totalTime * Math
 							.pow(10, -9)));
 					if (httpDAO.getMaximumClientDownloadSpeed() != 0) {
@@ -317,12 +314,9 @@ public class MyHttpConnection {
 						httpDAO.updateObserverDownloadSingleSizeProgress();
 					}
 
-					if (deltaTime > Math.pow(10, 9) / 2) {
-						httpDAO.setSpeed(speed);
-						elapsedTime = totalTime;
-						if (httpDAO.isAcquiredSemaphore()) {
-							httpDAO.updateObserverDownloadSpeed();
-						}
+					httpDAO.setSpeed(speed);
+					if (httpDAO.isAcquiredSemaphore()) {
+						httpDAO.updateObserverDownloadSpeed();
 					}
 				}
 			};
@@ -489,7 +483,6 @@ public class MyHttpConnection {
 			httpDAO.updateObserverDownloadSpeed();
 
 			final long startTime = System.nanoTime();
-			this.elapsedTime = 0;
 			ByteArrayOutputStream byteArrayBuffer = new ByteArrayOutputStream();
 			dos = new CountingOutputStream(byteArrayBuffer) {
 				@Override
@@ -499,7 +492,6 @@ public class MyHttpConnection {
 					httpDAO.setCountFileSize(cumulatedBytesDownloaded + nbBytes);
 					long endTime = System.nanoTime();
 					long totalTime = endTime - startTime;
-					long deltaTime = totalTime - elapsedTime;
 					long speed = (long) ((nbBytes * Math.pow(10, 9)) / totalTime);// B/s
 					if (httpDAO.getMaximumClientDownloadSpeed() != 0) {
 						if (speed > httpDAO.getMaximumClientDownloadSpeed()) {
@@ -519,12 +511,9 @@ public class MyHttpConnection {
 						httpDAO.updateObserverDownloadSingleSizeProgress();
 					}
 
-					if (deltaTime > Math.pow(10, 9) / 2) {
-						httpDAO.setSpeed(speed);
-						elapsedTime = totalTime;
-						if (httpDAO.isAcquiredSemaphore()) {
-							httpDAO.updateObserverDownloadSpeed();
-						}
+					httpDAO.setSpeed(speed);
+					if (httpDAO.isAcquiredSemaphore()) {
+						httpDAO.updateObserverDownloadSpeed();
 					}
 				}
 			};

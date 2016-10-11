@@ -59,7 +59,7 @@ public class AddonsDownloader extends Thread implements DataAccessConstants {
 	private int maxActiveconnections;
 	private int unCompleteFiles;
 	private int compressedFiles;
-	private long startTime;
+	private long startTime, deltaTime;
 	/* Tests */
 	private boolean canceled = false;
 	private boolean tfarIsUpdated = false;
@@ -264,6 +264,7 @@ public class AddonsDownloader extends Thread implements DataAccessConstants {
 
 			// Synchronize
 			startTime = System.nanoTime();
+			deltaTime = startTime;
 			connexionService.synchronize(repositoryName, list);
 
 		} catch (Exception e) {
@@ -427,6 +428,7 @@ public class AddonsDownloader extends Thread implements DataAccessConstants {
 		long offset = 0;
 		long countFileSize = 0;
 		long endTime = System.nanoTime();
+
 		for (AbstractConnexionDAO connect : connexionService.getConnexionDAOs()) {
 			if (connect.isActiveConnection()) {
 				speed = speed + connect.getSpeed();
@@ -435,14 +437,18 @@ public class AddonsDownloader extends Thread implements DataAccessConstants {
 			}
 		}
 
-		downloadPanel.getLabelSpeedValue().setText(
-				UnitConverter.convertSpeed(speed));
+		long delta = endTime - deltaTime;
 
-		if (speed != 0) {
-			if (averageDownloadSpeed > 0) {
-				averageDownloadSpeed = (averageDownloadSpeed + speed) / 2;
-			} else {
-				averageDownloadSpeed = speed;
+		if (delta > Math.pow(10, 9) / 2) {// 0.5s
+			deltaTime = endTime;
+			downloadPanel.getLabelSpeedValue().setText(
+					UnitConverter.convertSpeed(speed));
+			if (speed != 0) {
+				if (averageDownloadSpeed > 0) {
+					averageDownloadSpeed = (averageDownloadSpeed + speed) / 2;
+				} else {
+					averageDownloadSpeed = speed;
+				}
 			}
 		}
 	}

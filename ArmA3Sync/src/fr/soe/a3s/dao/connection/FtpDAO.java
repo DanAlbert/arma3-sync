@@ -44,7 +44,6 @@ public class FtpDAO extends AbstractConnexionDAO {
 	private FTPClient ftpClient;
 	private static final int BUFFER_SIZE = 4096;// 4KB
 	private int bufferSize = BUFFER_SIZE;
-	private long elapsedTime = 0;
 
 	private void connect(AbstractProtocole protocole) throws IOException,
 			FtpException {
@@ -162,7 +161,6 @@ public class FtpDAO extends AbstractConnexionDAO {
 
 		try {
 			final long startTime = System.nanoTime();
-			this.elapsedTime = 0;
 			fos = new FileOutputStream(file, resume);
 			dos = new CountingOutputStream(fos) {
 				@Override
@@ -172,7 +170,6 @@ public class FtpDAO extends AbstractConnexionDAO {
 					countFileSize = nbBytes;
 					long endTime = System.nanoTime();
 					long totalTime = endTime - startTime;
-					long deltaTime = totalTime - elapsedTime;
 					long speed = (long) ((nbBytes * Math.pow(10, 9)) / totalTime);// B/s
 					if (maximumClientDownloadSpeed != 0) {
 						if (speed > maximumClientDownloadSpeed) {
@@ -192,12 +189,9 @@ public class FtpDAO extends AbstractConnexionDAO {
 						updateObserverDownloadSingleSizeProgress();
 					}
 
-					if (deltaTime > Math.pow(10, 9) / 2) {
-						setSpeed(speed);
-						elapsedTime = totalTime;
-						if (acquiredSemaphore) {
-							updateObserverDownloadSpeed();
-						}
+					setSpeed(speed);
+					if (acquiredSemaphore) {
+						updateObserverDownloadSpeed();
 					}
 				}
 			};
