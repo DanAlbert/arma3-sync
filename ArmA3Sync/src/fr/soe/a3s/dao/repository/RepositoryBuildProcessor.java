@@ -409,20 +409,20 @@ public class RepositoryBuildProcessor implements DataAccessConstants,
 
 		if (file.isDirectory()) {
 			if (!file.getName().contains(A3S_FOlDER_NAME)) {// always true
-				// unless
-				// deleteDitrectory(.a3s)
-				// failed
 				SyncTreeDirectory syncTreeDirectory = new SyncTreeDirectory(
 						file.getName(), parent);
 				parent.addTreeNode(syncTreeDirectory);
 				syncTreeDirectory.setDestinationPath(file.getParentFile()
 						.getAbsolutePath());
-
-				for (File f : file.listFiles()) {
-					if (f.getName().toLowerCase().equals("addons")) {
-						syncTreeDirectory.setMarkAsAddon(true);
+				File[] subFiles = file.listFiles();
+				if (subFiles != null) {
+					for (File f : subFiles) {
+						if (f.getName().toLowerCase().equals("addons")) {
+							syncTreeDirectory.setMarkAsAddon(true);
+						}
+						generateSync(excludedFilesFromBuild, syncTreeDirectory,
+								f);
 					}
-					generateSync(excludedFilesFromBuild, syncTreeDirectory, f);
 				}
 			}
 		}

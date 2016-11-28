@@ -129,16 +129,18 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener,
 				List<String> listProfileNames = new ArrayList<String>();
 				if (myDocuments != null) {
 					File[] subfiles = myDocuments.listFiles();
-					for (File file : subfiles) {
-						String name = file.getName().toUpperCase();
-						if (name.contains("ARMA 3")
-								&& name.contains("OTHER PROFILES")) {
-							File[] subf = file.listFiles();
-							if (subf != null) {
-								for (int i = 0; i < subf.length; i++) {
-									listProfileNames.add(subf[i].getName()
-											.replaceAll("(%*)20", " ")
-											.replaceAll("%2e", "."));
+					if (subfiles != null) {
+						for (File file : subfiles) {
+							String name = file.getName().toUpperCase();
+							if (name.contains("ARMA 3")
+									&& name.contains("OTHER PROFILES")) {
+								File[] subf = file.listFiles();
+								if (subf != null) {
+									for (int i = 0; i < subf.length; i++) {
+										listProfileNames.add(subf[i].getName()
+												.replaceAll("(%*)20", " ")
+												.replaceAll("%2e", "."));
+									}
 								}
 							}
 						}
