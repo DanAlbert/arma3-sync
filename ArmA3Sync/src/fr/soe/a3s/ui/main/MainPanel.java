@@ -922,7 +922,7 @@ public class MainPanel extends JFrame implements UIConstants {
 		this.setVisible(true);
 		this.toFront();// put mainpanel front
 	}
-	
+
 	public void recoverFromTray() {
 		if (SystemTray.isSupported()) {
 			tray.remove(trayIcon);
