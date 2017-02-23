@@ -1397,6 +1397,7 @@ public class DownloadPanel extends JPanel implements UIConstants {
 		SwingUtilities.invokeLater(new Runnable() {
 			@Override
 			public void run() {
+				arbre.setEnabled(false);
 				arbre.removeAll();
 				AddonSyncTreeModel addonSyncTreeModel = new AddonSyncTreeModel(
 						racine);
@@ -1406,6 +1407,7 @@ public class DownloadPanel extends JPanel implements UIConstants {
 				arbre.setPreferredSize(arbre
 						.getPreferredScrollableViewportSize());
 				arbre.updateUI();
+				arbre.setEnabled(true);
 			}
 		});
 	}
