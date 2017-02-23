@@ -6,7 +6,7 @@ public class Version {
 
 	private static final int MAJOR = 1;
 
-	private static final int MINOR = 5;
+	private static final int MINOR = 6;
 
 	private static final int BUILD = 85;
 
