@@ -89,8 +89,13 @@ public class LaunchService {
 					if (!launcherDAO.isApplicationRunning(executableName)) {
 						String runParameters = externalApplication
 								.getParameters();
+						StringTokenizer stk = new StringTokenizer(
+								runParameters, " ");
 						List<String> params = new ArrayList<String>();
-						params.add(runParameters.trim());
+						while (stk.hasMoreTokens()) {
+							String param = stk.nextToken().trim();
+							params.add(param);
+						}
 						Callable<Integer> c = launcherDAO.call(executableName,
 								launchPath, params);
 						runnables.add(c);
