@@ -167,12 +167,12 @@ public class AdvancedConfigurationPanel extends JFrame implements UIConstants {
 
 	private void buttonClosePerformed() {
 		this.dispose();
-		this.downloadPanel.getButtonAdvancedConfiguration().setEnabled(true);
+		this.downloadPanel.getButtonSettings().setEnabled(true);
 	}
 
 	private void menuExitPerformed() {
 		this.dispose();
-		this.downloadPanel.getButtonAdvancedConfiguration().setEnabled(true);
+		this.downloadPanel.getButtonSettings().setEnabled(true);
 	}
 
 	class ButtonRenderer extends JButton implements TableCellRenderer {
@@ -311,9 +311,9 @@ public class AdvancedConfigurationPanel extends JFrame implements UIConstants {
 					}
 
 					if (!contains) {
-						profileService.addAddonSearchDirectoryPath(newPath);
-						facade.getAddonOptionsPanel()
-								.updateAddonSearchDirectories();
+						// profileService.addAddonSearchDirectoryPath(newPath);
+						// facade.getAddonOptionsPanel()
+						// .init();
 					}
 				}
 			}

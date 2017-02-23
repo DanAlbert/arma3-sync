@@ -14,14 +14,13 @@ public interface ObserverDownload {
 
 	public void updateActiveConnections();
 
-	public void updateEnd();
-
-	public void updateEndWithErrors(List<Exception> errors);
-
-	public void updateCancelTooManyTimeoutErrors(int value,
-			List<Exception> errors);
-
-	void updateCancelTooManyErrors(int value, List<Exception> errors);
+	public void end();
 
 	public void updateResponseTime(long responseTime);
+
+	public void error(List<Exception> errors);
+
+	public void updateCancelTooManyErrors(int value, List<Exception> errors);
+
+	public void updateConnectionLost();
 }

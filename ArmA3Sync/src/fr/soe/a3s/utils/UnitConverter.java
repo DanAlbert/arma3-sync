@@ -1,4 +1,4 @@
-package fr.soe.a3s.ui;
+package fr.soe.a3s.utils;
 
 import java.text.DecimalFormat;
 

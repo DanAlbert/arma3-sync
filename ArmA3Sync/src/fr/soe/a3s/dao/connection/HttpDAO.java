@@ -25,24 +25,12 @@ import fr.soe.a3s.jazsync.Jazsync;
 
 public class HttpDAO extends AbstractConnexionDAO {
 
-	/*
-	 * http://www.codejava.net/java-se/networking/use-httpurlconnection-to-download
-	 * -file-from-an-http-url
-	 */
 	private MyHttpConnection myHttpConnection;
 
-	private void connect(AbstractProtocole protocole,
-			String relativePathFromRepository) throws IOException {
-
-		// Determine the full relativeUrl
-		String remotePath = protocole.getRemotePath();
-		if (relativePathFromRepository != null) {
-			remotePath = remotePath + relativePathFromRepository;
-		}
-
-		// open connection
-		myHttpConnection = new MyHttpConnection(protocole, this);
-		myHttpConnection.openConnection(remotePath);
+	@Override
+	public void connectToRepository(AbstractProtocole protocol)
+			throws IOException {
+		connectToRepository(protocol, SYNC_FILE_PATH);
 	}
 
 	public void connectToRepository(AbstractProtocole protocole,
@@ -62,24 +50,143 @@ public class HttpDAO extends AbstractConnexionDAO {
 		}
 	}
 
-	private void downloadFile(File file, String relativePath)
-			throws IOException {
+	/*
+	 * http://www.codejava.net/java-se/networking/use-httpurlconnection-to-download
+	 * -file-from-an-http-url
+	 */
+	private void connect(AbstractProtocole protocole,
+			String relativePathFromRepository) throws IOException {
 
-		try {
-			myHttpConnection.downloadFile(file);
-		} catch (IOException e) {
-			if (!canceled) {
-				String coreMessage = "Failed to retrieve file " + relativePath;
-				IOException ioe = transferIOExceptionFactory(coreMessage, e);
-				throw ioe;
+		// Determine the full relativeUrl
+		String remotePath = protocole.getRemotePath();
+		if (relativePathFromRepository != null) {
+			remotePath = remotePath + relativePathFromRepository;
+		}
+
+		// open connection
+		myHttpConnection = new MyHttpConnection(protocole, this);
+		myHttpConnection.openConnection(remotePath);
+	}
+
+	@Override
+	public File downloadFile(Repository repository, String remotePath,
+			String destinationPath, SyncTreeNodeDTO node)
+			throws ConnectException, IOException {
+
+		File downloadedFile = null;
+
+		File parentDirectory = new File(destinationPath);
+		parentDirectory.mkdirs();
+
+		if (node.isLeaf()) {
+
+			SyncTreeLeafDTO leaf = (SyncTreeLeafDTO) node;
+
+			if (leaf.getComplete() == 0) {
+
+				String relativePath = null;
+
+				if (leaf.isCompressed()) {
+					downloadedFile = new File(parentDirectory + "/"
+							+ leaf.getName() + ZIP_EXTENSION);
+					this.expectedFullSize = leaf.getCompressedSize();
+					relativePath = "/" + node.getRelativePath() + ZIP_EXTENSION;
+				} else {
+					downloadedFile = new File(parentDirectory + "/"
+							+ leaf.getName());
+					this.expectedFullSize = leaf.getSize();
+					relativePath = "/" + node.getRelativePath();
+				}
+
+				// Resuming
+				if (leaf.getDownloadStatus().equals(DownloadStatus.RUNNING)
+						&& downloadedFile.exists()
+						&& downloadedFile.length() != this.expectedFullSize) {
+					this.offset = downloadedFile.length();
+				} else {
+					FileAccessMethods.deleteFile(downloadedFile);
+					this.offset = 0;
+				}
+
+				this.downloadingLeaf = leaf;
+				leaf.setDownloadStatus(DownloadStatus.RUNNING);
+
+				try {
+					connectToRepository(repository.getProtocol(), relativePath);
+					downloadFileWithRecordProgress(downloadedFile, relativePath);
+					if (!canceled) {
+						updateObserverDownloadTotalSizeProgress();
+						node.setDownloadStatus(DownloadStatus.DONE);
+					} else {
+						downloadedFile = null;
+					}
+				} catch (IOException e) {
+					downloadedFile = null;
+					if (!canceled) {
+						throw e;
+					}
+				} finally {
+					this.expectedFullSize = 0;
+					this.downloadingLeaf = null;
+					this.offset = 0;
+					this.countFileSize = 0;
+					this.speed = 0;
+
+					disconnect();
+				}
+			} else {// the file is uncomplete => use .zsync
+
+				downloadedFile = new File(parentDirectory + "/"
+						+ leaf.getName());
+				this.expectedFullSize = leaf.getSize();
+
+				// this.offset = 0;
+				this.downloadingLeaf = leaf;
+				leaf.setDownloadStatus(DownloadStatus.RUNNING);
+
+				String relativeZsyncFileUrl = remotePath + "/" + node.getName()
+						+ ZSYNC_EXTENSION;
+				String relativeFileUrl = remotePath + "/" + node.getName();
+
+				String sha1 = leaf.getLocalSHA1();
+
+				try {
+					downloadPartialFileWithRecordProgress(downloadedFile, sha1,
+							relativeFileUrl, relativeZsyncFileUrl,
+							repository.getProtocol());
+					if (!canceled) {
+						updateObserverDownloadTotalSizeProgress();
+						node.setDownloadStatus(DownloadStatus.DONE);
+					} else {
+						downloadedFile = null;
+					}
+				} catch (IOException e) {
+					downloadedFile = null;
+					if (!canceled) {
+						throw e;
+					}
+				} finally {
+					this.expectedFullSize = 0;
+					this.downloadingLeaf = null;
+					this.offset = 0;
+					this.countFileSize = 0;
+					this.speed = 0;
+					updateObserverDownloadSpeed();
+					if (acquiredSemaphore) {
+						updateObserverDownloadSingleSizeProgress();
+					}
+					disconnect();
+				}
 			}
-		} catch (HttpException e) {
-			if (!canceled) {
-				String message = "Server returned message " + e.getMessage()
-						+ " on url:" + "\n" + relativePath;
-				throw new ConnectException(message);
+		} else {
+			downloadedFile = new File(parentDirectory + "/" + node.getName());
+			downloadedFile.mkdir();
+			node.setDownloadStatus(DownloadStatus.DONE);
+			if (!downloadedFile.exists()) {
+				throw new CreateDirectoryException(downloadedFile);
 			}
 		}
+		return downloadedFile;
 	}
 
 	private void downloadFileWithRecordProgress(File file, String relativePath)
@@ -302,122 +409,24 @@ public class HttpDAO extends AbstractConnexionDAO {
 		return autoConfig;
 	}
 
-	@Override
-	public File downloadFile(Repository repository, String remotePath,
-			String destinationPath, SyncTreeNodeDTO node)
-			throws ConnectException, IOException {
+	private void downloadFile(File file, String relativePath)
+			throws IOException {
 
-		File downloadedFile = null;
-
-		File parentDirectory = new File(destinationPath);
-		parentDirectory.mkdirs();
-
-		if (node.isLeaf()) {
-
-			SyncTreeLeafDTO leaf = (SyncTreeLeafDTO) node;
-
-			if (leaf.getComplete() == 0) {
-
-				String relativePath = null;
-
-				if (leaf.isCompressed()) {
-					downloadedFile = new File(parentDirectory + "/"
-							+ leaf.getName() + ZIP_EXTENSION);
-					this.expectedFullSize = leaf.getCompressedSize();
-					relativePath = "/" + node.getRelativePath() + ZIP_EXTENSION;
-				} else {
-					downloadedFile = new File(parentDirectory + "/"
-							+ leaf.getName());
-					this.expectedFullSize = leaf.getSize();
-					relativePath = "/" + node.getRelativePath();
-				}
-
-				// Resuming
-				if (leaf.getDownloadStatus().equals(DownloadStatus.RUNNING)
-						&& downloadedFile.exists()
-						&& downloadedFile.length() != this.expectedFullSize) {
-					this.offset = downloadedFile.length();
-				} else {
-					FileAccessMethods.deleteFile(downloadedFile);
-					this.offset = 0;
-				}
-
-				this.downloadingLeaf = leaf;
-				leaf.setDownloadStatus(DownloadStatus.RUNNING);
-
-				try {
-					connectToRepository(repository.getProtocol(), relativePath);
-					downloadFileWithRecordProgress(downloadedFile, relativePath);
-					if (!canceled) {
-						updateObserverDownloadTotalSizeProgress();
-						node.setDownloadStatus(DownloadStatus.DONE);
-					} else {
-						downloadedFile = null;
-					}
-				} catch (IOException e) {
-					downloadedFile = null;
-					if (!canceled) {
-						throw e;
-					}
-				} finally {
-					this.expectedFullSize = 0;
-					this.downloadingLeaf = null;
-					this.offset = 0;
-					this.countFileSize = 0;
-					this.speed = 0;
-					updateObserverDownloadSingleSizeProgress();
-					disconnect();
-				}
-			} else {// the file is uncomplete => use .zsync
-
-				downloadedFile = new File(parentDirectory + "/"
-						+ leaf.getName());
-				this.expectedFullSize = leaf.getSize();
-
-				// this.offset = 0;
-				this.downloadingLeaf = leaf;
-				leaf.setDownloadStatus(DownloadStatus.RUNNING);
-
-				String relativeZsyncFileUrl = remotePath + "/" + node.getName()
-						+ ZSYNC_EXTENSION;
-				String relativeFileUrl = remotePath + "/" + node.getName();
-
-				String sha1 = leaf.getLocalSHA1();
-
-				try {
-					downloadPartialFileWithRecordProgress(downloadedFile, sha1,
-							relativeFileUrl, relativeZsyncFileUrl,
-							repository.getProtocol());
-					if (!canceled) {
-						updateObserverDownloadTotalSizeProgress();
-						node.setDownloadStatus(DownloadStatus.DONE);
-					} else {
-						downloadedFile = null;
-					}
-				} catch (IOException e) {
-					downloadedFile = null;
-					if (!canceled) {
-						throw e;
-					}
-				} finally {
-					this.expectedFullSize = 0;
-					this.downloadingLeaf = null;
-					this.offset = 0;
-					this.countFileSize = 0;
-					this.speed = 0;
-					updateObserverDownloadSingleSizeProgress();
-					disconnect();
-				}
+		try {
+			myHttpConnection.downloadFile(file);
+		} catch (IOException e) {
+			if (!canceled) {
+				String coreMessage = "Failed to retrieve file " + relativePath;
+				IOException ioe = transferIOExceptionFactory(coreMessage, e);
+				throw ioe;
 			}
-		} else {
-			downloadedFile = new File(parentDirectory + "/" + node.getName());
-			downloadedFile.mkdir();
-			node.setDownloadStatus(DownloadStatus.DONE);
-			if (!downloadedFile.exists()) {
-				throw new CreateDirectoryException(downloadedFile);
+		} catch (HttpException e) {
+			if (!canceled) {
+				String message = "Server returned message " + e.getMessage()
+						+ " on url:" + "\n" + relativePath;
+				throw new ConnectException(message);
 			}
 		}
-		return downloadedFile;
 	}
 
 	public double getFileCompletion(String remotePath, String destinationPath,
@@ -447,8 +456,6 @@ public class HttpDAO extends AbstractConnexionDAO {
 			throw new ConnectException(message);
 		}
 
-		// this.count++;
-		// updateObserverCount();
 		return complete;
 	}
 
@@ -504,7 +511,7 @@ public class HttpDAO extends AbstractConnexionDAO {
 	}
 
 	@Override
-	public boolean uploadFile(RemoteFile remoteFile, String repositoryPath,
+	public void uploadFile(RemoteFile remoteFile, String repositoryPath,
 			String remotePath) throws IOException {
 		throw new UnsupportedOperationException();
 	}

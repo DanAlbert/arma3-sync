@@ -21,15 +21,11 @@ import java.awt.event.WindowListener;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
@@ -50,24 +46,20 @@ import javax.swing.UIManager;
 import javax.swing.plaf.ColorUIResource;
 
 import net.jimmc.jshortcut.JShellLink;
+import fr.soe.a3s.constant.CheckRepositoriesFrequency;
 import fr.soe.a3s.constant.DefaultProfileName;
 import fr.soe.a3s.constant.MinimizationType;
-import fr.soe.a3s.constant.RepositoryStatus;
 import fr.soe.a3s.domain.configration.LauncherOptions;
-import fr.soe.a3s.dto.RepositoryDTO;
 import fr.soe.a3s.dto.configuration.PreferencesDTO;
 import fr.soe.a3s.exception.FtpException;
 import fr.soe.a3s.exception.LoadingException;
 import fr.soe.a3s.exception.WritingException;
-import fr.soe.a3s.exception.repository.RepositoryException;
 import fr.soe.a3s.service.CommonService;
 import fr.soe.a3s.service.ConfigurationService;
 import fr.soe.a3s.service.LaunchService;
 import fr.soe.a3s.service.PreferencesService;
 import fr.soe.a3s.service.ProfileService;
 import fr.soe.a3s.service.RepositoryService;
-import fr.soe.a3s.service.connection.ConnexionService;
-import fr.soe.a3s.service.connection.ConnexionServiceFactory;
 import fr.soe.a3s.service.connection.FtpService;
 import fr.soe.a3s.ui.Facade;
 import fr.soe.a3s.ui.UIConstants;
@@ -76,8 +68,9 @@ import fr.soe.a3s.ui.help.AutoConfigExportDialog;
 import fr.soe.a3s.ui.help.AutoConfigImportDialog;
 import fr.soe.a3s.ui.help.PreferencesDialog;
 import fr.soe.a3s.ui.help.ProxyConfigurationDialog;
-import fr.soe.a3s.ui.main.dialogs.InfoUpdatedRepositoryDialog;
 import fr.soe.a3s.ui.main.dialogs.WellcomeDialog;
+import fr.soe.a3s.ui.main.tasks.TaskCheckRepositories;
+import fr.soe.a3s.ui.main.tasks.TasksManager;
 import fr.soe.a3s.ui.profiles.ProfileSelectionDialog;
 import fr.soe.a3s.ui.repository.RepositoryPanel;
 import fr.soe.a3s.ui.tools.acre2.FirstPageACRE2InstallerDialog;
@@ -166,10 +159,10 @@ public class MainPanel extends JFrame implements UIConstants {
 		menuBar.add(menuTools);
 		menuItemACRE2wizard = new JMenuItem("ACRE 2 installer", new ImageIcon(
 				ACRE2_SMALL));
-		menuTools.add(menuItemACRE2wizard);
+		// menuTools.add(menuItemACRE2wizard);
 		menuItemTFARwizard = new JMenuItem("TFAR installer", new ImageIcon(
 				TFAR_SMALL));
-		menuTools.add(menuItemTFARwizard);
+		// menuTools.add(menuItemTFARwizard);
 		menuItemAiAwizard = new JMenuItem("AiA tweaker", new ImageIcon(
 				AIA_SMALL));
 		menuTools.add(menuItemAiAwizard);
@@ -567,23 +560,16 @@ public class MainPanel extends JFrame implements UIConstants {
 		}
 
 		/* Init active views */
-		this.facade.getInfoPanel().init();
-		this.facade.getAddonsPanel().init();
-		this.facade.getAddonOptionsPanel().init();
-		this.facade.getLaunchOptionsPanel().init();
-		this.facade.getExternalApplicationsPanel().init();
-		this.facade.getSyncPanel().init();
-		this.facade.getOnlinePanel().init();
-		this.facade.getLaunchPanel().init();
-
-		/* Init Profiles menu */
-		updateProfilesMenu();
+		updateTabs(OP_PROFILE_CHANGED);
 
 		/* Show GUI */
-		setVisible(true);
-
-		/* Check ArmA3 Executable location */
-		showWellcomeDialog();
+		if (facade.isRunMode()) {
+			setToTray();
+		} else {
+			setVisible(true);
+			/* Check ArmA3 Executable location */
+			showWellcomeDialog();
+		}
 	}
 
 	public void initBackGround() {
@@ -600,31 +586,93 @@ public class MainPanel extends JFrame implements UIConstants {
 		t.start();
 	}
 
+	/*  */
+
+	public void updateTabs(int flag) {
+
+		if (flag == OP_PROFILE_CHANGED) {
+			updateProfilesMenu();
+		}
+
+		this.facade.getInfoPanel().update(flag);
+		this.facade.getAddonsPanel().update(flag);
+		this.facade.getAddonOptionsPanel().update(flag);
+		this.facade.getLaunchOptionsPanel().update(flag);
+		this.facade.getExternalApplicationsPanel().update(flag);
+		this.facade.getSyncPanel().update(flag);
+		this.facade.getOnlinePanel().update(flag);
+		this.facade.getLaunchPanel().update(flag);
+	}
+
+	private void updateProfilesMenu() {
+
+		int numberMenuItems = menuProfiles.getItemCount();
+
+		for (int i = numberMenuItems - 1; i > 2; i--) {
+			JMenuItem menuItem = menuProfiles.getItem(i);
+			menuProfiles.remove(menuItem);
+		}
+
+		List<String> profileNames = profileService.getProfileNames();
+		String initProfileName = configurationService.getProfileName();
+		assert (initProfileName != null);
+		for (int i = 0; i < profileNames.size(); i++) {
+			final String profileName = profileNames.get(i);
+			JCheckBoxMenuItem menuItemProfile = new JCheckBoxMenuItem(
+					profileName);
+			menuProfiles.add(menuItemProfile);
+			if (profileName.equals(initProfileName)) {
+				menuItemProfile.setSelected(true);
+			}
+			menuItemProfile.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(final ActionEvent evt) {
+					menuItemProfilePerformed(evt);
+				}
+			});
+		}
+	}
+
+	private void menuItemProfilePerformed(ActionEvent e) {
+
+		int numberMenuItems = menuProfiles.getItemCount();
+
+		for (int i = numberMenuItems - 1; i > 2; i--) {
+			JCheckBoxMenuItem checkBoxItem = (JCheckBoxMenuItem) menuProfiles
+					.getItem(i);
+			checkBoxItem.setSelected(false);
+		}
+
+		JCheckBoxMenuItem menuItemProfile = (JCheckBoxMenuItem) e.getSource();
+		menuItemProfile.setSelected(true);
+		String profileName = menuItemProfile.getText();
+		configurationService.setProfileName(profileName);
+		updateTabs(OP_PROFILE_CHANGED);
+	}
+
 	/* Menu Actions */
 
 	private void menuItemAddGroupPerformed() {
 		tabbedPane.setSelectedIndex(0);
-		facade.getAddonsPanel().addPerformed();
+		facade.getAddonsPanel().getGroupManager().addGroup();
 	}
 
 	private void menuItemDuplicateGroupPerformed() {
 		tabbedPane.setSelectedIndex(0);
-		facade.getAddonsPanel().duplicatePerformed();
+		facade.getAddonsPanel().getGroupManager().duplicateGroup();
 	}
 
 	private void menuItemRenameGroupPerformed() {
 		tabbedPane.setSelectedIndex(0);
-		facade.getAddonsPanel().renamePerformed();
+		facade.getAddonsPanel().getGroupManager().renameGroup();
 	}
 
 	private void menuItemRemoveGroupPerformed() {
 		tabbedPane.setSelectedIndex(0);
-		facade.getAddonsPanel().removePerformed();
+		facade.getAddonsPanel().getGroupManager().removeGroup();
 	}
 
 	private void menuItemEditPerformed() {
-
-		facade.getAddonsPanel().saveAddonGroups();
 
 		ProfileSelectionDialog profilePanel = new ProfileSelectionDialog(facade);
 		profilePanel.init();
@@ -649,8 +697,6 @@ public class MainPanel extends JFrame implements UIConstants {
 		if (profileName == null) {
 			return;// unexpected
 		}
-
-		facade.getAddonsPanel().saveAddonGroups();
 
 		String exePath = profileService.getArma3ExePath();
 
@@ -798,12 +844,7 @@ public class MainPanel extends JFrame implements UIConstants {
 		SwingUtilities.invokeLater(new Runnable() {
 			@Override
 			public void run() {
-				try {
-					/* Check for updates */
-					checkForUpdates(true);
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
+				checkForUpdates(true);
 			}
 		});
 	}
@@ -838,7 +879,6 @@ public class MainPanel extends JFrame implements UIConstants {
 			setToTaskBar();
 		} else if (type.equals(MinimizationType.TRAY)) {
 			setToTray();
-			this.setVisible(false);
 		}
 	}
 
@@ -880,7 +920,15 @@ public class MainPanel extends JFrame implements UIConstants {
 		}
 		this.setState(JFrame.NORMAL);
 		this.setVisible(true);
-		this.toFront();
+		this.toFront();// put mainpanel front
+	}
+	
+	public void recoverFromTray() {
+		if (SystemTray.isSupported()) {
+			tray.remove(trayIcon);
+		}
+		this.setState(JFrame.NORMAL);
+		this.setVisible(true);
 	}
 
 	public void setToTaskBar() {
@@ -891,11 +939,19 @@ public class MainPanel extends JFrame implements UIConstants {
 		if (SystemTray.isSupported()) {
 			try {
 				tray.add(trayIcon);
+				this.setVisible(false);
 			} catch (AWTException e) {
 				System.out.println("TrayIcon could not be added.");
 				this.setState(JFrame.ICONIFIED);
 				return;
 			}
+		}
+	}
+
+	public void displayMessageToSystemTray(String message) {
+		if (tray.getTrayIcons().length != 0) {
+			trayIcon.displayMessage("ArmA3Sync", message,
+					TrayIcon.MessageType.INFO);
 		}
 	}
 
@@ -918,7 +974,7 @@ public class MainPanel extends JFrame implements UIConstants {
 	 */
 	/**/
 
-	public void checkForUpdates(final boolean withInfoMessage) {
+	private void checkForUpdates(final boolean withInfoMessage) {
 
 		System.out.println("Checking for updates...");
 
@@ -937,16 +993,12 @@ public class MainPanel extends JFrame implements UIConstants {
 		}
 
 		if (availableVersion != null) {
+			displayMessageToSystemTray("A new update is available");
 			int response = JOptionPane.showConfirmDialog(facade.getMainPanel(),
 					"A new update is available. Proceed update?", "Update",
 					JOptionPane.OK_CANCEL_OPTION);
 
 			if (response == 0) {
-				// try {
-				// commonService.saveAllParameters(getHeight(), getWidth());
-				// } catch (WritingException e) {
-				// e.printStackTrace();
-				// }
 				// Proceed with update
 				String command = "java -jar -Djava.net.preferIPv4Stack=true ArmA3Sync-Updater.jar";
 				if (facade.isDevMode()) {
@@ -967,67 +1019,6 @@ public class MainPanel extends JFrame implements UIConstants {
 					"No new update available.", "Update",
 					JOptionPane.INFORMATION_MESSAGE);
 		}
-	}
-
-	public void updateProfilesMenu() {
-
-		int numberMenuItems = menuProfiles.getItemCount();
-
-		for (int i = numberMenuItems - 1; i > 2; i--) {
-			JMenuItem menuItem = menuProfiles.getItem(i);
-			menuProfiles.remove(menuItem);
-		}
-
-		List<String> profileNames = profileService.getProfileNames();
-		String initProfileName = configurationService.getProfileName();
-		assert (initProfileName != null);
-		for (int i = 0; i < profileNames.size(); i++) {
-			final String profileName = profileNames.get(i);
-			JCheckBoxMenuItem menuItemProfile = new JCheckBoxMenuItem(
-					profileName);
-			menuProfiles.add(menuItemProfile);
-			if (profileName.equals(initProfileName)) {
-				menuItemProfile.setSelected(true);
-			}
-			menuItemProfile.addActionListener(new ActionListener() {
-				@Override
-				public void actionPerformed(final ActionEvent evt) {
-					menuItemProfilePerformed(evt);
-				}
-			});
-		}
-	}
-
-	private void menuItemProfilePerformed(ActionEvent e) {
-
-		facade.getAddonsPanel().saveAddonGroups();
-
-		int numberMenuItems = menuProfiles.getItemCount();
-
-		for (int i = numberMenuItems - 1; i > 2; i--) {
-			JCheckBoxMenuItem checkBoxItem = (JCheckBoxMenuItem) menuProfiles
-					.getItem(i);
-			checkBoxItem.setSelected(false);
-		}
-
-		JCheckBoxMenuItem menuItemProfile = (JCheckBoxMenuItem) e.getSource();
-		menuItemProfile.setSelected(true);
-		String profileName = menuItemProfile.getText();
-		configurationService.setProfileName(profileName);
-		profileChanged();
-	}
-
-	public void profileChanged() {
-
-		SwingUtilities.invokeLater(new Runnable() {
-			@Override
-			public void run() {
-				facade.getInfoPanel().init();
-				facade.getAddonsPanel().init();
-				facade.getAddonOptionsPanel().init();
-				facade.getLaunchOptionsPanel().init();
-			}
-		});
 	}
 
 	public void showWellcomeDialog() {
@@ -1052,86 +1043,27 @@ public class MainPanel extends JFrame implements UIConstants {
 
 	private void checkRepositories() {
 
-		List<RepositoryDTO> list = repositoryService.getRepositories();
-		final List<String> repositoryNames = new ArrayList<String>();
-		for (final RepositoryDTO repositoryDTO : list) {
-			repositoryNames.add(repositoryDTO.getName());
+		CheckRepositoriesFrequency checkRepositoriesFrequency = preferencesService
+				.getPreferences().getCheckRepositoriesFrequency();
+		TaskCheckRepositories task = new TaskCheckRepositories(facade);
+		TasksManager tasksManager = TasksManager.getInstance();
+		if (checkRepositoriesFrequency
+				.equals(CheckRepositoriesFrequency.DISABLED)) {
+			tasksManager.addTask(task, 0);// execute now, no repetition
+		} else {
+			int frequency = checkRepositoriesFrequency.getFrequency();// min
+			long period = (long) (frequency * 60 * Math.pow(10, 3));// ms
+			// long period = (long) (10* Math.pow(10, 3));
+			tasksManager.addTask(task, 0, period);// execute now + repetition
 		}
-
-		System.out.println("Checking repositories...");
-		List<Callable<Integer>> callables = new ArrayList<Callable<Integer>>();
-		for (final String repositoryName : repositoryNames) {
-			Callable<Integer> c = new Callable<Integer>() {
-				@Override
-				public Integer call() {
-					try {
-						ConnexionService connexion = ConnexionServiceFactory
-								.getServiceForRepositoryManagement(repositoryName);
-						connexion.checkRepository(repositoryName);
-					} catch (Exception e) {
-						System.out.println("Error when checking repository "
-								+ repositoryName + ": " + e.getMessage());
-					}
-					return 0;
-				}
-			};
-			callables.add(c);
-		}
-
-		ExecutorService executor = Executors.newFixedThreadPool(Runtime
-				.getRuntime().availableProcessors());
-		try {
-			executor.invokeAll(callables);
-		} catch (InterruptedException e) {
-			System.out
-					.println("Checking repositories has been anormaly interrupted.");
-		}
-
-		System.out.println("Checking repositories done.");
-
-		List<String> updatedRepositoryNames = new ArrayList<String>();
-		for (String repositoryName : repositoryNames) {
-			try {
-				RepositoryStatus repositoryStatus = repositoryService
-						.getRepositoryStatus(repositoryName);
-				RepositoryDTO repositoryDTO = repositoryService
-						.getRepository(repositoryName);
-				if (repositoryStatus.equals(RepositoryStatus.UPDATED)
-						&& repositoryDTO.isNotify()) {
-					updatedRepositoryNames.add(repositoryName);
-				}
-			} catch (RepositoryException e) {
-			}
-		}
-
-		if (!updatedRepositoryNames.isEmpty()) {
-			String message = "The following repositories have been updated:";
-			for (String rep : repositoryNames) {
-				message = message + "\n" + "> " + rep;
-			}
-			InfoUpdatedRepositoryDialog infoUpdatedRepositoryPanel = new InfoUpdatedRepositoryDialog(
-					facade);
-			infoUpdatedRepositoryPanel.init(updatedRepositoryNames);
-			infoUpdatedRepositoryPanel.setVisible(true);
-		}
-
-		SwingUtilities.invokeLater(new Runnable() {
-			@Override
-			public void run() {
-				boolean change = facade.getAddonsPanel().updateModsetSelection(
-						repositoryNames);
-				if (change) {
-					String message = "Addon groups have been updated with repositories changes.";
-					System.out.println(message);
-				}
-				facade.getSyncPanel().init();
-				facade.getOnlinePanel().init();
-				facade.getLaunchPanel().init();
-			}
-		});
 	}
 
-	public RepositoryPanel openRepository(final String repositoryName) {
+	public void showSyncPanel() {
+		tabbedPane.setSelectedIndex(5);
+	}
+
+	public RepositoryPanel openRepository(final String repositoryName,
+			boolean select) {
 
 		String title = repositoryName;
 		RepositoryPanel newRepositoryPanel = null;
@@ -1140,20 +1072,24 @@ public class MainPanel extends JFrame implements UIConstants {
 			addClosableTab(newRepositoryPanel, repositoryName);
 			final int index = tabbedPane.getTabCount() - 1;
 			mapTabIndexes.put(title, index);
-			SwingUtilities.invokeLater(new Runnable() {
-				@Override
-				public void run() {
-					tabbedPane.setSelectedIndex(index);
-				}
-			});
+			if (select) {
+				SwingUtilities.invokeLater(new Runnable() {
+					@Override
+					public void run() {
+						tabbedPane.setSelectedIndex(index);
+					}
+				});
+			}
 		} else {
 			final int index = mapTabIndexes.get(title);
-			SwingUtilities.invokeLater(new Runnable() {
-				@Override
-				public void run() {
-					tabbedPane.setSelectedIndex(index);
-				}
-			});
+			if (select) {
+				SwingUtilities.invokeLater(new Runnable() {
+					@Override
+					public void run() {
+						tabbedPane.setSelectedIndex(index);
+					}
+				});
+			}
 		}
 		return newRepositoryPanel;
 	}

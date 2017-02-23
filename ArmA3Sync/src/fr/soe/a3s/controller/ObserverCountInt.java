@@ -1,5 +1,5 @@
 package fr.soe.a3s.controller;
 
-public interface ObserverCount {
+public interface ObserverCountInt {
 	public void update(int value);
 }

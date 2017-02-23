@@ -2,7 +2,9 @@ package fr.soe.a3s.dao.connection.processors;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.SocketException;
 import java.net.SocketTimeoutException;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
@@ -10,8 +12,6 @@ import java.util.Stack;
 import fr.soe.a3s.controller.ObserverProceed;
 import fr.soe.a3s.dao.DataAccessConstants;
 import fr.soe.a3s.dao.connection.AbstractConnexionDAO;
-import fr.soe.a3s.dao.connection.FtpDAO;
-import fr.soe.a3s.dao.connection.HttpDAO;
 import fr.soe.a3s.dao.zip.UnZipFlowProcessor;
 import fr.soe.a3s.domain.repository.Repository;
 import fr.soe.a3s.dto.sync.SyncTreeNodeDTO;
@@ -21,7 +21,7 @@ public class ConnectionDownloadProcessor implements DataAccessConstants {
 	private List<AbstractConnexionDAO> connexionDAOs = null;
 	private Stack<SyncTreeNodeDTO> downloadFilesStack = null;
 	private List<Exception> downloadErrors = null;
-	private List<Exception> downloadTimeouterrors = null;
+	private IOException downloadConnectioError = null;
 	private int semaphore;
 	private Repository repository = null;
 	private UnZipFlowProcessor unZipFlowProcessor = null;
@@ -34,13 +34,12 @@ public class ConnectionDownloadProcessor implements DataAccessConstants {
 		this.downloadFilesStack = new Stack<SyncTreeNodeDTO>();
 		this.downloadFilesStack.addAll(filesToDownload);
 		this.downloadErrors = new ArrayList<Exception>();
-		this.downloadTimeouterrors = new ArrayList<Exception>();
 		this.semaphore = 1;
 		this.repository = repository;
 		this.unZipFlowProcessor = unZipFlowProcessor;
 	}
 
-	public void run() throws IOException {
+	public void run() {
 
 		for (final AbstractConnexionDAO connexionDAO : connexionDAOs) {
 			connexionDAO.addObserverProceed(new ObserverProceed() {
@@ -49,75 +48,72 @@ public class ConnectionDownloadProcessor implements DataAccessConstants {
 					if (!connexionDAO.isCanceled()) {
 						final SyncTreeNodeDTO node = popDownloadFilesStack();
 						if (node != null) {
-							Thread t = new Thread(new Runnable() {
-								@Override
-								public void run() {
-									try {
-										if (aquireSemaphore()) {
-											connexionDAO
-													.setAcquiredSemaphore(true);
-										}
+							try {
+								if (aquireSemaphore()) {
+									connexionDAO.setAcquiredSemaphore(true);
+								}
 
-										connexionDAO.setActiveConnection(true);
-										connexionDAO
-												.updateObserverDownloadActiveConnections();
+								connexionDAO.setActiveConnection(true);
+								connexionDAO
+										.updateObserverDownloadActiveConnections();
 
-										File downloadedFile = downloadFile(
-												connexionDAO, node);
+								File downloadedFile = downloadFile(
+										connexionDAO, node);
 
-										if (downloadedFile != null) {
-											if (downloadedFile.isFile()) {
-												if (downloadedFile
-														.getName()
-														.toLowerCase()
-														.contains(
-																DataAccessConstants.PBO_ZIP_EXTENSION)) {
-													unZipFlowProcessor
-															.unZipAsynchronously(downloadedFile);
-												}
-											}
-										}
-									} catch (Exception e) {
-										e.printStackTrace();
-										if (!connexionDAO.isCanceled()) {
-											if (e instanceof SocketTimeoutException) {
-												addTimeoutError(e);
-												addError(e);
-											} else if (e instanceof IOException) {
-												// reset count
-												downloadTimeouterrors.clear();
-												addError(e);
-											}
-										}
-									} finally {
-										if (connexionDAO.isAcquiredSemaphore()) {
-											releaseSemaphore();
-											connexionDAO
-													.setAcquiredSemaphore(false);
-										}
-										connexionDAO.setActiveConnection(false);
-										connexionDAO
-												.updateObserverDownloadActiveConnections();
-
-										if (downloadTimeouterrors.size() > connexionDAOs
-												.size()) {
-											connexionDAO
-													.updateObserverDownloadTooManyTimeoutErrors(
-															connexionDAOs
-																	.size(),
-															downloadTimeouterrors);
-										} else if (downloadErrors.size() > 10) {
-											connexionDAO
-													.updateObserverDownloadTooManyErrors(
-															10, downloadErrors);
-										} else {
-											connexionDAO
-													.updateObserverProceed();
+								if (downloadedFile != null) {
+									if (downloadedFile.isFile()) {
+										if (downloadedFile
+												.getName()
+												.toLowerCase()
+												.contains(
+														DataAccessConstants.PBO_ZIP_EXTENSION)) {
+											unZipFlowProcessor
+													.unZipAsynchronously(downloadedFile);
 										}
 									}
 								}
-							});
-							t.start();
+							} catch (IOException e) {
+								// e.printStackTrace();
+								if (!connexionDAO.isCanceled()) {
+									if (e instanceof SocketException
+											|| e instanceof SocketTimeoutException) {
+										downloadConnectioError = e;
+									} else if (e instanceof IOException) {
+										addDownloadError(e);
+									}
+								}
+							} finally {
+								connexionDAO.setActiveConnection(false);
+								connexionDAO
+										.updateObserverDownloadActiveConnections();
+
+								if (connexionDAO.isAcquiredSemaphore()) {
+									releaseSemaphore();
+									connexionDAO.setAcquiredSemaphore(false);
+
+									for (final AbstractConnexionDAO connexionDAO : connexionDAOs) {
+										if (connexionDAO.isActiveConnection()
+												&& aquireSemaphore()) {
+											connexionDAO
+													.setAcquiredSemaphore(true);
+											break;
+										}
+									}
+								}
+
+								// Give semaphore to the other DAOs
+
+								if (downloadConnectioError != null) {
+									connexionDAO
+											.updateObserverDownloadConnectionLost();
+								} else if (downloadErrors.size() > 10) {
+									connexionDAO
+											.updateObserverDownloadTooManyErrors(
+													10, downloadErrors);
+								} else {
+									connexionDAO.updateObserverProceed();
+								}
+							}
 						} else {// no more file to download for this DAO
 
 							// Check if there is no more active connections
@@ -171,16 +167,16 @@ public class ConnectionDownloadProcessor implements DataAccessConstants {
 			for (final AbstractConnexionDAO connexionDAO : connexionDAOs) {
 				if (!downloadFilesStack.isEmpty()) {// nb files < nb connections
 					try {
-						if (connexionDAO instanceof FtpDAO) {
-							((FtpDAO) connexionDAO)
-									.connectToRepository(repository
-											.getProtocol());
-						} else if (connexionDAO instanceof HttpDAO) {
-							((HttpDAO) connexionDAO).connectToRepository(
-									repository.getProtocol(), SYNC_FILE_PATH);
-							((HttpDAO) connexionDAO).disconnect();
-						}
-						connexionDAO.updateObserverProceed();
+						connexionDAO.connectToRepository(repository
+								.getProtocol());
+						connexionDAO.disconnect();
+						final Thread t = new Thread(new Runnable() {
+							@Override
+							public void run() {
+								connexionDAO.updateObserverProceed();
+							}
+						});
+						t.start();
 					} catch (IOException e) {
 						boolean isDowloading = false;
 						connexionDAO.setActiveConnection(false);
@@ -191,7 +187,8 @@ public class ConnectionDownloadProcessor implements DataAccessConstants {
 							}
 						}
 						if (!isDowloading) {
-							throw e;
+							connexionDAOs.get(0)
+									.updateObserverDownloadConnectionLost();
 						}
 					}
 				}
@@ -225,12 +222,8 @@ public class ConnectionDownloadProcessor implements DataAccessConstants {
 				destinationPath, node);
 	}
 
-	private synchronized void addError(Exception e) {
+	private synchronized void addDownloadError(Exception e) {
 		downloadErrors.add(e);
-	}
-
-	private synchronized void addTimeoutError(Exception e) {
-		downloadTimeouterrors.add(e);
 	}
 
 	private synchronized SyncTreeNodeDTO popDownloadFilesStack() {

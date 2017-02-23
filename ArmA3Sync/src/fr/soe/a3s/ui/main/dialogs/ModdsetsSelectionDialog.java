@@ -16,7 +16,6 @@ import javax.swing.border.BevelBorder;
 
 import fr.soe.a3s.dto.EventDTO;
 import fr.soe.a3s.dto.RepositoryDTO;
-import fr.soe.a3s.exception.repository.RepositoryException;
 import fr.soe.a3s.service.RepositoryService;
 import fr.soe.a3s.ui.AbstractDialog;
 import fr.soe.a3s.ui.CheckBoxList;
@@ -103,16 +102,10 @@ public class ModdsetsSelectionDialog extends AbstractDialog {
 		listRepositories.setListData(tab1);
 
 		for (RepositoryDTO repositoryDTO : repositoryDTOs) {
-			try {
-				List<EventDTO> list = repositoryService.getEvents(repositoryDTO
-						.getName());
-				if (list != null) {
-					for (EventDTO eventDTO : list) {
-						eventDTOs.add(eventDTO);
-					}
-				}
-			} catch (RepositoryException e) {
-				e.printStackTrace();
+			List<EventDTO> list = repositoryService.getEvents(repositoryDTO
+					.getName());
+			for (EventDTO eventDTO : list) {
+				eventDTOs.add(eventDTO);
 			}
 		}
 
@@ -159,16 +152,15 @@ public class ModdsetsSelectionDialog extends AbstractDialog {
 				repositoryNames.add(repositoryDTO.getName());
 			}
 			if (!repositoryNames.isEmpty()) {
-				facade.getAddonsPanel().createGroupFromRepository(
-						repositoryNames);
+				facade.getAddonsPanel().getGroupManager()
+						.addGroupFromRepository(repositoryNames);
 			}
 			if (!selectedEventDTOs.isEmpty()) {
-				facade.getAddonsPanel()
-						.createGroupFromEvents(selectedEventDTOs);
+				facade.getAddonsPanel().getGroupManager()
+						.addGroupFromEvents(selectedEventDTOs);
 			}
 		}
 		this.dispose();
-		facade.getAddonsPanel().lookForDuplicates();
 	}
 
 	@Override

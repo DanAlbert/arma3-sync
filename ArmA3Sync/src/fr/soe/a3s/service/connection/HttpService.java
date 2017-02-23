@@ -280,6 +280,8 @@ public class HttpService extends AbstractConnexionService implements
 					leaf.setComplete(0);
 				} else if (noPartialFileTransfer) {
 					leaf.setComplete(0);
+				} else if (leaf.getSize() <= 1000000) {// 1 MB
+					leaf.setComplete(0);
 				} else {
 					final String rootDestinationPath = repository
 							.getDefaultDownloadLocation();
@@ -316,16 +318,6 @@ public class HttpService extends AbstractConnexionService implements
 			}
 		}
 
-		/*
-		 * httpDAOPool.get(0).setTotalCount(list2.size());
-		 * 
-		 * for (SyncTreeLeafDTO leaf : list2) { if
-		 * (httpDAOPool.get(0).isCanceled()) { break; } else { double complete =
-		 * httpDAOPool.get(0).getFileCompletion( leaf.getRemotePath(),
-		 * leaf.getDestinationPath(), leaf, repository);
-		 * leaf.setComplete(complete); } }
-		 */
-
 		List<AbstractConnexionDAO> connectionDAOs = new ArrayList<AbstractConnexionDAO>();
 		for (HttpDAO httpDAO : httpDAOPool) {
 			connectionDAOs.add(httpDAO);
@@ -341,8 +333,7 @@ public class HttpService extends AbstractConnexionService implements
 
 	@Override
 	public void synchronize(String repositoryName,
-			List<SyncTreeNodeDTO> filesToDownload) throws RepositoryException,
-			IOException {
+			List<SyncTreeNodeDTO> filesToDownload) throws RepositoryException {
 
 		final Repository repository = repositoryDAO.getMap()
 				.get(repositoryName);
@@ -459,11 +450,6 @@ public class HttpService extends AbstractConnexionService implements
 			list.add(httpDAO);
 		}
 		return list;
-	}
-
-	@Override
-	public int getNumberConnections() {
-		return httpDAOPool.size();
 	}
 
 	@Override

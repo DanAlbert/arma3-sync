@@ -10,5 +10,5 @@ public interface ObserverUncompress {
 
 	public void end();
 
-	public void endWithError(List<Exception> errors);
+	public void error(List<Exception> errors);
 }

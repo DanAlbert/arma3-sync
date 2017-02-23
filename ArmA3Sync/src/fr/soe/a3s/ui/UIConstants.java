@@ -8,6 +8,14 @@ public interface UIConstants {
 	String APPLICATION_NAME = "ArmA3Sync";
 
 	int DEFAULT_HEIGHT = 665;
+	
+	int OP_PROFILE_CHANGED = 1;
+	int OP_ADDON_FILES_CHANGED = 2;
+	int OP_ADDON_PRIORITY_CHANGED = 3;
+	int OP_ADDON_SELECTION_CHANGED = 4;
+	int OP_ONLINE_CHANGED = 5;
+	int OP_REPOSITORY_CHANGED = 6;
+	int OP_GROUP_CHANGED = 7;
 
 	Image ICON = Toolkit
 			.getDefaultToolkit()
@@ -278,4 +286,11 @@ public interface UIConstants {
 					java.lang.ClassLoader
 							.getSystemResource("resources/pictures/system/closered12x12.png"));
 
+	/* Connection lost */
+
+	Image WARNING = Toolkit
+			.getDefaultToolkit()
+			.getImage(
+					java.lang.ClassLoader
+							.getSystemResource("resources/pictures/system/warning32x32.png"));
 }

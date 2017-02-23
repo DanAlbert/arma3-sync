@@ -15,6 +15,7 @@ public class ConnectionCheckProcessor extends AbstractConnectionProcessor {
 	private final AbstractProtocole protocol;
 	private List<Exception> errors = null;
 	private List<RemoteFile> missingRemoteFiles = null;
+	private int count, totalCount;
 
 	public ConnectionCheckProcessor(AbstractConnexionDAO abstractConnexionDAO,
 			List<SyncTreeNodeDTO> filesToCheck,
@@ -31,9 +32,8 @@ public class ConnectionCheckProcessor extends AbstractConnectionProcessor {
 
 		extract();
 
-		abstractConnexionDAO.setTotalCount(this.remoteFiles.size());
-		abstractConnexionDAO.setCount(0);
-		int count = 0;
+		this.totalCount = this.remoteFiles.size();
+		this.count = 0;
 
 		for (RemoteFile remoteFile : remoteFiles) {
 			if (abstractConnexionDAO.isCanceled()) {
@@ -51,11 +51,15 @@ public class ConnectionCheckProcessor extends AbstractConnectionProcessor {
 					abstractConnexionDAO.updateObserverCountErrors(errors
 							.size());
 				}
-				count++;
-				abstractConnexionDAO.setCount(count);
-				abstractConnexionDAO.updateObserverCount();
+				increment();
 			}
 		}
+	}
+
+	private synchronized void increment() {
+		count++;
+		int value = count * 100 / totalCount;
+		abstractConnexionDAO.updateObserverCount(value);
 	}
 
 	public List<RemoteFile> getMissingRemoteFiles() {
@@ -63,6 +67,6 @@ public class ConnectionCheckProcessor extends AbstractConnectionProcessor {
 	}
 
 	public List<Exception> getErrors() {
-		return this.errors;
+		return errors;
 	}
 }

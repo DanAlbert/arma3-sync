@@ -16,13 +16,12 @@ public class UnZipFlowProcessor implements ObservableUncompress {
 
 	/** observableFileUncompress Interface */
 	private ObserverUncompress observerUncompress;
-	private int size = 0;
-	private int count = 0;
+	private int count, totalCount;
 	private boolean started = false;
 
 	private boolean canceled;
-	
-	public UnZipFlowProcessor(){
+
+	public UnZipFlowProcessor() {
 		for (int i = 0; i < Runtime.getRuntime().availableProcessors(); i++) {
 			ZipDAO zipDAO = new ZipDAO();
 			zipDAOPool.add(zipDAO);
@@ -37,10 +36,12 @@ public class UnZipFlowProcessor implements ObservableUncompress {
 
 	public void start(List<Exception> errors) {
 
-		size = compressedFilesList.size();
+		totalCount = compressedFilesList.size();
+		count = 0;
+
 		for (ZipDAO zipDAO : zipDAOPool) {
 			if (zipDAO.isActive()) {
-				size = size + 1;
+				totalCount = totalCount + 1;
 			}
 		}
 		started = true;
@@ -73,8 +74,7 @@ public class UnZipFlowProcessor implements ObservableUncompress {
 								addError(e);
 							}
 							if (started && !canceled) {
-								count++;
-								updateObserverUncompress();
+								increment();
 							}
 						}
 
@@ -82,7 +82,7 @@ public class UnZipFlowProcessor implements ObservableUncompress {
 							if (errors.isEmpty()) {
 								observerUncompress.end();
 							} else {
-								observerUncompress.endWithError(errors);
+								observerUncompress.error(errors);
 							}
 						}
 					}
@@ -109,6 +109,12 @@ public class UnZipFlowProcessor implements ObservableUncompress {
 
 	private synchronized boolean compressedFilescheckEmpty() {
 		return compressedFilesList.isEmpty();
+	}
+
+	private synchronized void increment() {
+		count++;
+		int value = count * 100 / totalCount;
+		updateObserverUncompress(value);
 	}
 
 	private synchronized void addError(Exception e) {
@@ -143,7 +149,7 @@ public class UnZipFlowProcessor implements ObservableUncompress {
 	}
 
 	@Override
-	public void updateObserverUncompress() {// update progress in %
-		this.observerUncompress.update((count * 100) / size);
+	public void updateObserverUncompress(int value) {// update progress in %
+		this.observerUncompress.update(value);
 	}
 }

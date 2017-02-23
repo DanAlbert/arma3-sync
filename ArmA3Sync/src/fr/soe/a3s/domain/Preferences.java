@@ -2,9 +2,11 @@ package fr.soe.a3s.domain;
 
 import java.io.Serializable;
 
+import fr.soe.a3s.constant.CheckRepositoriesFrequency;
 import fr.soe.a3s.constant.IconResize;
 import fr.soe.a3s.constant.LookAndFeel;
 import fr.soe.a3s.constant.MinimizationType;
+import fr.soe.a3s.constant.StartWithOS;
 
 public class Preferences implements Serializable {
 
@@ -17,6 +19,8 @@ public class Preferences implements Serializable {
 	private final MinimizationType syncPanelMinimized = MinimizationType.TRAY;
 	private LookAndFeel lookAndFeel = LookAndFeel.LAF_DEFAULT;
 	private IconResize iconResizeSize = IconResize.AUTO;
+	private StartWithOS startWithOS = StartWithOS.DISABLED;
+	private CheckRepositoriesFrequency checkRepositoriesFrequency = CheckRepositoriesFrequency.FREQ3;
 
 	public MinimizationType getLaunchPanelGameLaunch() {
 		return launchPanelGameLaunch;
@@ -54,5 +58,28 @@ public class Preferences implements Serializable {
 
 	public void setIconResizeSize(IconResize iconResizeSize) {
 		this.iconResizeSize = iconResizeSize;
+	}
+
+	public StartWithOS getStartWithOS() {
+		if (startWithOS == null) {
+			startWithOS = StartWithOS.DISABLED;
+		}
+		return startWithOS;
+	}
+
+	public void setStartWithOS(StartWithOS startWithOS) {
+		this.startWithOS = startWithOS;
+	}
+
+	public CheckRepositoriesFrequency getCheckRepositoriesFrequency() {
+		if (checkRepositoriesFrequency == null) {
+			checkRepositoriesFrequency = CheckRepositoriesFrequency.FREQ3;
+		}
+		return checkRepositoriesFrequency;
+	}
+
+	public void setCheckRepositoriesFrequency(
+			CheckRepositoriesFrequency checkRepositoriesFrequency) {
+		this.checkRepositoriesFrequency = checkRepositoriesFrequency;
 	}
 }

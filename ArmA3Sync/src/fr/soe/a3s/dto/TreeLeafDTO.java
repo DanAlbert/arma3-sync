@@ -65,9 +65,9 @@ public class TreeLeafDTO implements TreeNodeDTO {
 		}
 		if (duplicate) {
 			if (sourceRelativePath != null) {
-				stg = stg + " " + "(from / " + sourceRelativePath + ")";
+				stg = stg + " " + "(from /" + sourceRelativePath + ")";
 			} else {
-				stg = stg + " " + "(from / " + ")";
+				stg = stg + " " + "(from /" + ")";
 			}
 		}
 		if (missing) {

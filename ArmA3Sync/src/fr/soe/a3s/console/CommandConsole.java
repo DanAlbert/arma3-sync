@@ -11,7 +11,7 @@ import org.apache.commons.io.FileUtils;
 
 import fr.soe.a3s.constant.ConsoleCommands;
 import fr.soe.a3s.constant.ProtocolType;
-import fr.soe.a3s.constant.TimeOutValues;
+import fr.soe.a3s.controller.ObserverEnd;
 import fr.soe.a3s.dto.RepositoryDTO;
 import fr.soe.a3s.exception.CheckException;
 import fr.soe.a3s.exception.LoadingException;
@@ -54,12 +54,12 @@ public class CommandConsole extends CommandGeneral {
 		System.out.println(ConsoleCommands.VERSION.toString()
 				+ ": display version");
 		System.out.println(ConsoleCommands.QUIT.toString() + ": quit");
-		System.out.println("");
 	}
 
 	public void execute() {
 
 		Scanner c = new Scanner(System.in);
+		System.out.println("");
 		System.out.print("Please enter a command = ");
 		String command = c.nextLine().trim();
 
@@ -79,8 +79,7 @@ public class CommandConsole extends CommandGeneral {
 			checkForUpdates();
 		} else if (command.equalsIgnoreCase(ConsoleCommands.SYNC.toString())) {
 			sync();
-		} else if (command.equalsIgnoreCase(ConsoleCommands.EXTRACT
-				.toString())) {
+		} else if (command.equalsIgnoreCase(ConsoleCommands.EXTRACT.toString())) {
 			extractBikeys();
 		} else if (command
 				.equalsIgnoreCase(ConsoleCommands.COMMANDS.toString())) {
@@ -105,7 +104,6 @@ public class CommandConsole extends CommandGeneral {
 			repositoryService.readAll();
 		} catch (LoadingException e) {
 			System.out.println(e.getMessage());
-			System.out.println("");
 			execute();
 			return;
 		}
@@ -178,6 +176,7 @@ public class CommandConsole extends CommandGeneral {
 			System.out.println("Repository main folder path: " + path);
 			System.out.println("");
 		}
+
 		execute();
 	}
 
@@ -307,7 +306,8 @@ public class CommandConsole extends CommandGeneral {
 		String path = "";
 		boolean folderLocationIsWrong = true;
 		do {
-			System.out.print("Enter main folder location (leave blank to pass): ");
+			System.out
+					.print("Enter main folder location (leave blank to pass): ");
 			path = c.nextLine();
 			if (path.isEmpty()) {
 				folderLocationIsWrong = false;
@@ -328,8 +328,8 @@ public class CommandConsole extends CommandGeneral {
 		try {
 			repositoryService.createRepository(name, url, port, login,
 					password, protocole);
-			repositoryService.setConnectionTimeout(name,"0");
-			repositoryService.setReadTimeout(name,"0");
+			repositoryService.setConnectionTimeout(name, "0");
+			repositoryService.setReadTimeout(name, "0");
 			if (!path.isEmpty()) {
 				repositoryService.setRepositoryPath(name, path);
 			}
@@ -346,7 +346,6 @@ public class CommandConsole extends CommandGeneral {
 			System.out.println("An unexpeted error has occured.");
 			e.printStackTrace();
 		} finally {
-			System.out.println("");
 			execute();
 		}
 	}
@@ -372,7 +371,6 @@ public class CommandConsole extends CommandGeneral {
 			repositoryService.readAll();
 		} catch (LoadingException e) {
 			System.out.println(e.getMessage());
-			System.out.println("");
 			execute();
 			return;
 		}
@@ -384,8 +382,7 @@ public class CommandConsole extends CommandGeneral {
 				String path = "";
 				boolean folderLocationIsWrong = true;
 				do {
-					System.out
-							.print("Enter repository main folder location: ");
+					System.out.print("Enter repository main folder location: ");
 					path = c.nextLine();
 					if (path.isEmpty()) {
 						folderLocationIsWrong = true;
@@ -476,7 +473,6 @@ public class CommandConsole extends CommandGeneral {
 			}
 		} catch (RepositoryException e) {
 			System.out.println(e.getMessage());
-			System.out.println("");
 			execute();
 			return;
 		}
@@ -540,7 +536,14 @@ public class CommandConsole extends CommandGeneral {
 
 		/* Proceed with command */
 
-		super.buildRepository(name, false);
+		ObserverEnd observerEndBuild = new ObserverEnd() {
+			@Override
+			public void end() {
+				execute();
+			}
+		};
+
+		super.build(name, observerEndBuild);
 	}
 
 	private void check() {
@@ -564,14 +567,20 @@ public class CommandConsole extends CommandGeneral {
 			repositoryService.readAll();
 		} catch (LoadingException e) {
 			System.out.println(e.getMessage());
-			System.out.println("");
 			execute();
 			return;
 		}
 
 		/* Proceed with command */
 
-		super.checkRepository(repositoryName, false);
+		ObserverEnd observerEndCheck = new ObserverEnd() {
+			@Override
+			public void end() {
+				execute();
+			}
+		};
+
+		super.check(repositoryName, observerEndCheck);
 	}
 
 	private void delete() {
@@ -595,7 +604,6 @@ public class CommandConsole extends CommandGeneral {
 			repositoryService.readAll();
 		} catch (LoadingException e) {
 			System.out.println(e.getMessage());
-			System.out.println("");
 			execute();
 			return;
 		}
@@ -613,7 +621,6 @@ public class CommandConsole extends CommandGeneral {
 		} catch (RepositoryException e) {
 			System.out.println(e.getMessage());
 		} finally {
-			System.out.println("");
 			execute();
 		}
 	}
@@ -639,7 +646,6 @@ public class CommandConsole extends CommandGeneral {
 			repositoryService.readAll();
 		} catch (LoadingException e) {
 			System.out.println(e.getMessage());
-			System.out.println("");
 			execute();
 			return;
 		}
@@ -687,10 +693,17 @@ public class CommandConsole extends CommandGeneral {
 		repositoryService.setExactMatch(exactMath, repositoryName);
 		repositoryService.setDefaultDownloadLocation(repositoryName,
 				destinationFolderPath);
-		repositoryService.setConnectionTimeout(repositoryName,"0");
+		repositoryService.setConnectionTimeout(repositoryName, "0");
 		repositoryService.setReadTimeout(repositoryName, "0");
 
-		super.syncRepository(repositoryName, false);
+		ObserverEnd observerEnd = new ObserverEnd() {
+			@Override
+			public void end() {
+				execute();
+			}
+		};
+
+		super.sync(repositoryName, observerEnd);
 	}
 
 	private void extractBikeys() {
@@ -714,8 +727,10 @@ public class CommandConsole extends CommandGeneral {
 		} while (targetDirectoryPath.isEmpty());
 
 		/* Proceed with command */
-		
-		super.extractBikeys(sourceDirectoryPath, targetDirectoryPath, false);
+
+		super.extractBikeys(sourceDirectoryPath, targetDirectoryPath);
+
+		execute();
 	}
 
 	private void checkForUpdates() {
@@ -723,7 +738,9 @@ public class CommandConsole extends CommandGeneral {
 		System.out.println("");
 		System.out.println("Check for updates.");
 
-		super.checkForUpdates(devMode, false);
+		super.checkForUpdates(devMode);
+
+		execute();
 	}
 
 	private void displayVersion() {

@@ -1,10 +1,7 @@
 package fr.soe.a3s.dao;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.util.zip.GZIPInputStream;
 
 import fr.soe.a3s.domain.Preferences;
 import fr.soe.a3s.exception.CreateDirectoryException;
@@ -57,4 +54,44 @@ public class PreferencesDAO implements DataAccessConstants {
 		this.preferences = preferences;
 	}
 
+	// http://stackoverflow.com/questions/5953525/run-java-application-at-windows-startup
+	public boolean addToWindowsRegistry(boolean devMode) {
+
+		boolean ok = true;
+		try {
+			String key = "Software\\Microsoft\\Windows\\CurrentVersion\\Run";
+			String value = "ArmA3Sync";
+			String path = "\""
+					+ FileAccessMethods.getCanonicalPath(new File(""))
+					+ "\\ArmA3Sync.exe" + "\"";
+			if (devMode) {
+				path = path + " " + "-dev -run";
+			} else {
+				path = path + " " + "-run";
+			}
+			WinRegistry.writeStringValue(WinRegistry.HKEY_LOCAL_MACHINE, key,
+					value, path);
+		} catch (Exception e) {
+			ok = false;
+			String message = "Failed to write into Windows registry.";
+			System.out.println(message);
+			e.printStackTrace();
+		}
+		return ok;
+	}
+
+	public void deleteFromWindowsRegistry() {
+
+		boolean found = true;
+		String key = "Software\\Microsoft\\Windows\\CurrentVersion\\Run";
+		String value = "ArmA3Sync";
+
+		if (found) {
+			try {
+				WinRegistry.deleteValue(WinRegistry.HKEY_LOCAL_MACHINE, key,
+						value);
+			} catch (Exception e) {
+			}
+		}
+	}
 }

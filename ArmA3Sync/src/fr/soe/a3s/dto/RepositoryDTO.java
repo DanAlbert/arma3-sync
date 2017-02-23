@@ -11,6 +11,7 @@ public class RepositoryDTO implements java.lang.Comparable {
 	private ProtocolDTO repositoryUploadProtocoleDTO;
 	private ProtocolDTO repositoryProxyProtocoleDTO;
 	private boolean enableProxy;
+	private boolean auto;
 
 	public String getName() {
 		return name;
@@ -93,5 +94,13 @@ public class RepositoryDTO implements java.lang.Comparable {
 		else if (name.compareToIgnoreCase(getName()) == 0)
 			result = 0;
 		return result;
+	}
+
+	public boolean isAuto() {
+		return auto;
+	}
+
+	public void setAuto(boolean value) {
+		this.auto = value;
 	}
 }

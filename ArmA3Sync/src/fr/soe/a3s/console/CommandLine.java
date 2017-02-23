@@ -2,6 +2,7 @@ package fr.soe.a3s.console;
 
 import java.io.File;
 
+import fr.soe.a3s.controller.ObserverEnd;
 import fr.soe.a3s.exception.LoadingException;
 import fr.soe.a3s.service.RepositoryService;
 
@@ -22,7 +23,14 @@ public class CommandLine extends CommandGeneral {
 
 		/* Proceed with command */
 
-		super.buildRepository(repositoryName, true);
+		ObserverEnd observerEndBuild = new ObserverEnd() {
+			@Override
+			public void end() {
+				System.exit(0);
+			}
+		};
+
+		super.build(repositoryName, observerEndBuild);
 	}
 
 	public void check(String repositoryName) {
@@ -40,7 +48,14 @@ public class CommandLine extends CommandGeneral {
 
 		/* Proceed with command */
 
-		super.checkRepository(repositoryName, true);
+		ObserverEnd observerEndCheck = new ObserverEnd() {
+			@Override
+			public void end() {
+				System.exit(0);
+			}
+		};
+
+		super.check(repositoryName, observerEndCheck);
 	}
 
 	public void sync(final String repositoryName, String destinationFolderPath,
@@ -81,20 +96,32 @@ public class CommandLine extends CommandGeneral {
 				destinationFolderPath);
 		repositoryService.setExactMatch(Boolean.parseBoolean(withExactMath),
 				repositoryName);
-		repositoryService.setConnectionTimeout(repositoryName,"0");
+		repositoryService.setConnectionTimeout(repositoryName, "0");
 		repositoryService.setReadTimeout(repositoryName, "0");
 
-		super.syncRepository(repositoryName, true);
+		ObserverEnd observerEnd = new ObserverEnd() {
+			@Override
+			public void end() {
+				System.exit(0);
+			}
+		};
+
+		super.sync(repositoryName, observerEnd);
 	}
 
+	@Override
 	public void extractBikeys(String sourceDirectoryPath,
 			String targetDirectoryPath) {
 
-		super.extractBikeys(sourceDirectoryPath, targetDirectoryPath, true);
+		super.extractBikeys(sourceDirectoryPath, targetDirectoryPath);
+
+		System.exit(0);
 	}
 
 	public void checkForUpdates() {
 
-		super.checkForUpdates(false, true);
+		super.checkForUpdates(false);
+
+		System.exit(0);
 	}
 }

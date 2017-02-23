@@ -92,8 +92,8 @@ public class FileMaker {
 	public void sync(File targetFile, String targetFileSha1,
 			String targetRelativeFileUrl) throws IOException, HttpException {
 
-		System.out.println("");
-		System.out.println("Processing file: " + targetFile.getAbsolutePath());
+		System.out.println("Downloading partial file: "
+				+ targetFile.getAbsolutePath());
 
 		if (targetFile.exists() && targetFileSha1 == null) {
 			targetFileSha1 = FileAccessMethods.computeSHA1(targetFile);
@@ -120,6 +120,9 @@ public class FileMaker {
 	public double getCompletion(File targetFile, String targetFileSha1)
 			throws IOException {
 
+		System.out.println("Determining completion for file: "
+				+ targetFile.getAbsolutePath());
+
 		if (targetFile.exists() && targetFileSha1 == null) {
 			targetFileSha1 = FileAccessMethods.computeSHA1(targetFile);
 		}
@@ -135,6 +138,9 @@ public class FileMaker {
 				complete = mapMatcher(targetFile);
 			}
 		}
+
+		System.out.println("File complete " + complete + "%: "
+				+ targetFile.getAbsolutePath());
 
 		return complete;
 	}
@@ -623,7 +629,7 @@ public class FileMaker {
 	 * @return How many percent of file we have already
 	 */
 	private double matchControl() {
-		
+
 		missing = 0;
 		for (int i = 0; i < fileMap.length; i++) {
 			if (mfr.getSeqNum() == 2) { // pouze pokud kontrolujeme matching
@@ -650,7 +656,7 @@ public class FileMaker {
 
 		if (fileMap.length > 0) {
 			return ((((double) fileMap.length - missing) / fileMap.length) * 100);
-		}else {
+		} else {
 			return 0;
 		}
 	}

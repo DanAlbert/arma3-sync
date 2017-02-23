@@ -18,6 +18,14 @@ public class PreferencesService {
 		preferencesDAO.write();
 	}
 
+	public boolean addToRunWindowsRegistry(boolean devMode) {
+		return preferencesDAO.addToWindowsRegistry(devMode);
+	}
+
+	public void deleteFromRunWindowsRegistry() {
+		preferencesDAO.deleteFromWindowsRegistry();
+	}
+
 	public PreferencesDTO getPreferences() {
 		PreferencesDTO preferencesDTO = transformPreferences2DTO(preferencesDAO
 				.getPreferences());
@@ -38,6 +46,9 @@ public class PreferencesService {
 				.getLaunchPanelMinimized());
 		preferences.setLookAndFeel(preferencesDTO.getLookAndFeel());
 		preferences.setIconResizeSize(preferencesDTO.getIconResizeSize());
+		preferences.setStartWithOS(preferencesDTO.getStartWithOS());
+		preferences.setCheckRepositoriesFrequency(preferencesDTO
+				.getCheckRepositoriesFrequency());
 		return preferences;
 	}
 
@@ -50,6 +61,9 @@ public class PreferencesService {
 				.getLaunchPanelMinimized());
 		preferencesDTO.setLookAndFeel(preferences.getLookAndFeel());
 		preferencesDTO.setIconResizeSize(preferences.getIconResizeSize());
+		preferencesDTO.setStartWithOS(preferences.getStartWithOS());
+		preferencesDTO.setCheckRepositoriesFrequency(preferences
+				.getCheckRepositoriesFrequency());
 		return preferencesDTO;
 	}
 }

@@ -33,11 +33,11 @@ public class MyRenderer extends DefaultTreeCellRenderer implements UIConstants {
 		if (treeNodeDTO.isLeaf()) {
 			TreeLeafDTO leaf = (TreeLeafDTO) treeNodeDTO;
 			setIcon(new ImageIcon(BRICK));
-			if (leaf.isDuplicate()) {
-				setIcon(new ImageIcon(EXCLAMATION));
-			} else {
-				setIcon(new ImageIcon(BRICK));
-			}
+			// if (leaf.isDuplicate()) {
+			// setIcon(new ImageIcon(EXCLAMATION));
+			// } else {
+			// setIcon(new ImageIcon(BRICK));
+			// }
 		}
 	}
 }

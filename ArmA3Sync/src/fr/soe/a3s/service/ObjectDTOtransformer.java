@@ -232,9 +232,11 @@ public class ObjectDTOtransformer {
 	/* Repository */
 
 	protected RepositoryDTO transformRepository2DTO(Repository repository) {
+
 		final RepositoryDTO repositoryDTO = new RepositoryDTO();
 		repositoryDTO.setName(repository.getName());
 		repositoryDTO.setNotify(repository.isNotify());
+		repositoryDTO.setAuto(repository.isAuto());
 		// Protocole
 		ProtocolDTO protocoleDTO = new ProtocolDTO();
 		protocoleDTO.setUrl(repository.getProtocol().getUrl());

@@ -51,8 +51,6 @@ public class DuplicateGroupDialog extends AbstractGroupDialog {
 					.getList()) {
 				duplicate(directory, n);
 			}
-			facade.getAddonsPanel().refreshViewArbre2();
-			facade.getAddonsPanel().saveAddonGroups();
 			this.dispose();
 		}
 	}

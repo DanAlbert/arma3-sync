@@ -27,6 +27,7 @@ public class ProgressUploadEventsDialog extends AbstractProgressDialog {
 	}
 
 	public void init() {
+		
 		try {
 			// 1. Check repository upload protocole
 			RepositoryDTO repositoryDTO = repositoryService
@@ -40,7 +41,7 @@ public class ProgressUploadEventsDialog extends AbstractProgressDialog {
 				repositoryService.setRepositoryUploadProtocole(repositoryName,
 						protocoleDTO.getUrl(), protocoleDTO.getPort(),
 						protocoleDTO.getLogin(), protocoleDTO.getPassword(),
-						protocolType, "0", "0");
+						protocolType, null, null);
 			} else if (uploadProtocoleDTO == null) {
 				String message = "Please use the upload options to configure a connection.";
 				throw new CheckException(message);

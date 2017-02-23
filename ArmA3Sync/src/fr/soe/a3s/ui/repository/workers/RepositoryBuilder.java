@@ -1,19 +1,23 @@
 package fr.soe.a3s.ui.repository.workers;
 
 import java.io.IOException;
+import java.util.List;
 
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
 import fr.soe.a3s.constant.RepositoryStatus;
-import fr.soe.a3s.controller.ObserverCount;
+import fr.soe.a3s.controller.ObserverCountInt;
+import fr.soe.a3s.controller.ObserverEnd;
+import fr.soe.a3s.controller.ObserverError;
 import fr.soe.a3s.controller.ObserverText;
 import fr.soe.a3s.exception.WritingException;
 import fr.soe.a3s.exception.repository.RepositoryException;
-import fr.soe.a3s.service.RepositoryService;
+import fr.soe.a3s.service.administration.RepositoryBuildProcessor;
 import fr.soe.a3s.ui.Facade;
 import fr.soe.a3s.ui.repository.AdminPanel;
 import fr.soe.a3s.ui.repository.dialogs.error.UnexpectedErrorDialog;
+import fr.soe.a3s.utils.ErrorPrinter;
 
 public class RepositoryBuilder extends Thread {
 
@@ -23,9 +27,9 @@ public class RepositoryBuilder extends Thread {
 	private final String path;
 	private final String repositoryName;
 	/* Tests */
-	private boolean canceled = false;
+	private boolean canceled;
 	/* Services */
-	private final RepositoryService repositoryService = new RepositoryService();
+	private RepositoryBuildProcessor filesBuildProcessor;
 
 	public RepositoryBuilder(Facade facade, String repositoryName, String path,
 			AdminPanel adminPanel) {
@@ -42,89 +46,37 @@ public class RepositoryBuilder extends Thread {
 
 		// Init AdminPanel for start building
 		initAdminPanelForStartBuild();
-
-		// Set building state
-		repositoryService.setBuilding(repositoryName, true);
+		canceled = false;
 
 		adminPanel.getBuildProgressBar().setIndeterminate(true);
 
-		repositoryService.getRepositoryBuilderDAO().addObserverText(
-				new ObserverText() {
-					@Override
-					public void update(String text) {
-						adminPanel.getBuildProgressBar()
-								.setIndeterminate(false);
-						adminPanel.getBuildProgressBar().setString(text);
-					}
-				});
-
-		repositoryService.getRepositoryBuilderDAO().addObserverCount(
-				new ObserverCount() {
-					@Override
-					public synchronized void update(final int value) {
-						SwingUtilities.invokeLater(new Runnable() {
-							@Override
-							public void run() {
-								adminPanel.getBuildProgressBar()
-										.setIndeterminate(false);
-								adminPanel.getBuildProgressBar()
-										.setValue(value);
-							}
-						});
-					}
-				});
-
-		try {
-			// Build repository
-			repositoryService.buildRepository(repositoryName, path);
-
-			adminPanel.getBuildProgressBar().setIndeterminate(false);
-
-			if (!canceled) {
-				adminPanel.getBuildProgressBar().setValue(100);
-				adminPanel.getBuildProgressBar().setString("100%");
-
-				JOptionPane.showMessageDialog(facade.getMainPanel(),
-						"Repository build finished.", "Build repository",
-						JOptionPane.INFORMATION_MESSAGE);
-
-				// Init views
-				this.adminPanel.init(repositoryName);
-				this.facade.getSyncPanel().init();
-				this.adminPanel
-						.updateRepositoryStatus(RepositoryStatus.UPDATED);
-				this.adminPanel.getRepositoryPanel().getEventsPanel()
-						.init(repositoryName);// update addons list
+		filesBuildProcessor = new RepositoryBuildProcessor(repositoryName, path);
+		filesBuildProcessor.addObserverText(new ObserverText() {
+			@Override
+			public void update(String text) {
+				executeUpdateText(text);
 			}
-
-			// Write repository
-			repositoryService.write(repositoryName);
-
-		} catch (Exception e) {
-			adminPanel.getBuildProgressBar().setIndeterminate(false);
-			if (!canceled) {
-				e.printStackTrace();
-				this.adminPanel.updateRepositoryStatus(RepositoryStatus.ERROR);
-				if (e instanceof RepositoryException) {
-					JOptionPane.showMessageDialog(facade.getMainPanel(),
-							e.getMessage(), "Build repository",
-							JOptionPane.ERROR_MESSAGE);
-				} else if (e instanceof IOException
-						| e instanceof WritingException) {
-					JOptionPane.showMessageDialog(facade.getMainPanel(),
-							e.getMessage(), "Build repository",
-							JOptionPane.ERROR_MESSAGE);
-				} else {
-					UnexpectedErrorDialog dialog = new UnexpectedErrorDialog(
-							facade, "Build repository", e, repositoryName);
-					dialog.show();
-				}
+		});
+		filesBuildProcessor.addObserverCountProgress(new ObserverCountInt() {
+			@Override
+			public void update(int value) {
+				executeUpdateCountProgress(value);
 			}
-		} finally {
-			repositoryService.cancel();
-			initAdminPanelForEndBuild();
-			terminate();
-		}
+		});
+		filesBuildProcessor.addObserverEnd(new ObserverEnd() {
+			@Override
+			public void end() {
+				executeEnd();
+			}
+		});
+		filesBuildProcessor.addObserverError(new ObserverError() {
+			@Override
+			public void error(List<Exception> errors) {
+				executeError(errors);
+			}
+		});
+
+		filesBuildProcessor.run();
 	}
 
 	private void initAdminPanelForStartBuild() {
@@ -159,18 +111,95 @@ public class RepositoryBuilder extends Thread {
 		adminPanel.getBuildProgressBar().setMaximum(0);
 	}
 
+	private void executeUpdateText(String text) {
+
+		adminPanel.getBuildProgressBar().setIndeterminate(false);
+		adminPanel.getBuildProgressBar().setString(text);
+	}
+
+	private void executeUpdateCountProgress(final int value) {
+
+		SwingUtilities.invokeLater(new Runnable() {
+			@Override
+			public void run() {
+				adminPanel.getBuildProgressBar().setIndeterminate(false);
+				adminPanel.getBuildProgressBar().setValue(value);
+			}
+		});
+	}
+
+	private void executeEnd() {
+
+		adminPanel.getBuildProgressBar().setIndeterminate(false);
+
+		if (!canceled) {
+
+			canceled = true;
+
+			System.out.println("Repository " + repositoryName
+					+ " - build finished.");
+
+			adminPanel.getBuildProgressBar().setValue(100);
+			adminPanel.getBuildProgressBar().setString("100%");
+
+			String message = "Repository " + repositoryName + "\n"
+					+ "Build finished.";
+			JOptionPane.showMessageDialog(facade.getMainPanel(), message,
+					"Build repository", JOptionPane.INFORMATION_MESSAGE);
+
+			// Init views
+			this.adminPanel.init(repositoryName);
+			this.adminPanel.updateRepositoryStatus(RepositoryStatus.UPDATED);
+			this.adminPanel.getRepositoryPanel().getEventsPanel()
+					.init(repositoryName);// update addons list
+			
+			initAdminPanelForEndBuild();
+			terminate();
+		}
+	}
+
+	private void executeError(List<Exception> errors) {
+
+		adminPanel.getBuildProgressBar().setIndeterminate(false);
+
+		if (!canceled) {
+
+			canceled = true;
+			this.adminPanel.updateRepositoryStatus(RepositoryStatus.ERROR);
+
+			System.out.println("Repository " + repositoryName
+					+ " - build finished with error.");
+			
+			this.adminPanel.getCheckProgressBar().setString("Error!");
+
+			Exception ex = errors.get(0);
+			if (ex instanceof RepositoryException | ex instanceof IOException
+					| ex instanceof WritingException) {
+				String message = ErrorPrinter.printRepositoryManagedError(
+						repositoryName, ex);
+				JOptionPane.showMessageDialog(facade.getMainPanel(), message,
+						"Build repository", JOptionPane.ERROR_MESSAGE);
+			} else {
+				ErrorPrinter.printRepositoryUnexpectedError(repositoryName, ex);
+				UnexpectedErrorDialog dialog = new UnexpectedErrorDialog(
+						facade, "Build repository", ex, repositoryName);
+				dialog.show();
+			}
+			
+			initAdminPanelForEndBuild();
+			terminate();
+		}
+	}
+
 	private void terminate() {
 
-		repositoryService.setBuilding(repositoryName, false);
-		this.interrupt();
+		filesBuildProcessor.cancel();
 		System.gc();
 	}
 
 	public void cancel() {
 
 		this.canceled = true;
-		adminPanel.getBuildProgressBar().setString("Canceling...");
-		repositoryService.cancel();
 		initAdminPanelForEndBuild();
 		terminate();
 	}

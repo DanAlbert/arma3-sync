@@ -264,8 +264,7 @@ public class ProfileSelectionDialog extends AbstractDialog {
 			return;
 		}
 		configurationService.setProfileName(profileName);
-		facade.getMainPanel().updateProfilesMenu();
-		facade.getMainPanel().profileChanged();
+		facade.getMainPanel().updateTabs(OP_PROFILE_CHANGED);
 		this.dispose();
 	}
 
@@ -277,7 +276,7 @@ public class ProfileSelectionDialog extends AbstractDialog {
 			initProfileName = DefaultProfileName.DEFAULT.getDescription();
 		}
 		configurationService.setProfileName(initProfileName);
-		facade.getInfoPanel().init();
+		facade.getMainPanel().updateTabs(OP_PROFILE_CHANGED);
 		this.dispose();
 	}
 
@@ -289,7 +288,7 @@ public class ProfileSelectionDialog extends AbstractDialog {
 			initProfileName = DefaultProfileName.DEFAULT.getDescription();
 		}
 		configurationService.setProfileName(initProfileName);
-		facade.getInfoPanel().init();
+		facade.getMainPanel().updateTabs(OP_PROFILE_CHANGED);
 		this.dispose();
 	}
 

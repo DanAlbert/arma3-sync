@@ -8,9 +8,9 @@ public interface ObservableDownload {
 
 	public void updateObserverDownloadTotalSize();
 
-	public void updateObserverDownloadSingleSizeProgress();
-
 	public void updateObserverDownloadTotalSizeProgress();
+
+	public void updateObserverDownloadSingleSizeProgress();
 
 	public void updateObserverDownloadSpeed();
 
@@ -20,11 +20,10 @@ public interface ObservableDownload {
 
 	public void updateObserverDownloadEndWithErrors(List<Exception> errors);
 
-	public void updateObserverDownloadTooManyTimeoutErrors(
-			int maxNumberOfTimeoutErrors, List<Exception> errors);
-
 	public void updateObserverDownloadTooManyErrors(int maxNumberOfErrors,
 			List<Exception> errors);
 
 	public void updateObserverDownloadResponseTime();
+
+	public void updateObserverDownloadConnectionLost();
 }

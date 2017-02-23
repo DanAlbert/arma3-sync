@@ -8,7 +8,10 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.ByteBuffer;
+import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
+import java.nio.channels.ReadableByteChannel;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.zip.ZipEntry;
@@ -58,12 +61,14 @@ public class FileAccessMethods implements DataAccessConstants {
 	public static boolean deleteDirectory(File file) {
 
 		if (file.exists()) {
-			File[] files = file.listFiles();
-			for (int i = 0; i < files.length; i++) {
-				if (files[i].isDirectory()) {
-					deleteDirectory(files[i]);
-				} else {
-					files[i].delete();
+			File[] subFiles = file.listFiles();
+			if (subFiles!=null){
+				for (int i = 0; i < subFiles.length; i++) {
+					if (subFiles[i].isDirectory()) {
+						deleteDirectory(subFiles[i]);
+					} else {
+						subFiles[i].delete();
+					}
 				}
 			}
 		}
@@ -101,16 +106,18 @@ public class FileAccessMethods implements DataAccessConstants {
 
 		if (folder.exists()) {
 			File[] files = folder.listFiles();
-			for (int i = 0; i < files.length; i++) {
-				File f = files[i];
-				if (f.isDirectory()) {
-					boolean succeed = f.setWritable(true, false);
-					setWritePermissions(f);
+			if (files != null) {
+				for (int i = 0; i < files.length; i++) {
+					File f = files[i];
+					if (f.isDirectory()) {
+						boolean succeed = f.setWritable(true, false);
+						setWritePermissions(f);
+					}
 				}
 			}
 		}
 	}
-	
+
 	public static String getCanonicalPath(File file) {
 
 		String filePath = null;
@@ -310,15 +317,31 @@ public class FileAccessMethods implements DataAccessConstants {
 
 		// convert the byte to hex format
 		FileInputStream fis = null;
+		
+		/*
+		ReadableByteChannel inChannel = Channels.newChannel(inputStream);
+		ByteBuffer buffer = ByteBuffer.allocate(BUFFER_SIZE);
+		while (((bytesRead = inChannel.read(buffer)) != -1)
+				&& !httpDAO.isCanceled()) {
+			byte[] array = buffer.array();
+			dos.write(array, 0, bytesRead);
+			buffer.clear();
+		}
+*/
+		
+	
+		
 		char[] chars = null;
 		try {
 			MessageDigest md = MessageDigest.getInstance("SHA1");
 			fis = new FileInputStream(file);
+			ReadableByteChannel inChannel = Channels.newChannel(fis);
 			int buffsize = (int) Math.min(file.length(), 4 * 1024 * 1024);
-			byte[] dataBytes = new byte[buffsize];
+			ByteBuffer buffer = ByteBuffer.allocate(buffsize);
 			int nread = 0;
-			while ((nread = fis.read(dataBytes)) != -1) {
-				md.update(dataBytes, 0, nread);
+			while ((nread = inChannel.read(buffer)) != -1) {
+				md.update(buffer.array(), 0, nread);
+				buffer.clear();
 			}
 			byte[] mdbytes = md.digest();
 			chars = new char[2 * mdbytes.length];

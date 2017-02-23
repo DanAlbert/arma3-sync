@@ -123,8 +123,7 @@ public class BitTorrentService extends AbstractConnexionService implements
 
 	@Override
 	public void synchronize(String repositoryName,
-			List<SyncTreeNodeDTO> filesToDownload) throws RepositoryException,
-			IOException {
+			List<SyncTreeNodeDTO> filesToDownload) throws RepositoryException {
 
 		final Repository repository = repositoryDAO.getMap()
 				.get(repositoryName);
@@ -166,11 +165,6 @@ public class BitTorrentService extends AbstractConnexionService implements
 			list.add(bitTorrentDAO);
 		}
 		return list;
-	}
-
-	@Override
-	public int getNumberConnections() {
-		return bitTorrentDAOpool.size();
 	}
 
 	@Override

@@ -2,6 +2,7 @@ package fr.soe.a3s.ui.repository.dialogs.connection;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
+import java.util.List;
 
 import javax.swing.Box;
 import javax.swing.DefaultComboBoxModel;
@@ -15,13 +16,15 @@ import fr.soe.a3s.exception.CheckException;
 import fr.soe.a3s.exception.WritingException;
 import fr.soe.a3s.exception.repository.RepositoryException;
 import fr.soe.a3s.exception.repository.RepositoryNotFoundException;
+import fr.soe.a3s.service.ProfileService;
 import fr.soe.a3s.service.RepositoryService;
 import fr.soe.a3s.ui.AbstractDialog;
 import fr.soe.a3s.ui.Facade;
 import fr.soe.a3s.ui.repository.dialogs.progress.ProgressSynchronizationDialog;
 
-public class RepositoryEditionDialog extends AbstractDialog implements
-		DataAccessConstants {
+public class RepositoryEditionDialog extends AbstractDialog
+		implements
+			DataAccessConstants {
 
 	private DescriptionPanel descriptionPanel;
 	private ProtocolPanel protocolPanel;
@@ -29,8 +32,9 @@ public class RepositoryEditionDialog extends AbstractDialog implements
 	/* Data */
 	private String initialRepositoryName = null;
 	private DefaultComboBoxModel comboBoxProtocolModel = null;
-	/* Service */
+	/* Services */
 	private final RepositoryService repositoryService = new RepositoryService();
+	private final ProfileService profileService = new ProfileService();
 
 	public RepositoryEditionDialog(Facade facade) {
 		super(facade, "Repository", true);
@@ -68,10 +72,10 @@ public class RepositoryEditionDialog extends AbstractDialog implements
 		this.setTitle("New repository");
 
 		/* Init Protocol Section */
-		comboBoxProtocolModel = new DefaultComboBoxModel(new String[] {
+		comboBoxProtocolModel = new DefaultComboBoxModel(new String[]{
 				ProtocolType.FTP.getDescription(),
 				ProtocolType.HTTP.getDescription(),
-				ProtocolType.HTTPS.getDescription() });
+				ProtocolType.HTTPS.getDescription()});
 		protocolPanel.init(comboBoxProtocolModel);
 
 		/* Init Connection Section */
@@ -87,10 +91,10 @@ public class RepositoryEditionDialog extends AbstractDialog implements
 		descriptionPanel.init(repositoryName);
 
 		/* Init Protocol Section */
-		comboBoxProtocolModel = new DefaultComboBoxModel(new String[] {
+		comboBoxProtocolModel = new DefaultComboBoxModel(new String[]{
 				ProtocolType.FTP.getDescription(),
 				ProtocolType.HTTP.getDescription(),
-				ProtocolType.HTTPS.getDescription() });
+				ProtocolType.HTTPS.getDescription()});
 		protocolPanel.init(comboBoxProtocolModel);
 
 		try {
@@ -135,6 +139,13 @@ public class RepositoryEditionDialog extends AbstractDialog implements
 			} else {// New Repository
 				repositoryService.createRepository(newRepositoryName, url,
 						port, login, password, protocolType);
+				// Set default download path
+				List<String> addonSearchDirectories = profileService
+						.getAddonSearchDirectoryPaths();
+				if (!addonSearchDirectories.isEmpty()) {
+					repositoryService.setDefaultDownloadLocation(
+							newRepositoryName, addonSearchDirectories.get(0));
+				}
 			}
 
 			repositoryService.write(newRepositoryName);

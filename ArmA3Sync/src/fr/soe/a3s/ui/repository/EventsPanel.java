@@ -181,7 +181,7 @@ public class EventsPanel extends JPanel implements UIConstants {
 			JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT,
 					listEventsPanel, addonsSelectionPanel);
 			splitPane.setOneTouchExpandable(false);
-			splitPane.setDividerLocation(130);
+			splitPane.setDividerLocation(200);
 			flattenSplitPane(splitPane);
 			vertBox1.add(splitPane);
 		}
@@ -432,9 +432,11 @@ public class EventsPanel extends JPanel implements UIConstants {
 					"Nothing to upload.", "Information",
 					JOptionPane.INFORMATION_MESSAGE);
 		} else {
-			uploadInformations();
-			facade.getSyncPanel().init();
-			facade.getOnlinePanel().init();
+			ProgressUploadEventsDialog uploadPanel = new ProgressUploadEventsDialog(
+					facade, repositoryName);
+			uploadPanel.setVisible(true);
+			uploadPanel.init();
+			facade.getMainPanel().updateTabs(OP_REPOSITORY_CHANGED);
 		}
 	}
 
@@ -444,14 +446,6 @@ public class EventsPanel extends JPanel implements UIConstants {
 				facade);
 		uploadEventsOptionsPanel.init(repositoryName);
 		uploadEventsOptionsPanel.setVisible(true);
-	}
-
-	private void uploadInformations() {
-
-		ProgressUploadEventsDialog uploadPanel = new ProgressUploadEventsDialog(
-				facade, repositoryName);
-		uploadPanel.setVisible(true);
-		uploadPanel.init();
 	}
 
 	private void buttonSaveToDiskPerformed() {
@@ -473,10 +467,9 @@ public class EventsPanel extends JPanel implements UIConstants {
 			try {
 				repositoryService.writeEvents(repositoryName);
 				JOptionPane.showMessageDialog(facade.getMainPanel(),
-						"Events informatons have been save to repository.",
+						"Events informatons have been saved to the repository.",
 						"Information", JOptionPane.INFORMATION_MESSAGE);
-				facade.getSyncPanel().init();
-				facade.getOnlinePanel().init();
+				facade.getMainPanel().updateTabs(OP_REPOSITORY_CHANGED);
 			} catch (WritingException e) {
 				JOptionPane.showMessageDialog(facade.getMainPanel(),
 						e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
@@ -486,64 +479,43 @@ public class EventsPanel extends JPanel implements UIConstants {
 
 	public void updateListEvents() {
 
-		try {
-			eventDTOs = this.repositoryService.getEvents(repositoryName);
-			if (eventDTOs != null) {
-				String[] eventTexts = new String[eventDTOs.size()];
-				int i = 0;
-				for (EventDTO eventDTO : eventDTOs) {
-					if (eventDTO.getDescription() == null) {
-						eventTexts[i] = eventDTO.getName();
-					} else if (eventDTO.getDescription().isEmpty()) {
-						eventTexts[i] = eventDTO.getName();
-					} else {
-						eventTexts[i] = eventDTO.getName() + " - "
-								+ eventDTO.getDescription();
-					}
-					i++;
-				}
-				listEvents.clearSelection();
-				listEvents.setListData(eventTexts);
-				int numberLigneShown = eventDTOs.size();
-				listEvents.setVisibleRowCount(numberLigneShown);
-				listEvents.setPreferredSize(listEvents
-						.getPreferredScrollableViewportSize());
-				scrollPane1.updateUI();
+		eventDTOs = this.repositoryService.getEvents(repositoryName);
+		String[] eventTexts = new String[eventDTOs.size()];
+		int i = 0;
+		for (EventDTO eventDTO : eventDTOs) {
+			if (eventDTO.getDescription() == null) {
+				eventTexts[i] = eventDTO.getName();
+			} else if (eventDTO.getDescription().isEmpty()) {
+				eventTexts[i] = eventDTO.getName();
+			} else {
+				eventTexts[i] = eventDTO.getName() + " - "
+						+ eventDTO.getDescription();
 			}
-		} catch (RepositoryException e) {
-			String[] eventNames = new String[0];
-			listEvents.clearSelection();
-			listEvents.setListData(eventNames);
-			int numberLigneShown = eventDTOs.size();
-			listEvents.setVisibleRowCount(numberLigneShown);
-			listEvents.setPreferredSize(listEvents
-					.getPreferredScrollableViewportSize());
-			scrollPane1.updateUI();
-			JOptionPane.showMessageDialog(facade.getMainPanel(),
-					e.getMessage(), "Repository", JOptionPane.ERROR_MESSAGE);
+			i++;
 		}
+		listEvents.clearSelection();
+		listEvents.setListData(eventTexts);
+		int numberLigneShown = eventDTOs.size();
+		listEvents.setVisibleRowCount(numberLigneShown);
+		listEvents.setPreferredSize(listEvents
+				.getPreferredScrollableViewportSize());
+		scrollPane1.updateUI();
 	}
 
 	private void updateListAddons() {
 
-		try {
-			TreeDirectoryDTO treeDirectoryDTO = repositoryService
-					.getAddonTreeFromRepository(repositoryName, true);
+		TreeDirectoryDTO treeDirectoryDTO = repositoryService
+				.getGroupFromRepository(repositoryName, true);
 
-			if (treeDirectoryDTO != null) {
-				arbre.removeAll();
-				racine1 = treeDirectoryDTO;
-				addonTreeModel1 = new AddonTreeModel(racine1);
-				arbre.setModel(addonTreeModel1);
-				int numberRowShown = arbre.getRowCount();
-				arbre.setVisibleRowCount(numberRowShown);
-				arbre.setPreferredSize(arbre
-						.getPreferredScrollableViewportSize());
-				arbre.updateUI();
-			}
-		} catch (RepositoryException e) {
-			JOptionPane.showMessageDialog(facade.getMainPanel(),
-					e.getMessage(), "Repository", JOptionPane.ERROR_MESSAGE);
+		if (treeDirectoryDTO != null) {
+			arbre.removeAll();
+			racine1 = treeDirectoryDTO;
+			addonTreeModel1 = new AddonTreeModel(racine1);
+			arbre.setModel(addonTreeModel1);
+			int numberRowShown = arbre.getRowCount();
+			arbre.setVisibleRowCount(numberRowShown);
+			arbre.setPreferredSize(arbre.getPreferredScrollableViewportSize());
+			arbre.updateUI();
 		}
 	}
 

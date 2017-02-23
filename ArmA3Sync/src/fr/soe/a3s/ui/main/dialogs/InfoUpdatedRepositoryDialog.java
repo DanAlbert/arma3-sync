@@ -10,6 +10,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.border.BevelBorder;
 
+import fr.soe.a3s.dto.RepositoryDTO;
 import fr.soe.a3s.ui.AbstractDialog;
 import fr.soe.a3s.ui.Facade;
 import fr.soe.a3s.ui.repository.RepositoryPanel;
@@ -18,13 +19,15 @@ public class InfoUpdatedRepositoryDialog extends AbstractDialog {
 
 	private JList list;
 	private JScrollPane scrollPane;
+	/* Data */
+	private List<RepositoryDTO> repositoryDTOs;
 
 	public InfoUpdatedRepositoryDialog(Facade facade) {
 		super(facade, "Repository", true);
 		this.setResizable(true);
 
 		{
-			buttonOK.setText("Update now");
+			buttonOK.setText("Open");
 			getRootPane().setDefaultButton(buttonOK);
 			buttonCancel.setText("Close");
 		}
@@ -50,11 +53,17 @@ public class InfoUpdatedRepositoryDialog extends AbstractDialog {
 		this.setLocationRelativeTo(facade.getMainPanel());
 	}
 
-	public void init(List<String> repositoryNames) {
+	public void init(List<RepositoryDTO> repositoryDTOs) {
 
-		String[] tab = new String[repositoryNames.size()];
-		for (int i = 0; i < repositoryNames.size(); i++) {
-			tab[i] = repositoryNames.get(i);
+		this.repositoryDTOs = repositoryDTOs;
+
+		String[] tab = new String[repositoryDTOs.size()];
+		for (int i = 0; i < repositoryDTOs.size(); i++) {
+			if (repositoryDTOs.get(i).isAuto()) {
+				tab[i] = repositoryDTOs.get(i).getName() + " (auto-update)";
+			} else {
+				tab[i] = repositoryDTOs.get(i).getName();
+			}
 		}
 		list.setListData(tab);
 
@@ -71,13 +80,12 @@ public class InfoUpdatedRepositoryDialog extends AbstractDialog {
 		int index = list.getSelectedIndex();
 		if (index != -1) {
 			this.dispose();
-			String repositoryName = (String) list.getModel()
-					.getElementAt(index);
-			if (repositoryName != null) {
+			RepositoryDTO repositoryDTO = repositoryDTOs.get(index);
+			if (repositoryDTO != null) {
 				RepositoryPanel repositoryPanel = facade.getMainPanel()
-						.openRepository(repositoryName);
+						.openRepository(repositoryDTO.getName(), true);
 				if (repositoryPanel != null) {
-					repositoryPanel.download(repositoryName, null);
+					repositoryPanel.synchronize(repositoryDTO.getName(), null);
 				}
 			}
 		}

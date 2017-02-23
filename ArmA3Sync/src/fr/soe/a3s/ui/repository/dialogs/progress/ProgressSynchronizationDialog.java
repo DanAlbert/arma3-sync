@@ -63,21 +63,10 @@ public class ProgressSynchronizationDialog extends AbstractProgressDialog {
 					setVisible(true);
 				}
 
-				if (!canceled) {
-					SwingUtilities.invokeLater(new Runnable() {
-						@Override
-						public void run() {
-							facade.getSyncPanel().init();
-							facade.getOnlinePanel().init();
-							facade.getLaunchPanel().init();
-							System.out
-									.println("Synchronization with repository done.");
-						}
-					});
-				} else {
-					System.out
-							.println("Synchronization with repository canceled.");
-				}
+				System.out.println("Synchronization with repositories done.");
+
+				facade.getMainPanel().updateTabs(OP_REPOSITORY_CHANGED);
+
 				terminate();
 			}
 		});
@@ -133,21 +122,11 @@ public class ProgressSynchronizationDialog extends AbstractProgressDialog {
 								.println("Synchronizing with repositories has been anormaly interrupted.");
 					}
 
-					if (!canceled) {
-						SwingUtilities.invokeLater(new Runnable() {
-							@Override
-							public void run() {
-								facade.getSyncPanel().init();
-								facade.getOnlinePanel().init();
-								facade.getLaunchPanel().init();
-								System.out
-										.println("Synchronization with repositories done.");
-							}
-						});
-					} else {
-						System.out
-								.println("Synchronization with repositories canceled.");
-					}
+					System.out
+							.println("Synchronization with repositories done.");
+
+					facade.getMainPanel().updateTabs(OP_REPOSITORY_CHANGED);
+
 					terminate();
 				}
 			}
@@ -158,6 +137,7 @@ public class ProgressSynchronizationDialog extends AbstractProgressDialog {
 	@Override
 	protected void menuExitPerformed() {
 
+		System.out.println("Synchronization with repositories canceled.");
 		this.setVisible(false);
 		canceled = true;
 		if (connexion != null) {

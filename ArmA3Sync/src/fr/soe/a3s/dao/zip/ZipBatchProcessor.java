@@ -8,15 +8,15 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import fr.soe.a3s.controller.ObservableCount;
-import fr.soe.a3s.controller.ObserverCount;
+import fr.soe.a3s.controller.ObservableCountInt;
+import fr.soe.a3s.controller.ObserverCountInt;
 import fr.soe.a3s.domain.repository.SyncTreeLeaf;
 
-public class ZipBatchProcessor implements ObservableCount {
+public class ZipBatchProcessor implements ObservableCountInt {
 
 	private final List<SyncTreeLeaf> filesList = new ArrayList<SyncTreeLeaf>();
 	private final List<ZipDAO> zipDAOPool = new ArrayList<ZipDAO>();
-	private ObserverCount observerCount;
+	private ObserverCountInt observerCount;
 	private int count, numberOfFiles;
 	private boolean canceled = false;
 	private final List<Callable<Integer>> callables = new ArrayList<Callable<Integer>>();
@@ -73,8 +73,7 @@ public class ZipBatchProcessor implements ObservableCount {
 						if (!canceled) {
 							leaf.setCompressedSize(compressedSize);
 							leaf.setCompressed(true);
-							count++;
-							updateObserverCount();
+							increment();
 						}
 					} catch (IOException e) {
 						canceled = true;
@@ -95,6 +94,12 @@ public class ZipBatchProcessor implements ObservableCount {
 		zipDAOPool.remove(zipDAO);
 	}
 
+	private synchronized void increment() {
+		count++;
+		int value = count * 100 / numberOfFiles;
+		updateObserverCount(value);
+	}
+
 	public void cancel() {
 
 		this.canceled = true;
@@ -106,12 +111,12 @@ public class ZipBatchProcessor implements ObservableCount {
 	/* Interface observerCount */
 
 	@Override
-	public void addObserverCount(ObserverCount obs) {
+	public void addObserverCount(ObserverCountInt obs) {
 		this.observerCount = obs;
 	}
 
 	@Override
-	public void updateObserverCount() {
-		this.observerCount.update(this.count * 100 / numberOfFiles);
+	public void updateObserverCount(int value) {
+		this.observerCount.update(value);
 	}
 }

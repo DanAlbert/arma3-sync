@@ -97,7 +97,7 @@ public class UploadEventsConnectionDialog extends AbstractDialog {
 
 		try {
 			repositoryService.setRepositoryUploadProtocole(repositoryName, url,
-					port, login, password, protocolType, "0", "0");
+					port, login, password, protocolType, null, null);
 			repositoryService.write(repositoryName);
 			connectionPanel.clearPassword();
 			this.dispose();

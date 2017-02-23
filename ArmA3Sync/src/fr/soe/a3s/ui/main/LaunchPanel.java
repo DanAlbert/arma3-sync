@@ -28,7 +28,6 @@ import fr.soe.a3s.dto.EventDTO;
 import fr.soe.a3s.dto.RepositoryDTO;
 import fr.soe.a3s.dto.configuration.FavoriteServerDTO;
 import fr.soe.a3s.exception.LaunchException;
-import fr.soe.a3s.exception.repository.RepositoryException;
 import fr.soe.a3s.service.CommonService;
 import fr.soe.a3s.service.ConfigurationService;
 import fr.soe.a3s.service.LaunchService;
@@ -54,6 +53,8 @@ public class LaunchPanel extends JPanel implements UIConstants {
 	private JLabel gameVersionLabel, joinServerLabel;
 	private JComboBox gameVersionComboBox, joinServerComboBox;
 	private JButton startButton;
+	/* Test */
+	private boolean isModifying = false;
 	/* Data */
 	private Map<String, Object> map = new TreeMap<String, Object>();
 	/* Services */
@@ -155,9 +156,19 @@ public class LaunchPanel extends JPanel implements UIConstants {
 		});
 	}
 
-	public void init() {
+	public void update(int flag) {
+
+		if (flag == OP_PROFILE_CHANGED || flag == OP_ONLINE_CHANGED
+				|| flag == OP_REPOSITORY_CHANGED || flag == OP_GROUP_CHANGED) {
+			update();
+		}
+	}
+
+	private void update() {
 
 		joinServerComboBox.setEnabled(false);
+		gameVersionComboBox.setEnabled(false);
+		this.isModifying = true;
 
 		String serverName = configurationService.getServerName();
 		String defaultModset = configurationService.getDefaultModset();
@@ -183,16 +194,10 @@ public class LaunchPanel extends JPanel implements UIConstants {
 		map = new TreeMap<String, Object>();
 		for (RepositoryDTO repositoryDTO : repositoryDTOs) {
 			map.put(repositoryDTO.getName(), repositoryDTO);
-			try {
-				List<EventDTO> list2 = repositoryService
-						.getEvents(repositoryDTO.getName());
-				if (list2 != null) {
-					for (EventDTO eventDTO : list2) {
-						map.put(eventDTO.getName(), eventDTO);
-					}
-				}
-			} catch (RepositoryException e) {
-				e.printStackTrace();
+			List<EventDTO> list2 = repositoryService.getEvents(repositoryDTO
+					.getName());
+			for (EventDTO eventDTO : list2) {
+				map.put(eventDTO.getName(), eventDTO);
 			}
 		}
 
@@ -211,58 +216,64 @@ public class LaunchPanel extends JPanel implements UIConstants {
 		}
 
 		joinServerComboBox.setEnabled(true);
+		gameVersionComboBox.setEnabled(true);
+		this.isModifying = false;
 	}
 
 	private void serverSelectionPerformed() {
 
-		String selection = (String) this.joinServerComboBox.getSelectedItem();
-		int selectedIndex = this.joinServerComboBox.getSelectedIndex();
-		if (selection == null || "".equals(selection)) {
-			configurationService.setServerName(null);
-			configurationService.setDefautlModset(null);
-		} else {
-			List<FavoriteServerDTO> favoriteServersDTO = configurationService
-					.getFavoriteServers();
-			if (selectedIndex != -1
-					&& selectedIndex <= favoriteServersDTO.size()
-					&& !favoriteServersDTO.isEmpty()) {
-				FavoriteServerDTO favoriteServerDTO = favoriteServersDTO
-						.get(selectedIndex - 1);
-				String serverName = favoriteServerDTO.getName();
-				String modsetName = favoriteServerDTO.getModsetName();
-				configurationService.setServerName(serverName);
-				configurationService.setDefautlModset(modsetName);
-				if (modsetName != null) {
-					Object objectDTO = map.get(modsetName);// null if not found
-					if (objectDTO instanceof RepositoryDTO) {
-						List<String> list = new ArrayList<String>();
-						String name = ((RepositoryDTO) objectDTO).getName();
-						list.add(name);
-						facade.getAddonsPanel().createGroupFromRepository(list);
-					} else if (objectDTO instanceof EventDTO) {
-						List<EventDTO> eventDTOs = new ArrayList<EventDTO>();
-						EventDTO eventDTO = (EventDTO) objectDTO;
-						eventDTOs.add(eventDTO);
-						facade.getAddonsPanel()
-								.createGroupFromEvents(eventDTOs);
-					}
-					facade.getAddonsPanel().selectModset(modsetName);
-				}
+		if (!isModifying) {
+			String selection = (String) this.joinServerComboBox
+					.getSelectedItem();
+			int selectedIndex = this.joinServerComboBox.getSelectedIndex();
+			if (selection == null || "".equals(selection)) {
+				configurationService.setServerName(null);
+				configurationService.setDefautlModset(null);
 			} else {
-				String serverName = selection;
-				configurationService.setServerName(serverName);
+				List<FavoriteServerDTO> favoriteServersDTO = configurationService
+						.getFavoriteServers();
+				if (selectedIndex != -1
+						&& selectedIndex <= favoriteServersDTO.size()
+						&& !favoriteServersDTO.isEmpty()) {
+					FavoriteServerDTO favoriteServerDTO = favoriteServersDTO
+							.get(selectedIndex - 1);
+					String serverName = favoriteServerDTO.getName();
+					String modsetName = favoriteServerDTO.getModsetName();
+					configurationService.setServerName(serverName);
+					configurationService.setDefautlModset(modsetName);
+					if (modsetName != null) {
+						Object objectDTO = map.get(modsetName);// null if not
+																// found
+						if (objectDTO instanceof RepositoryDTO) {
+							List<String> list = new ArrayList<String>();
+							String name = ((RepositoryDTO) objectDTO).getName();
+							list.add(name);
+							facade.getAddonsPanel().getGroupManager()
+									.addGroupFromRepository(list);
+						} else if (objectDTO instanceof EventDTO) {
+							List<EventDTO> eventDTOs = new ArrayList<EventDTO>();
+							EventDTO eventDTO = (EventDTO) objectDTO;
+							eventDTOs.add(eventDTO);
+							facade.getAddonsPanel().getGroupManager()
+									.addGroupFromEvents(eventDTOs);
+						}
+						facade.getAddonsPanel().getGroupManager()
+								.select(modsetName);
+					}
+				}
 			}
 		}
-		facade.getLaunchOptionsPanel().updateRunParameters();
 	}
 
 	private void gameVersionSelectionPerformed() {
 
-		String gameVersion = (String) this.gameVersionComboBox
-				.getSelectedItem();
-		configurationService.setGameVersion(gameVersion);
-		configurationService.determineAiAOptions();
-		facade.getLaunchOptionsPanel().updateRunParameters();
+		if (!isModifying) {
+			String gameVersion = (String) this.gameVersionComboBox
+					.getSelectedItem();
+			configurationService.setGameVersion(gameVersion);
+			configurationService.determineAiAOptions();
+			facade.getMainPanel().updateTabs(OP_ADDON_SELECTION_CHANGED);
+		}
 	}
 
 	private void startButtonPerformed() {
@@ -276,8 +287,8 @@ public class LaunchPanel extends JPanel implements UIConstants {
 		/* Blocking messages */
 		try {
 			// Check selected addons
-			facade.getAddonsPanel().updateAvailableAddons();
-			facade.getAddonsPanel().updateAddonGroups();
+			facade.getMainPanel().updateTabs(
+					OP_ADDON_FILES_CHANGED);
 			List<String> missingAddons = launchService.getMissingAddons();
 			if (missingAddons.size() != 0) {
 				throw new LaunchException("Some addons are missing.");
@@ -326,12 +337,10 @@ public class LaunchPanel extends JPanel implements UIConstants {
 				name = eventDTO.getRepositoryName();
 			}
 			if (name != null) {
-				RepositoryStatus status = RepositoryStatus.INDETERMINATED;
-				try {
-					status = repositoryService.getRepositoryStatus(name);
-				} catch (Exception e) {
-				}
-				if (status.equals(RepositoryStatus.UPDATED)) {
+				RepositoryStatus status = repositoryService
+						.getRepositorySyncStatus(name);
+				if (status.equals(RepositoryStatus.UPDATED)
+						|| status.equals(RepositoryStatus.ERROR)) {
 					String message = "Repository: " + name
 							+ " have been updated." + "\n"
 							+ "Proceed with launch anyway?";
@@ -363,7 +372,6 @@ public class LaunchPanel extends JPanel implements UIConstants {
 				if (MinimizationType.TASK_BAR.equals(minimize)) {
 					facade.getMainPanel().setToTaskBar();
 				} else if (MinimizationType.TRAY.equals(minimize)) {
-					facade.getMainPanel().setVisible(false);
 					facade.getMainPanel().setToTray();
 				} else if (MinimizationType.CLOSE.equals(minimize)) {
 					if (!profileService.isAutoRestart()) {

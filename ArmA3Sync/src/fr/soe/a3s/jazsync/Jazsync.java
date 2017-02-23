@@ -58,7 +58,13 @@ public class Jazsync {
 		assert (url != null);
 		assert (sha1 != null);
 
-		MetaFileMaker mfm = new MetaFileMaker(sourcefile, zsyncFile, url, sha1);
+		MetaFileMaker mfm = null;
+		try {
+			mfm = new MetaFileMaker(sourcefile, zsyncFile, url, sha1);
+		} finally {
+			mfm = null;
+			System.gc();
+		}
 	}
 
 	/**
@@ -88,11 +94,21 @@ public class Jazsync {
 		assert (targetFile != null);
 		assert (relativeZsyncFileUrl != null);
 
-		MyHttpConnection http = new MyHttpConnection(protocole, httpDAO);
-		httpDAO.setConnexion(http);
-		MetaFileReader mfr = new MetaFileReader(relativeZsyncFileUrl, http);
-		FileMaker fm = new FileMaker(mfr, http);
-		fm.sync(targetFile, targetFileSha1, targetRelativeFileUrl);
+		MyHttpConnection http = null;
+		MetaFileReader mfr = null;
+		FileMaker fm = null;
+		try {
+			http = new MyHttpConnection(protocole, httpDAO);
+			httpDAO.setConnexion(http);
+			mfr = new MetaFileReader(relativeZsyncFileUrl, http);
+			fm = new FileMaker(mfr, http);
+			fm.sync(targetFile, targetFileSha1, targetRelativeFileUrl);
+		} finally {
+			http = null;
+			mfr = null;
+			fm = null;
+			System.gc();
+		}
 	}
 
 	/**
@@ -108,15 +124,24 @@ public class Jazsync {
 		assert (targetFile != null);
 		assert (relativeZsyncFileUrl != null);
 
-		if (!targetFile.exists()) {
-			return 0;
-		} else {
-			MyHttpConnection http = new MyHttpConnection(protocole, httpDAO);
-			httpDAO.setConnexion(http);
-			MetaFileReader mfr = new MetaFileReader(relativeZsyncFileUrl, http);
-			FileMaker fm = new FileMaker(mfr, http);
-			double completion = fm.getCompletion(targetFile, targetFileSha1);
-			return completion;
+		double completion = 0;
+		if (targetFile.exists()) {
+			MyHttpConnection http = null;
+			MetaFileReader mfr = null;
+			FileMaker fm = null;
+			try {
+				http = new MyHttpConnection(protocole, httpDAO);
+				httpDAO.setConnexion(http);
+				mfr = new MetaFileReader(relativeZsyncFileUrl, http);
+				fm = new FileMaker(mfr, http);
+				completion = fm.getCompletion(targetFile, targetFileSha1);
+			} finally {
+				http = null;
+				mfr = null;
+				fm = null;
+				System.gc();
+			}
 		}
+		return completion;
 	}
 }

@@ -9,7 +9,12 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectOutputStream;
+import java.io.OutputStream;
 import java.net.ConnectException;
+import java.nio.ByteBuffer;
+import java.nio.channels.Channels;
+import java.nio.channels.ReadableByteChannel;
+import java.nio.channels.WritableByteChannel;
 import java.util.zip.GZIPOutputStream;
 
 import org.apache.commons.io.input.CountingInputStream;
@@ -24,6 +29,7 @@ import org.dom4j.Element;
 import org.dom4j.io.SAXReader;
 
 import fr.soe.a3s.constant.DownloadStatus;
+import fr.soe.a3s.controller.ObserverProceed;
 import fr.soe.a3s.dao.A3SFilesAccessor;
 import fr.soe.a3s.dao.DataAccessConstants;
 import fr.soe.a3s.dao.FileAccessMethods;
@@ -43,7 +49,32 @@ public class FtpDAO extends AbstractConnexionDAO {
 
 	private FTPClient ftpClient;
 	private static final int BUFFER_SIZE = 4096;// 4KB
-	private int bufferSize = BUFFER_SIZE;
+	private ConnectionListener connectionListener;
+
+	@Override
+	public void connectToRepository(AbstractProtocole protocole)
+			throws IOException {
+
+		try {
+			connect(protocole);
+		} catch (IOException e) {
+			if (!canceled) {
+				String coreMessage = "Failed to connect to repository on url: "
+						+ "\n" + protocole.getProtocolType().getPrompt()
+						+ protocole.getUrl();
+				IOException ioe = transferIOExceptionFactory(coreMessage, e);
+				throw ioe;
+			}
+		} catch (FtpException e) {
+			if (!canceled) {
+				String message = "Server returned message " + e.getMessage()
+						+ " on url:" + "\n"
+						+ protocole.getProtocolType().getPrompt()
+						+ protocole.getUrl();
+				throw new ConnectException(message);
+			}
+		}
+	}
 
 	private void connect(AbstractProtocole protocole) throws IOException,
 			FtpException {
@@ -85,54 +116,85 @@ public class FtpDAO extends AbstractConnexionDAO {
 		}
 	}
 
-	public void connectToRepository(AbstractProtocole protocole)
-			throws IOException {
+	@Override
+	public File downloadFile(Repository repository, String remotePath,
+			String destinationPath, SyncTreeNodeDTO node) throws IOException {
 
-		try {
-			connect(protocole);
-		} catch (IOException e) {
-			if (!canceled) {
-				String coreMessage = "Failed to connect to repository on url: "
-						+ "\n" + protocole.getProtocolType().getPrompt()
-						+ protocole.getUrl();
-				IOException ioe = transferIOExceptionFactory(coreMessage, e);
-				throw ioe;
+		File downloadedFile = null;
+
+		File parentDirectory = new File(destinationPath);
+		parentDirectory.mkdirs();
+
+		if (node.isLeaf()) {
+
+			SyncTreeLeafDTO leaf = (SyncTreeLeafDTO) node;
+
+			if (leaf.isCompressed()) {
+				downloadedFile = new File(parentDirectory + "/"
+						+ leaf.getName() + ZIP_EXTENSION);
+				this.expectedFullSize = leaf.getCompressedSize();
+			} else {
+				downloadedFile = new File(parentDirectory + "/"
+						+ leaf.getName());
+				this.expectedFullSize = leaf.getSize();
 			}
-		} catch (FtpException e) {
-			if (!canceled) {
-				String message = "Server returned message " + e.getMessage()
-						+ " on url:" + "\n"
-						+ protocole.getProtocolType().getPrompt()
-						+ protocole.getUrl();
-				throw new ConnectException(message);
+
+			// Resuming
+			boolean resume = false;
+			if (leaf.getDownloadStatus().equals(DownloadStatus.RUNNING)
+					&& downloadedFile.exists()
+					&& downloadedFile.length() != this.expectedFullSize) {
+				this.offset = downloadedFile.length();
+			} else {
+				FileAccessMethods.deleteFile(downloadedFile);
+				this.offset = 0;
+			}
+
+			this.downloadingLeaf = leaf;
+			leaf.setDownloadStatus(DownloadStatus.RUNNING);
+
+			try {
+				connectToRepository(repository.getProtocol());
+				boolean found = downloadFileWithRecordProgress(downloadedFile,
+						remotePath);
+				if (!found) {
+					String message = "File not found on repository: "
+							+ remotePath + "/" + downloadedFile.getName();
+					throw new FileNotFoundException(message);
+				}
+				if (!canceled) {
+					updateObserverDownloadTotalSizeProgress();
+					node.setDownloadStatus(DownloadStatus.DONE);
+				} else {
+					downloadedFile = null;
+				}
+			} catch (Exception e) {
+				downloadedFile = null;
+				if (!canceled) {
+					throw e;
+				}
+			} finally {
+				this.expectedFullSize = 0;
+				this.downloadingLeaf = null;
+				this.offset = 0;
+				this.countFileSize = 0;
+				this.speed = 0;
+				updateObserverDownloadSpeed();
+				if (acquiredSemaphore) {
+					updateObserverDownloadSingleSizeProgress();
+				}
+				disconnect();
+			}
+		} else {// directory
+			downloadedFile = new File(parentDirectory + "/" + node.getName());
+			downloadedFile.mkdir();
+			node.setDownloadStatus(DownloadStatus.DONE);
+			if (!downloadedFile.exists()) {
+				throw new CreateDirectoryException(downloadedFile);
 			}
 		}
-	}
 
-	private boolean downloadFile(File file, String remotePath)
-			throws IOException {
-
-		boolean found = false;
-		FileOutputStream fos = null;
-		try {
-			boolean ok = ftpClient.changeWorkingDirectory(remotePath);
-			fos = new FileOutputStream(file);
-			if (ok) {
-				found = ftpClient.retrieveFile(file.getName(), fos);
-			}
-		} catch (IOException e) {
-			if (!canceled) {
-				String coreMessage = "Failed to retrieve file " + remotePath
-						+ "/" + file.getName();
-				IOException ioe = transferIOExceptionFactory(coreMessage, e);
-				throw ioe;
-			}
-		} finally {
-			if (fos != null) {
-				fos.close();
-			}
-		}
-		return found;
+		return downloadedFile;
 	}
 
 	private boolean downloadFileWithRecordProgress(File file, String remotePath)
@@ -154,43 +216,47 @@ public class FtpDAO extends AbstractConnexionDAO {
 		InputStream inputStream = null;
 		boolean found = false;
 
-		countFileSize = 0;
-		speed = 0;
-		updateObserverDownloadSingleSizeProgress();
-		updateObserverDownloadSpeed();
+		setCountFileSize(0);
+		setSpeed(0);
 
 		try {
 			final long startTime = System.nanoTime();
+
+			connectionListener = new ConnectionListener(startTime);
+			connectionListener.addObserverProceed(new ObserverProceed() {
+				@Override
+				public void proceed() {
+					updateObserverDownloadConnectionLost();
+				}
+			});
+
 			fos = new FileOutputStream(file, resume);
 			dos = new CountingOutputStream(fos) {
 				@Override
 				protected void afterWrite(int n) throws IOException {
 					super.afterWrite(n);
 					long nbBytes = getByteCount();
-					countFileSize = nbBytes;
 					long endTime = System.nanoTime();
 					long totalTime = endTime - startTime;
 					long speed = (long) ((nbBytes * Math.pow(10, 9)) / totalTime);// B/s
+
 					if (maximumClientDownloadSpeed != 0) {
 						if (speed > maximumClientDownloadSpeed) {
-							bufferSize = bufferSize - 1;
-							if (bufferSize < 0) {
-								bufferSize = 0;
-							}
-						} else {
-							bufferSize = bufferSize + 1;
-							if (bufferSize > BUFFER_SIZE) {
-								bufferSize = BUFFER_SIZE;
+							try {
+								int wait = (int) ((speed / maximumClientDownloadSpeed)
+										* Math.pow(10, 3) * 1 / 4);
+								Thread.sleep(wait);
+							} catch (InterruptedException e) {
 							}
 						}
 					}
 
+					setCountFileSize(nbBytes);
+					setSpeed(speed);
+					connectionListener.setStartTime(endTime);
+
 					if (acquiredSemaphore) {
 						updateObserverDownloadSingleSizeProgress();
-					}
-
-					setSpeed(speed);
-					if (acquiredSemaphore) {
 						updateObserverDownloadSpeed();
 					}
 				}
@@ -209,29 +275,29 @@ public class FtpDAO extends AbstractConnexionDAO {
 
 				if (FTPReply.isPositiveCompletion(code)) {
 
+					connectionListener.start();
 					inputStream = ftpClient.retrieveFileStream(remotePath + "/"
 							+ file.getName());
 
 					if (inputStream == null) {
 						found = false;
 					} else {
-						byte[] bytesArray = bytesArray = new byte[bufferSize];
+
 						int bytesRead = -1;
-						while ((bytesRead = inputStream.read(bytesArray)) != -1
+						ReadableByteChannel inChannel = Channels
+								.newChannel(inputStream);
+						ByteBuffer buffer = ByteBuffer.allocate(BUFFER_SIZE);
+						while (((bytesRead = inChannel.read(buffer)) != -1)
 								&& !canceled) {
-							dos.write(bytesArray, 0, bytesRead);
-							bytesArray = bytesArray = new byte[bufferSize];
+							byte[] array = buffer.array();
+							dos.write(array, 0, bytesRead);
+							buffer.clear();
 						}
 
-						if (fos != null) {
-							fos.close();
-						}
-						if (dos != null) {
-							dos.close();
-						}
-						if (inputStream != null) {
-							inputStream.close();
-						}
+						fos.close();
+						dos.close();
+						inputStream.close();
+						connectionListener.cancel();
 
 						if (!canceled) {
 							found = ftpClient.completePendingCommand();
@@ -254,8 +320,9 @@ public class FtpDAO extends AbstractConnexionDAO {
 			if (inputStream != null) {
 				inputStream.close();
 			}
-			speed = 0;
-			updateObserverDownloadSpeed();
+			if (connectionListener != null) {
+				connectionListener.cancel();
+			}
 		}
 		return found;
 	}
@@ -429,82 +496,6 @@ public class FtpDAO extends AbstractConnexionDAO {
 		return autoConfig;
 	}
 
-	@Override
-	public File downloadFile(Repository repository, String remotePath,
-			String destinationPath, SyncTreeNodeDTO node) throws IOException {
-
-		File downloadedFile = null;
-
-		File parentDirectory = new File(destinationPath);
-		parentDirectory.mkdirs();
-
-		if (node.isLeaf()) {
-
-			SyncTreeLeafDTO leaf = (SyncTreeLeafDTO) node;
-
-			if (leaf.isCompressed()) {
-				downloadedFile = new File(parentDirectory + "/"
-						+ leaf.getName() + ZIP_EXTENSION);
-				this.expectedFullSize = leaf.getCompressedSize();
-			} else {
-				downloadedFile = new File(parentDirectory + "/"
-						+ leaf.getName());
-				this.expectedFullSize = leaf.getSize();
-			}
-
-			// Resuming
-			boolean resume = false;
-			if (leaf.getDownloadStatus().equals(DownloadStatus.RUNNING)
-					&& downloadedFile.exists()
-					&& downloadedFile.length() != this.expectedFullSize) {
-				this.offset = downloadedFile.length();
-			} else {
-				FileAccessMethods.deleteFile(downloadedFile);
-				this.offset = 0;
-			}
-
-			this.downloadingLeaf = leaf;
-			leaf.setDownloadStatus(DownloadStatus.RUNNING);
-
-			try {
-				boolean found = downloadFileWithRecordProgress(downloadedFile,
-						remotePath);
-				if (!found) {
-					String message = "File not found on repository: "
-							+ remotePath + "/" + downloadedFile.getName();
-					throw new FileNotFoundException(message);
-				}
-				if (!canceled) {
-					updateObserverDownloadTotalSizeProgress();
-					node.setDownloadStatus(DownloadStatus.DONE);
-				} else {
-					downloadedFile = null;
-				}
-			} catch (IOException e) {
-				downloadedFile = null;
-				if (!canceled) {
-					throw e;
-				}
-			} finally {
-				this.expectedFullSize = 0;
-				this.downloadingLeaf = null;
-				this.offset = 0;
-				this.countFileSize = 0;
-				this.speed = 0;
-				updateObserverDownloadSingleSizeProgress();
-			}
-		} else {// directory
-			downloadedFile = new File(parentDirectory + "/" + node.getName());
-			downloadedFile.mkdir();
-			node.setDownloadStatus(DownloadStatus.DONE);
-			if (!downloadedFile.exists()) {
-				throw new CreateDirectoryException(downloadedFile);
-			}
-		}
-
-		return downloadedFile;
-	}
-
 	public String downloadXMLupdateFile(boolean devMode) throws IOException,
 			DocumentException, FtpException {
 
@@ -537,6 +528,32 @@ public class FtpDAO extends AbstractConnexionDAO {
 			nom = root.selectSingleNode("nom").getText();
 		}
 		return nom;
+	}
+
+	private boolean downloadFile(File file, String remotePath)
+			throws IOException {
+
+		boolean found = false;
+		FileOutputStream fos = null;
+		try {
+			boolean ok = ftpClient.changeWorkingDirectory(remotePath);
+			fos = new FileOutputStream(file);
+			if (ok) {
+				found = ftpClient.retrieveFile(file.getName(), fos);
+			}
+		} catch (IOException e) {
+			if (!canceled) {
+				String coreMessage = "Failed to retrieve file " + remotePath
+						+ "/" + file.getName();
+				IOException ioe = transferIOExceptionFactory(coreMessage, e);
+				throw ioe;
+			}
+		} finally {
+			if (fos != null) {
+				fos.close();
+			}
+		}
+		return found;
 	}
 
 	@Override
@@ -641,7 +658,7 @@ public class FtpDAO extends AbstractConnexionDAO {
 	}
 
 	@Override
-	public boolean uploadFile(RemoteFile remoteFile, String repositoryPath,
+	public void uploadFile(RemoteFile remoteFile, String repositoryPath,
 			String repositoryRemotePath) throws IOException {
 
 		String parentDirectoryRelativePath = remoteFile
@@ -649,29 +666,36 @@ public class FtpDAO extends AbstractConnexionDAO {
 		String fileName = remoteFile.getFilename();
 		boolean isFile = !remoteFile.isDirectory();
 
-		boolean found = false;
-
 		if (isFile) {
+
 			File file = new File(repositoryPath + "/"
 					+ parentDirectoryRelativePath + "/" + fileName);
-			this.expectedFullSize = file.length();
 
-			makeDir(repositoryRemotePath, parentDirectoryRelativePath);
-			boolean ok = ftpClient.changeWorkingDirectory(repositoryRemotePath
-					+ "/" + parentDirectoryRelativePath);
-			if (!ok) {
-				return false;
-			}
-
-			System.out.println("");
 			System.out.println("Uploading file: " + file.getAbsolutePath());
-			System.out.println("to target directory: " + repositoryRemotePath
+			System.out.println("to remote directory: " + repositoryRemotePath
 					+ "/" + parentDirectoryRelativePath);
 
+			updateObserverText("Uploading file: "
+					+ remoteFile.getParentDirectoryRelativePath() + "/"
+					+ remoteFile.getFilename());
+
+			this.expectedFullSize = file.length();
+			this.countFileSize = 0;
 			this.offset = 0;
+
 			FileInputStream fis = null;
 			CountingInputStream uis = null;
+			OutputStream outputStream = null;
+
 			try {
+				makeDir(repositoryRemotePath, parentDirectoryRelativePath);
+				boolean ok = ftpClient
+						.changeWorkingDirectory(repositoryRemotePath + "/"
+								+ parentDirectoryRelativePath);
+				if (!ok) {
+					throw new IOException();
+				}
+
 				final long startTime = System.nanoTime();
 				fis = new FileInputStream(file);
 				uis = new CountingInputStream(fis) {
@@ -680,20 +704,37 @@ public class FtpDAO extends AbstractConnexionDAO {
 						super.afterRead(n);
 						long nbBytes = getByteCount();
 						countFileSize = nbBytes;
-						updateObserverUploadSingleSizeProgress();
+						updateObserverUploadProgress();
 						long endTime = System.nanoTime();
 						long totalTime = endTime - startTime;
 						speed = (long) (nbBytes / (totalTime * Math.pow(10, -9)));
-						if (totalTime > Math.pow(10, 9) / 2) {// 0.5s
-							updateObserverUploadSpeed();
-						}
+						updateObserverUploadSpeed();
 					}
 				};
-				found = ftpClient.storeFile(file.getName(), uis);
-				ftpClient.noop();
+
+				outputStream = ftpClient.storeFileStream(fileName);
+				if (outputStream == null) {
+					throw new IOException();
+				} else {
+					int bytesRead = -1;
+					byte[] buffer = new byte[BUFFER_SIZE];
+					while ((bytesRead = uis.read(buffer)) != -1 && !canceled) {
+						outputStream.write(buffer, 0, bytesRead);
+					}
+				}
+
+				fis.close();
+				outputStream.close();
+
+				if (!canceled) {
+					ftpClient.completePendingCommand();
+				}
+
 			} catch (IOException e) {
-				String coreMessage = "Failed to upload file "
-						+ parentDirectoryRelativePath + "/" + file.getName();
+				String coreMessage = "Failed to upload file: " + "\n"
+						+ file.getAbsolutePath() + "\n"
+						+ "To remote directory: " + "\n" + repositoryRemotePath
+						+ "/" + parentDirectoryRelativePath;
 				IOException ioe = transferIOExceptionFactory(coreMessage, e);
 				throw ioe;
 			} finally {
@@ -703,13 +744,21 @@ public class FtpDAO extends AbstractConnexionDAO {
 				if (uis != null) {
 					uis.close();
 				}
+				if (outputStream != null) {
+					outputStream.close();
+				}
 			}
 		} else {
 			makeDir(repositoryRemotePath, parentDirectoryRelativePath + "/"
 					+ fileName);
-			found = true;
 		}
-		return found;
+
+		updateObserverUploadTotalSizeProgress();
+		updateObserverUploadLastIndexFileUploaded();
+		speed = 0;
+		countFileSize = 0;
+		updateObserverUploadProgress();
+		updateObserverUploadSpeed();
 	}
 
 	public void makeDir(String remotePath, String dirTree) throws IOException {

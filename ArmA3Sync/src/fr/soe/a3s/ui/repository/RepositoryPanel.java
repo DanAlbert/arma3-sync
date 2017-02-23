@@ -11,6 +11,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 
+import fr.soe.a3s.controller.ObserverEnd;
 import fr.soe.a3s.ui.Facade;
 import fr.soe.a3s.ui.UIConstants;
 
@@ -105,7 +106,7 @@ public class RepositoryPanel extends JPanel implements UIConstants {
 		buttonRepository.requestFocus();
 	}
 
-	public void download(String repositoryName, String eventName) {
+	public void synchronize(String repositoryName, String eventName) {
 
 		buttonDownload.setVisible(true);
 		buttonRepository.setVisible(false);
@@ -115,7 +116,21 @@ public class RepositoryPanel extends JPanel implements UIConstants {
 		cl.first(centerPanel);
 		getRootPane().setDefaultButton(buttonDownload);
 		buttonDownload.requestFocus();
-		downloadPanel.checkForAddons();
+		downloadPanel.synchronyse();
+	}
+
+	public void autoUpdate(String repositoryName, String eventName,
+			ObserverEnd obs) {
+
+		buttonDownload.setVisible(true);
+		buttonRepository.setVisible(false);
+		buttonEvents.setVisible(false);
+		downloadPanel.init(repositoryName, eventName);
+		CardLayout cl = (CardLayout) centerPanel.getLayout();
+		cl.first(centerPanel);
+		getRootPane().setDefaultButton(buttonDownload);
+		buttonDownload.requestFocus();
+		downloadPanel.autoUpdatePerformed(obs);
 	}
 
 	private void buttonDownloadPerformed() {

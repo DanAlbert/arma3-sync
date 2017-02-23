@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import fr.soe.a3s.constant.RepositoryStatus;
 import fr.soe.a3s.domain.AbstractProtocole;
 import fr.soe.a3s.domain.configration.FavoriteServer;
 
@@ -17,20 +18,21 @@ public class Repository implements Serializable {
 	 * 
 	 */
 	private static final long serialVersionUID = -8142021113361619970L;
+
+	/** Repository description */
 	private String name;// not null
 	private AbstractProtocole protocole;// not null
 	private AbstractProtocole bitTorrentProtocole;
-	private boolean notify = false;
+
+	/** Repository synchronization */
 	private int revision;
-	private String path;
-	private String autoConfigURL;
-	private String defaultDownloadLocation;
+	private transient RepositoryStatus repositorySyncStatus;// synchronization
+	private boolean notify = false;
+	private boolean auto = false;
 	@Deprecated
 	private final boolean outOfSynk = false;
-	private boolean noAutoDiscover = true;
-	private boolean exactMatch = false;
 
-	/** Local set for Hide extra local folder content */
+	/** Local set for hidden extra local folder content */
 	private Set<String> hidddenFolderPaths = new HashSet<String>();
 
 	/** Check for Addons */
@@ -40,12 +42,15 @@ public class Repository implements Serializable {
 	private transient Changelogs changelogs;// Gets from remote location
 	private transient Events events;// Gets from remote location
 	private transient AutoConfig autoConfig;// Gets from remote location
+	private boolean noAutoDiscover = true;
+	private boolean exactMatch = false;
 	private Map<String, FileAttributes> mapFilesForSync = new HashMap<String, FileAttributes>();// <Path,FileAttrbutes>
 
 	/** Repository download */
-	private int numberOfClientConnections;
-	private double maximumClientDownloadSpeed;
-	private transient String downloadReport;
+	private String defaultDownloadLocation;
+	private int numberOfClientConnections;// Settings
+	private double maximumClientDownloadSpeed;// Settings
+	private transient String downloadReport = null;
 	private transient boolean downloading = false;
 
 	/** Repository upload */
@@ -56,21 +61,22 @@ public class Repository implements Serializable {
 	private transient Changelogs localChangelogs;
 	private transient AutoConfig localAutoConfig;
 	private transient Events localEvents;
-	private transient boolean uploading;
 	private transient int lastIndexFileTransfered;
-	private transient long incrementedFilesSize;
+	private transient boolean uploading = false;
 
 	/** Repository build */
+	private String path;
 	private int numberOfConnections = 1;
 	private boolean compressed = false;
 	private boolean noPartialFileTransfer = false;
+	private String autoConfigURL;
 	private List<FavoriteServer> favoriteServersSetToAutoconfig = new ArrayList<FavoriteServer>();
 	private Set<String> excludedFilesFromBuild = new HashSet<String>();
 	private Set<String> excludedFoldersFromSync = new HashSet<String>();
-	private transient boolean building = false;
 	private Map<String, FileAttributes> mapFilesForBuild = new HashMap<String, FileAttributes>();// <Path,FileAttrbutes>
+	private transient boolean building = false;
 
-	/** Repository check */
+	/** Repository content check */
 	private transient boolean checking = false;
 
 	public Repository(String name, AbstractProtocole protocole) {
@@ -172,14 +178,6 @@ public class Repository implements Serializable {
 
 	public void setLastIndexFileDonwloaded(int lastIndexFileDownloaded) {
 		this.lastIndexFileTransfered = lastIndexFileDownloaded;
-	}
-
-	public long getIncrementedFilesSize() {
-		return incrementedFilesSize;
-	}
-
-	public void setIncrementedFilesSize(long incrementedFilesSize) {
-		this.incrementedFilesSize = incrementedFilesSize;
 	}
 
 	public Changelogs getChangelogs() {
@@ -406,5 +404,24 @@ public class Repository implements Serializable {
 
 	public void setMaximumClientDownloadSpeed(double maximumClientDownloadSpeed) {
 		this.maximumClientDownloadSpeed = maximumClientDownloadSpeed;
+	}
+
+	public boolean isAuto() {
+		return auto;
+	}
+
+	public void setAuto(boolean value) {
+		this.auto = value;
+	}
+
+	public RepositoryStatus getRepositorySyncStatus() {
+		if (repositorySyncStatus == null) {
+			repositorySyncStatus = RepositoryStatus.INDETERMINATED;
+		}
+		return repositorySyncStatus;
+	}
+
+	public void setRepositorySyncStatus(RepositoryStatus repositorySyncStatus) {
+		this.repositorySyncStatus = repositorySyncStatus;
 	}
 }

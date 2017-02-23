@@ -7,19 +7,19 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import fr.soe.a3s.controller.ObservableCount;
-import fr.soe.a3s.controller.ObserverCount;
+import fr.soe.a3s.controller.ObservableCountInt;
+import fr.soe.a3s.controller.ObserverCountInt;
 import fr.soe.a3s.dao.DataAccessConstants;
 import fr.soe.a3s.dao.FileAccessMethods;
 import fr.soe.a3s.domain.repository.SyncTreeLeaf;
 
-public class DeleteZipBatchProcessor implements ObservableCount,
+public class DeleteZipBatchProcessor implements ObservableCountInt,
 		DataAccessConstants {
 
 	/** Parameters */
 	private List<SyncTreeLeaf> filesToDelete = null;
 	/** observable count Interface */
-	private ObserverCount observerCount;
+	private ObserverCountInt observerCount;
 	protected int count = 0, totalCount = 0;
 	/***/
 	private List<Callable<Integer>> callables = null;
@@ -27,13 +27,12 @@ public class DeleteZipBatchProcessor implements ObservableCount,
 
 	public void init(List<SyncTreeLeaf> filesToDelete) {
 		this.filesToDelete = filesToDelete;
-	}
-
-	public void run() {
-
 		this.callables = new ArrayList<Callable<Integer>>();
 		this.totalCount = 0;
 		this.count = 0;
+	}
+
+	public void run() {
 
 		delete();
 
@@ -68,7 +67,6 @@ public class DeleteZipBatchProcessor implements ObservableCount,
 						FileAccessMethods.deleteFile(zipFile);
 						leaf.setCompressed(false);
 						increment();
-						updateObserverCount();
 					}
 					return 0;
 				}
@@ -79,6 +77,9 @@ public class DeleteZipBatchProcessor implements ObservableCount,
 
 	private synchronized void increment() {
 		this.count++;
+		int value = count * 100 / totalCount;
+		updateObserverCount(value);
+
 	}
 
 	/* Getters and Setters */
@@ -94,12 +95,12 @@ public class DeleteZipBatchProcessor implements ObservableCount,
 	/* observable Count Inteface */
 
 	@Override
-	public void addObserverCount(ObserverCount obs) {
+	public void addObserverCount(ObserverCountInt obs) {
 		this.observerCount = obs;
 	}
 
 	@Override
-	public void updateObserverCount() {
-		observerCount.update(this.count * 100 / this.totalCount);
+	public void updateObserverCount(int value) {
+		observerCount.update(value);
 	}
 }

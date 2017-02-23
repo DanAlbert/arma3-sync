@@ -136,10 +136,7 @@ public class AutoConfigImportDialog extends AbstractDialog {
 					CommonService commonService = new CommonService();
 					commonService.importAutoConfig(file);
 					dispose();
-					facade.getMainPanel().updateProfilesMenu();
-					facade.getSyncPanel().init();
-					facade.getOnlinePanel().init();
-					facade.getLaunchPanel().init();
+					facade.getMainPanel().updateTabs(OP_PROFILE_CHANGED);
 				} catch (Exception e) {
 					JOptionPane.showMessageDialog(facade.getMainPanel(),
 							e.getMessage(), "Import auto-config",

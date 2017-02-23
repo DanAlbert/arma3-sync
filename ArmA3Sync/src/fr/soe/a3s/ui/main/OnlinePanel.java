@@ -36,7 +36,6 @@ import fr.soe.a3s.dto.RepositoryDTO;
 import fr.soe.a3s.dto.TreeDirectoryDTO;
 import fr.soe.a3s.dto.TreeNodeDTO;
 import fr.soe.a3s.dto.configuration.FavoriteServerDTO;
-import fr.soe.a3s.exception.repository.RepositoryException;
 import fr.soe.a3s.service.ConfigurationService;
 import fr.soe.a3s.service.ProfileService;
 import fr.soe.a3s.service.RepositoryService;
@@ -61,12 +60,12 @@ public class OnlinePanel extends JPanel implements UIConstants {
 	private final JTable tableServers;
 	private final MyTableModel model;
 	private final JScrollPane jScrollPane1;
+	private final JComboBox comboBoxModsets;
 	// Services
 	private final ConfigurationService configurationService = new ConfigurationService();
 	private final RepositoryService repositoryService = new RepositoryService();
+	private final ProfileService profileService = new ProfileService();
 	private boolean isModifying = false;
-
-	private final JComboBox comboBoxModsets;
 
 	public OnlinePanel(final Facade facade) {
 		this.facade = facade;
@@ -106,12 +105,11 @@ public class OnlinePanel extends JPanel implements UIConstants {
 
 		// Adapt cells Height to font height
 		Font fontTable = UIManager.getFont("Table.font");
-		FontMetrics metrics =tableServers
-				.getFontMetrics(fontTable);
+		FontMetrics metrics = tableServers.getFontMetrics(fontTable);
 		int fontHeight = metrics.getAscent() + metrics.getDescent()
 				+ metrics.getLeading();
 		tableServers.setRowHeight(fontHeight);
-		
+
 		comboBoxModsets = new JComboBox();
 		comboBoxModsets.setFocusable(false);
 		TableColumn col4 = tableServers.getColumnModel().getColumn(4);
@@ -172,8 +170,8 @@ public class OnlinePanel extends JPanel implements UIConstants {
 					configurationService.setFavoriteServers(list);
 					configurationService.setServerName(null);
 					configurationService.setDefautlModset(null);
-					init();
-					facade.getLaunchPanel().init();
+					updateTableServers();
+					facade.getMainPanel().updateTabs(OP_ONLINE_CHANGED);
 				}
 			}
 		});
@@ -200,7 +198,15 @@ public class OnlinePanel extends JPanel implements UIConstants {
 		buttonDelete.setToolTipText("Delete the selected server");
 	}
 
-	public void init() {
+	public void update(int flag) {
+
+		if (flag == OP_PROFILE_CHANGED || flag == OP_REPOSITORY_CHANGED
+				|| flag == OP_GROUP_CHANGED) {
+			updateTableServers();
+		}
+	}
+
+	private void updateTableServers() {
 
 		isModifying = true;
 		tableServers.setEnabled(false);
@@ -243,6 +249,9 @@ public class OnlinePanel extends JPanel implements UIConstants {
 			i++;
 		}
 
+		model.fireTableDataChanged();
+		jScrollPane1.updateUI();
+
 		configurationService.setFavoriteServers(favoriteServersDTO);
 
 		tableServers.setEnabled(true);
@@ -261,10 +270,8 @@ public class OnlinePanel extends JPanel implements UIConstants {
 		favoriteServerDTO.setPort(0);
 		list.add(favoriteServerDTO);
 		configurationService.setFavoriteServers(list);
-		facade.getLaunchPanel().init();
-		init();
-		model.fireTableDataChanged();
-		jScrollPane1.updateUI();
+		updateTableServers();
+		facade.getMainPanel().updateTabs(OP_ONLINE_CHANGED);
 	}
 
 	private void buttonDeletePerformed() {
@@ -297,39 +304,29 @@ public class OnlinePanel extends JPanel implements UIConstants {
 		}
 
 		configurationService.setFavoriteServers(list);
-		facade.getLaunchPanel().init();
-		init();
-		model.fireTableDataChanged();
-		jScrollPane1.updateUI();
+		updateTableServers();
 		if (index != 0) {
 			tableServers.setRowSelectionInterval(index - 1, index - 1);
 		}
+		facade.getMainPanel().updateTabs(OP_ONLINE_CHANGED);
 	}
 
 	private List<String> getModsetList() {
 
-		RepositoryService repositoryService = new RepositoryService();
 		List<RepositoryDTO> repositoryDTOs = repositoryService
 				.getRepositories();
 
 		List<String> list = new ArrayList<String>();
 		for (RepositoryDTO repositoryDTO : repositoryDTOs) {
 			list.add(repositoryDTO.getName());
-			try {
-				List<EventDTO> list2 = repositoryService
-						.getEvents(repositoryDTO.getName());
-				if (list2 != null) {
-					for (EventDTO eventDTO : list2) {
-						list.add(eventDTO.getName());
-					}
-				}
-			} catch (RepositoryException e) {
-				e.printStackTrace();
+			List<EventDTO> list2 = repositoryService.getEvents(repositoryDTO
+					.getName());
+			for (EventDTO eventDTO : list2) {
+				list.add(eventDTO.getName());
 			}
 		}
 
-		ProfileService profileService = new ProfileService();
-		TreeDirectoryDTO parent = profileService.getAddonGroupsTree();
+		TreeDirectoryDTO parent = profileService.getAddonGroups();
 		for (TreeNodeDTO node : parent.getList()) {
 			TreeDirectoryDTO directory = (TreeDirectoryDTO) node;
 			if (directory.getModsetType() == null) {

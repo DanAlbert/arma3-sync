@@ -20,7 +20,6 @@ import javax.swing.JScrollPane;
 import javax.swing.ListSelectionModel;
 import javax.swing.border.BevelBorder;
 
-import fr.soe.a3s.constant.IconResize;
 import fr.soe.a3s.service.AddonService;
 import fr.soe.a3s.service.ProfileService;
 import fr.soe.a3s.ui.Facade;
@@ -43,13 +42,12 @@ public class AddonOptionsPanel extends JPanel implements UIConstants {
 	private JScrollPane scrollPane1, scrollPane2;
 	private JList directoryList1, directoryList2;
 	private JButton add, delete, downAddonPriority, upAddonPriority,
-			resetAddonPriority;
+			resetAddonPriority, topAddonPriority;
 	private JButton upDirectoryPriority;
 	private JButton downDirectoryPriority;
 	/* Services */
 	private final AddonService addonService = new AddonService();
 	private final ProfileService profileService = new ProfileService();
-	private JButton topAddonPriority;
 
 	public AddonOptionsPanel(Facade facade) {
 		this.facade = facade;
@@ -214,13 +212,68 @@ public class AddonOptionsPanel extends JPanel implements UIConstants {
 		downAddonPriority.setToolTipText("Down addon launch priority");
 	}
 
-	public void init() {
+	public void update(int flag) {
 
-		/* Addon search directories */
-		updateAddonSearchDirectories();
+		if (flag == OP_PROFILE_CHANGED
+				|| flag == OP_ADDON_FILES_CHANGED) {
+			
+			/* Addon search directories */
+			updateAddonSearchDirectories();
+			
+			/* Addon priorities */
+			updateAddonPriorities();
 
-		/* Addon priorities */
-		updateAddonPriorities();
+		} else if (flag == OP_ADDON_PRIORITY_CHANGED) {
+			
+			/* Addon priorities */
+			updateAddonPriorities();
+		}
+	}
+
+	private void updateAddonSearchDirectories() {
+
+		directoryList1.setEnabled(false);
+		List<String> set = profileService.getAddonSearchDirectoryPaths();
+		Iterator iter = set.iterator();
+		List<String> paths = new ArrayList<String>();
+		while (iter.hasNext()) {
+			paths.add((String) iter.next());
+		}
+		String[] tab = new String[paths.size()];
+		int i = 0;
+		for (String p : paths) {
+			tab[i] = p;
+			i++;
+		}
+		directoryList1.clearSelection();
+		directoryList1.setListData(tab);
+		int numberLigneShown = paths.size();
+		directoryList1.setVisibleRowCount(numberLigneShown);
+		directoryList1.setPreferredSize(directoryList1
+				.getPreferredScrollableViewportSize());
+		scrollPane1.updateUI();
+		directoryList1.setEnabled(true);
+	}
+
+	private void updateAddonPriorities() {
+
+		directoryList2.setEnabled(false);
+		directoryList2.removeAll();
+		List<String> list = addonService.getAddonsByPriorityList();
+		if (list != null) {
+			String[] addonNames = new String[list.size()];
+			for (int i = 0; i < list.size(); i++) {
+				addonNames[i] = list.get(i);
+			}
+			directoryList2.clearSelection();
+			directoryList2.setListData(addonNames);
+			int numberLigneShown = list.size();
+			directoryList2.setVisibleRowCount(numberLigneShown);
+			directoryList2.setPreferredSize(directoryList2
+					.getPreferredScrollableViewportSize());
+			scrollPane2.updateUI();
+		}
+		directoryList2.setEnabled(true);
 	}
 
 	private void buttonAddPerformed() {
@@ -265,11 +318,8 @@ public class AddonOptionsPanel extends JPanel implements UIConstants {
 				if (!contains) {
 					profileService.addAddonSearchDirectoryPath(path);
 					profileService.setLastAddedAddonSearchDirectory(path);
-					updateAddonSearchDirectories();
-					updateAddonPriorities();
-					facade.getAddonsPanel().updateAvailableAddons();
-					facade.getAddonsPanel().updateAddonGroups();
-					facade.getLaunchOptionsPanel().updateRunParameters();
+					this.facade.getMainPanel().updateTabs(
+							OP_ADDON_FILES_CHANGED);
 				}
 			}
 		}
@@ -281,56 +331,9 @@ public class AddonOptionsPanel extends JPanel implements UIConstants {
 
 		if (path != null) {
 			profileService.removeAddonSearchDirectoryPath(path);
-			updateAddonSearchDirectories();
-			updateAddonPriorities();
-			facade.getAddonsPanel().updateAvailableAddons();
-			facade.getAddonsPanel().updateAddonGroups();
-			facade.getLaunchOptionsPanel().updateRunParameters();
+			this.facade.getMainPanel().updateTabs(
+					OP_ADDON_FILES_CHANGED);
 		}
-	}
-
-	public void updateAddonSearchDirectories() {
-
-		List<String> set = profileService.getAddonSearchDirectoryPaths();
-		Iterator iter = set.iterator();
-		List<String> paths = new ArrayList<String>();
-		while (iter.hasNext()) {
-			paths.add((String) iter.next());
-		}
-		String[] tab = new String[paths.size()];
-		int i = 0;
-		for (String p : paths) {
-			tab[i] = p;
-			i++;
-		}
-		directoryList1.clearSelection();
-		directoryList1.setListData(tab);
-		int numberLigneShown = paths.size();
-		directoryList1.setVisibleRowCount(numberLigneShown);
-		directoryList1.setPreferredSize(directoryList1
-				.getPreferredScrollableViewportSize());
-		scrollPane1.updateUI();
-	}
-
-	public void updateAddonPriorities() {
-
-		directoryList2.setEnabled(false);
-		directoryList2.removeAll();
-		List<String> list = addonService.getAddonsByPriorityList();
-		if (list != null) {
-			String[] addonNames = new String[list.size()];
-			for (int i = 0; i < list.size(); i++) {
-				addonNames[i] = list.get(i);
-			}
-			directoryList2.clearSelection();
-			directoryList2.setListData(addonNames);
-			int numberLigneShown = list.size();
-			directoryList2.setVisibleRowCount(numberLigneShown);
-			directoryList2.setPreferredSize(directoryList2
-					.getPreferredScrollableViewportSize());
-			scrollPane2.updateUI();
-		}
-		directoryList2.setEnabled(true);
 	}
 
 	private void upDirectoryPriorityPerformed() {
@@ -339,8 +342,8 @@ public class AddonOptionsPanel extends JPanel implements UIConstants {
 
 		if (index != -1) {
 			profileService.upDirectoryPriority(index);
-			this.updateAddonSearchDirectories();
-			facade.getAddonsPanel().updateAvailableAddons();
+			facade.getMainPanel().updateTabs(
+					OP_ADDON_FILES_CHANGED);
 			if (index == 0) {
 				directoryList1.setSelectedIndex(index);
 			} else {
@@ -362,8 +365,8 @@ public class AddonOptionsPanel extends JPanel implements UIConstants {
 
 		if (index != -1) {
 			profileService.downDirectoryPriority(index);
-			this.updateAddonSearchDirectories();
-			facade.getAddonsPanel().updateAvailableAddons();
+			facade.getMainPanel().updateTabs(
+					OP_ADDON_FILES_CHANGED);
 			if (index == directoryList1.getModel().getSize() - 1) {
 				directoryList1.setSelectedIndex(index);
 			} else {
@@ -382,8 +385,7 @@ public class AddonOptionsPanel extends JPanel implements UIConstants {
 	private void resetAddonPriorityPerformed() {
 
 		profileService.resetAddonPriority();
-		this.updateAddonPriorities();
-		facade.getLaunchOptionsPanel().updateRunParameters();
+		facade.getMainPanel().updateTabs(OP_ADDON_PRIORITY_CHANGED);
 	}
 
 	private void topAddonPrioriyPerformed() {
@@ -392,8 +394,7 @@ public class AddonOptionsPanel extends JPanel implements UIConstants {
 
 		if (index != -1) {
 			profileService.topAddonPriority(index);
-			this.updateAddonPriorities();
-			facade.getLaunchOptionsPanel().updateRunParameters();
+			facade.getMainPanel().updateTabs(OP_ADDON_PRIORITY_CHANGED);
 			directoryList2.setSelectedIndex(0);
 			scrollPane2.getVerticalScrollBar().setValue(0);
 		}
@@ -405,8 +406,7 @@ public class AddonOptionsPanel extends JPanel implements UIConstants {
 
 		if (index != -1) {
 			profileService.upAddonPriority(index);
-			this.updateAddonPriorities();
-			facade.getLaunchOptionsPanel().updateRunParameters();
+			facade.getMainPanel().updateTabs(OP_ADDON_PRIORITY_CHANGED);
 			if (index == 0) {
 				directoryList2.setSelectedIndex(index);
 			} else {
@@ -428,8 +428,7 @@ public class AddonOptionsPanel extends JPanel implements UIConstants {
 
 		if (index != -1) {
 			profileService.downAddonPriority(index);
-			this.updateAddonPriorities();
-			facade.getLaunchOptionsPanel().updateRunParameters();
+			facade.getMainPanel().updateTabs(OP_ADDON_PRIORITY_CHANGED);
 			if (index == directoryList2.getModel().getSize() - 1) {
 				directoryList2.setSelectedIndex(index);
 			} else {

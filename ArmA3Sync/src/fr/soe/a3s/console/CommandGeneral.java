@@ -4,194 +4,520 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
-import java.util.ArrayList;
 import java.util.List;
 
-import fr.soe.a3s.controller.ObserverCount;
-import fr.soe.a3s.controller.ObserverDownload;
+import fr.soe.a3s.controller.ObserverConnectionLost;
+import fr.soe.a3s.controller.ObserverCountInt;
+import fr.soe.a3s.controller.ObserverEnd;
+import fr.soe.a3s.controller.ObserverError;
+import fr.soe.a3s.controller.ObserverProceed;
 import fr.soe.a3s.controller.ObserverText;
-import fr.soe.a3s.controller.ObserverUncompress;
-import fr.soe.a3s.dao.FileAccessMethods;
-import fr.soe.a3s.dao.connection.AbstractConnexionDAO;
-import fr.soe.a3s.dto.RepositoryDTO;
 import fr.soe.a3s.dto.sync.SyncTreeDirectoryDTO;
 import fr.soe.a3s.dto.sync.SyncTreeLeafDTO;
 import fr.soe.a3s.dto.sync.SyncTreeNodeDTO;
-import fr.soe.a3s.exception.CheckException;
 import fr.soe.a3s.exception.FtpException;
 import fr.soe.a3s.exception.WritingException;
-import fr.soe.a3s.exception.remote.RemoteAutoconfigFileNotFoundException;
-import fr.soe.a3s.exception.remote.RemoteChangelogsFileNotFoundException;
 import fr.soe.a3s.exception.remote.RemoteRepositoryException;
-import fr.soe.a3s.exception.remote.RemoteServerInfoFileNotFoundException;
-import fr.soe.a3s.exception.remote.RemoteSyncFileNotFoundException;
 import fr.soe.a3s.exception.repository.RepositoryException;
 import fr.soe.a3s.service.CommonService;
-import fr.soe.a3s.service.RepositoryService;
-import fr.soe.a3s.service.connection.ConnexionService;
-import fr.soe.a3s.service.connection.ConnexionServiceFactory;
+import fr.soe.a3s.service.administration.RepositoryBuildProcessor;
+import fr.soe.a3s.service.administration.RepositoryCheckProcessor;
 import fr.soe.a3s.service.connection.FtpService;
-import fr.soe.a3s.ui.FileSizeComputer;
+import fr.soe.a3s.service.synchronization.FilesCheckProcessor;
+import fr.soe.a3s.service.synchronization.FilesCompletionProcessor;
+import fr.soe.a3s.service.synchronization.FilesSynchronizationManager;
+import fr.soe.a3s.service.synchronization.FilesSynchronizationProcessor;
+import fr.soe.a3s.utils.ErrorPrinter;
+import fr.soe.a3s.utils.UnitConverter;
 
 public class CommandGeneral {
 
-	private int value = 0;
-	private String text = "";
-	/** Sync variables */
-	private long incrementedFilesSize;
-	private long totalExpectedFilesSize;
-	private final List<SyncTreeNodeDTO> listFilesToUpdate = new ArrayList<SyncTreeNodeDTO>();
-	private final List<SyncTreeNodeDTO> listFilesToDelete = new ArrayList<SyncTreeNodeDTO>();
+	/* Build */
 
-	protected void buildRepository(String repositoryName, boolean exit) {
+	protected void build(String repositoryName, ObserverEnd observerEndBuild) {
 
-		RepositoryService repositoryService = new RepositoryService();
+		RepositoryBuilder repositoryBuilder = new RepositoryBuilder(
+				repositoryName, observerEndBuild);
+		repositoryBuilder.run();
+	}
 
-		repositoryService.getRepositoryBuilderDAO().addObserverText(
-				new ObserverText() {
-					@Override
-					public void update(String t) {
-						text = t;
-						value = 0;
-					}
-				});
+	private class RepositoryBuilder {
 
-		repositoryService.getRepositoryBuilderDAO().addObserverCount(
-				new ObserverCount() {
-					@Override
-					public synchronized void update(int v) {
-						if (v > value) {
-							value = v;
-							System.out.println(text + " complete: " + value
-									+ " %");
-						}
-					}
-				});
+		private final String repositoryName;
+		private RepositoryBuildProcessor repositoryBuildProcessor;
+		private int value;
+		private String text;
+		private final ObserverEnd observerEndBuild;
 
-		try {
-			System.out.println("Building repository...");
-			repositoryService.buildRepository(repositoryName);
-			repositoryService.write(repositoryName);
-			System.out.println("");
-			System.out.println("Repository build finished.");
-		} catch (RepositoryException | IOException e) {
-			System.out.println("Build repository failed.");
-			System.out.println(e.getMessage());
-		} catch (Exception e) {
-			System.out.println("Build repository failed.");
-			System.out.println("An unexpected error has occured.");
-			e.printStackTrace();
+		public RepositoryBuilder(String repositoryName,
+				ObserverEnd observerEndBuild) {
+			this.repositoryName = repositoryName;
+			this.observerEndBuild = observerEndBuild;
 		}
 
-		if (exit) {
-			System.exit(0);
-		} else {
-			CommandConsole console = new CommandConsole(false);
-			System.out.println("");
-			console.execute();
+		public void run() {
+
+			System.out.println("Building repository: " + repositoryName);
+
+			repositoryBuildProcessor = new RepositoryBuildProcessor(
+					repositoryName);
+			repositoryBuildProcessor.addObserverText(new ObserverText() {
+				@Override
+				public void update(String t) {
+					text = t;
+					executeUpdateText(text);
+				}
+			});
+			repositoryBuildProcessor
+					.addObserverCountProgress(new ObserverCountInt() {
+						@Override
+						public void update(int value) {
+							executeUpdateCountProgress(value);
+						}
+					});
+			repositoryBuildProcessor.addObserverEnd(new ObserverEnd() {
+				@Override
+				public void end() {
+					executeEnd();
+				}
+			});
+			repositoryBuildProcessor.addObserverError(new ObserverError() {
+				@Override
+				public void error(List<Exception> errors) {
+					executeError(errors);
+				}
+			});
+
+			value = 0;
+			repositoryBuildProcessor.run();
+		}
+
+		private void executeUpdateText(String text) {
+			System.out.println(text);
+		}
+
+		private void executeUpdateCountProgress(int v) {
+			if (v > value) {
+				value = v;
+				System.out.println(text + " complete: " + value + " %");
+			}
+		}
+
+		private void executeEnd() {
+
+			System.out.println("Repository " + repositoryName
+					+ " - build finished.");
+
+			observerEndBuild.end();
+		}
+
+		private void executeError(List<Exception> errors) {
+
+			System.out.println("Repository " + repositoryName
+					+ " - build finished with error.");
+
+			Exception ex = errors.get(0);
+			if (ex instanceof RepositoryException | ex instanceof IOException
+					| ex instanceof WritingException) {
+				ErrorPrinter.printRepositoryManagedError(repositoryName, ex);
+			} else {
+				ErrorPrinter.printRepositoryUnexpectedError(repositoryName, ex);
+			}
+
+			observerEndBuild.end();
 		}
 	}
 
-	protected void checkRepository(String repositoryName, boolean exit) {
+	/* Check */
 
-		this.value = 0;
-		RepositoryService repositoryService = new RepositoryService();
-		ConnexionService connexionService = null;
+	protected void check(String repositoryName, ObserverEnd observerEndCheck) {
 
-		try {
-			RepositoryDTO repositoryDTO = repositoryService
-					.getRepository(repositoryName);
-			System.out.println("Checking repository...");
-			connexionService = ConnexionServiceFactory
-					.getServiceForRepositoryManagement(repositoryName);
-			connexionService.getSync(repositoryName);
-			connexionService.getServerInfo(repositoryName);
-			connexionService.getChangelogs(repositoryName);
-			connexionService.getAutoconfig(repositoryName);
+		RepositoryChecker repositoryChecker = new RepositoryChecker(
+				repositoryName, observerEndCheck);
+		repositoryChecker.run();
+	}
 
-			if (repositoryService.getSync(repositoryName) == null) {
-				throw new RemoteSyncFileNotFoundException();
-			}
+	private class RepositoryChecker {
 
-			if (repositoryService.getServerInfo(repositoryName) == null) {
-				throw new RemoteServerInfoFileNotFoundException();
-			}
+		private final String repositoryName;
+		private RepositoryCheckProcessor repositoryCheckProcessor;
+		private int value;
+		private final ObserverEnd observerEndCheck;
 
-			if (repositoryService.getChangelogs(repositoryName) == null) {
-				throw new RemoteChangelogsFileNotFoundException();
-			}
+		public RepositoryChecker(String repositoryName,
+				ObserverEnd observerEndCheck) {
+			this.repositoryName = repositoryName;
+			this.observerEndCheck = observerEndCheck;
+		}
 
-			if (repositoryService.getAutoconfig(repositoryName) == null) {
-				throw new RemoteAutoconfigFileNotFoundException();
-			}
+		public void run() {
 
-			this.value = 0;
-
-			connexionService.getConnexionDAO().addObserverCount(
-					new ObserverCount() {
+			repositoryCheckProcessor = new RepositoryCheckProcessor(
+					repositoryName);
+			repositoryCheckProcessor
+					.addObserverCountProgress(new ObserverCountInt() {
 						@Override
-						public void update(int v) {
-							if (v > value) {
-								value = v;
-								System.out.println("Check Complete: " + value
-										+ " %");
-							}
+						public void update(int value) {
+							executeUpdateCountProgress(value);
 						}
 					});
+			repositoryCheckProcessor.addObserverEnd(new ObserverError() {
+				@Override
+				public void error(List<Exception> errors) {
+					executeEnd(errors);
+				}
+			});
+			repositoryCheckProcessor.addObserverError(new ObserverError() {
+				@Override
+				public void error(List<Exception> errors) {
+					executeError(errors);
+				}
+			});
 
-			List<Exception> errors = connexionService
-					.checkRepositoryContent(repositoryName);
+			value = 0;
+			repositoryCheckProcessor.run();
+		}
+
+		private void executeUpdateCountProgress(int v) {
+			if (v > value) {
+				value = v;
+				System.out.println("Check Complete: " + value + " %");
+			}
+		}
+
+		private void executeEnd(List<Exception> errors) {
 
 			if (errors.isEmpty()) {
-				System.out.println("Repository is synchronized.");
+				System.out.println("Repository " + repositoryName
+						+ " - repository is synchronized.");
 			} else {
-				System.out.println("Repository is out of synchronization.");
+				System.out.println("Repository " + repositoryName
+						+ " - repository is not synchronized.");
 				for (Exception e : errors) {
 					System.out.println(e.getMessage());
 				}
 			}
-		} catch (RepositoryException | RemoteRepositoryException | IOException e) {
-			System.out.println("Check repository failed.");
-			System.out.println(e.getMessage());
-		} catch (Exception e) {
-			System.out.println("Check repository failed.");
-			System.out.println("An unexpected error has occured.");
-			e.printStackTrace();
+
+			observerEndCheck.end();
 		}
 
-		if (exit) {
-			System.exit(0);
-		} else {
-			CommandConsole console = new CommandConsole(false);
-			System.out.println("");
-			console.execute();
+		private void executeError(List<Exception> errors) {
+
+			System.out.println("Repository " + repositoryName
+					+ " - synchronization finished with error.");
+
+			Exception ex = errors.get(0);
+			if (ex instanceof RepositoryException
+					|| ex instanceof RemoteRepositoryException
+					|| ex instanceof IOException) {
+				ErrorPrinter.printRepositoryManagedError(repositoryName, ex);
+			} else {
+				ErrorPrinter.printRepositoryUnexpectedError(repositoryName, ex);
+			}
+
+			observerEndCheck.end();
 		}
 	}
 
-	protected void syncRepository(String repositoryName, boolean exit) {
+	/* Sync */
 
-		/* Proceed with command */
+	protected void sync(String repositoryName, ObserverEnd observerEnd) {
 
-		boolean ok = checkForAddons(repositoryName);
-		if (ok) {
-			downloadAddons(repositoryName, exit);
-		} else {
-			if (exit) {
-				System.exit(0);
-			} else {
-				CommandConsole console = new CommandConsole(false);
-				System.out.println("");
-				console.execute();
+		AddonsUpdater addonsUpdater = new AddonsUpdater(repositoryName);
+		addonsUpdater.addObserverEndUpdate(observerEnd);
+		addonsUpdater.run();
+	}
+
+	private class AddonsUpdater {
+
+		private final String repositoryName;
+		//
+		private AddonsChecker addonsChecker;
+		private AddonsDownloader addonsDownloader;
+		private FilesSynchronizationManager filesManager;
+		//
+		private boolean check1IsDone, check2IsDone;
+		//
+		private ObserverEnd observerEndUpdate;
+
+		public AddonsUpdater(String repositoryName) {
+			this.repositoryName = repositoryName;
+		}
+
+		public void run() {
+
+			System.out.println("Synchronising with repository: "
+					+ repositoryName);
+
+			filesManager = new FilesSynchronizationManager();
+			addonsChecker = new AddonsChecker();
+			addonsDownloader = new AddonsDownloader();
+
+			check1IsDone = false;
+			check2IsDone = false;
+
+			addonsChecker.addObserverEnd(new ObserverEnd() {
+				@Override
+				public void end() {
+					addonsCheckerEnd();
+				}
+			});
+			addonsDownloader.addObserverEnd(new ObserverEnd() {
+				@Override
+				public void end() {
+					addonsDownloaderEnd();
+				}
+			});
+			addonsChecker.addObserverError(new ObserverError() {
+				@Override
+				public void error(List<Exception> errors) {
+					executeError(errors);
+				}
+			});
+			addonsDownloader.addObserverError(new ObserverError() {
+				@Override
+				public void error(List<Exception> errors) {
+					executeError(errors);
+				}
+			});
+			addonsDownloader
+					.addObserverConnectionLost(new ObserverConnectionLost() {
+						@Override
+						public void lost() {
+							executeConnectionLost();
+						}
+					});
+
+			addonsChecker.run();
+		}
+
+		private void addonsCheckerEnd() {
+
+			if (!check1IsDone) {
+				check1IsDone = true;
+			} else if (!check2IsDone) {
+				check2IsDone = true;
+			}
+
+			if (check1IsDone && check2IsDone) {
+				System.out.println("Synchronization with repository: "
+						+ repositoryName + " finished.");
+				observerEndUpdate.end();
+			} else if (check1IsDone && !check2IsDone) {
+				addonsDownloader.run();
+			}
+		}
+
+		private void addonsDownloaderEnd() {
+			addonsChecker.run();
+		}
+
+		private void executeError(List<Exception> errors) {
+
+			System.out.println("Synchronization with repository: "
+					+ repositoryName + " finished with errors:");
+			for (Exception ex : errors) {
+				if (ex instanceof IOException) {
+					ErrorPrinter
+							.printRepositoryManagedError(repositoryName, ex);
+				} else {
+					ErrorPrinter.printRepositoryUnexpectedError(repositoryName,
+							ex);
+				}
+			}
+			observerEndUpdate.end();
+		}
+
+		private void executeConnectionLost() {
+
+			System.out.println("Synchronization with repository: "
+					+ repositoryName + " - Connection failed.");
+			try {
+				Thread.sleep(5000);
+				addonsDownloader.run();
+			} catch (InterruptedException e) {
+			}
+		}
+
+		public void addObserverEndUpdate(ObserverEnd obs) {
+			this.observerEndUpdate = obs;
+		}
+
+		private class AddonsChecker {
+
+			private FilesCheckProcessor filesCheckProcessor;
+			private FilesCompletionProcessor filesCompletionProcessor;
+			private ObserverEnd observerEnd;
+			private ObserverError observerError;
+			private SyncTreeDirectoryDTO parent;
+
+			public void run() {
+
+				filesCheckProcessor = new FilesCheckProcessor(repositoryName,
+						false);
+				filesCheckProcessor.addObserverCount(new ObserverCountInt() {
+					@Override
+					public void update(int value) {
+						executeUpdateCheck(value);
+					}
+				});
+				filesCheckProcessor.addObserverError(observerError);
+
+				filesCompletionProcessor = new FilesCompletionProcessor(
+						repositoryName);
+				filesCompletionProcessor
+						.addObserverCount(new ObserverCountInt() {
+							@Override
+							public void update(int value) {
+								executeUpdateCompletion(value);
+							}
+						});
+				filesCompletionProcessor.addObserverEnd(new ObserverEnd() {
+					@Override
+					public void end() {
+						executeEnd();
+					}
+				});
+				filesCompletionProcessor.addObserverError(observerError);
+
+				this.parent = filesCheckProcessor.run();// blocking
+														// execution
+				if (parent == null) {
+					executeEnd();
+				} else {
+					filesCompletionProcessor.run(parent); // non blocking
+															// execution
+				}
+			}
+
+			private void executeUpdateCheck(int value) {
+				System.out.println("Computing SHA1 files signatures complete: "
+						+ value + " %");
+			}
+
+			private void executeUpdateCompletion(int value) {
+				System.out.println("Checking files Completion complete: "
+						+ value + " %");
+			}
+
+			private void executeEnd() {
+
+				filesManager.setParent(parent);
+				selectAll(parent);
+				filesManager.update();
+
+				System.out.println("Number of files to update = "
+						+ filesManager.getListFilesToUpdate().size());
+				System.out.println("Number of files to delete = "
+						+ filesManager.getListFilesToDelete().size());
+				System.out.println("Update files size: "
+						+ UnitConverter.convertSize(filesManager
+								.getTotalDownloadFilesSize()));
+
+				observerEnd.end();
+			}
+
+			private void selectAll(SyncTreeNodeDTO node) {
+
+				if (node.isLeaf()) {
+					SyncTreeLeafDTO leaf = (SyncTreeLeafDTO) node;
+					leaf.setSelected(true);
+				} else {
+					SyncTreeDirectoryDTO directory = (SyncTreeDirectoryDTO) node;
+					for (SyncTreeNodeDTO n : directory.getList()) {
+						selectAll(n);
+					}
+				}
+			}
+
+			public void addObserverEnd(ObserverEnd obs) {
+				this.observerEnd = obs;
+			}
+
+			public void addObserverError(ObserverError obs) {
+				this.observerError = obs;
+			}
+
+			public SyncTreeDirectoryDTO getParent() {
+				return parent;
+			}
+		}
+
+		private class AddonsDownloader {
+
+			private FilesSynchronizationProcessor filesSynchronizationProcessor;
+			private ObserverEnd observerEnd;
+			private ObserverError observerError;
+			private ObserverConnectionLost observerConnectionLost;
+			private int value;
+
+			public void run() {
+
+				filesSynchronizationProcessor = new FilesSynchronizationProcessor(
+						repositoryName, filesManager);
+				filesSynchronizationProcessor
+						.addObserverCountTotalProgress(new ObserverCountInt() {
+							@Override
+							public void update(int value) {
+								executeUpdateTotalProgress(value);
+							}
+						});
+				filesSynchronizationProcessor.addObserverEnd(new ObserverEnd() {
+					@Override
+					public void end() {
+						executeEnd();
+					}
+				});
+				filesSynchronizationProcessor
+						.addObserverProceedDelete(new ObserverProceed() {
+							@Override
+							public void proceed() {
+								executeProceedDelete();
+							}
+						});
+				filesSynchronizationProcessor.addObserverError(observerError);
+				filesSynchronizationProcessor
+						.addObserverConnectionLost(observerConnectionLost);
+
+				value = 0;
+				filesSynchronizationProcessor.run();
+			}
+
+			private void executeUpdateTotalProgress(int v) {
+				if (v > value) {
+					value = v;
+					System.out.println("Download complete: " + value + " %");
+				}
+			}
+
+			private void executeProceedDelete() {
+				System.out.println("Deleting extra local files...");
+			}
+
+			private void executeEnd() {
+				observerEnd.end();
+			}
+
+			public void addObserverEnd(ObserverEnd obs) {
+				this.observerEnd = obs;
+			}
+
+			public void addObserverError(ObserverError obs) {
+				this.observerError = obs;
+			}
+
+			private void addObserverConnectionLost(ObserverConnectionLost obs) {
+				this.observerConnectionLost = obs;
 			}
 		}
 	}
 
+	/* Extract Bikeys */
+
 	protected void extractBikeys(String sourceDirectoryPath,
-			String targetDirectoryPath, boolean exit) {
+			String targetDirectoryPath) {
 
 		System.out.println("Extracting *.bikey files...");
 
@@ -223,422 +549,11 @@ public class CommandGeneral {
 				System.out.println(e.getMessage());
 			}
 		}
-
-		if (exit) {
-			System.exit(0);
-		} else {
-			CommandConsole console = new CommandConsole(false);
-			System.out.println("");
-			console.execute();
-		}
 	}
 
-	private boolean checkForAddons(String repositoryName) {
+	/* Check for Updates */
 
-		RepositoryService repositoryService = new RepositoryService();
-		boolean ok = false;
-		ConnexionService connexionService = null;
-
-		try {
-			connexionService = ConnexionServiceFactory
-					.getServiceForRepositoryManagement(repositoryName);
-		} catch (RepositoryException | CheckException e) {
-			System.out.println("Sync repository failed.");
-			System.out.println(e.getMessage());
-			return false;
-		}
-
-		try {
-			connexionService.getSync(repositoryName);
-			connexionService.getServerInfo(repositoryName);
-
-			if (repositoryService.getSync(repositoryName) == null) {
-				throw new RemoteSyncFileNotFoundException();
-			}
-
-			if (repositoryService.getServerInfo(repositoryName) == null) {
-				throw new RemoteServerInfoFileNotFoundException();
-			}
-
-			this.value = 0;
-
-			repositoryService.getRepositorySHA1Processor().addObserverCount(
-					new ObserverCount() {
-						@Override
-						public synchronized void update(int v) {
-							if (v > value) {
-								value = v;
-								System.out
-										.println("Check for Addons complete: "
-												+ value + " %");
-							}
-						}
-					});
-
-			// Check for Addons
-			SyncTreeDirectoryDTO parent = repositoryService
-					.checkForAddons(repositoryName);
-			repositoryService.write(repositoryName);
-
-			System.out.println("Determining files completion...");
-
-			this.value = 0;
-
-			connexionService.getConnexionDAO().addObserverCount(
-					new ObserverCount() {
-						@Override
-						public void update(int v) {
-							if (v > value) {
-								value = v;
-								System.out
-										.println("Determining files completion complete: "
-												+ value + " %");
-							}
-						}
-					});
-
-			// Determine completion
-			connexionService.determineFilesCompletion(repositoryName, parent);
-
-			listFilesToUpdate.clear();
-			listFilesToDelete.clear();
-
-			// Get files list
-			for (SyncTreeNodeDTO node : parent.getList()) {
-				getFiles(node);
-			}
-
-			System.out.println("Number of files to update = "
-					+ listFilesToUpdate.size());
-			System.out.println("Number of files to delete = "
-					+ listFilesToDelete.size());
-			System.out.println("Checking for addons is finished.");
-
-			ok = true;
-
-		} catch (RepositoryException | RemoteRepositoryException | IOException e) {
-			System.out.println("Sync repository failed.");
-			System.out.println(e.getMessage());
-		} catch (Exception e) {
-			System.out.println("Sync repository failed.");
-			System.out.println("An unexpected error has occured.");
-			e.printStackTrace();
-		} finally {
-			if (connexionService != null) {
-				connexionService.cancel();
-			}
-		}
-		return ok;
-	}
-
-	private void getFiles(SyncTreeNodeDTO node) {
-
-		if (!node.isLeaf()) {
-			SyncTreeDirectoryDTO syncTreeDirectoryDTO = (SyncTreeDirectoryDTO) node;
-			if (syncTreeDirectoryDTO.isUpdated()) {
-				listFilesToUpdate.add(syncTreeDirectoryDTO);
-			} else if (syncTreeDirectoryDTO.isDeleted()) {
-				int count = 0;
-				for (SyncTreeNodeDTO n : syncTreeDirectoryDTO.getList()) {
-					if (n.isDeleted()) {
-						count++;
-					}
-				}
-				if (count == syncTreeDirectoryDTO.getList().size()) {
-					listFilesToDelete.add(syncTreeDirectoryDTO);
-				}
-			}
-			for (SyncTreeNodeDTO n : syncTreeDirectoryDTO.getList()) {
-				getFiles(n);
-			}
-		} else {
-			SyncTreeLeafDTO syncTreeLeafDTO = (SyncTreeLeafDTO) node;
-			if (syncTreeLeafDTO.isUpdated()) {
-				listFilesToUpdate.add(syncTreeLeafDTO);
-			} else if (syncTreeLeafDTO.isDeleted()) {
-				SyncTreeDirectoryDTO parent = syncTreeLeafDTO.getParent();
-				if (parent.getName().equals("racine")) {
-					listFilesToDelete.add(syncTreeLeafDTO);
-				} else {
-					int count = 0;
-					for (SyncTreeNodeDTO n : parent.getList()) {
-						if (n.isDeleted()) {
-							count++;
-						}
-					}
-					if (count == parent.getList().size()) {
-						listFilesToDelete.add(parent);
-					} else {
-						listFilesToDelete.add(syncTreeLeafDTO);
-					}
-				}
-			}
-		}
-	}
-
-	private void downloadAddons(final String repositoryName, final boolean exit) {
-
-		System.out.println("Downloading addons...");
-
-		if (listFilesToUpdate.size() == 0) {
-			finish(repositoryName, exit);
-		} else {
-			determineTotalFilesSize();
-
-			RepositoryService repositoryService = new RepositoryService();
-
-			try {
-				final ConnexionService connexionService = ConnexionServiceFactory
-						.getServiceForRepositoryManagement(repositoryName);
-
-				for (AbstractConnexionDAO connect : connexionService
-						.getConnexionDAOs()) {
-					connect.addObserverDownload(new ObserverDownload() {
-
-						@Override
-						public void updateTotalSizeProgress(long value) {
-							executeUpdateTotalSizeProgress(value);
-						}
-
-						@Override
-						public void updateTotalSize() {
-							executeUpdateTotalSize();
-						}
-
-						@Override
-						public void updateSingleSizeProgress(long value,
-								int pourcentage) {
-						}
-
-						@Override
-						public void updateSpeed() {
-						}
-
-						@Override
-						public void updateActiveConnections() {
-						}
-
-						@Override
-						public void updateEnd() {
-							if (connexionService != null) {
-								connexionService.cancel();
-							}
-							finish(repositoryName, exit);
-						}
-
-						@Override
-						public void updateEndWithErrors(List<Exception> errors) {
-							if (connexionService != null) {
-								connexionService.cancel();
-							}
-							finishWithErrors("Download finished with errors",
-									errors, repositoryName, exit);
-						}
-
-						@Override
-						public void updateCancelTooManyTimeoutErrors(int value,
-								List<Exception> errors) {
-							if (connexionService != null) {
-								connexionService.cancel();
-							}
-							finishWithTooManyTimeoutErrors(
-									"Download has been canceled due to too many consecutive time out errors (>"
-											+ value + ")", errors,
-									repositoryName, exit);
-						}
-
-						@Override
-						public void updateCancelTooManyErrors(int value,
-								List<Exception> errors) {
-							if (connexionService != null) {
-								connexionService.cancel();
-							}
-							finishWithTooManyErrors(
-									"Download has been canceled due to too many errors (>"
-											+ value + ")", errors,
-									repositoryName, exit);
-						}
-
-						@Override
-						public void updateResponseTime(long responseTime) {
-						}
-					});
-				}
-
-				connexionService.getUnZipFlowProcessor().addObserverUncompress(
-						new ObserverUncompress() {
-
-							@Override
-							public void start() {
-								System.out
-										.println("Uncompressing *pbo.zip files...");
-							}
-
-							@Override
-							public void update(int value) {
-								executeUncompressingProgress(value);
-							}
-
-							@Override
-							public void end() {
-								finish(repositoryName, exit);
-							}
-
-							@Override
-							public void endWithError(List<Exception> errors) {
-								if (connexionService != null) {
-									connexionService.cancel();
-								}
-								finishWithErrors(
-										"Download finished with errors",
-										errors, repositoryName, exit);
-							}
-						});
-
-				connexionService.synchronize(repositoryName, listFilesToUpdate);
-
-			} catch (RepositoryException | CheckException | IOException e) {
-				System.out.println("Sync repository failed.");
-				System.out.println(e.getMessage());
-				if (exit) {
-					System.exit(0);
-				} else {
-					CommandConsole console = new CommandConsole(false);
-					System.out.println("");
-					console.execute();
-				}
-
-			} catch (Exception e) {
-				System.out.println("Sync repository failed.");
-				System.out.println("An unexpected error has occured.");
-				e.printStackTrace();
-				if (exit) {
-					System.exit(0);
-				} else {
-					CommandConsole console = new CommandConsole(false);
-					System.out.println("");
-					console.execute();
-				}
-			}
-		}
-	}
-
-	private synchronized void executeUpdateTotalSize() {
-
-		determineTotalFilesSize();
-	}
-
-	private synchronized void executeUpdateTotalSizeProgress(long value) {
-
-		if (totalExpectedFilesSize != 0) {// division by 0!
-			incrementedFilesSize = incrementedFilesSize + value;
-			System.out
-					.println("Download complete: "
-							+ (int) (((incrementedFilesSize) * 100) / totalExpectedFilesSize)
-							+ " %");
-		}
-	}
-
-	private synchronized void executeUncompressingProgress(int value) {
-		System.out.println("Uncompressing complete: " + value + " %");
-	}
-
-	private void finish(final String repositoryName, boolean exit) {
-
-		System.out.println("Deleting extra files...");
-		deleteExtraFiles();
-		System.out.println("Checking for addons...");
-		checkForAddons(repositoryName);
-		System.out.println("Synchronization is finished.");
-		if (exit) {
-			System.exit(0);
-		} else {
-			CommandConsole console = new CommandConsole(false);
-			System.out.println("");
-			console.execute();
-		}
-	}
-
-	private void deleteExtraFiles() {
-
-		for (SyncTreeNodeDTO node : listFilesToDelete) {
-			String path = node.getDestinationPath() + "/" + node.getName();
-			if (path != null) {
-				File file = new File(path);
-				if (file.isFile()) {
-					FileAccessMethods.deleteFile(file);
-				} else if (file.isDirectory()) {
-					FileAccessMethods.deleteDirectory(file);
-				}
-			}
-		}
-	}
-
-	private void determineTotalFilesSize() {
-
-		totalExpectedFilesSize = 0;
-		for (SyncTreeNodeDTO node : listFilesToUpdate) {
-			if (node.isLeaf()) {
-				SyncTreeLeafDTO leaf = (SyncTreeLeafDTO) node;
-				totalExpectedFilesSize = totalExpectedFilesSize
-						+ FileSizeComputer.computeExpectedSize(leaf);
-			}
-		}
-	}
-
-	private void finishWithErrors(String message, List<Exception> errors,
-			final String repositoryName, boolean exit) {
-
-		System.out.println("Deleting extra files...");
-		deleteExtraFiles();
-
-		System.out.println(message + ":");
-
-		List<String> messages = new ArrayList<String>();
-		for (Exception e : errors) {
-			if (e instanceof IOException || e instanceof RepositoryException) {
-				messages.add("- " + e.getMessage());
-			} else {
-				String coreMessage = "- An unexpected error has occured.";
-				StringWriter sw = new StringWriter();
-				PrintWriter pw = new PrintWriter(sw);
-				e.printStackTrace(pw);
-				String stacktrace = sw.toString(); // stack trace as a String
-				coreMessage = coreMessage + "\n" + "StackTrace:" + "\n"
-						+ stacktrace;
-				messages.add(coreMessage);
-			}
-		}
-
-		for (String m : messages) {
-			System.out.println(m);
-		}
-
-		System.out.println("Checking for addons...");
-		checkForAddons(repositoryName);
-		System.out.println("Synchronization is finished.");
-		if (exit) {
-			System.exit(0);
-		} else {
-			CommandConsole console = new CommandConsole(false);
-			System.out.println("");
-			console.execute();
-		}
-	}
-
-	private synchronized void finishWithTooManyTimeoutErrors(String message,
-			List<Exception> errors, String repositoryName, boolean exit) {
-
-		finishWithErrors(message, errors, repositoryName, exit);
-	}
-
-	private synchronized void finishWithTooManyErrors(String message,
-			List<Exception> errors, String repositoryName, boolean exit) {
-
-		finishWithErrors(message, errors, repositoryName, exit);
-	}
-
-	protected void checkForUpdates(boolean devMode, boolean exit) {
+	protected void checkForUpdates(boolean devMode) {
 
 		FtpService ftpService = new FtpService();
 		String availableVersion = null;
@@ -673,14 +588,6 @@ public class CommandGeneral {
 			}
 		} else {
 			System.out.println("No new update available.");
-		}
-
-		if (exit) {
-			System.exit(0);
-		} else {
-			CommandConsole console = new CommandConsole(devMode);
-			System.out.println("");
-			console.execute();
 		}
 	}
 }

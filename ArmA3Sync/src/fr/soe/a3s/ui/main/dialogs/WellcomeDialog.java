@@ -127,7 +127,19 @@ public class WellcomeDialog extends AbstractDialog {
 		if (returnVal == JFileChooser.APPROVE_OPTION) {
 			File file = fc.getSelectedFile();
 			String path = file.getAbsolutePath();
+			textField.setText(path);
+		} else {
+			textField.setText("");
+		}
+	}
+
+	@Override
+	protected void buttonOKPerformed() {
+
+		if (!textField.getText().isEmpty()) {
+			String path = textField.getText();
 			profileService.setArmA3ExePath(path);
+			File file = new File(path);
 			if (file.getParent() != null) {
 				String parentPath = file.getParentFile().getAbsolutePath();
 				List<String> set = profileService
@@ -152,28 +164,14 @@ public class WellcomeDialog extends AbstractDialog {
 				}
 				if (!contains) {
 					profileService.addAddonSearchDirectoryPath(parentPath);
-					facade.getAddonOptionsPanel()
-							.updateAddonSearchDirectories();
-					facade.getAddonOptionsPanel().updateAddonPriorities();
 				}
+			} else {
+				profileService.setArmA3ExePath(null);
 			}
-			textField.setText(path);
-		} else {
-			profileService.setArmA3ExePath(null);
-			textField.setText("");
-		}
-	}
 
-	@Override
-	protected void buttonOKPerformed() {
-
-		if (!textField.getText().isEmpty()) {
 			this.dispose();
-			facade.getAddonOptionsPanel().updateAddonSearchDirectories();
-			facade.getAddonOptionsPanel().updateAddonPriorities();
-			facade.getAddonsPanel().updateAvailableAddons();
-			facade.getAddonsPanel().updateAddonGroups();
-			facade.getLaunchOptionsPanel().init();
+			facade.getMainPanel().updateTabs(
+					OP_ADDON_FILES_CHANGED);
 		}
 	}
 

@@ -25,14 +25,13 @@ public class ConnectionCompletionProcessor implements DataAccessConstants {
 		this.downloadFilesStack = new Stack<SyncTreeLeafDTO>();
 		this.downloadFilesStack.addAll(filesToDownload);
 		this.repository = repository;
-		ex = null;
-		this.count = 0;
-		this.totalCount = 0;
+		this.ex = null;
 	}
 
 	public void run() throws IOException {
 
-		httpDAOs.get(0).setTotalCount(downloadFilesStack.size());
+		this.totalCount = downloadFilesStack.size();
+		this.count = 0;
 
 		for (final HttpDAO httpDAO : httpDAOs) {
 			httpDAO.addObserverProceed(new ObserverProceed() {
@@ -46,32 +45,24 @@ public class ConnectionCompletionProcessor implements DataAccessConstants {
 								public void run() {
 									try {
 										httpDAO.setActiveConnection(true);
-
-										int count = 0;
-										for (final HttpDAO hDAO : httpDAOs) {
-											if (hDAO.isActiveConnection()) {
-												count++;
-											}
-										}
-										System.out
-												.println("Active connexions: "
-														+ count);
-
-										httpDAO.getFileCompletion(
+										double complete = httpDAO.getFileCompletion(
 												leaf.getRemotePath(),
 												leaf.getDestinationPath(),
 												leaf, repository);
-
-										updateCount();
-
-									} catch (IOException e) {
-										ex = e;
-										for (final HttpDAO hDAO : httpDAOs) {
-											hDAO.cancel();
+										leaf.setComplete(complete);
+										if (!httpDAO.isCanceled()) {
+											increment();
 										}
-										List<Exception> errors = new ArrayList<Exception>();
-										errors.add(e);
-										httpDAO.updateObserverError(errors);
+									} catch (IOException e) {
+										if (!httpDAO.isCanceled()) {
+											ex = e;
+											for (final HttpDAO hDAO : httpDAOs) {
+												hDAO.cancel();
+											}
+											List<Exception> errors = new ArrayList<Exception>();
+											errors.add(e);
+											httpDAO.updateObserverError(errors);
+										}
 									} finally {
 										httpDAO.setActiveConnection(false);
 										httpDAO.updateObserverProceed();
@@ -106,11 +97,8 @@ public class ConnectionCompletionProcessor implements DataAccessConstants {
 			for (final HttpDAO httpDAO : httpDAOs) {
 				if (!downloadFilesStack.isEmpty()) {// nb files < nb connections
 					try {
-						if (httpDAO instanceof HttpDAO) {
-							httpDAO.connectToRepository(
-									repository.getProtocol(), SYNC_FILE_PATH);
-							httpDAO.disconnect();
-						}
+						httpDAO.connectToRepository(repository.getProtocol());
+						httpDAO.disconnect();
 						httpDAO.updateObserverProceed();
 					} catch (IOException e) {
 						boolean isDowloading = false;
@@ -137,10 +125,9 @@ public class ConnectionCompletionProcessor implements DataAccessConstants {
 		}
 	}
 
-	private synchronized void updateCount() {
-
-		this.count++;
-		httpDAOs.get(0).setCount(count);
-		httpDAOs.get(0).updateObserverCount();
+	private synchronized void increment() {
+		count++;
+		int value = count * 100 / totalCount;
+		httpDAOs.get(0).updateObserverCount(value);
 	}
 }

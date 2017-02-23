@@ -77,21 +77,8 @@ public class ConnectionUploadProcessor extends AbstractConnectionProcessor {
 			if (abstractConnexionDAO.isCanceled()) {
 				break;
 			} else {
-				abstractConnexionDAO.updateObserverText("Uploading file: "
-						+ remoteFile.getParentDirectoryRelativePath() + "/"
-						+ remoteFile.getFilename());
-				boolean ok = abstractConnexionDAO.uploadFile(remoteFile,
-						repositoryPath, this.protocole.getRemotePath());
-				if (!ok) {
-					throw new IOException("Failed to upload file: "
-							+ remoteFile.getParentDirectoryRelativePath() + "/"
-							+ remoteFile.getFilename());
-				} else {
-					abstractConnexionDAO
-							.updateObserverUploadTotalSizeProgress();
-					abstractConnexionDAO
-							.updateObserverUploadLastIndexFileUploaded();
-				}
+				abstractConnexionDAO.uploadFile(remoteFile, repositoryPath,
+						this.protocole.getRemotePath());
 			}
 		}
 	}

@@ -8,21 +8,21 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import fr.soe.a3s.controller.ObservableCount;
-import fr.soe.a3s.controller.ObserverCount;
+import fr.soe.a3s.controller.ObservableCountInt;
+import fr.soe.a3s.controller.ObserverCountInt;
 import fr.soe.a3s.dao.DataAccessConstants;
 import fr.soe.a3s.domain.AbstractProtocole;
 import fr.soe.a3s.domain.repository.SyncTreeLeaf;
 import fr.soe.a3s.jazsync.Jazsync;
 
-public class RepositoryZsyncProcessor implements ObservableCount,
+public class RepositoryZsyncProcessor implements ObservableCountInt,
 		DataAccessConstants {
 
 	/** Parameters */
 	private List<SyncTreeLeaf> filesToCompute = null;
 	private AbstractProtocole protocol = null;
 	/** observable count Interface */
-	private ObserverCount observerCount;
+	private ObserverCountInt observerCount;
 	protected int count = 0, totalCount = 0;
 	/***/
 	private List<Callable<Integer>> callables = null;
@@ -33,13 +33,12 @@ public class RepositoryZsyncProcessor implements ObservableCount,
 			AbstractProtocole protocol) {
 		this.filesToCompute = filesToCompute;
 		this.protocol = protocol;
-	}
-
-	public void run() throws IOException {
-
 		this.callables = new ArrayList<Callable<Integer>>();
 		this.count = 0;
 		this.totalCount = 0;
+	}
+
+	public void run() throws IOException {
 
 		// Generates zsync files on disk
 		compute();
@@ -80,7 +79,6 @@ public class RepositoryZsyncProcessor implements ObservableCount,
 						try {
 							Jazsync.make(file, zsyncFile, url, leaf.getSha1());
 							increment();
-							updateObserverCount();
 						} catch (IOException e) {
 							canceled = true;
 							ex = e;
@@ -94,7 +92,9 @@ public class RepositoryZsyncProcessor implements ObservableCount,
 	}
 
 	private synchronized void increment() {
-		this.count++;
+		count++;
+		int value = count * 100 / totalCount;
+		updateObserverCount(value);
 	}
 
 	/* Getters and Setters */
@@ -110,12 +110,12 @@ public class RepositoryZsyncProcessor implements ObservableCount,
 	/* observable Count Inteface */
 
 	@Override
-	public void addObserverCount(ObserverCount obs) {
+	public void addObserverCount(ObserverCountInt obs) {
 		this.observerCount = obs;
 	}
 
 	@Override
-	public void updateObserverCount() {
-		observerCount.update(this.count * 100 / this.totalCount);
+	public void updateObserverCount(int value) {
+		observerCount.update(value);
 	}
 }

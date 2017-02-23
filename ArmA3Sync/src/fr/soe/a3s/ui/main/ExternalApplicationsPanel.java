@@ -160,8 +160,18 @@ public class ExternalApplicationsPanel extends JPanel implements UIConstants {
 				.setToolTipText("Set the selected application to run at game launch");
 	}
 
-	public void init() {
+	public void update(int flag) {
 
+		if (flag == OP_PROFILE_CHANGED) {
+			
+			updateTableApplications();
+		}
+	}
+
+	private void updateTableApplications() {
+
+		this.tableApplications.setEnabled(false);
+		
 		List<ExternalApplicationDTO> externalApplicationDTOs = configurationService
 				.getExternalApplications();
 		model.setDataSize(externalApplicationDTOs.size());
@@ -181,12 +191,11 @@ public class ExternalApplicationsPanel extends JPanel implements UIConstants {
 			model.setValueAt(parameters, i, 3);
 			i++;
 		}
-	}
-
-	private void refresh() {
-		init();
+		
 		model.fireTableDataChanged();
 		jScrollPane1.updateUI();
+		
+		this.tableApplications.setEnabled(true);
 	}
 
 	private void buttonAddPerformed() {
@@ -200,9 +209,7 @@ public class ExternalApplicationsPanel extends JPanel implements UIConstants {
 		externalApplicationDTO.setParameters("");
 		list.add(externalApplicationDTO);
 		configurationService.saveExternalApps(list);
-		init();
-		model.fireTableDataChanged();
-		jScrollPane1.updateUI();
+		updateTableApplications();
 	}
 
 	private void buttonDeletePerformed() {
@@ -217,7 +224,7 @@ public class ExternalApplicationsPanel extends JPanel implements UIConstants {
 				.getExternalApplications();
 		list.remove(index);
 		configurationService.saveExternalApps(list);
-		refresh();
+		updateTableApplications();
 		if (index != 0) {
 			tableApplications.setRowSelectionInterval(index - 1, index - 1);
 		}
@@ -256,7 +263,7 @@ public class ExternalApplicationsPanel extends JPanel implements UIConstants {
 				.getExternalApplications();
 		list.set(index, externalApplicationDTO);
 		configurationService.saveExternalApps(list);
-		refresh();
+		updateTableApplications();
 	}
 
 	private void buttonEnablePerformed() {
@@ -273,12 +280,8 @@ public class ExternalApplicationsPanel extends JPanel implements UIConstants {
 		boolean active = externalApplicationDTO.isEnable();
 		externalApplicationDTO.setEnable(!active);
 		configurationService.saveExternalApps(list);
-		refresh();
+		updateTableApplications();
 		tableApplications.setRowSelectionInterval(index, index);
-	}
-
-	public JTable getTableApplications() {
-		return this.tableApplications;
 	}
 
 	class MyTableModel extends AbstractTableModel {

@@ -11,6 +11,7 @@ import fr.soe.a3s.dto.sync.SyncTreeNodeDTO;
 public class ConnectionDeleteProcessor extends AbstractConnectionProcessor {
 
 	private final AbstractProtocole protocol;
+	private int count, totalCount;
 
 	public ConnectionDeleteProcessor(AbstractConnexionDAO abstractConnexionDAO,
 			List<SyncTreeNodeDTO> filesToDelete,
@@ -25,8 +26,9 @@ public class ConnectionDeleteProcessor extends AbstractConnectionProcessor {
 
 		extract();
 
-		abstractConnexionDAO.setTotalCount(this.remoteFiles.size());
-		abstractConnexionDAO.setCount(0);
+		this.totalCount = remoteFiles.size();
+		this.count = 0;
+
 		int count = 0;
 
 		for (RemoteFile remoteFile : remoteFiles) {
@@ -39,10 +41,14 @@ public class ConnectionDeleteProcessor extends AbstractConnectionProcessor {
 					abstractConnexionDAO.deleteFile(remoteFile,
 							protocol.getRemotePath());
 				}
-				count++;
-				abstractConnexionDAO.setCount(count);
-				abstractConnexionDAO.updateObserverCount();
+				increment();
 			}
 		}
+	}
+
+	private synchronized void increment() {
+		count++;
+		int value = count * 100 / totalCount;
+		abstractConnexionDAO.updateObserverCount(value);
 	}
 }

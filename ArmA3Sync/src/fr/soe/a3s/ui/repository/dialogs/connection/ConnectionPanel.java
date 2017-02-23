@@ -207,14 +207,6 @@ public class ConnectionPanel extends JPanel {
 
 		String url = textFieldHost.getText().trim();
 
-		/*
-		 * Remove all white spaces in the url
-		 * http://stackoverflow.com/questions/
-		 * 18295759/java-lang-illegalargumentexception
-		 * -illegal-character-in-authority-at-index-7-wh
-		 */
-		url = url.replaceAll("\\s+", "");
-
 		/* Remove prompt from url */
 		String test = url.toLowerCase()
 				.replaceAll(ProtocolType.FTP.getPrompt(), "")
@@ -238,11 +230,24 @@ public class ConnectionPanel extends JPanel {
 			}
 		}
 
+		/*
+		 * Remove blank space in host name http://stackoverflow.com/questions/
+		 * 18295759/java-lang-illegalargumentexception
+		 * -illegal-character-in-authority-at-index-7-wh
+		 */
+		int index = url.indexOf("/");
+		if (index == -1) {
+			url = url.replaceAll("\\s+", "");
+		} else {
+			url = (url.substring(0, index)).replaceAll("\\s+", "")
+					+ url.substring(index);
+		}
+
 		/* Remove / at the end of url */
 		if (!url.isEmpty()) {
 			boolean urlCleanded = false;
 			do {
-				int index = url.lastIndexOf("/");
+				index = url.lastIndexOf("/");
 				if (index != -1) {
 					if (index == url.length() - 1) {
 						url = url.substring(0, url.length() - 1);

@@ -33,8 +33,14 @@ public class InfoPanel extends JPanel implements UIConstants {
 		}
 	}
 
-	public void init() {
+	public void update(int flag) {
 
+		if (flag == OP_PROFILE_CHANGED) {
+			update();
+		}
+	}
+
+	private void update() {
 		String profileName = configurationService.getProfileName();
 		labelSelectedProfile.setText("Profile: " + profileName);
 	}

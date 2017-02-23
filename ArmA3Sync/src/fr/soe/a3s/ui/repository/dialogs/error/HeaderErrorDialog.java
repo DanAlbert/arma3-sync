@@ -26,7 +26,10 @@ public class HeaderErrorDialog implements DataAccessConstants {
 	public void show() {
 
 		// Dialog message
-		String dialogMessage = "The server appears to not support HTTP partial file transfer."
+		String dialogMessage = "Repository name: "
+				+ repositoryName
+				+ "\n"
+				+ "The server appears to not support HTTP partial file transfer."
 				+ "\n"
 				+ "Whole file transfer will be used for this session instead."
 				+ "\n\n"

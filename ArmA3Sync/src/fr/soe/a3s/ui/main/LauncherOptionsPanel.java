@@ -145,6 +145,7 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener,
 							}
 						}
 					}
+
 				}
 				String[] tab = new String[listProfileNames.size() + 1];
 				tab[0] = "Default";
@@ -627,13 +628,163 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener,
 		checkBoxEnableBattleye.setToolTipText("Start the game with Battleye");
 	}
 
-	public void init() {
+	public void update(int flag) {
 
-		/* Launcher options Automatically updates Run Parameters */
-		updateOptions();
+		if (flag == OP_PROFILE_CHANGED) {
 
-		/* Additional Run Parameters */
-		updateAdditionalRunParameters();
+			// update Malloc comboBox Model and Battleye
+			updateOptions();
+
+			updateRunParameters();
+
+			/* Additional Run Parameters */
+			updateAdditionalRunParameters();
+		}
+
+		else if (flag == OP_ADDON_FILES_CHANGED) {
+
+			updateOptions();
+
+			updateRunParameters();
+		}
+
+		else if (flag == OP_ADDON_SELECTION_CHANGED
+				|| flag == OP_ADDON_PRIORITY_CHANGED) {
+
+			updateRunParameters();
+		}
+	}
+
+	private void updateOptions() {
+
+		LauncherOptionsDTO launcherOptionsDTO = profileService
+				.getLauncherOptions();
+
+		/* Launcher options */
+		if (launcherOptionsDTO.getGameProfile() != null) {
+			comboBoxProfiles.setSelectedItem(launcherOptionsDTO
+					.getGameProfile());
+			checkBoxProfiles.setSelected(true);
+		} else {
+			comboBoxProfiles.setSelectedIndex(0);
+		}
+
+		checkBoxShowScriptErrors.setSelected(launcherOptionsDTO
+				.isShowScriptError());
+		checkBoxNoPause.setSelected(launcherOptionsDTO.isNoPause());
+		checkBoxFilePatching.setSelected(launcherOptionsDTO.isFilePatching());
+		checkBoxWindowMode.setSelected(launcherOptionsDTO.isWindowMode());
+		checkBoxCheckSignatures.setSelected(launcherOptionsDTO
+				.isCheckSignatures());
+
+		checkBoxAutoRestart.setSelected(launcherOptionsDTO.isAutoRestart());
+
+		/* Performance */
+		if (launcherOptionsDTO.getMaxMemorySelection() != null) {
+			comboBoxMaxMemory.setSelectedItem(launcherOptionsDTO
+					.getMaxMemorySelection());
+			checkBoxMaxMemory.setSelected(true);
+		} else {
+			comboBoxMaxMemory.setSelectedIndex(0);
+		}
+
+		if (launcherOptionsDTO.getCpuCountSelection() != 0) {
+			comboBoxCpuCount.setSelectedItem(Integer
+					.toString(launcherOptionsDTO.getCpuCountSelection()));
+			checkBoxCpuCount.setSelected(true);
+		} else {
+			comboBoxCpuCount.setSelectedIndex(0);
+		}
+
+		if (launcherOptionsDTO.getExThreadsSelection() != null) {
+			comboBoxExThreads.setSelectedItem(launcherOptionsDTO
+					.getExThreadsSelection());
+			checkBoxExThreads.setSelected(true);
+		} else {
+			comboBoxExThreads.setSelectedIndex(0);
+		}
+
+		checkBoxEnableHT.setSelected(launcherOptionsDTO.isEnableHT());
+		checkBoxNoSplashScreen.setSelected(launcherOptionsDTO
+				.isNoSplashScreen());
+		checkBoxDefaultWorld.setSelected(launcherOptionsDTO.isDefaultWorld());
+		checkBoxNoLogs.setSelected(launcherOptionsDTO.isNoLogs());
+
+		/* ArmA 3 Executable Location, Malloc and Battleye */
+		checkBoxMalloc.setSelected(false);
+		comboBoxMalloc.setSelectedIndex(0);// default empty
+		checkBoxEnableBattleye.setSelected(false);
+		// Battleye setting may have change ArmA3ExePath
+		String arma3ExePath = launcherOptionsDTO.getArma3ExePath();
+		if (arma3ExePath != null) {
+			File arma3ExeFile = new File(arma3ExePath);
+			if (arma3ExeFile.exists()) {// set executable location
+				textFieldArmAExecutableLocation.setText(launcherOptionsDTO
+						.getArma3ExePath());
+			}
+			if (arma3ExeFile.getParentFile() != null) {// set Malloc
+				File parent = new File(arma3ExeFile.getParent());
+				List<String> list = new ArrayList<String>();
+				if (parent != null) {
+					// Add System Malloc
+					// https://community.bistudio.com/wiki/Arma_3:_Custom_Memory_Allocator
+					// Add from dll folder
+					File dllFolder = new File(parent.getAbsolutePath() + "/Dll");
+					File[] subfiles = dllFolder.listFiles();
+					if (subfiles != null) {
+						for (File file : subfiles) {
+							if (file.getName().toLowerCase().contains(".dll")) {
+								list.add(file.getName().replaceAll(".dll", ""));
+							}
+						}
+					}
+				}
+				String[] tab = new String[list.size() + 1];
+				tab[0] = "";
+				for (int i = 0; i < list.size(); i++) {
+					tab[i + 1] = list.get(i);
+				}
+				ComboBoxModel mallocModel = new DefaultComboBoxModel(tab);
+				comboBoxMalloc.setModel(mallocModel);
+				if (launcherOptionsDTO.getMallocSelection() != null) {
+					comboBoxMalloc.setSelectedItem(launcherOptionsDTO
+							.getMallocSelection());
+					checkBoxMalloc.setSelected(true);
+				} else {
+					comboBoxMalloc.setSelectedIndex(0);
+				}
+			}
+			if (arma3ExeFile.getName().toLowerCase()
+					.equals(GameExecutables.BATTLEYE.getDescription())) {
+				checkBoxEnableBattleye.setSelected(true);
+			}
+		}
+	}
+
+	private void updateAdditionalRunParameters() {
+
+		String additionalParameters = profileService.getAdditionalParameters();
+		if (additionalParameters != null) {
+			additionalParametersTextArea.setText(additionalParameters);
+		} else {
+			additionalParametersTextArea.setText("");
+		}
+	}
+
+	/* Update Run Parameters */
+	private void updateRunParameters() {
+
+		runParametersTextArea.setText("");
+		List<String> params = launchService.getRunParameters();
+		if (params != null) {
+			String txt = "";
+			for (String stg : params) {
+				txt = txt + (stg) + "\n";
+			}
+			runParametersTextArea.setText(txt);
+			runParametersTextArea.setRows(1);
+			runParametersTextArea.setCaretPosition(0);
+		}
 	}
 
 	/* Components selection */
@@ -720,7 +871,6 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener,
 				textFieldArmAExecutableLocation.setText(newArma3Exe
 						.getAbsolutePath());
 				profileService.setArmA3ExePath(newArma3Exe.getAbsolutePath());
-				updateOptions();
 				JOptionPane.showMessageDialog(facade.getMainPanel(),
 						"ArmA 3 Executable Location have changed.",
 						"Information", JOptionPane.INFORMATION_MESSAGE);
@@ -884,163 +1034,10 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener,
 			String path = file.getAbsolutePath();
 			profileService.setArmA3ExePath(path);
 			textFieldArmAExecutableLocation.setText(path);
-			updateOptions();// update Malloc comboBox Model and Battleye
 		}
 	}
 
-	/* Update Run Parameters */
-	public void updateRunParameters() {
-
-		runParametersTextArea.setText("");
-		List<String> params = launchService.getRunParameters();
-		if (params != null) {
-			String txt = "";
-			for (String stg : params) {
-				txt = txt + (stg) + "\n";
-			}
-			runParametersTextArea.setText(txt);
-			runParametersTextArea.setRows(1);
-			runParametersTextArea.setCaretPosition(0);
-		}
-	}
-
-	/* Additional Parameters */
-	public void setAdditionalParameters() {
-
-		String additionalParameters = additionalParametersTextArea.getText()
-				.trim();
-		profileService.setAdditionalParameters(additionalParameters);
-	}
-
-	public void updateAdditionalParameters() {
-
-		String additionalParameters = profileService.getAdditionalParameters();
-		if (additionalParameters != null) {
-			additionalParametersTextArea.setText(additionalParameters);
-			additionalParametersTextArea.setCaretPosition(0);
-			additionalParametersTextArea.updateUI();
-		} else {
-			additionalParametersTextArea.setText("");
-		}
-	}
-
-	private void updateOptions() {
-
-		LauncherOptionsDTO launcherOptionsDTO = profileService
-				.getLauncherOptions();
-
-		/* Launcher options */
-		if (launcherOptionsDTO.getGameProfile() != null) {
-			comboBoxProfiles.setSelectedItem(launcherOptionsDTO
-					.getGameProfile());
-			checkBoxProfiles.setSelected(true);
-		} else {
-			comboBoxProfiles.setSelectedIndex(0);
-		}
-
-		checkBoxShowScriptErrors.setSelected(launcherOptionsDTO
-				.isShowScriptError());
-		checkBoxNoPause.setSelected(launcherOptionsDTO.isNoPause());
-		checkBoxFilePatching.setSelected(launcherOptionsDTO.isFilePatching());
-		checkBoxWindowMode.setSelected(launcherOptionsDTO.isWindowMode());
-		checkBoxCheckSignatures.setSelected(launcherOptionsDTO
-				.isCheckSignatures());
-
-		checkBoxAutoRestart.setSelected(launcherOptionsDTO.isAutoRestart());
-
-		/* Performance */
-		if (launcherOptionsDTO.getMaxMemorySelection() != null) {
-			comboBoxMaxMemory.setSelectedItem(launcherOptionsDTO
-					.getMaxMemorySelection());
-			checkBoxMaxMemory.setSelected(true);
-		} else {
-			comboBoxMaxMemory.setSelectedIndex(0);
-		}
-
-		if (launcherOptionsDTO.getCpuCountSelection() != 0) {
-			comboBoxCpuCount.setSelectedItem(Integer
-					.toString(launcherOptionsDTO.getCpuCountSelection()));
-			checkBoxCpuCount.setSelected(true);
-		} else {
-			comboBoxCpuCount.setSelectedIndex(0);
-		}
-
-		if (launcherOptionsDTO.getExThreadsSelection() != null) {
-			comboBoxExThreads.setSelectedItem(launcherOptionsDTO
-					.getExThreadsSelection());
-			checkBoxExThreads.setSelected(true);
-		} else {
-			comboBoxExThreads.setSelectedIndex(0);
-		}
-
-		checkBoxEnableHT.setSelected(launcherOptionsDTO.isEnableHT());
-		checkBoxNoSplashScreen.setSelected(launcherOptionsDTO
-				.isNoSplashScreen());
-		checkBoxDefaultWorld.setSelected(launcherOptionsDTO.isDefaultWorld());
-		checkBoxNoLogs.setSelected(launcherOptionsDTO.isNoLogs());
-
-		/* ArmA 3 Executable Location, Malloc and Battleye */
-		checkBoxMalloc.setSelected(false);
-		comboBoxMalloc.setSelectedIndex(0);// default empty
-		checkBoxEnableBattleye.setSelected(false);
-		// Battleye setting may have change ArmA3ExePath
-		String arma3ExePath = launcherOptionsDTO.getArma3ExePath();
-		if (arma3ExePath != null) {
-			File arma3ExeFile = new File(arma3ExePath);
-			if (arma3ExeFile.exists()) {// set executable location
-				textFieldArmAExecutableLocation.setText(launcherOptionsDTO
-						.getArma3ExePath());
-			}
-			if (arma3ExeFile.getParentFile() != null) {// set Malloc
-				File parent = new File(arma3ExeFile.getParent());
-				List<String> list = new ArrayList<String>();
-				if (parent != null) {
-					// Add System Malloc
-					// https://community.bistudio.com/wiki/Arma_3:_Custom_Memory_Allocator
-					// Add from dll folder
-					File dllFolder = new File(parent.getAbsolutePath() + "/Dll");
-					File[] subfiles = dllFolder.listFiles();
-					if (subfiles != null) {
-						for (File file : subfiles) {
-							if (file.getName().toLowerCase().contains(".dll")) {
-								list.add(file.getName().replaceAll(".dll", ""));
-							}
-						}
-					}
-				}
-				String[] tab = new String[list.size() + 1];
-				tab[0] = "";
-				for (int i = 0; i < list.size(); i++) {
-					tab[i + 1] = list.get(i);
-				}
-				ComboBoxModel mallocModel = new DefaultComboBoxModel(tab);
-				comboBoxMalloc.setModel(mallocModel);
-				if (launcherOptionsDTO.getMallocSelection() != null) {
-					comboBoxMalloc.setSelectedItem(launcherOptionsDTO
-							.getMallocSelection());
-					checkBoxMalloc.setSelected(true);
-				} else {
-					comboBoxMalloc.setSelectedIndex(0);
-				}
-			}
-			if (arma3ExeFile.getName().toLowerCase()
-					.equals(GameExecutables.BATTLEYE.getDescription())) {
-				checkBoxEnableBattleye.setSelected(true);
-			}
-		}
-	}
-
-	private void updateAdditionalRunParameters() {
-
-		String additionalParameters = profileService.getAdditionalParameters();
-		if (additionalParameters != null) {
-			additionalParametersTextArea.setText(additionalParameters);
-		} else {
-			additionalParametersTextArea.setText("");
-		}
-	}
-
-	/* additionalParametersTextArea modification listener */
+	/* additionalParametersTextArea modification Listener */
 	@Override
 	public void changedUpdate(DocumentEvent arg0) {
 		String additionalParameters = additionalParametersTextArea.getText();

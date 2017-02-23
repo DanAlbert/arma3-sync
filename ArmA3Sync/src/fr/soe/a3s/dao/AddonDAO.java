@@ -1,6 +1,9 @@
 package fr.soe.a3s.dao;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 import fr.soe.a3s.domain.Addon;
@@ -40,5 +43,20 @@ public class AddonDAO {
 			}
 		}
 		return false;
+	}
+
+	public List<String> getDuplicates(String name) {
+
+		List<String> list = new ArrayList<String>();
+		for (Iterator<String> iter = mapAddons.keySet().iterator(); iter
+				.hasNext();) {
+			String key = iter.next();
+			if (key.equals(name.toLowerCase())) {
+				list.add(key);
+			} else if (key.contains(name.toLowerCase() + "*")) {
+				list.add(key);
+			}
+		}
+		return list;
 	}
 }

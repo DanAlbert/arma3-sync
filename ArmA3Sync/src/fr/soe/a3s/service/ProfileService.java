@@ -280,7 +280,7 @@ public class ProfileService extends ObjectDTOtransformer {
 		}
 	}
 
-	public TreeDirectoryDTO getAddonGroupsTree() {
+	public TreeDirectoryDTO getAddonGroups() {
 
 		String profileName = configurationDAO.getConfiguration()
 				.getProfileName();
@@ -294,13 +294,13 @@ public class ProfileService extends ObjectDTOtransformer {
 		treeDirectoryDTO.setName("racine2");
 		treeDirectoryDTO.setParent(null);
 		if (profile != null) {
-			TreeDirectory treeDirectory = profile.getTree();
-			transformTreeDirectory2DTO(treeDirectory, treeDirectoryDTO);
+			TreeDirectory racine = profile.getTree();
+			transformTreeDirectory2DTO(racine, treeDirectoryDTO);
 		}
 		return treeDirectoryDTO;
 	}
 
-	public void setAddonGroupsTree(TreeDirectoryDTO treeDirectoryDTO) {
+	public void setAddonGroups(TreeDirectoryDTO newTree) {
 
 		String profileName = configurationDAO.getConfiguration()
 				.getProfileName();
@@ -311,9 +311,9 @@ public class ProfileService extends ObjectDTOtransformer {
 		}
 		Profile profile = profileDAO.getMap().get(profileName);
 		if (profile != null) {
-			TreeDirectory treeDirectory = profile.getTree();
-			treeDirectory.getList().clear();
-			transformDTO2TreeDirectory(treeDirectoryDTO, treeDirectory);
+			TreeDirectory tree = profile.getTree();
+			tree.getList().clear();
+			transformDTO2TreeDirectory(newTree, tree);
 			try {
 				profileDAO.write(profile);
 			} catch (WritingException e) {

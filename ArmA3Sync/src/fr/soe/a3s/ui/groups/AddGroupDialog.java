@@ -61,8 +61,6 @@ public class AddGroupDialog extends AbstractGroupDialog {
 			directory.setName(textFieldGroupName.getText());
 			directory.setParent(treeDirectoryDTO);
 			treeDirectoryDTO.addTreeNode(directory);
-			facade.getAddonsPanel().refreshViewArbre2();
-			facade.getAddonsPanel().saveAddonGroups();
 			this.dispose();
 		}
 	}

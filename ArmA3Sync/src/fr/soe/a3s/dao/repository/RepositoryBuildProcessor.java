@@ -15,9 +15,9 @@ import java.util.Set;
 
 import org.apache.commons.io.FileUtils;
 
-import fr.soe.a3s.controller.ObservableCount;
+import fr.soe.a3s.controller.ObservableCountInt;
 import fr.soe.a3s.controller.ObservableText;
-import fr.soe.a3s.controller.ObserverCount;
+import fr.soe.a3s.controller.ObserverCountInt;
 import fr.soe.a3s.controller.ObserverText;
 import fr.soe.a3s.dao.A3SFilesAccessor;
 import fr.soe.a3s.dao.DataAccessConstants;
@@ -40,7 +40,7 @@ import fr.soe.a3s.exception.CreateDirectoryException;
 import fr.soe.a3s.exception.DeleteDirectoryException;
 
 public class RepositoryBuildProcessor implements DataAccessConstants,
-		ObservableCount, ObservableText {
+		ObservableCountInt, ObservableText {
 
 	/** Parameters */
 	private Repository repository = null;
@@ -60,7 +60,7 @@ public class RepositoryBuildProcessor implements DataAccessConstants,
 
 	/** Variables for observableText and observableCount Interface */
 	private ObserverText observerText;
-	private ObserverCount observerCount;
+	private ObserverCountInt observerCount;
 
 	/** Cancel build */
 	private boolean canceled = false;
@@ -121,8 +121,11 @@ public class RepositoryBuildProcessor implements DataAccessConstants,
 		/* Generate new Sync */
 		final SyncTreeDirectory sync = new SyncTreeDirectory(
 				SyncTreeDirectory.RACINE, null);
-		for (File f : (new File(repository.getPath()).listFiles())) {
-			generateSync(repository.getExcludedFilesFromBuild(), sync, f);
+		File[] subFiles = (new File(repository.getPath()).listFiles());
+		if (subFiles!=null){
+			for (File f : subFiles) {
+				generateSync(repository.getExcludedFilesFromBuild(), sync, f);
+			}
 		}
 
 		/* Extract new list of files */
@@ -570,12 +573,12 @@ public class RepositoryBuildProcessor implements DataAccessConstants,
 	/* Interface observableCount */
 
 	@Override
-	public void addObserverCount(ObserverCount obs) {
+	public void addObserverCount(ObserverCountInt obs) {
 		this.observerCount = obs;
 	}
 
 	@Override
-	public void updateObserverCount() {
+	public void updateObserverCount(int value) {
 		// unused
 	}
 }

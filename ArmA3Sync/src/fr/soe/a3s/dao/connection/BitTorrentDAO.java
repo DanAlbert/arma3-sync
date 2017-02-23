@@ -10,7 +10,7 @@ import fr.soe.a3s.dto.sync.SyncTreeNodeDTO;
 public class BitTorrentDAO extends AbstractConnexionDAO {
 
 	@Override
-	public boolean uploadFile(RemoteFile remoteFile, String repositoryPath,
+	public void uploadFile(RemoteFile remoteFile, String repositoryPath,
 			String remotePath) throws IOException {
 		throw new UnsupportedOperationException();
 	}
@@ -35,6 +35,11 @@ public class BitTorrentDAO extends AbstractConnexionDAO {
 
 	@Override
 	public void disconnect() {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public void connectToRepository(AbstractProtocole protocol) {
 		throw new UnsupportedOperationException();
 	}
 }

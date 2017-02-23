@@ -1,40 +1,22 @@
 package fr.soe.a3s.ui.repository.workers;
 
 import java.awt.Color;
-import java.io.File;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
-import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
-import fr.soe.a3s.constant.DownloadStatus;
-import fr.soe.a3s.controller.ObserverDownload;
-import fr.soe.a3s.controller.ObserverUncompress;
+import fr.soe.a3s.controller.ObserverConnectionLost;
+import fr.soe.a3s.controller.ObserverCountInt;
+import fr.soe.a3s.controller.ObserverCountLong;
+import fr.soe.a3s.controller.ObserverEnd;
+import fr.soe.a3s.controller.ObserverError;
+import fr.soe.a3s.controller.ObserverProceed;
 import fr.soe.a3s.dao.DataAccessConstants;
-import fr.soe.a3s.dao.FileAccessMethods;
-import fr.soe.a3s.dao.connection.AbstractConnexionDAO;
-import fr.soe.a3s.dto.sync.SyncTreeDirectoryDTO;
-import fr.soe.a3s.dto.sync.SyncTreeLeafDTO;
-import fr.soe.a3s.dto.sync.SyncTreeNodeDTO;
-import fr.soe.a3s.exception.CheckException;
-import fr.soe.a3s.exception.repository.RepositoryException;
-import fr.soe.a3s.service.AddonService;
-import fr.soe.a3s.service.ProfileService;
-import fr.soe.a3s.service.RepositoryService;
-import fr.soe.a3s.service.connection.ConnexionService;
-import fr.soe.a3s.service.connection.ConnexionServiceFactory;
+import fr.soe.a3s.service.synchronization.FilesSynchronizationManager;
+import fr.soe.a3s.service.synchronization.FilesSynchronizationProcessor;
 import fr.soe.a3s.ui.Facade;
-import fr.soe.a3s.ui.FileSizeComputer;
-import fr.soe.a3s.ui.UnitConverter;
 import fr.soe.a3s.ui.repository.DownloadPanel;
-import fr.soe.a3s.ui.repository.dialogs.error.UnexpectedErrorDialog;
-import fr.soe.a3s.ui.tools.acre2.FirstPageACRE2InstallerDialog;
-import fr.soe.a3s.ui.tools.tfar.FirstPageTFARInstallerPanel;
+import fr.soe.a3s.utils.UnitConverter;
 
 public class AddonsDownloader extends Thread implements DataAccessConstants {
 
@@ -42,38 +24,22 @@ public class AddonsDownloader extends Thread implements DataAccessConstants {
 	private final DownloadPanel downloadPanel;
 	/* Data */
 	private final String repositoryName;
-	private final SyncTreeDirectoryDTO racine;
-	private SyncTreeDirectoryDTO userconfigNode;
-	private long incrementedFilesSize;
-	private long initialFilesSize;
-	private long totalExpectedFilesSize;
-	private long totalDiskFilesSize;
-	private long totalCompressedFilesSize;
-	private long totalUncompressedFilesSize;
-	private long totalUncompleteExpectedFileSize;
-	private long totalUncompleteDiskFileSize;
-	private final List<SyncTreeNodeDTO> listFilesToUpdate = new ArrayList<SyncTreeNodeDTO>();
-	private final List<SyncTreeNodeDTO> listFilesToDelete = new ArrayList<SyncTreeNodeDTO>();
-	private long averageDownloadSpeed;
-	private long averageResponseTime;
-	private int maxActiveconnections;
-	private int unCompleteFiles;
-	private int compressedFiles;
-	private long startTime, deltaTime;
+	private boolean saveStateCheckBoxExactMath, saveStateCheckBoxAutoDiscover;
 	/* Tests */
-	private boolean canceled = false;
-	private boolean tfarIsUpdated = false;
-	private boolean acre2IsUpdated = false;
+	private boolean canceled;
 	/* Services */
-	private final RepositoryService repositoryService = new RepositoryService();
-	private ConnexionService connexionService;
-	private final AddonService addonService = new AddonService();
-	private final ProfileService profileService = new ProfileService();
+	private final FilesSynchronizationManager filesManager;
+	private FilesSynchronizationProcessor filesSynchronizationProcessor;
+	/* observers */
+	private ObserverEnd observerEnd;
+	private ObserverError observerError;
+	private ObserverConnectionLost observerConnectionLost;
 
 	public AddonsDownloader(Facade facade, String repositoryName,
-			SyncTreeDirectoryDTO racine, DownloadPanel downloadPanel) {
+			FilesSynchronizationManager filesManager,
+			DownloadPanel downloadPanel) {
 		this.facade = facade;
-		this.racine = racine;
+		this.filesManager = filesManager;
 		this.repositoryName = repositoryName;
 		this.downloadPanel = downloadPanel;
 	}
@@ -81,234 +47,123 @@ public class AddonsDownloader extends Thread implements DataAccessConstants {
 	@Override
 	public void run() {
 
-		System.out.println("Starting downloading from repository: "
-				+ repositoryName);
+		System.out.println("Synchronizing from repository: " + repositoryName);
 
-		// Init DownloadPanel for start download
+		// Initialize
 		initDownloadPanelForStartDownload();
+		canceled = false;
 
-		// Set downloading state
-		repositoryService.setDownloading(repositoryName, true);
-
-		// Reset download report
-		repositoryService.setReport(repositoryName, null);
-
-		// Get update files list
-		for (SyncTreeNodeDTO node : racine.getList()) {
-			getFiles(node);
-		}
-
-		// Return if update and delete files lists are empty
-		if (this.listFilesToUpdate.size() == 0 && listFilesToDelete.size() == 0) {
-			initDownloadPanelForEndDownload();
-			downloadPanel.getLabelDownloadStatus().setText("");
-			JOptionPane.showMessageDialog(facade.getMainPanel(),
-					"Nothing to download.", "Download",
-					JOptionPane.INFORMATION_MESSAGE);
-			terminate();
-			return;
-		}
-
-		// Determine @TFAR/@ACRE2 updates
-		determineTFARandACREupdates();
-
-		// Determine userconfig updates
-		determineUserconfigUpdates();
-
-		// Determine files variables
-		determineFilesVariables();
-
-		downloadPanel.getLabelDownloadedValue().setText(
-				UnitConverter.convertSize(incrementedFilesSize));
-		downloadPanel.getLabelTotalFilesSizeValue().setText(
-				UnitConverter.convertSize(totalExpectedFilesSize));
-
-		// Initialize connection
-		try {
-			int numberOfServerInfoConnections = repositoryService
-					.getServerInfoNumberOfConnections(repositoryName);
-			int numberOfClientConnections = repositoryService
-					.getNumberOfClientConnections(repositoryName);
-
-			if (numberOfServerInfoConnections == 0) {
-				numberOfServerInfoConnections = 1;
-			}
-			if (numberOfClientConnections == 0) {
-				numberOfClientConnections = 1;
-			}
-
-			int numberOfConnections = 1;
-			if (numberOfClientConnections >= numberOfServerInfoConnections) {
-				numberOfConnections = numberOfServerInfoConnections;
-			} else {
-				numberOfConnections = numberOfClientConnections;
-			}
-
-			connexionService = ConnexionServiceFactory
-					.getServiceForFilesSynchronization(repositoryName,
-							numberOfConnections);
-
-		} catch (RepositoryException | CheckException e) {
-			JOptionPane.showMessageDialog(facade.getMainPanel(),
-					e.getMessage(), "Download", JOptionPane.ERROR_MESSAGE);
-			initDownloadPanelForEndDownload();
-			terminate();
-			return;
-		}
-
-		try {
-			for (AbstractConnexionDAO connect : connexionService
-					.getConnexionDAOs()) {
-
-				connect.addObserverDownload(new ObserverDownload() {
-
+		filesSynchronizationProcessor = new FilesSynchronizationProcessor(
+				repositoryName, filesManager);
+		filesSynchronizationProcessor
+				.addObserverCountSingleProgress(new ObserverCountInt() {
 					@Override
-					public void updateTotalSize() {
-						executeUpdateTotalSize();
-					}
-
-					@Override
-					public void updateTotalSizeProgress(long value) {
-						executeUpdateTotalSizeProgress(value);
-					}
-
-					@Override
-					public void updateSingleSizeProgress(long value,
-							int pourcentage) {
-						executeUpdateSingleSizeProgress(value, pourcentage);
-					}
-
-					@Override
-					public void updateSpeed() {
-						executeUpdateDownloadSpeed();
-					}
-
-					@Override
-					public void updateActiveConnections() {
-						executeUpdateActiveConnections();
-					}
-
-					@Override
-					public void updateResponseTime(long responseTime) {
-						executeUpdateResponseTime(responseTime);
-					}
-
-					@Override
-					public void updateEnd() {
-						finish(null, null);
-					}
-
-					@Override
-					public void updateEndWithErrors(List<Exception> errors) {
-						finish("Download finished with errors:", errors);
-					}
-
-					@Override
-					public void updateCancelTooManyTimeoutErrors(int value,
-							List<Exception> errors) {
-						executeCancelTooManyTimeoutErrors(value, errors);
-					}
-
-					@Override
-					public void updateCancelTooManyErrors(int value,
-							List<Exception> errors) {
-						executeCancelTooManyErrors(value, errors);
+					public void update(int value) {
+						executeUpdateSingleProgress(value);
 					}
 				});
-			}
-
-			connexionService.getUnZipFlowProcessor().addObserverUncompress(
-					new ObserverUncompress() {
-
-						@Override
-						public void start() {
-							initDownloadPanelForStartUncompressing();
-						}
-
-						@Override
-						public void update(int value) {
-							executeUncompressingProgress(value);
-						}
-
-						@Override
-						public void end() {
-							finish(null, null);
-						}
-
-						@Override
-						public void endWithError(List<Exception> errors) {
-							finish("Download finished with errors:", errors);
-						}
-					});
-
-			// Resume
-			List<SyncTreeNodeDTO> list = new ArrayList<SyncTreeNodeDTO>();
-			for (SyncTreeNodeDTO node : listFilesToUpdate) {
-				if (!node.getDownloadStatus().equals(DownloadStatus.DONE)) {
-					list.add(node);
-				} else if (node.isLeaf()) {
-					SyncTreeLeafDTO leaf = (SyncTreeLeafDTO) node;
-					if (leaf.getDownloadStatus().equals(DownloadStatus.DONE)
-							&& leaf.isCompressed()) {
-						File parentDirectory = new File(
-								leaf.getDestinationPath());
-						File zipFile = new File(parentDirectory + "/"
-								+ leaf.getName() + ZIP_EXTENSION);
-						if (zipFile.exists()) {
-							connexionService.getUnZipFlowProcessor()
-									.unZipAsynchronously(zipFile);
-						}
+		filesSynchronizationProcessor
+				.addObserverCountTotalProgress(new ObserverCountInt() {
+					@Override
+					public void update(int value) {
+						executeUpdateTotalProgress(value);
 					}
-				}
+				});
+		filesSynchronizationProcessor
+				.addObserverTotalSize(new ObserverCountLong() {
+					@Override
+					public void update(long value) {
+						executeUpdateTotalSize(value);
+					}
+				});
+		filesSynchronizationProcessor
+				.addObserverDownloadedSize(new ObserverCountLong() {
+					@Override
+					public void update(long value) {
+						executeUpdateDownloadedSize(value);
+					}
+				});
+		filesSynchronizationProcessor.addObserverSpeed(new ObserverCountLong() {
+			@Override
+			public void update(long value) {
+				executeUpdateSpeed(value);
 			}
-
-			// Synchronize
-			startTime = System.nanoTime();
-			deltaTime = startTime;
-			connexionService.synchronize(repositoryName, list);
-
-		} catch (Exception e) {
-			e.printStackTrace();
-			downloadPanel.getProgressBarDownloadSingleAddon().setIndeterminate(
-					false);
-			if (e instanceof RepositoryException) {
-				JOptionPane.showMessageDialog(facade.getMainPanel(),
-						e.getMessage(), "Download", JOptionPane.ERROR_MESSAGE);
-			} else if (!canceled) {
-				downloadPanel.getLabelDownloadStatus().setText("Error!");
-				downloadPanel.getLabelDownloadStatus().setForeground(Color.RED);
-				if (e instanceof IOException) {
-					JOptionPane.showMessageDialog(facade.getMainPanel(),
-							e.getMessage(), "Download",
-							JOptionPane.ERROR_MESSAGE);
-				} else {
-					UnexpectedErrorDialog dialog = new UnexpectedErrorDialog(
-							facade, "Download", e, repositoryName);
-					dialog.show();
-				}
-				if (connexionService != null) {
-					connexionService.cancel();
-				}
+		});
+		filesSynchronizationProcessor
+				.addObserverActiveConnections(new ObserverCountInt() {
+					@Override
+					public void update(int value) {
+						executeUpdateActiveConnections(value);
+					}
+				});
+		filesSynchronizationProcessor
+				.addObserverRemainingTime(new ObserverCountLong() {
+					@Override
+					public void update(long value) {
+						executeUpdateRemainingTime(value);
+					}
+				});
+		filesSynchronizationProcessor.addObserverEnd(new ObserverEnd() {
+			@Override
+			public void end() {
+				executeEnd();
 			}
-			initDownloadPanelForEndDownload();
-			repositoryService.setReport(repositoryName, null);
-			terminate();
-		}
+		});
+		filesSynchronizationProcessor.addObserverError(new ObserverError() {
+			@Override
+			public void error(List<Exception> errors) {
+				executeError(errors);
+			}
+		});
+		filesSynchronizationProcessor
+				.addObserverConnectionLost(new ObserverConnectionLost() {
+					@Override
+					public void lost() {
+						executeConnectionLost();
+					}
+				});
+		filesSynchronizationProcessor
+				.addObserverProceedUncompress(new ObserverProceed() {
+					@Override
+					public void proceed() {
+						executeProceedUncompress();
+					}
+				});
+		filesSynchronizationProcessor
+				.addObserverProceedDelete(new ObserverProceed() {
+					@Override
+					public void proceed() {
+						executeProceedDelete();
+					}
+				});
+
+		filesSynchronizationProcessor.run();
 	}
 
 	private void initDownloadPanelForStartDownload() {
 
+		downloadPanel.getArbre().setEnabled(false);
 		downloadPanel.getLabelDownloadStatus().setText("Downloading...");
 		downloadPanel.getLabelDownloadStatus().setForeground(
 				DownloadPanel.GREEN);
+		downloadPanel.getCheckBoxSelectAll().setEnabled(false);
+		downloadPanel.getCheckBoxExpandAll().setEnabled(false);
+		saveStateCheckBoxExactMath = downloadPanel.getCheckBoxExactMatch()
+				.isEnabled();
+		saveStateCheckBoxAutoDiscover = downloadPanel.getCheckBoxAutoDiscover()
+				.isEnabled();
+		downloadPanel.getCheckBoxExactMatch().setEnabled(false);
+		downloadPanel.getCheckBoxAutoDiscover().setEnabled(false);
 		downloadPanel.getComBoxDestinationFolder().setEnabled(false);
-		downloadPanel.getButtonAdvancedConfiguration().setEnabled(false);
-		downloadPanel.getLabelTotalFilesSizeValue().setText(
-				UnitConverter.convertSize(totalExpectedFilesSize));
+		downloadPanel.getButtonSettings().setEnabled(false);
+		downloadPanel.getLabelTotalFilesSizeValue().setText("");
 		downloadPanel.getLabelDownloadedValue().setText("");
 		downloadPanel.getButtonCheckForAddonsStart().setEnabled(false);
 		downloadPanel.getButtonCheckForAddonsCancel().setEnabled(false);
 		downloadPanel.getButtonDownloadStart().setEnabled(false);
+		downloadPanel.getButtonDownloadPause().setEnabled(true);
+		downloadPanel.getButtonDownloadCancel().setEnabled(true);
+		downloadPanel.getButtonDownloadReport().setEnabled(true);
 		downloadPanel.getProgressBarDownloadAddons().setMinimum(0);
 		downloadPanel.getProgressBarDownloadAddons().setMaximum(100);
 		downloadPanel.getProgressBarDownloadSingleAddon().setMinimum(0);
@@ -331,68 +186,50 @@ public class AddonsDownloader extends Thread implements DataAccessConstants {
 				.setIndeterminate(true);
 	}
 
+	private void initDownloadPanelForStartDeleting() {
+
+		downloadPanel.getLabelDownloadStatus().setText("Deleting...");
+		downloadPanel.getLabelDownloadStatus().setForeground(
+				DownloadPanel.GREEN);
+		downloadPanel.getLabelSpeedValue().setText("");
+		downloadPanel.getLabelRemainingTimeValue().setText("");
+		downloadPanel.getLabelActiveConnectionsValue().setText("");
+		downloadPanel.getProgressBarDownloadAddons().setMinimum(0);
+		downloadPanel.getProgressBarDownloadAddons().setMaximum(100);
+		downloadPanel.getProgressBarDownloadSingleAddon()
+				.setIndeterminate(true);
+	}
+
 	private void initDownloadPanelForEndDownload() {
 
+		downloadPanel.getProgressBarDownloadSingleAddon().setIndeterminate(
+				false);
+		downloadPanel.getArbre().setEnabled(true);
+		downloadPanel.getCheckBoxSelectAll().setEnabled(true);
+		downloadPanel.getCheckBoxExpandAll().setEnabled(true);
+		downloadPanel.getCheckBoxExactMatch().setEnabled(
+				saveStateCheckBoxExactMath);
+		downloadPanel.getCheckBoxAutoDiscover().setEnabled(
+				saveStateCheckBoxAutoDiscover);
 		downloadPanel.getComBoxDestinationFolder().setEnabled(true);
-		downloadPanel.getButtonAdvancedConfiguration().setEnabled(true);
+		downloadPanel.getButtonSettings().setEnabled(true);
 		downloadPanel.getLabelTotalFilesSizeValue().setText("");
 		downloadPanel.getLabelDownloadedValue().setText("");
 		downloadPanel.getButtonCheckForAddonsStart().setEnabled(true);
 		downloadPanel.getButtonCheckForAddonsCancel().setEnabled(true);
 		downloadPanel.getButtonDownloadStart().setEnabled(true);
+		downloadPanel.getButtonDownloadPause().setEnabled(true);
+		downloadPanel.getButtonDownloadCancel().setEnabled(true);
+		downloadPanel.getButtonDownloadReport().setEnabled(true);
 		downloadPanel.getProgressBarCheckForAddons().setMaximum(0);
 		downloadPanel.getProgressBarDownloadAddons().setMaximum(0);
 		downloadPanel.getProgressBarDownloadSingleAddon().setMaximum(0);
 		downloadPanel.getLabelSpeedValue().setText("");
 		downloadPanel.getLabelRemainingTimeValue().setText("");
 		downloadPanel.getLabelActiveConnectionsValue().setText("");
-		downloadPanel.getProgressBarDownloadSingleAddon().setIndeterminate(
-				false);
 	}
 
-	private void terminate() {
-
-		repositoryService.setDownloading(repositoryName, false);
-		this.interrupt();
-		System.gc();
-	}
-
-	private synchronized void executeUpdateTotalSize() {
-
-		determineTotalExpectedFileSize();
-		downloadPanel.getLabelTotalFilesSizeValue().setText(
-				UnitConverter.convertSize(totalExpectedFilesSize));
-	}
-
-	private synchronized void executeUpdateTotalSizeProgress(long value) {
-
-		incrementedFilesSize = incrementedFilesSize + value;
-
-		if (totalExpectedFilesSize != 0) {// division by 0!
-			SwingUtilities.invokeLater(new Runnable() {
-				@Override
-				public void run() {
-					int pourcentage = (int) (((incrementedFilesSize) * 100) / totalExpectedFilesSize);
-					downloadPanel.getProgressBarDownloadAddons().setValue(
-							pourcentage);
-				}
-			});
-		}
-
-		double endTime = System.nanoTime();
-		double elapsedTime = endTime - startTime;
-		long remainingFilesSize = totalExpectedFilesSize - incrementedFilesSize;
-		long downloadedFilesSize = incrementedFilesSize - initialFilesSize;
-		if (downloadedFilesSize != 0) {
-			final long remaininTime = (long) ((remainingFilesSize * elapsedTime) / downloadedFilesSize);
-			downloadPanel.getLabelRemainingTimeValue().setText(
-					UnitConverter.convertTime((long) (remaininTime * Math.pow(
-							10, -9))));
-		}
-	}
-
-	private synchronized void executeUpdateSingleSizeProgress(final long value,
-			final int pourcentage) {
+	private void executeUpdateSingleProgress(final int value) {
 
 		SwingUtilities.invokeLater(new Runnable() {
 			@Override
@@ -400,637 +237,197 @@ public class AddonsDownloader extends Thread implements DataAccessConstants {
 				downloadPanel.getProgressBarDownloadSingleAddon()
 						.setIndeterminate(false);
 				downloadPanel.getProgressBarDownloadSingleAddon().setValue(
-						pourcentage);
-				downloadPanel.getLabelDownloadedValue()
-						.setText(
-								UnitConverter.convertSize(incrementedFilesSize
-										+ value));
+						value);
 			}
 		});
-
-		double endTime = System.nanoTime();
-		double elapsedTime = endTime - startTime;
-		long remainingFilesSize = totalExpectedFilesSize - incrementedFilesSize
-				- value;
-		long downloadedFilesSize = incrementedFilesSize + value
-				- initialFilesSize;
-		if (downloadedFilesSize != 0) {
-			final long remainingTime = (long) ((remainingFilesSize * elapsedTime) / downloadedFilesSize);
-			downloadPanel.getLabelRemainingTimeValue().setText(
-					UnitConverter.convertTime((long) (remainingTime * Math.pow(
-							10, -9))));
-		}
 	}
 
-	private synchronized void executeUpdateDownloadSpeed() {
+	private void executeUpdateTotalProgress(final int value) {
 
-		long speed = 0;
-		long offset = 0;
-		long countFileSize = 0;
-		long endTime = System.nanoTime();
-
-		for (AbstractConnexionDAO connect : connexionService.getConnexionDAOs()) {
-			if (connect.isActiveConnection()) {
-				speed = speed + connect.getSpeed();
-				offset = offset + connect.getOffset();
-				countFileSize = countFileSize + connect.getCountFileSize();
-			}
-		}
-
-		long delta = endTime - deltaTime;
-
-		if (delta > Math.pow(10, 9) / 2) {// 0.5s
-			deltaTime = endTime;
-			downloadPanel.getLabelSpeedValue().setText(
-					UnitConverter.convertSpeed(speed));
-			if (speed != 0) {
-				if (averageDownloadSpeed > 0) {
-					averageDownloadSpeed = (averageDownloadSpeed + speed) / 2;
-				} else {
-					averageDownloadSpeed = speed;
-				}
-			}
-		}
-	}
-
-	private synchronized void executeUpdateActiveConnections() {
-
-		int activeConnections = 0;
-		for (AbstractConnexionDAO connect : connexionService.getConnexionDAOs()) {
-			if (connect.isActiveConnection()) {
-				activeConnections++;
-			}
-		}
-
-		double maximumClientDownloadSpeed = repositoryService
-				.getMaximumClientDownloadSpeed(repositoryName);
-		connexionService
-				.setMaximumClientDownloadSpeed(maximumClientDownloadSpeed
-						/ activeConnections);
-
-		downloadPanel.getLabelActiveConnectionsValue().setText(
-				Integer.toString(activeConnections));
-		if (activeConnections > maxActiveconnections) {
-			maxActiveconnections = activeConnections;
-		}
-	}
-
-	private synchronized void executeUpdateResponseTime(long responseTime) {
-		averageResponseTime = (averageResponseTime + responseTime) / 2;
-	}
-
-	private synchronized void executeUncompressingProgress(final int value) {
 		SwingUtilities.invokeLater(new Runnable() {
 			@Override
 			public void run() {
+				downloadPanel.getProgressBarDownloadAddons().setIndeterminate(
+						false);
 				downloadPanel.getProgressBarDownloadAddons().setValue(value);
 			}
 		});
 	}
 
-	private void finish(String message, List<Exception> errors) {
-
-		/* Cancel all connections */
-		if (connexionService != null) {
-			connexionService.cancel();
+	private void executeUpdateTotalSize(long value) {
+		if (!canceled) {
+			downloadPanel.getLabelTotalFilesSizeValue().setText(
+					UnitConverter.convertSize(value));
 		}
+	}
 
-		/* Update UI */
+	private void executeUpdateDownloadedSize(final long value) {
+		if (!canceled) {
+			downloadPanel.getLabelDownloadedValue().setText(
+					UnitConverter.convertSize(value));
+		}
+	}
+
+	private void executeUpdateSpeed(final long value) {
+		if (!canceled) {
+			downloadPanel.getLabelSpeedValue().setText(
+					UnitConverter.convertSpeed(value));
+		}
+	}
+
+	private void executeUpdateWaitingForServer(final boolean waiting) {
+		if (!canceled) {
+			if (waiting) {
+				downloadPanel.getLabelDownloadStatus().setText(
+						"Waiting for server...");
+				downloadPanel.getLabelDownloadStatus().setForeground(Color.RED);
+			} else {
+				downloadPanel.getLabelDownloadStatus()
+						.setText("Downloading...");
+				downloadPanel.getLabelDownloadStatus().setForeground(
+						DownloadPanel.GREEN);
+			}
+		}
+	}
+
+	private void executeUpdateActiveConnections(int value) {
+		if (!canceled) {
+			downloadPanel.getLabelActiveConnectionsValue().setText(
+					Integer.toString(value));
+		}
+	}
+
+	private void executeUpdateRemainingTime(long value) {
+		if (!canceled) {
+			downloadPanel.getLabelRemainingTimeValue()
+					.setText(
+							UnitConverter.convertTime((long) (value * Math.pow(
+									10, -9))));
+		}
+	}
+
+	private void executeProceedUncompress() {
+		initDownloadPanelForStartUncompressing();
+	}
+
+	private void executeProceedDelete() {
+		initDownloadPanelForStartDeleting();
+	}
+
+	private void executeEnd() {
+
 		downloadPanel.getProgressBarDownloadSingleAddon().setIndeterminate(
 				false);
-		downloadPanel.getProgressBarDownloadAddons().setValue(100);
-		downloadPanel.getProgressBarDownloadSingleAddon().setValue(100);
-		downloadPanel.getLabelSpeedValue().setText(
-				UnitConverter.convertSpeed(0));
-		downloadPanel.getLabelRemainingTimeValue().setText(
-				UnitConverter.convertTime(0));
 
-		/* Delete extra files */
-		downloadPanel.getLabelDownloadStatus().setText(
-				"Deleting extra files...");
-		deleteExtraFiles();
+		if (!canceled) {
 
-		/* Update available addons and addon groups */
-		facade.getAddonsPanel().updateAvailableAddons();
-		facade.getAddonsPanel().updateAddonGroups();
+			canceled = true;
 
-		/* Generate download report */
-		if (errors == null) {
-			String report = generateReport("Download finished successfully.");
-			repositoryService.setReport(repositoryName, report);
-		} else {
-			String report = generateReport(message, errors);
-			repositoryService.setReport(repositoryName, report);
-		}
+			System.out.println("Synchronization with repository: "
+					+ repositoryName + " - finished.");
 
-		/* End Message */
-		if (errors == null) {
+			// Set notification
 			downloadPanel.getLabelDownloadStatus().setText("Finished!");
 			downloadPanel.getLabelDownloadStatus().setForeground(
 					DownloadPanel.GREEN);
-			JOptionPane.showMessageDialog(facade.getMainPanel(),
-					"Download is finished.", "Download",
-					JOptionPane.INFORMATION_MESSAGE);
-		} else {
+
+			initDownloadPanelForEndDownload();
+			terminate();
+
+			// Download panel
+			observerEnd.end();
+		}
+	}
+
+	private void executeError(List<Exception> errors) {
+
+		downloadPanel.getProgressBarDownloadSingleAddon().setIndeterminate(
+				false);
+
+		if (!canceled) {
+
+			canceled = true;
+
+			System.out.println("Synchronization with repository: "
+					+ repositoryName + " - finished with errors.");
+
+			// Set notification
 			downloadPanel.getLabelDownloadStatus().setText("Error!");
 			downloadPanel.getLabelDownloadStatus().setForeground(Color.RED);
-			downloadPanel.showDownloadReport();
+
+			initDownloadPanelForEndDownload();
+			terminate();
+
+			// Download panel
+			observerError.error(errors);
 		}
-
-		/* Check for TFAR and ACRE2 Update */
-		if (errors == null) {
-			if (tfarIsUpdated) {
-				int response = JOptionPane
-						.showConfirmDialog(
-								facade.getMainPanel(),
-								"TFAR files have changed. Proceed with TFAR installer?",
-								"TFAR installer", JOptionPane.OK_CANCEL_OPTION);
-				if (response == 0) {
-					FirstPageTFARInstallerPanel firstPage = new FirstPageTFARInstallerPanel(
-							facade);
-					firstPage.init();
-					firstPage.setVisible(true);
-				}
-			}
-			if (acre2IsUpdated) {
-				int response = JOptionPane
-						.showConfirmDialog(
-								facade.getMainPanel(),
-								"ACRE 2 files have changed. Proceed with ACRE 2 installer?",
-								"ACRE 2 installer",
-								JOptionPane.OK_CANCEL_OPTION);
-				if (response == 0) {
-					FirstPageACRE2InstallerDialog firstPage = new FirstPageACRE2InstallerDialog(
-							facade);
-					firstPage.init();
-					firstPage.setVisible(true);
-				}
-			}
-		}
-
-		/* Check for Userconfig Update */
-		if (errors == null) {
-			if (userconfigNode != null) {
-
-				String defaultDownloadLocation = repositoryService
-						.getDefaultDownloadLocation(repositoryName);
-
-				File arma3Directory = null;
-				String arma3ExePath = profileService.getArma3ExePath();
-				if (arma3ExePath != null) {
-					if (!arma3ExePath.isEmpty()) {
-						arma3Directory = new File(arma3ExePath).getParentFile();
-					}
-				}
-
-				if (arma3Directory != null) {
-					if (!arma3Directory.getAbsolutePath().equals(
-							defaultDownloadLocation)) {
-						int response = JOptionPane
-								.showConfirmDialog(
-										facade.getMainPanel(),
-										"Userconfig folder have changed."
-												+ "\n"
-												+ "Apply changes into ArmA 3 installation directory?"
-												+ "\n\n"
-												+ "Note: extra local content wont be deleted.",
-										"Userconfig",
-										JOptionPane.OK_CANCEL_OPTION);
-						if (response == 0) {
-							String userconfigSourcePath = userconfigNode
-									.getDestinationPath()
-									+ "/"
-									+ userconfigNode.getName();
-							File userconfigSourceDirectory = new File(
-									userconfigSourcePath);
-
-							String userconfigTargetPath = arma3Directory + "/"
-									+ userconfigNode.getName();
-							File userconfigTargetDirectory = new File(
-									userconfigTargetPath);
-
-							if (!userconfigSourceDirectory.exists()) {
-								JOptionPane
-										.showMessageDialog(
-												facade.getMainPanel(),
-												"File not found:"
-														+ userconfigSourcePath,
-												"Userconfig",
-												JOptionPane.ERROR_MESSAGE);
-							} else {
-								userconfigTargetDirectory.mkdir();
-								if (!userconfigTargetDirectory.exists()) {
-									JOptionPane
-											.showMessageDialog(
-													facade.getMainPanel(),
-													"Failed to create directory: "
-															+ userconfigTargetPath
-															+ "\n"
-															+ "Please checkout file access permissions.",
-													"Userconfig",
-													JOptionPane.ERROR_MESSAGE);
-								} else {
-									try {
-										FileAccessMethods.copyDirectory(
-												userconfigSourceDirectory,
-												userconfigTargetDirectory);
-										JOptionPane
-												.showMessageDialog(
-														facade.getMainPanel(),
-														"Userconfig folder have been updated into ArmA 3 installation directory.",
-														"Userconfig",
-														JOptionPane.INFORMATION_MESSAGE);
-									} catch (IOException e) {
-										e.printStackTrace();
-										JOptionPane.showMessageDialog(
-												facade.getMainPanel(),
-												e.getMessage(), "Userconfig",
-												JOptionPane.ERROR_MESSAGE);
-									}
-								}
-							}
-						}
-					}
-				}
-			}
-		}
-
-		/* */
-		initDownloadPanelForEndDownload();
-		downloadPanel.setPerformModsetsSynchronization(true);
-		downloadPanel.checkForAddons();
-		terminate();
 	}
 
-	private synchronized void executeCancelTooManyErrors(int value,
-			List<Exception> errors) {
+	private void executeConnectionLost() {
+
+		downloadPanel.getProgressBarDownloadSingleAddon().setIndeterminate(
+				false);
 
 		if (!canceled) {
+
 			canceled = true;
-			String message = "Download has been canceled due to too many errors (>"
-					+ value + ")";
 
-			System.out.println(message);
+			System.out.println("Synchronization with repository: "
+					+ repositoryName + " - connection lost.");
 
-			if (connexionService != null) {
-				connexionService.cancel();
-			}
+			// Set notification
+			downloadPanel.getLabelDownloadStatus().setText("Error!");
+			downloadPanel.getLabelDownloadStatus().setForeground(Color.RED);
 
-			finish(message, errors);
+			initDownloadPanelForEndDownload();
+			terminate();
+			
+			// Download panel
+			observerConnectionLost.lost();
 		}
-	}
-
-	private synchronized void executeCancelTooManyTimeoutErrors(int value,
-			List<Exception> errors) {
-
-		if (!canceled) {
-			canceled = true;
-			String message = "Download has been canceled due to too many consecutive time out errors (>"
-					+ value + ")";
-
-			System.out.println(message);
-
-			if (connexionService != null) {
-				connexionService.cancel();
-			}
-
-			finish(message, errors);
-		}
-	}
-
-	/* Generate Report */
-
-	private String generateReport(String message) {
-
-		String header = "--- Download report ---";
-		String repositoryInfo = "Repository name: " + repositoryName;
-		String repositoryUrl = "Repository url: "
-				+ repositoryService.getRepositoryUrl(repositoryName);
-		String endDate = "Download finished on: " + new Date().toLocaleString();
-
-		// Server Connection
-		averageResponseTime = Math.round(averageResponseTime / Math.pow(10, 6));
-		String avgRespTime = "unavailable";
-		if (averageResponseTime == 0) {
-			avgRespTime = "1 ms";
-		} else if (averageResponseTime > 0) {
-			avgRespTime = Long.toString(averageResponseTime) + " ms";
-		}
-		String avgDlSpeed = "unavailable";
-		if (averageDownloadSpeed > 0) {
-			avgDlSpeed = UnitConverter.convertSpeed(averageDownloadSpeed);
-		}
-		String serverConnectionInfo = "Server connection:" + "\n"
-				+ "- Average response time: " + avgRespTime + "\n"
-				+ "- Average download speed: " + avgDlSpeed + "\n"
-				+ "- Number of active connections used: "
-				+ maxActiveconnections;
-
-		// Global File transfer:
-		String savedSizeFileTransfer = UnitConverter
-				.convertSize(totalDiskFilesSize - incrementedFilesSize);
-		int savedSizeFileTransferFraction = 0;
-		if (totalDiskFilesSize != 0) {
-			savedSizeFileTransferFraction = (int) (((totalDiskFilesSize - incrementedFilesSize) * 100) / totalDiskFilesSize);
-		}
-
-		String fileTransfer = "Global file transfer:" + "\n"
-				+ "- Number of files updated: " + listFilesToUpdate.size()
-				+ "\n" + "- Total files size on disk: "
-				+ UnitConverter.convertSize(totalDiskFilesSize) + "\n"
-				+ "- Downloaded data: "
-				+ UnitConverter.convertSize(incrementedFilesSize) + "\n"
-				+ "- Saved: " + savedSizeFileTransfer + " ("
-				+ savedSizeFileTransferFraction + "%)";
-
-		// Partial file transfer
-		String savedPartialSizeFileTransfer = UnitConverter
-				.convertSize(totalUncompleteDiskFileSize
-						- totalUncompleteExpectedFileSize);
-		int savedPartialSizeFileTransferFraction = 0;
-		if (totalUncompleteDiskFileSize != 0) {
-			savedPartialSizeFileTransferFraction = (int) (((totalUncompleteDiskFileSize - totalUncompleteExpectedFileSize) * 100) / totalUncompleteDiskFileSize);
-		}
-
-		String partialFileTransferInfo = "Partial file transfer:" + "\n"
-				+ "- Number of files updated: " + unCompleteFiles + "\n"
-				+ "- Total files size on disk: "
-				+ UnitConverter.convertSize(totalUncompleteDiskFileSize) + "\n"
-				+ "- Downloaded data: "
-				+ UnitConverter.convertSize(totalUncompleteExpectedFileSize)
-				+ "\n" + "- Saved: " + savedPartialSizeFileTransfer + " ("
-				+ savedPartialSizeFileTransferFraction + "%)";
-
-		// Compressed file transfer
-		String savedCompressedSizeFileTransfer = UnitConverter
-				.convertSize(totalUncompressedFilesSize
-						- totalCompressedFilesSize);
-		int savedCompressedSizeFileTransferFraction = 0;
-		if (totalUncompressedFilesSize != 0) {
-			savedCompressedSizeFileTransferFraction = (int) (((totalUncompressedFilesSize - totalCompressedFilesSize) * 100) / totalUncompressedFilesSize);
-		}
-
-		String compressionFileTransferInfo = "Compressed file transfer:" + "\n"
-				+ "- Number of files updated: " + compressedFiles + "\n"
-				+ "- Total files size on disk: "
-				+ UnitConverter.convertSize(totalUncompressedFilesSize) + "\n"
-				+ "- Downloaded data: "
-				+ UnitConverter.convertSize(totalCompressedFilesSize) + "\n"
-				+ "- Saved: " + savedCompressedSizeFileTransfer + " ("
-				+ savedCompressedSizeFileTransferFraction + "%)";
-
-		String report = header + "\n" + repositoryInfo + "\n" + repositoryUrl
-				+ "\n" + endDate + "\n\n" + message + "\n\n"
-				+ serverConnectionInfo + "\n\n" + fileTransfer + "\n\n"
-				+ partialFileTransferInfo + "\n\n"
-				+ compressionFileTransferInfo;
-
-		return report;
-	}
-
-	private String generateReport(String message, List<Exception> errors) {
-
-		String header = "--- Download report ---";
-		String repositoryInfo = "Repository name: " + repositoryName;
-		String repositoryUrl = "Repository url: "
-				+ repositoryService.getRepositoryUrl(repositoryName);
-		String endDate = "Download finished on: " + new Date().toLocaleString();
-
-		List<String> messages = new ArrayList<String>();
-		for (Exception e : errors) {
-			if (e instanceof IOException) {
-				messages.add("- " + e.getMessage());
-			} else {
-				String coreMessage = "- An unexpected error has occured.";
-				StringWriter sw = new StringWriter();
-				PrintWriter pw = new PrintWriter(sw);
-				e.printStackTrace(pw);
-				String stacktrace = sw.toString(); // stack trace as a string
-				coreMessage = coreMessage + "\n" + "StackTrace:" + "\n"
-						+ stacktrace;
-				messages.add(coreMessage);
-			}
-		}
-
-		String report = header + "\n" + repositoryInfo + "\n" + repositoryUrl
-				+ "\n" + endDate + "\n\n" + message;
-		for (String m : messages) {
-			report = report + "\n" + m;
-		}
-		return report;
-	}
-
-	/* Business methods */
-
-	private void determineTFARandACREupdates() {
-
-		for (SyncTreeNodeDTO node : listFilesToUpdate) {
-			checkTFARandACREupdates(node);
-		}
-	}
-
-	private void checkTFARandACREupdates(SyncTreeNodeDTO node) {
-
-		if (node.isLeaf()) {
-			SyncTreeDirectoryDTO parent = node.getParent();
-			if (parent != null) {
-				checkTFARandACREupdates(parent);
-			}
-		} else {
-			SyncTreeDirectoryDTO directory = (SyncTreeDirectoryDTO) node;
-			if (node.getName().toLowerCase().contains("task_force_radio")) {
-				if (directory.isUpdated() || directory.isChanged()) {
-					tfarIsUpdated = true;
-				}
-			} else if (node.getName().toLowerCase().contains("acre2")) {
-				if (directory.isUpdated() || directory.isChanged()) {
-					acre2IsUpdated = true;
-				}
-			} else {
-				SyncTreeDirectoryDTO parent = node.getParent();
-				if (parent != null) {
-					checkTFARandACREupdates(parent);
-				}
-			}
-		}
-	}
-
-	private void determineUserconfigUpdates() {
-
-		userconfigNode = null;
-		for (SyncTreeNodeDTO node : listFilesToUpdate) {
-			isUserconfigParent(node);
-			if (userconfigNode != null) {
-				break;
-			}
-		}
-	}
-
-	private void isUserconfigParent(SyncTreeNodeDTO node) {
-
-		boolean ok = false;
-		if (!node.isLeaf()) {
-			SyncTreeDirectoryDTO directory = (SyncTreeDirectoryDTO) node;
-			if (directory.getName().toLowerCase().equals("userconfig")) {
-				if (directory.getParent().getName()
-						.equals(SyncTreeDirectoryDTO.RACINE)) {
-					ok = true;
-				}
-			}
-		}
-		if (!ok) {
-			SyncTreeDirectoryDTO parent = node.getParent();
-			if (parent != null) {
-				isUserconfigParent(parent);
-			}
-		} else {
-			userconfigNode = (SyncTreeDirectoryDTO) node;
-		}
-	}
-
-	private void getFiles(SyncTreeNodeDTO node) {
-
-		if (!node.isLeaf()) {
-			SyncTreeDirectoryDTO syncTreeDirectoryDTO = (SyncTreeDirectoryDTO) node;
-			if (syncTreeDirectoryDTO.isSelected()
-					&& syncTreeDirectoryDTO.isUpdated()) {
-				listFilesToUpdate.add(syncTreeDirectoryDTO);
-			} else if (syncTreeDirectoryDTO.isSelected()
-					&& syncTreeDirectoryDTO.isDeleted()) {
-
-				int count = 0;
-				for (SyncTreeNodeDTO n : syncTreeDirectoryDTO.getList()) {
-					if (n.isSelected() && n.isDeleted()) {
-						count++;
-					}
-				}
-				if (count == syncTreeDirectoryDTO.getList().size()) {
-					listFilesToDelete.add(syncTreeDirectoryDTO);
-				}
-			}
-			for (SyncTreeNodeDTO n : syncTreeDirectoryDTO.getList()) {
-				getFiles(n);
-			}
-		} else {
-			SyncTreeLeafDTO syncTreeLeafDTO = (SyncTreeLeafDTO) node;
-			if (syncTreeLeafDTO.isSelected() && syncTreeLeafDTO.isUpdated()) {
-				listFilesToUpdate.add(syncTreeLeafDTO);
-			} else if (syncTreeLeafDTO.isSelected()
-					&& syncTreeLeafDTO.isDeleted()) {
-
-				SyncTreeDirectoryDTO parent = syncTreeLeafDTO.getParent();
-				if (parent.getName().equals("racine")) {
-					listFilesToDelete.add(syncTreeLeafDTO);
-				} else {
-					int count = 0;
-					for (SyncTreeNodeDTO n : parent.getList()) {
-						if (n.isSelected() && n.isDeleted()) {
-							count++;
-						}
-					}
-					if (count == parent.getList().size()) {
-						listFilesToDelete.add(parent);
-					} else {
-						listFilesToDelete.add(syncTreeLeafDTO);
-					}
-				}
-			}
-		}
-	}
-
-	private void determineFilesVariables() {
-
-		incrementedFilesSize = 0;
-		totalDiskFilesSize = 0;
-		totalCompressedFilesSize = 0;
-		totalUncompressedFilesSize = 0;
-		totalUncompleteExpectedFileSize = 0;
-		totalUncompleteDiskFileSize = 0;
-		for (SyncTreeNodeDTO node : listFilesToUpdate) {
-			if (node.isLeaf()) {
-				SyncTreeLeafDTO leaf = (SyncTreeLeafDTO) node;
-				// TotalExpectedFilesSize
-				determineTotalExpectedFileSize();
-				// IncrementedFilesSize
-				if (leaf.getDownloadStatus().equals(DownloadStatus.DONE)) {
-					incrementedFilesSize = incrementedFilesSize
-							+ FileSizeComputer.computeExpectedSize(leaf);
-				}
-				// TotalDiskFilesSize
-				totalDiskFilesSize = totalDiskFilesSize + leaf.getSize();
-				// TotalUncompleteExpectedFileSize & TotalUncompleteDiskFileSize
-				if (leaf.getComplete() != 0) {
-					unCompleteFiles++;
-					totalUncompleteExpectedFileSize = totalUncompleteExpectedFileSize
-							+ FileSizeComputer.computeExpectedSize(leaf);
-					totalUncompleteDiskFileSize = totalUncompleteDiskFileSize
-							+ leaf.getSize();
-				} else if (leaf.isCompressed()) { // TotalCompressedFilesSize &
-													// TotalUncompressedFilesSize
-					compressedFiles++;
-					totalCompressedFilesSize = totalCompressedFilesSize
-							+ leaf.getCompressedSize();
-					totalUncompressedFilesSize = totalUncompressedFilesSize
-							+ leaf.getSize();
-				}
-			}
-		}
-		initialFilesSize = incrementedFilesSize;
-	}
-
-	private void determineTotalExpectedFileSize() {
-
-		totalExpectedFilesSize = 0;
-		for (SyncTreeNodeDTO node : listFilesToUpdate) {
-			if (node.isLeaf()) {
-				SyncTreeLeafDTO leaf = (SyncTreeLeafDTO) node;
-				totalExpectedFilesSize = totalExpectedFilesSize
-						+ FileSizeComputer.computeExpectedSize(leaf);
-			}
-		}
-	}
-
-	private void deleteExtraFiles() {
-
-		for (SyncTreeNodeDTO node : listFilesToDelete) {
-			String path = node.getDestinationPath() + "/" + node.getName();
-			if (path != null) {
-				File file = new File(path);
-				if (file.isFile()) {
-					FileAccessMethods.deleteFile(file);
-				} else if (file.isDirectory()) {
-					FileAccessMethods.deleteDirectory(file);
-				}
-			}
-		}
-	}
-
-	public void cancel() {
-
-		this.canceled = true;
-		if (connexionService != null) {
-			connexionService.cancel();
-		}
-
-		initDownloadPanelForEndDownload();
-		downloadPanel.getLabelDownloadStatus().setText("Canceled!");
-		downloadPanel.getLabelDownloadStatus().setForeground(
-				DownloadPanel.GREEN);
-		downloadPanel.checkForAddons();
-		terminate();
 	}
 
 	public void pause() {
 
 		this.canceled = true;
-		if (connexionService != null) {
-			connexionService.cancel();
-		}
 
 		downloadPanel.getLabelDownloadStatus().setText("Paused...");
 		downloadPanel.getLabelDownloadStatus().setForeground(
 				DownloadPanel.GREEN);
-		downloadPanel.getButtonAdvancedConfiguration().setEnabled(true);
+		downloadPanel.getLabelSpeedValue().setText("");
+		downloadPanel.getLabelRemainingTimeValue().setText("");
+		downloadPanel.getLabelActiveConnectionsValue().setText("");
+		downloadPanel.getButtonSettings().setEnabled(true);
+		downloadPanel.getButtonDownloadStart().setEnabled(true);
 		terminate();
+	}
+
+	public void cancel() {
+
+		this.canceled = true;
+
+		downloadPanel.getLabelDownloadStatus().setText("Canceled!");
+		downloadPanel.getLabelDownloadStatus().setForeground(
+				DownloadPanel.GREEN);
+		initDownloadPanelForEndDownload();
+		terminate();
+	}
+
+	private void terminate() {
+
+		filesSynchronizationProcessor.cancel();
+		System.gc();
+	}
+
+	public void addObserverEnd(ObserverEnd obs) {
+		this.observerEnd = obs;
+	}
+
+	public void addObserverError(ObserverError obs) {
+		this.observerError = obs;
+	}
+
+	public void addObserverConnectionLost(ObserverConnectionLost obs) {
+		this.observerConnectionLost = obs;
 	}
 }

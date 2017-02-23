@@ -6,11 +6,13 @@ public interface ObservableUpload {
 
 	public void updateObserverUploadTotalSize(long totalFilesSize);
 
-	public void updateObserverUploadTotalSizeProgress();
+	public void updateObserverUploadProgress();
 
-	public void updateObserverUploadSingleSizeProgress();
+	public void updateObserverUploadTotalSizeProgress();
 
 	public void updateObserverUploadSpeed();
 
-	void updateObserverUploadLastIndexFileUploaded();
+	public void updateObserverUploadLastIndexFileUploaded();
+	
+	public void updateObserverUploadConnectionLost();
 }

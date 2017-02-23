@@ -31,10 +31,13 @@ import javax.swing.tree.TreePath;
 import fr.soe.a3s.dto.TreeDirectoryDTO;
 import fr.soe.a3s.dto.TreeLeafDTO;
 import fr.soe.a3s.dto.TreeNodeDTO;
+import fr.soe.a3s.service.ProfileService;
 import fr.soe.a3s.ui.Facade;
+import fr.soe.a3s.ui.UIConstants;
 
-public class TreeDnD {
+public class TreeDnD implements UIConstants {
 
+	private final Facade facade;
 	private final JTree arbre1, arbre2;
 	@SuppressWarnings("unused")
 	private final TreeDragSource ds1, ds2;
@@ -44,7 +47,6 @@ public class TreeDnD {
 			"Tree Path");
 	private TreePath newPath;
 	private TreePath[] oldPaths;
-	private final Facade facade;
 	private boolean isLeftClick = false;
 
 	public TreeDnD(JTree arbre1, JTree arbre2, Facade facade) {
@@ -178,26 +180,10 @@ public class TreeDnD {
 			newPath = tree.getClosestPathForLocation(p.x, p.y);
 			dtde.acceptDrag(DnDConstants.ACTION_MOVE);
 
-			// if (newPath == null || oldPaths == null) {
-			// dtde.rejectDrag();
-			// return;
-			// }
-
 			if (oldPaths == null) {
 				dtde.rejectDrag();
 				return;
 			}
-
-			// if (oldPaths.length > 0) {
-			// for (int i = 0; i < oldPaths.length; i++) {
-			// TreeNodeDTO treeNodeDTO = (TreeNodeDTO) oldPaths[i]
-			// .getLastPathComponent();
-			// if (!treeNodeDTO.isLeaf()) {
-			// dtde.rejectDrag();
-			// return;
-			// }
-			// }
-			// }
 		}
 
 		@Override
@@ -240,21 +226,16 @@ public class TreeDnD {
 				}
 			}
 
-			TreeDirectoryDTO checkedTypeModsetTreeNode = newTreeNode
-					.getParent();
-			while (checkedTypeModsetTreeNode != null) {
-				if (checkedTypeModsetTreeNode.getModsetType() != null) {
-					JOptionPane
-							.showMessageDialog(
-									facade.getMainPanel(),
-									"Repository modset and Event modset can't be modified.",
-									"Addon group",
-									JOptionPane.INFORMATION_MESSAGE);
-					return;
-				}
-				checkedTypeModsetTreeNode = checkedTypeModsetTreeNode
-						.getParent();
-			}
+			/*
+			 * TreeDirectoryDTO checkedTypeModsetTreeNode = newTreeNode
+			 * .getParent(); while (checkedTypeModsetTreeNode != null) { if
+			 * (checkedTypeModsetTreeNode.getModsetType() != null) { JOptionPane
+			 * .showMessageDialog( facade.getMainPanel(),
+			 * "Repository modset and Event modset can't be modified.",
+			 * "Addon group", JOptionPane.INFORMATION_MESSAGE); return; }
+			 * checkedTypeModsetTreeNode = checkedTypeModsetTreeNode
+			 * .getParent(); }
+			 */
 
 			if (newTreeNode.isLeaf()) {
 				newTreeNode = newTreeNode.getParent();
@@ -274,22 +255,21 @@ public class TreeDnD {
 					if (!treeNodeDTO.isLeaf()
 							&& treeNodeDTO.getName().equals(
 									sourceDirectory.getName())) {
-						contains = true;
+						targetDirectory.removeTreeNode(treeNodeDTO);
 						break;
 					}
 				}
-				if (!contains) {
-					TreeDirectoryDTO newTreeDirectory = new TreeDirectoryDTO();
-					newTreeDirectory.setName(sourceDirectory.getName());
-					newTreeDirectory.setSelected(false);
-					newTreeDirectory.setParent(targetDirectory);
-					targetDirectory.addTreeNode(newTreeDirectory);
-					duplicateDirectory(sourceDirectory, newTreeDirectory);
-					dtde.dropComplete(true);
-				} else {
-					dtde.rejectDrop();
-					return;
-				}
+
+				TreeDirectoryDTO newTreeDirectory = new TreeDirectoryDTO();
+				newTreeDirectory.setName(sourceDirectory.getName());
+				newTreeDirectory.setSelected(false);
+				newTreeDirectory.setParent(targetDirectory);
+				newTreeDirectory.setModsetRepositoryName(sourceDirectory
+						.getModsetRepositoryName());
+				newTreeDirectory.setModsetType(sourceDirectory.getModsetType());
+				targetDirectory.addTreeNode(newTreeDirectory);
+				duplicateDirectory(sourceDirectory, newTreeDirectory);
+				dtde.dropComplete(true);
 			} else {
 				TreeDirectoryDTO targetDirectory = (TreeDirectoryDTO) newTreeNode;
 				for (int i = 0; i < oldPaths.length; i++) {
@@ -303,41 +283,29 @@ public class TreeDnD {
 							if (treeNodeDTO.isLeaf()
 									&& treeNodeDTO.getName().equals(
 											sourceTreeLeaf.getName())) {
-								contains = true;
+								targetDirectory.removeTreeNode(treeNodeDTO);
 								break;
 							}
 						}
-						if (!contains) {
-							TreeLeafDTO newTreeLeaf = new TreeLeafDTO();
-							newTreeLeaf.setName(sourceTreeLeaf.getName());
-							newTreeLeaf.setSelected(false);
-							newTreeLeaf.setParent(targetDirectory);
-							targetDirectory.addTreeNode(newTreeLeaf);
-							if (oldPaths[i].toString().contains("racine2")) {
-								TreeDirectoryDTO parent = oldTreeNodeDTO
-										.getParent();
-								parent.removeTreeNode(oldTreeNodeDTO);
-							}
-							dtde.dropComplete(true);
-						} else {
-							dtde.rejectDrop();
-							return;
+						TreeLeafDTO newTreeLeaf = new TreeLeafDTO();
+						newTreeLeaf.setName(sourceTreeLeaf.getName());
+						newTreeLeaf.setSelected(false);
+						newTreeLeaf.setParent(targetDirectory);
+						targetDirectory.addTreeNode(newTreeLeaf);
+						if (oldPaths[i].toString().contains("racine2")) {
+							TreeDirectoryDTO parent = oldTreeNodeDTO
+									.getParent();
+							parent.removeTreeNode(oldTreeNodeDTO);
 						}
+						dtde.dropComplete(true);
 					}
 				}
 			}
 
-			facade.getAddonsPanel().saveAddonGroups();
-			facade.getAddonsPanel().refreshViewArbre2();
-			if (oldTreeNodeDTO.isLeaf()) {
-				facade.getAddonsPanel().expand(newPath);
-			}
-			facade.getAddonsPanel().highlightDuplicatedAddons();
-			facade.getAddonOptionsPanel().updateAddonPriorities();
-			facade.getLaunchOptionsPanel().updateRunParameters();
-
 			oldPaths = null;
 			newPath = null;
+
+			facade.getAddonsPanel().getGroupManager().dragAndDrop();
 		}
 
 		private void duplicateDirectory(TreeDirectoryDTO sourceDirectory,
@@ -358,6 +326,11 @@ public class TreeDnD {
 					duplicateTreedDirectory2.setParent(duplicateDirectory);
 					duplicateTreedDirectory2.setSelected(treeDirectory2
 							.isSelected());
+					duplicateTreedDirectory2
+							.setModsetRepositoryName(treeDirectory2
+									.getModsetRepositoryName());
+					duplicateTreedDirectory2.setModsetType(treeDirectory2
+							.getModsetType());
 					duplicateDirectory.addTreeNode(duplicateTreedDirectory2);
 					duplicateDirectory(treeDirectory2, duplicateTreedDirectory2);
 				}

@@ -10,6 +10,8 @@ import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.io.IOException;
+import java.util.List;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -24,20 +26,28 @@ import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 
 import fr.soe.a3s.constant.RepositoryStatus;
+import fr.soe.a3s.controller.ObserverConnectionLost;
+import fr.soe.a3s.controller.ObserverEnd;
+import fr.soe.a3s.controller.ObserverError;
 import fr.soe.a3s.dto.RepositoryDTO;
 import fr.soe.a3s.dto.ServerInfoDTO;
+import fr.soe.a3s.exception.CheckException;
+import fr.soe.a3s.exception.LoadingException;
 import fr.soe.a3s.exception.WritingException;
 import fr.soe.a3s.exception.repository.RepositoryException;
 import fr.soe.a3s.service.RepositoryService;
 import fr.soe.a3s.ui.Facade;
 import fr.soe.a3s.ui.UIConstants;
-import fr.soe.a3s.ui.UnitConverter;
 import fr.soe.a3s.ui.repository.dialogs.BuildRepositoryOptionsDialog;
 import fr.soe.a3s.ui.repository.dialogs.ChangelogPanel;
+import fr.soe.a3s.ui.repository.dialogs.ConnectionLostDialog;
 import fr.soe.a3s.ui.repository.dialogs.connection.UploadRepositoryConnectionDialog;
+import fr.soe.a3s.ui.repository.dialogs.error.UnexpectedErrorDialog;
 import fr.soe.a3s.ui.repository.workers.RepositoryBuilder;
 import fr.soe.a3s.ui.repository.workers.RepositoryChecker;
 import fr.soe.a3s.ui.repository.workers.RepositoryUploader;
+import fr.soe.a3s.utils.ErrorPrinter;
+import fr.soe.a3s.utils.UnitConverter;
 
 public class AdminPanel extends JPanel implements UIConstants {
 
@@ -425,7 +435,7 @@ public class AdminPanel extends JPanel implements UIConstants {
 					Font.BOLD));
 			labelStatusValue.setForeground(Color.RED);
 		} else if (repositoryStatus.equals(RepositoryStatus.ERROR)) {
-			labelStatusValue.setText(RepositoryStatus.UPDATED.getDescription());
+			labelStatusValue.setText(RepositoryStatus.ERROR.getDescription());
 			labelStatusValue.setFont(labelStatusValue.getFont().deriveFont(
 					Font.BOLD));
 			labelStatusValue.setForeground(Color.RED);
@@ -612,10 +622,73 @@ public class AdminPanel extends JPanel implements UIConstants {
 								JOptionPane.INFORMATION_MESSAGE);
 				return;
 			}
+			
 			repositoryUploader = new RepositoryUploader(facade, repositoryName,
 					path, this);
+			
+			repositoryUploader.addObserverEnd(new ObserverEnd() {
+				@Override
+				public void end() {
+					facade.getMainPanel().recoverFromTray();
+					String message = "Repository: " + repositoryName + "\n"
+							+ "Repository upload finished.";
+					JOptionPane.showMessageDialog(facade.getMainPanel(),
+							message, "Repository upload",
+							JOptionPane.INFORMATION_MESSAGE);
+				}
+			});
+			
+			repositoryUploader.addObserverError(new ObserverError() {
+				@Override
+				public void error(List<Exception> errors) {
+					Exception ex = errors.get(0);
+					facade.getMainPanel().recoverFromTray();
+					if (ex instanceof CheckException) {
+						String message = ErrorPrinter
+								.printRepositoryManagedError(repositoryName, ex);
+						JOptionPane.showMessageDialog(facade.getMainPanel(),
+								message, "Repository upload",
+								JOptionPane.WARNING_MESSAGE);
+					} else if (ex instanceof RepositoryException
+							|| ex instanceof LoadingException
+							|| ex instanceof IOException) {
+						String message = ErrorPrinter
+								.printRepositoryManagedError(repositoryName, ex);
+						JOptionPane.showMessageDialog(facade.getMainPanel(),
+								message, "Repository upload",
+								JOptionPane.ERROR_MESSAGE);
+					} else {
+						String message = ErrorPrinter
+								.printRepositoryUnexpectedError(repositoryName,
+										ex);
+						UnexpectedErrorDialog dialog = new UnexpectedErrorDialog(
+								facade, "Check repository synchronization", ex,
+								repositoryName);
+						dialog.show();
+					}
+				}
+			});
+			
+			repositoryUploader
+					.addObserverConnectionLost(new ObserverConnectionLost() {
+						@Override
+						public void lost() {
+							facade.getMainPanel().recoverFromTray();
+							ConnectionLostDialog dialog = new ConnectionLostDialog(
+									facade, repositoryName, "Repository upload");
+							dialog.init();
+							dialog.setVisible(true);
+							if (!dialog.reconnect()) {
+								repositoryUploader = null;
+							} else {
+								repositoryUploader.run();
+							}
+						}
+					});
+
 			repositoryUploader.setDaemon(true);
 			repositoryUploader.start();
+			
 		} else if (repositoryUploader != null
 				&& repositoryService.isUploading(repositoryName)) {
 			repositoryUploader.cancel();
@@ -709,7 +782,7 @@ public class AdminPanel extends JPanel implements UIConstants {
 		return uploadrogressBar;
 	}
 
-	public JLabel getUploadSizeLabelValue() {
+	public JLabel getUploadTotalSizeLabelValue() {
 		return uploadSizeLabelValue;
 	}
 

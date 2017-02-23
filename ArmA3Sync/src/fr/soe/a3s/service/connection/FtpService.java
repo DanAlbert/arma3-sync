@@ -262,8 +262,7 @@ public class FtpService extends AbstractConnexionService implements
 
 	@Override
 	public void synchronize(String repositoryName,
-			List<SyncTreeNodeDTO> filesToDownload) throws RepositoryException,
-			IOException {
+			List<SyncTreeNodeDTO> filesToDownload) throws RepositoryException {
 
 		final Repository repository = repositoryDAO.getMap()
 				.get(repositoryName);
@@ -494,7 +493,6 @@ public class FtpService extends AbstractConnexionService implements
 				response = null;
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
 			throw new FtpException("Failed to connect to updates repository");
 		} finally {
 			ftpDAOPool.get(0).disconnect();
@@ -527,11 +525,6 @@ public class FtpService extends AbstractConnexionService implements
 			list.add(ftpDAO);
 		}
 		return list;
-	}
-
-	@Override
-	public int getNumberConnections() {
-		return ftpDAOPool.size();
 	}
 
 	@Override

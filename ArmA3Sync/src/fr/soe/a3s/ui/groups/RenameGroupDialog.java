@@ -43,10 +43,6 @@ public class RenameGroupDialog extends AbstractGroupDialog {
 				}
 			}
 			selectedTreeNodeDTO.setName(groupName);
-			facade.getAddonsPanel().refreshViewArbre2();
-			facade.getAddonsPanel().saveAddonGroups();
-			facade.getOnlinePanel().init();
-			facade.getLaunchPanel().init();
 			this.dispose();
 		}
 	}

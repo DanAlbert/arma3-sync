@@ -10,14 +10,14 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import fr.soe.a3s.controller.ObservableCount;
-import fr.soe.a3s.controller.ObserverCount;
+import fr.soe.a3s.controller.ObservableCountInt;
+import fr.soe.a3s.controller.ObserverCountInt;
 import fr.soe.a3s.dao.DataAccessConstants;
 import fr.soe.a3s.dao.FileAccessMethods;
 import fr.soe.a3s.domain.repository.FileAttributes;
 import fr.soe.a3s.domain.repository.SyncTreeLeaf;
 
-public class RepositorySHA1Processor implements ObservableCount,
+public class RepositorySHA1Processor implements ObservableCountInt,
 		DataAccessConstants {
 
 	/** Parameters */
@@ -25,7 +25,7 @@ public class RepositorySHA1Processor implements ObservableCount,
 	private Map<String, FileAttributes> mapFiles = null;
 	private boolean isLocalSHA1Computation = false;
 	/** observable count Interface */
-	private ObserverCount observerCount;
+	private ObserverCountInt observerCount;
 	protected int count = 0, totalCount = 0;
 	/** */
 	private List<Callable<Integer>> callables = null;
@@ -131,7 +131,6 @@ public class RepositorySHA1Processor implements ObservableCount,
 										}
 										updatedFiles.add(leaf);
 										increment();
-										updateObserverCount();
 										mapFiles.put(path, new FileAttributes(
 												sha1, lastModified));
 									} catch (IOException e) {
@@ -157,7 +156,9 @@ public class RepositorySHA1Processor implements ObservableCount,
 	}
 
 	private synchronized void increment() {
-		this.count++;
+		count++;
+		int value = count * 100 / totalCount;
+		updateObserverCount(value);
 	}
 
 	/* Getters and Setters */
@@ -181,12 +182,12 @@ public class RepositorySHA1Processor implements ObservableCount,
 	/* observable Count Inteface */
 
 	@Override
-	public void addObserverCount(ObserverCount obs) {
+	public void addObserverCount(ObserverCountInt obs) {
 		this.observerCount = obs;
 	}
 
 	@Override
-	public void updateObserverCount() {
-		observerCount.update(this.count * 100 / this.totalCount);
+	public void updateObserverCount(int value) {
+		observerCount.update(value);
 	}
 }

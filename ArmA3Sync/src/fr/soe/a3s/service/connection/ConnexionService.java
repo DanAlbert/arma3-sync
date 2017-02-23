@@ -48,8 +48,7 @@ public interface ConnexionService {
 
 	/* Synchronize Addons files */
 	public void synchronize(String repositoryName,
-			List<SyncTreeNodeDTO> newListFiles) throws RepositoryException,
-			IOException;
+			List<SyncTreeNodeDTO> newListFiles) throws RepositoryException;
 
 	/* Upload Events */
 	public boolean upLoadEvents(String repositoryName)
@@ -73,8 +72,6 @@ public interface ConnexionService {
 	public AbstractConnexionDAO getConnexionDAO();
 
 	public List<AbstractConnexionDAO> getConnexionDAOs();
-
-	public int getNumberConnections();
 
 	public UnZipFlowProcessor getUnZipFlowProcessor();
 

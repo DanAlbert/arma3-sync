@@ -12,6 +12,9 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.nio.ByteBuffer;
+import java.nio.channels.Channels;
+import java.nio.channels.ReadableByteChannel;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
@@ -30,6 +33,7 @@ import javax.net.ssl.X509TrustManager;
 import org.apache.commons.io.output.CountingOutputStream;
 
 import fr.soe.a3s.constant.ProtocolType;
+import fr.soe.a3s.controller.ObserverProceed;
 import fr.soe.a3s.domain.AbstractProtocole;
 import fr.soe.a3s.exception.HttpException;
 
@@ -43,8 +47,8 @@ public class MyHttpConnection {
 	private byte[] boundaryBytes;
 	private long contLen;
 	private static final int BUFFER_SIZE = 4096;// 4KB
-	private int bufferSize = BUFFER_SIZE;
 	private long allData = 0;
+	private ConnectionListener connectionListener;
 
 	public MyHttpConnection(AbstractProtocole protocole, HttpDAO httpDAO) {
 		this.protocole = protocole;
@@ -253,8 +257,6 @@ public class MyHttpConnection {
 
 		httpDAO.setCountFileSize(0);
 		httpDAO.setSpeed(0);
-		httpDAO.updateObserverDownloadSingleSizeProgress();
-		httpDAO.updateObserverDownloadSpeed();
 
 		try {
 			long startResponseTime = System.nanoTime();
@@ -284,63 +286,64 @@ public class MyHttpConnection {
 			fos = new FileOutputStream(targetFile, resume);
 
 			final long startTime = System.nanoTime();
-			this.httpDAO.setSpeed(0);
+
+			connectionListener = new ConnectionListener(startTime);
+			connectionListener.addObserverProceed(new ObserverProceed() {
+				@Override
+				public void proceed() {
+					httpDAO.updateObserverDownloadConnectionLost();
+				}
+			});
 
 			dos = new CountingOutputStream(fos) {
 				@Override
 				protected void afterWrite(int n) throws IOException {
 					super.afterWrite(n);
 					long nbBytes = getByteCount();
-					httpDAO.setCountFileSize(nbBytes);
+
 					long endTime = System.nanoTime();
 					long totalTime = endTime - startTime;
 					long speed = (long) (nbBytes / (totalTime * Math
 							.pow(10, -9)));
+
 					if (httpDAO.getMaximumClientDownloadSpeed() != 0) {
 						if (speed > httpDAO.getMaximumClientDownloadSpeed()) {
-							bufferSize = bufferSize - 1;
-							if (bufferSize < 0) {
-								bufferSize = 0;
-							}
-						} else {
-							bufferSize = bufferSize + 1;
-							if (bufferSize > BUFFER_SIZE) {
-								bufferSize = BUFFER_SIZE;
+							try {
+								int wait = (int) ((speed / httpDAO
+										.getMaximumClientDownloadSpeed())
+										* Math.pow(10, 3) * 1 / 4);
+								Thread.sleep(wait);
+							} catch (InterruptedException e) {
 							}
 						}
 					}
 
+					httpDAO.setCountFileSize(nbBytes);
+					httpDAO.setSpeed(speed);
+					connectionListener.setStartTime(endTime);
+
 					if (httpDAO.isAcquiredSemaphore()) {
 						httpDAO.updateObserverDownloadSingleSizeProgress();
-					}
-
-					httpDAO.setSpeed(speed);
-					if (httpDAO.isAcquiredSemaphore()) {
 						httpDAO.updateObserverDownloadSpeed();
 					}
 				}
 			};
 
+			connectionListener.start();
 			int bytesRead = -1;
-			byte[] buffer = new byte[bufferSize];
-			while (((bytesRead = inputStream.read(buffer)) != -1)
+			ReadableByteChannel inChannel = Channels.newChannel(inputStream);
+			ByteBuffer buffer = ByteBuffer.allocate(BUFFER_SIZE);
+			while (((bytesRead = inChannel.read(buffer)) != -1)
 					&& !httpDAO.isCanceled()) {
-				dos.write(buffer, 0, bytesRead);
-				buffer = new byte[bufferSize];
+				byte[] array = buffer.array();
+				dos.write(array, 0, bytesRead);
+				buffer.clear();
 			}
 
-			if (fos != null) {
-				fos.close();
-			}
-			if (dos != null) {
-				dos.close();
-			}
-			if (inputStream != null) {
-				inputStream.close();
-			}
-
-			httpDAO.setSpeed(0);
-			httpDAO.updateObserverDownloadSpeed();
+			fos.close();
+			dos.close();
+			inputStream.close();
+			connectionListener.cancel();
 
 			if (!httpDAO.isCanceled()) {
 
@@ -367,9 +370,9 @@ public class MyHttpConnection {
 						httpDAO.setOffset(actualSize);
 						downloadFileWithRecordProgress(targetFile);
 					} else {
-						System.out.println("Server does not supports resuming");
-						throw new IOException(message + "/n"
-								+ "Server does not supports resuming.");
+						System.out.println("Server does not support resuming");
+						throw new IOException(message + "\n"
+								+ "Server does not support resuming.");
 					}
 				}
 			}
@@ -383,8 +386,9 @@ public class MyHttpConnection {
 			if (inputStream != null) {
 				inputStream.close();
 			}
-			httpDAO.setSpeed(0);
-			httpDAO.updateObserverDownloadSpeed();
+			if (connectionListener != null) {
+				connectionListener.cancel();
+			}
 		}
 	}
 
@@ -479,51 +483,61 @@ public class MyHttpConnection {
 
 			inputStream = urLConnection.getInputStream();
 
+			httpDAO.setCountFileSize(0);
 			httpDAO.setSpeed(0);
-			httpDAO.updateObserverDownloadSpeed();
 
 			final long startTime = System.nanoTime();
+
+			connectionListener = new ConnectionListener(startTime);
+			connectionListener.addObserverProceed(new ObserverProceed() {
+				@Override
+				public void proceed() {
+					httpDAO.updateObserverDownloadConnectionLost();
+				}
+			});
+
 			ByteArrayOutputStream byteArrayBuffer = new ByteArrayOutputStream();
 			dos = new CountingOutputStream(byteArrayBuffer) {
 				@Override
 				protected void afterWrite(int n) throws IOException {
 					super.afterWrite(n);
 					long nbBytes = getByteCount();
-					httpDAO.setCountFileSize(cumulatedBytesDownloaded + nbBytes);
+
 					long endTime = System.nanoTime();
 					long totalTime = endTime - startTime;
 					long speed = (long) ((nbBytes * Math.pow(10, 9)) / totalTime);// B/s
+
 					if (httpDAO.getMaximumClientDownloadSpeed() != 0) {
 						if (speed > httpDAO.getMaximumClientDownloadSpeed()) {
-							bufferSize = bufferSize - 1;
-							if (bufferSize < 0) {
-								bufferSize = 0;
-							}
-						} else {
-							bufferSize = bufferSize + 1;
-							if (bufferSize > BUFFER_SIZE) {
-								bufferSize = BUFFER_SIZE;
+							try {
+								int wait = (int) ((speed / httpDAO
+										.getMaximumClientDownloadSpeed())
+										* Math.pow(10, 3) * 1 / 4);
+								Thread.sleep(wait);
+							} catch (InterruptedException e) {
 							}
 						}
 					}
 
+					httpDAO.setCountFileSize(cumulatedBytesDownloaded + nbBytes);
+					httpDAO.setSpeed(speed);
+
 					if (httpDAO.isAcquiredSemaphore()) {
 						httpDAO.updateObserverDownloadSingleSizeProgress();
-					}
-
-					httpDAO.setSpeed(speed);
-					if (httpDAO.isAcquiredSemaphore()) {
 						httpDAO.updateObserverDownloadSpeed();
 					}
 				}
 			};
 
+			connectionListener.start();
 			int bytesRead = -1;
-			byte[] temp = new byte[bufferSize];
-			while ((bytesRead = inputStream.read(temp)) != -1
+			ReadableByteChannel inChannel = Channels.newChannel(inputStream);
+			ByteBuffer buffer = ByteBuffer.allocate(BUFFER_SIZE);
+			while (((bytesRead = inChannel.read(buffer)) != -1)
 					&& !httpDAO.isCanceled()) {
-				dos.write(temp, 0, bytesRead);
-				temp = new byte[bufferSize];
+				byte[] array = buffer.array();
+				dos.write(array, 0, bytesRead);
+				buffer.clear();
 			}
 
 			byte[] bytes = byteArrayBuffer.toByteArray();
@@ -537,8 +551,9 @@ public class MyHttpConnection {
 			if (dos != null) {
 				dos.close();
 			}
-			httpDAO.setSpeed(0);
-			httpDAO.updateObserverDownloadSpeed();
+			if (connectionListener != null) {
+				connectionListener.cancel();
+			}
 		}
 	}
 

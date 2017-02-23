@@ -14,7 +14,7 @@ public class ColumnsAutoSizer {
 
 	public static void sizeColumnsToFit(JTable table,
 			List<Integer> columnIndexes) {
-		sizeColumnsToFit(table, 5, columnIndexes);
+		sizeColumnsToFit(table, 10, columnIndexes);
 	}
 
 	public static void sizeColumnsToFit(JTable table, int columnMargin,
@@ -62,6 +62,7 @@ public class ColumnsAutoSizer {
 
 	private static void adjustMaximumWidths(JTable table, int[] minWidths,
 			int[] maxWidths, List<Integer> columnIndexes) {
+		
 		if (table.getWidth() > 0) {
 			// to prevent infinite loops in exceptional situations
 			int breaker = 0;
@@ -85,6 +86,7 @@ public class ColumnsAutoSizer {
 
 	private static int getMaximalRequiredColumnWidth(JTable table,
 			int columnIndex, int headerWidth) {
+		
 		int maxWidth = headerWidth;
 
 		TableColumn column = table.getColumnModel().getColumn(columnIndex);

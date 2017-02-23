@@ -85,10 +85,16 @@ public class ArmA3Sync implements DataAccessConstants {
 
 		if (args.length == 0) {
 			System.out.println("DevMode = false");
-			start(false);
+			System.out.println("RunMode = false");
+			start(false, false);
 		} else if (args.length == 1 && args[0].equalsIgnoreCase("-dev")) {
 			System.out.println("DevMode = true");
-			start(true);
+			System.out.println("RunMode = false");
+			start(true, false);
+		} else if (args.length == 1 && args[0].equalsIgnoreCase("-run")) {
+			System.out.println("DevMode = false");
+			System.out.println("RunMode = true");
+			start(false, true);
 		} else if (args.length == 1 && args[0].equalsIgnoreCase("-console")) {
 			CommandConsole console = new CommandConsole(false);
 			console.displayCommands();
@@ -98,6 +104,11 @@ public class ArmA3Sync implements DataAccessConstants {
 			CommandConsole console = new CommandConsole(true);
 			console.displayCommands();
 			console.execute();
+		} else if (args.length == 2 && args[0].equalsIgnoreCase("-dev")
+				&& args[1].equalsIgnoreCase("-run")) {
+			System.out.println("DevMode = true");
+			System.out.println("RunMode = true");
+			start(true, true);
 		} else if (args.length == 2 && args[0].equalsIgnoreCase("-build")) {
 			CommandLine commandLine = new CommandLine();
 			String repositoryName = args[1];
@@ -137,7 +148,7 @@ public class ArmA3Sync implements DataAccessConstants {
 		}
 	}
 
-	private static void start(final boolean devMode) {
+	private static void start(final boolean devMode, final boolean runMode) {
 
 		if (GraphicsEnvironment.isHeadless()) {
 			System.out.println("Can't start ArmA3Sync. GUI is missing.");
@@ -175,12 +186,14 @@ public class ArmA3Sync implements DataAccessConstants {
 				public void run() {
 					final Facade facade = new Facade();
 					facade.setDevMode(devMode);
+					facade.setRunMode(runMode);
 					try {
 						mainPanel = new MainPanel(facade);
 						mainPanel.drawGUI();
 						mainPanel.init();
 						mainPanel.initBackGround();
 					} catch (Exception e) {
+						e.printStackTrace();
 						ErrorLogDialog dialog = new ErrorLogDialog(facade, e);
 						dialog.show();
 					}
@@ -306,5 +319,10 @@ public class ArmA3Sync implements DataAccessConstants {
 		} catch (Exception e) {
 			System.out.println(e.getMessage());
 		}
+
+		// Set English Language as default for JOptionPane
+		UIManager.put("OptionPane.yesButtonText", "Yes");
+		UIManager.put("OptionPane.noButtonText", "No");
+		UIManager.put("OptionPane.cancelButtonText", "Cancel");
 	}
 }

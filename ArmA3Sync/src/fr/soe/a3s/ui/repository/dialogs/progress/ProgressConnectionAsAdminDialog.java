@@ -110,7 +110,7 @@ public class ProgressConnectionAsAdminDialog extends AbstractProgressDialog {
 		facade.getSyncPanel().enableAllButtons();
 		this.dispose();
 		RepositoryPanel repositoryPanel = facade.getMainPanel().openRepository(
-				repositoryName);
+				repositoryName, true);
 		if (repositoryPanel != null) {
 			repositoryPanel.admin(repositoryName);
 		}
