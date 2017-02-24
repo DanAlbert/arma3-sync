@@ -72,7 +72,7 @@ public class MetaFileReader {
 	private String localMetafile;
 	private final boolean downMetaFile = false;
 	private String extraInputFile;
-	private final int ranges = 1000;
+	private final int ranges = 100;
 	private long downloadedMetafile = 0;
 
 	/**
