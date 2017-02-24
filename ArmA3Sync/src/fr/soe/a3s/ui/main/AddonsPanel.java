@@ -493,9 +493,14 @@ public class AddonsPanel extends JPanel implements UIConstants {
 		int numberRowShown = arbre1.getRowCount();
 		arbre1.setVisibleRowCount(numberRowShown);
 		arbre1.setPreferredSize(arbre1.getPreferredScrollableViewportSize());
-		arbre1.updateUI();
 
-		arbre1.setEnabled(true);
+		SwingUtilities.invokeLater(new Runnable() {
+			@Override
+			public void run() {
+				arbre1.updateUI();
+				arbre1.setEnabled(true);
+			}
+		});
 	}
 
 	private void reloadAddonGroups() {
@@ -518,14 +523,19 @@ public class AddonsPanel extends JPanel implements UIConstants {
 		int numberRowShown = arbre2.getRowCount();
 		arbre2.setVisibleRowCount(numberRowShown);
 		arbre2.setPreferredSize(arbre2.getPreferredScrollableViewportSize());
-		arbre2.updateUI();
 		if (numberRowShown == 0) {
 			arbre2.setToolTipText("Right click to add a group");
 		} else {
 			arbre2.setToolTipText(null);
 		}
 
-		arbre2.setEnabled(true);
+		SwingUtilities.invokeLater(new Runnable() {
+			@Override
+			public void run() {
+				arbre2.updateUI();
+				arbre2.setEnabled(true);
+			}
+		});
 	}
 
 	private void refresAddonGroups() {
@@ -539,14 +549,19 @@ public class AddonsPanel extends JPanel implements UIConstants {
 		int numberRowShown = arbre2.getRowCount();
 		arbre2.setVisibleRowCount(numberRowShown);
 		arbre2.setPreferredSize(arbre2.getPreferredScrollableViewportSize());
-		arbre2.updateUI();
 		if (numberRowShown == 0) {
 			arbre2.setToolTipText("Right click to add a group");
 		} else {
 			arbre2.setToolTipText(null);
 		}
 
-		arbre2.setEnabled(true);
+		SwingUtilities.invokeLater(new Runnable() {
+			@Override
+			public void run() {
+				arbre2.updateUI();
+				arbre2.setEnabled(true);
+			}
+		});
 	}
 
 	private void highlightMissingAddonsSelection() {
