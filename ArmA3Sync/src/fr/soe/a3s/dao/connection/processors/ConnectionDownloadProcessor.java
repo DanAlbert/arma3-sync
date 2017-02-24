@@ -90,18 +90,7 @@ public class ConnectionDownloadProcessor implements DataAccessConstants {
 								if (connexionDAO.isAcquiredSemaphore()) {
 									releaseSemaphore();
 									connexionDAO.setAcquiredSemaphore(false);
-
-									for (final AbstractConnexionDAO connexionDAO : connexionDAOs) {
-										if (connexionDAO.isActiveConnection()
-												&& aquireSemaphore()) {
-											connexionDAO
-													.setAcquiredSemaphore(true);
-											break;
-										}
-									}
 								}
-
-								// Give semaphore to the other DAOs
 
 								if (downloadConnectioError != null) {
 									connexionDAO
