@@ -24,6 +24,7 @@ public class ConnectionListener extends Thread {
 				long deltaTime = endTime - startTime;
 				boolean lost = deltaTime > (Math.pow(10, 9) * 30);// 30 s
 				if (lost) {
+					canceled = true;
 					observer.proceed();
 				}
 			} catch (InterruptedException e) {
@@ -37,7 +38,6 @@ public class ConnectionListener extends Thread {
 
 	public void cancel() {
 		this.canceled = true;
-		this.interrupt();
 	}
 
 	public void addObserverProceed(ObserverProceed obs) {

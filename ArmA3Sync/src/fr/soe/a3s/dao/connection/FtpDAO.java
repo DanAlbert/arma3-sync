@@ -49,7 +49,6 @@ public class FtpDAO extends AbstractConnexionDAO {
 
 	private FTPClient ftpClient;
 	private static final int BUFFER_SIZE = 4096;// 4KB
-	private ConnectionListener connectionListener;
 
 	@Override
 	public void connectToRepository(AbstractProtocole protocole)
@@ -222,14 +221,6 @@ public class FtpDAO extends AbstractConnexionDAO {
 		try {
 			final long startTime = System.nanoTime();
 
-			connectionListener = new ConnectionListener(startTime);
-			connectionListener.addObserverProceed(new ObserverProceed() {
-				@Override
-				public void proceed() {
-					updateObserverDownloadConnectionLost();
-				}
-			});
-
 			fos = new FileOutputStream(file, resume);
 			dos = new CountingOutputStream(fos) {
 				@Override
@@ -253,7 +244,6 @@ public class FtpDAO extends AbstractConnexionDAO {
 
 					setCountFileSize(nbBytes);
 					setSpeed(speed);
-					connectionListener.setStartTime(endTime);
 
 					if (acquiredSemaphore) {
 						updateObserverDownloadSingleSizeProgress();
@@ -275,7 +265,6 @@ public class FtpDAO extends AbstractConnexionDAO {
 
 				if (FTPReply.isPositiveCompletion(code)) {
 
-					connectionListener.start();
 					inputStream = ftpClient.retrieveFileStream(remotePath + "/"
 							+ file.getName());
 
@@ -297,7 +286,6 @@ public class FtpDAO extends AbstractConnexionDAO {
 						fos.close();
 						dos.close();
 						inputStream.close();
-						connectionListener.cancel();
 
 						if (!canceled) {
 							found = ftpClient.completePendingCommand();
@@ -319,9 +307,6 @@ public class FtpDAO extends AbstractConnexionDAO {
 			}
 			if (inputStream != null) {
 				inputStream.close();
-			}
-			if (connectionListener != null) {
-				connectionListener.cancel();
 			}
 		}
 		return found;

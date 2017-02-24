@@ -48,7 +48,6 @@ public class MyHttpConnection {
 	private long contLen;
 	private static final int BUFFER_SIZE = 4096;// 4KB
 	private long allData = 0;
-	private ConnectionListener connectionListener;
 
 	public MyHttpConnection(AbstractProtocole protocole, HttpDAO httpDAO) {
 		this.protocole = protocole;
@@ -287,14 +286,6 @@ public class MyHttpConnection {
 
 			final long startTime = System.nanoTime();
 
-			connectionListener = new ConnectionListener(startTime);
-			connectionListener.addObserverProceed(new ObserverProceed() {
-				@Override
-				public void proceed() {
-					httpDAO.updateObserverDownloadConnectionLost();
-				}
-			});
-
 			dos = new CountingOutputStream(fos) {
 				@Override
 				protected void afterWrite(int n) throws IOException {
@@ -320,8 +311,7 @@ public class MyHttpConnection {
 
 					httpDAO.setCountFileSize(nbBytes);
 					httpDAO.setSpeed(speed);
-					connectionListener.setStartTime(endTime);
-
+					
 					if (httpDAO.isAcquiredSemaphore()) {
 						httpDAO.updateObserverDownloadSingleSizeProgress();
 						httpDAO.updateObserverDownloadSpeed();
@@ -329,7 +319,6 @@ public class MyHttpConnection {
 				}
 			};
 
-			connectionListener.start();
 			int bytesRead = -1;
 			ReadableByteChannel inChannel = Channels.newChannel(inputStream);
 			ByteBuffer buffer = ByteBuffer.allocate(BUFFER_SIZE);
@@ -343,7 +332,6 @@ public class MyHttpConnection {
 			fos.close();
 			dos.close();
 			inputStream.close();
-			connectionListener.cancel();
 
 			if (!httpDAO.isCanceled()) {
 
@@ -385,9 +373,6 @@ public class MyHttpConnection {
 			}
 			if (inputStream != null) {
 				inputStream.close();
-			}
-			if (connectionListener != null) {
-				connectionListener.cancel();
 			}
 		}
 	}
@@ -488,14 +473,6 @@ public class MyHttpConnection {
 
 			final long startTime = System.nanoTime();
 
-			connectionListener = new ConnectionListener(startTime);
-			connectionListener.addObserverProceed(new ObserverProceed() {
-				@Override
-				public void proceed() {
-					httpDAO.updateObserverDownloadConnectionLost();
-				}
-			});
-
 			ByteArrayOutputStream byteArrayBuffer = new ByteArrayOutputStream();
 			dos = new CountingOutputStream(byteArrayBuffer) {
 				@Override
@@ -529,7 +506,6 @@ public class MyHttpConnection {
 				}
 			};
 
-			connectionListener.start();
 			int bytesRead = -1;
 			ReadableByteChannel inChannel = Channels.newChannel(inputStream);
 			ByteBuffer buffer = ByteBuffer.allocate(BUFFER_SIZE);
@@ -550,9 +526,6 @@ public class MyHttpConnection {
 			}
 			if (dos != null) {
 				dos.close();
-			}
-			if (connectionListener != null) {
-				connectionListener.cancel();
 			}
 		}
 	}
