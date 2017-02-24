@@ -232,59 +232,48 @@ public class AddonOptionsPanel extends JPanel implements UIConstants {
 
 	private void updateAddonSearchDirectories() {
 
-		SwingUtilities.invokeLater(new Runnable() {
-			@Override
-			public void run() {
-				directoryList1.setEnabled(false);
-				List<String> set = profileService
-						.getAddonSearchDirectoryPaths();
-				Iterator iter = set.iterator();
-				List<String> paths = new ArrayList<String>();
-				while (iter.hasNext()) {
-					paths.add((String) iter.next());
-				}
-				String[] tab = new String[paths.size()];
-				int i = 0;
-				for (String p : paths) {
-					tab[i] = p;
-					i++;
-				}
-				directoryList1.clearSelection();
-				directoryList1.setListData(tab);
-				int numberLigneShown = paths.size();
-				directoryList1.setVisibleRowCount(numberLigneShown);
-				directoryList1.setPreferredSize(directoryList1
-						.getPreferredScrollableViewportSize());
-				scrollPane1.updateUI();
-				directoryList1.setEnabled(true);
-			}
-		});
+		directoryList1.setEnabled(false);
+		List<String> set = profileService.getAddonSearchDirectoryPaths();
+		Iterator iter = set.iterator();
+		List<String> paths = new ArrayList<String>();
+		while (iter.hasNext()) {
+			paths.add((String) iter.next());
+		}
+		String[] tab = new String[paths.size()];
+		int i = 0;
+		for (String p : paths) {
+			tab[i] = p;
+			i++;
+		}
+		directoryList1.clearSelection();
+		directoryList1.setListData(tab);
+		int numberLigneShown = paths.size();
+		directoryList1.setVisibleRowCount(numberLigneShown);
+		directoryList1.setPreferredSize(directoryList1
+				.getPreferredScrollableViewportSize());
+		scrollPane1.updateUI();
+		directoryList1.setEnabled(true);
 	}
 
 	private void updateAddonPriorities() {
 
-		SwingUtilities.invokeLater(new Runnable() {
-			@Override
-			public void run() {
-				directoryList2.setEnabled(false);
-				directoryList2.removeAll();
-				List<String> list = addonService.getAddonsByPriorityList();
-				if (list != null) {
-					String[] addonNames = new String[list.size()];
-					for (int i = 0; i < list.size(); i++) {
-						addonNames[i] = list.get(i);
-					}
-					directoryList2.clearSelection();
-					directoryList2.setListData(addonNames);
-					int numberLigneShown = list.size();
-					directoryList2.setVisibleRowCount(numberLigneShown);
-					directoryList2.setPreferredSize(directoryList2
-							.getPreferredScrollableViewportSize());
-					scrollPane2.updateUI();
-				}
-				directoryList2.setEnabled(true);
+		directoryList2.setEnabled(false);
+		directoryList2.removeAll();
+		List<String> list = addonService.getAddonsByPriorityList();
+		if (list != null) {
+			String[] addonNames = new String[list.size()];
+			for (int i = 0; i < list.size(); i++) {
+				addonNames[i] = list.get(i);
 			}
-		});
+			directoryList2.clearSelection();
+			directoryList2.setListData(addonNames);
+			int numberLigneShown = list.size();
+			directoryList2.setVisibleRowCount(numberLigneShown);
+			directoryList2.setPreferredSize(directoryList2
+					.getPreferredScrollableViewportSize());
+			scrollPane2.updateUI();
+		}
+		directoryList2.setEnabled(true);
 	}
 
 	private void buttonAddPerformed() {
