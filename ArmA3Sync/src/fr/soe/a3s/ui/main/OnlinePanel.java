@@ -22,6 +22,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
+import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.border.BevelBorder;
 import javax.swing.event.PopupMenuEvent;
@@ -208,54 +209,60 @@ public class OnlinePanel extends JPanel implements UIConstants {
 
 	private void updateTableServers() {
 
-		isModifying = true;
-		tableServers.setEnabled(false);
+		SwingUtilities.invokeLater(new Runnable() {
+			@Override
+			public void run() {
+				isModifying = true;
+				tableServers.setEnabled(false);
 
-		List<String> list = getModsetList();
+				List<String> list = getModsetList();
 
-		List<FavoriteServerDTO> favoriteServersDTO = configurationService
-				.getFavoriteServers();
-		model.setDataSize(favoriteServersDTO.size());
-		Iterator<FavoriteServerDTO> iter = favoriteServersDTO.iterator();
-		int i = 0;
-		while (iter.hasNext()) {
-			FavoriteServerDTO favoriteServerDTO = iter.next();
-			String description = favoriteServerDTO.getName();
-			String ipAddress = favoriteServerDTO.getIpAddress();
-			int port = favoriteServerDTO.getPort();
-			String password = favoriteServerDTO.getPassword();
-			String modsetName = favoriteServerDTO.getModsetName();
-			if (description == null) {
-				description = "";
+				List<FavoriteServerDTO> favoriteServersDTO = configurationService
+						.getFavoriteServers();
+				model.setDataSize(favoriteServersDTO.size());
+				Iterator<FavoriteServerDTO> iter = favoriteServersDTO
+						.iterator();
+				int i = 0;
+				while (iter.hasNext()) {
+					FavoriteServerDTO favoriteServerDTO = iter.next();
+					String description = favoriteServerDTO.getName();
+					String ipAddress = favoriteServerDTO.getIpAddress();
+					int port = favoriteServerDTO.getPort();
+					String password = favoriteServerDTO.getPassword();
+					String modsetName = favoriteServerDTO.getModsetName();
+					if (description == null) {
+						description = "";
+					}
+					if (ipAddress == null) {
+						ipAddress = "";
+					}
+					if (password == null) {
+						password = "";
+					}
+					if (modsetName == null) {
+						modsetName = "";
+					} else if (!list.contains(modsetName)) {
+						modsetName = "";
+						favoriteServerDTO.setModsetName(null);
+					}
+					model.addRow(i, i);
+					model.setValueAt(description, i, 0);
+					model.setValueAt(ipAddress, i, 1);
+					model.setValueAt(port, i, 2);
+					model.setValueAt(password, i, 3);
+					model.setValueAt(modsetName, i, 4);
+					i++;
+				}
+
+				model.fireTableDataChanged();
+				jScrollPane1.updateUI();
+
+				configurationService.setFavoriteServers(favoriteServersDTO);
+
+				tableServers.setEnabled(true);
+				isModifying = false;
 			}
-			if (ipAddress == null) {
-				ipAddress = "";
-			}
-			if (password == null) {
-				password = "";
-			}
-			if (modsetName == null) {
-				modsetName = "";
-			} else if (!list.contains(modsetName)) {
-				modsetName = "";
-				favoriteServerDTO.setModsetName(null);
-			}
-			model.addRow(i, i);
-			model.setValueAt(description, i, 0);
-			model.setValueAt(ipAddress, i, 1);
-			model.setValueAt(port, i, 2);
-			model.setValueAt(password, i, 3);
-			model.setValueAt(modsetName, i, 4);
-			i++;
-		}
-
-		model.fireTableDataChanged();
-		jScrollPane1.updateUI();
-
-		configurationService.setFavoriteServers(favoriteServersDTO);
-
-		tableServers.setEnabled(true);
-		isModifying = false;
+		});
 	}
 
 	private void buttonAddPerformed() {

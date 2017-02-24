@@ -20,6 +20,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.border.BevelBorder;
 import javax.swing.table.AbstractTableModel;
@@ -163,39 +164,46 @@ public class ExternalApplicationsPanel extends JPanel implements UIConstants {
 	public void update(int flag) {
 
 		if (flag == OP_PROFILE_CHANGED) {
-			
+
 			updateTableApplications();
 		}
 	}
 
 	private void updateTableApplications() {
 
-		this.tableApplications.setEnabled(false);
-		
-		List<ExternalApplicationDTO> externalApplicationDTOs = configurationService
-				.getExternalApplications();
-		model.setDataSize(externalApplicationDTOs.size());
-		Iterator<ExternalApplicationDTO> iter = externalApplicationDTOs
-				.iterator();
-		int i = 0;
-		while (iter.hasNext()) {
-			ExternalApplicationDTO externalApplicationDTO = iter.next();
-			boolean active = externalApplicationDTO.isEnable();
-			String description = externalApplicationDTO.getName();
-			String executablePath = externalApplicationDTO.getExecutablePath();
-			String parameters = externalApplicationDTO.getParameters();
-			model.addRow(i, i);
-			model.setValueAt(active, i, 0);
-			model.setValueAt(description, i, 1);
-			model.setValueAt(executablePath, i, 2);
-			model.setValueAt(parameters, i, 3);
-			i++;
-		}
-		
-		model.fireTableDataChanged();
-		jScrollPane1.updateUI();
-		
-		this.tableApplications.setEnabled(true);
+		SwingUtilities.invokeLater(new Runnable() {
+			@Override
+			public void run() {
+
+				tableApplications.setEnabled(false);
+
+				List<ExternalApplicationDTO> externalApplicationDTOs = configurationService
+						.getExternalApplications();
+				model.setDataSize(externalApplicationDTOs.size());
+				Iterator<ExternalApplicationDTO> iter = externalApplicationDTOs
+						.iterator();
+				int i = 0;
+				while (iter.hasNext()) {
+					ExternalApplicationDTO externalApplicationDTO = iter.next();
+					boolean active = externalApplicationDTO.isEnable();
+					String description = externalApplicationDTO.getName();
+					String executablePath = externalApplicationDTO
+							.getExecutablePath();
+					String parameters = externalApplicationDTO.getParameters();
+					model.addRow(i, i);
+					model.setValueAt(active, i, 0);
+					model.setValueAt(description, i, 1);
+					model.setValueAt(executablePath, i, 2);
+					model.setValueAt(parameters, i, 3);
+					i++;
+				}
+
+				model.fireTableDataChanged();
+				jScrollPane1.updateUI();
+
+				tableApplications.setEnabled(true);
+			}
+		});
 	}
 
 	private void buttonAddPerformed() {

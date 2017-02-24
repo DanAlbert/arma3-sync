@@ -478,70 +478,85 @@ public class AddonsPanel extends JPanel implements UIConstants {
 
 	private void reloadAvailableAddons() {
 
-		arbre1.setEnabled(false);
-		arbre1.removeAll();
-		boolean isViewTreeMode = configurationService.isViewModeTree();
-		if (isViewTreeMode) {
-			racine1 = addonService.getAvailableAddonsTree();
-		} else {
-			racine1 = addonService.getAvailableAddonsList();
-		}
-		addonTreeModel1 = new AddonTreeModel(racine1);
-		arbre1.setModel(addonTreeModel1);
+		SwingUtilities.invokeLater(new Runnable() {
+			@Override
+			public void run() {
+				arbre1.setEnabled(false);
+				arbre1.removeAll();
+				boolean isViewTreeMode = configurationService.isViewModeTree();
+				if (isViewTreeMode) {
+					racine1 = addonService.getAvailableAddonsTree();
+				} else {
+					racine1 = addonService.getAvailableAddonsList();
+				}
+				addonTreeModel1 = new AddonTreeModel(racine1);
+				arbre1.setModel(addonTreeModel1);
 
-		int numberRowShown = arbre1.getRowCount();
-		arbre1.setVisibleRowCount(numberRowShown);
-		arbre1.setPreferredSize(arbre1.getPreferredScrollableViewportSize());
-		arbre1.updateUI();
-		arbre1.setEnabled(true);
+				int numberRowShown = arbre1.getRowCount();
+				arbre1.setVisibleRowCount(numberRowShown);
+				arbre1.setPreferredSize(arbre1.getPreferredScrollableViewportSize());
+				arbre1.updateUI();
+				arbre1.setEnabled(true);
+			}
+		});
 	}
 
 	private void reloadAddonGroups() {
 
-		arbre2.setEnabled(false);
-		arbre2.removeAll();
-		racine2 = profileService.getAddonGroups();
-		addonService.resolveDuplicates(racine2);
-		profileService.setAddonGroups(racine2);
-		addonTreeModel2 = new AddonTreeModel(racine2);
-		arbre2.setModel(addonTreeModel2);
-		highlightMissingAddonsSelection();
-		highlightDuplicatedAddons();
-		highlightDuplicatedAddonsSelection();
-		expandAddonGroups();
+		SwingUtilities.invokeLater(new Runnable() {
+			@Override
+			public void run() {
+				arbre2.setEnabled(false);
+				arbre2.removeAll();
+				racine2 = profileService.getAddonGroups();
+				addonService.resolveDuplicates(racine2);
+				profileService.setAddonGroups(racine2);
+				addonTreeModel2 = new AddonTreeModel(racine2);
+				arbre2.setModel(addonTreeModel2);
+				highlightMissingAddonsSelection();
+				highlightDuplicatedAddons();
+				highlightDuplicatedAddonsSelection();
+				expandAddonGroups();
 
-		int numberRowShown = arbre2.getRowCount();
-		arbre2.setVisibleRowCount(numberRowShown);
-		arbre2.setPreferredSize(arbre2.getPreferredScrollableViewportSize());
-		arbre2.updateUI();
-		if (numberRowShown == 0) {
-			arbre2.setToolTipText("Right click to add a group");
-		} else {
-			arbre2.setToolTipText(null);
-		}
+				int numberRowShown = arbre2.getRowCount();
+				arbre2.setVisibleRowCount(numberRowShown);
+				arbre2.setPreferredSize(arbre2.getPreferredScrollableViewportSize());
+				arbre2.updateUI();
+				if (numberRowShown == 0) {
+					arbre2.setToolTipText("Right click to add a group");
+				} else {
+					arbre2.setToolTipText(null);
+				}
 
-		arbre2.setEnabled(true);
+				arbre2.setEnabled(true);
+			}
+		});
 	}
 
 	private void refresAddonGroups() {
 
-		arbre2.setEnabled(false);
+		SwingUtilities.invokeLater(new Runnable() {
+			@Override
+			public void run() {
+				arbre2.setEnabled(false);
 
-		highlightMissingAddonsSelection();
-		highlightDuplicatedAddons();
-		highlightDuplicatedAddonsSelection();
+				highlightMissingAddonsSelection();
+				highlightDuplicatedAddons();
+				highlightDuplicatedAddonsSelection();
 
-		int numberRowShown = arbre2.getRowCount();
-		arbre2.setVisibleRowCount(numberRowShown);
-		arbre2.setPreferredSize(arbre2.getPreferredScrollableViewportSize());
-		arbre2.updateUI();
-		if (numberRowShown == 0) {
-			arbre2.setToolTipText("Right click to add a group");
-		} else {
-			arbre2.setToolTipText(null);
-		}
+				int numberRowShown = arbre2.getRowCount();
+				arbre2.setVisibleRowCount(numberRowShown);
+				arbre2.setPreferredSize(arbre2.getPreferredScrollableViewportSize());
+				arbre2.updateUI();
+				if (numberRowShown == 0) {
+					arbre2.setToolTipText("Right click to add a group");
+				} else {
+					arbre2.setToolTipText(null);
+				}
 
-		arbre2.setEnabled(true);
+				arbre2.setEnabled(true);
+			}
+		});
 	}
 
 	private void highlightMissingAddonsSelection() {
