@@ -482,7 +482,8 @@ public class MyHttpConnection {
 
 					long endTime = System.nanoTime();
 					long totalTime = endTime - startTime;
-					long speed = (long) ((nbBytes * Math.pow(10, 9)) / totalTime);// B/s
+					long speed = (long) (nbBytes / (totalTime * Math
+							.pow(10, -9)));
 
 					if (httpDAO.getMaximumClientDownloadSpeed() != 0) {
 						if (speed > httpDAO.getMaximumClientDownloadSpeed()) {
