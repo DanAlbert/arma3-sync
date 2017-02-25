@@ -58,6 +58,9 @@ public class ProgressModsetsSelectionDialog extends AbstractProgressDialog {
 					System.out
 							.println("Checking repositories has been anormaly interrupted.");
 				}
+				
+				executor.shutdownNow();
+				
 				if (!canceled) {
 					exit();
 					terminate();

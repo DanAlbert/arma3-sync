@@ -115,12 +115,15 @@ public class ProgressSynchronizationDialog extends AbstractProgressDialog {
 					ExecutorService executor = Executors
 							.newFixedThreadPool(Runtime.getRuntime()
 									.availableProcessors());
+
 					try {
 						executor.invokeAll(callables);
 					} catch (InterruptedException e) {
 						System.out
 								.println("Synchronizing with repositories has been anormaly interrupted.");
 					}
+
+					executor.shutdownNow();
 
 					System.out
 							.println("Synchronization with repositories done.");
