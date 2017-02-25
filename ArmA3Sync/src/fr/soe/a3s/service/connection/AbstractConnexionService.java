@@ -14,31 +14,38 @@ public class AbstractConnexionService extends ObjectDTOtransformer {
 
 	protected void updateFavoriteServersFromAutoconfig(AutoConfig autoConfig) {
 
-		List<FavoriteServer> list1 = autoConfig.getFavoriteServers();
-		List<FavoriteServer> list2 = configurationDAO.getConfiguration()
-				.getFavoriteServers();
+		if (autoConfig != null) {
 
-		List<FavoriteServer> newList = new ArrayList<FavoriteServer>();
+			List<FavoriteServer> list1 = autoConfig.getFavoriteServers();
+			List<FavoriteServer> list2 = configurationDAO.getConfiguration()
+					.getFavoriteServers();
 
-		for (FavoriteServer favoriteServerList2 : list2) {
-			if (!autoConfig.getRepositoryName().equals(
-					favoriteServerList2.getRepositoryName())) {
-				boolean nameIsDifferent = true;
-				for (FavoriteServer favoriteServerList1 : list1) {
-					if (favoriteServerList1.getName().equals(
-							favoriteServerList2.getName())) {
-						nameIsDifferent = false;
+			List<FavoriteServer> newList = new ArrayList<FavoriteServer>();
+
+			for (FavoriteServer favoriteServerList2 : list2) {
+				if (autoConfig.getRepositoryName() != null
+						&& favoriteServerList2.getRepositoryName() != null) {
+					if (!autoConfig.getRepositoryName().equals(
+							favoriteServerList2.getRepositoryName())) {
+						boolean nameIsDifferent = true;
+						for (FavoriteServer favoriteServerList1 : list1) {
+							if (favoriteServerList1.getName().equals(
+									favoriteServerList2.getName())) {
+								nameIsDifferent = false;
+							}
+						}
+						if (nameIsDifferent) {
+							newList.add(favoriteServerList2);
+						}
 					}
 				}
-				if (nameIsDifferent) {
-					newList.add(favoriteServerList2);
-				}
 			}
-		}
-		newList.addAll(list1);
+			
+			newList.addAll(list1);
 
-		configurationDAO.getConfiguration().getFavoriteServers().clear();
-		configurationDAO.getConfiguration().getFavoriteServers()
-				.addAll(newList);
+			configurationDAO.getConfiguration().getFavoriteServers().clear();
+			configurationDAO.getConfiguration().getFavoriteServers()
+					.addAll(newList);
+		}
 	}
 }
