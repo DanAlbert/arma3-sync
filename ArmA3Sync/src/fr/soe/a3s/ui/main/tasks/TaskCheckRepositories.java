@@ -68,6 +68,8 @@ public class TaskCheckRepositories extends TimerTask implements UIConstants {
 			System.out
 					.println("Checking repositories has been anormaly interrupted.");
 		}
+		
+		executor.shutdownNow();
 	
 		System.out.println("Checking repositories done.");
 
