@@ -303,7 +303,7 @@ public abstract class AbstractConnexionDAO implements DataAccessConstants,
 	public void updateObserverUploadLastIndexFileUploaded() {
 		this.observerUpload.updateLastIndexFileUploaded();
 	}
-	
+
 	@Override
 	public void updateObserverUploadConnectionLost() {
 		this.observerUpload.updateConnectionLost();
@@ -329,7 +329,8 @@ public abstract class AbstractConnexionDAO implements DataAccessConstants,
 	@Override
 	public void updateObserverDownloadSingleSizeProgress() {
 		if (expectedFullSize != 0) {// division by 0
-			int pourcentage = (int) (((countFileSize + offset) * 100) / expectedFullSize);
+			int pourcentage = (int) (((countFileSize + offset) * 100) / (expectedFullSize * ((100 - downloadingLeaf
+					.getComplete()) / 100)));
 			this.observerDownload.updateSingleSizeProgress(countFileSize
 					+ offset, pourcentage);
 		} else {

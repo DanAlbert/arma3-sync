@@ -259,7 +259,7 @@ public class FilesSynchronizationProcessor {
 		long endTime = System.nanoTime();
 		long delta = endTime - deltaTimeSpeed;
 
-		if (delta > (Math.pow(10, 9)) / 2) {// 0.5s
+		if (delta > (Math.pow(10, 9) / 2)) {// 0.5s
 			long speed = 0;
 			for (AbstractConnexionDAO connect : connexionService
 					.getConnexionDAOs()) {

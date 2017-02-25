@@ -311,7 +311,7 @@ public class MyHttpConnection {
 
 					httpDAO.setCountFileSize(nbBytes);
 					httpDAO.setSpeed(speed);
-					
+
 					if (httpDAO.isAcquiredSemaphore()) {
 						httpDAO.updateObserverDownloadSingleSizeProgress();
 						httpDAO.updateObserverDownloadSpeed();
@@ -469,7 +469,7 @@ public class MyHttpConnection {
 			inputStream = urLConnection.getInputStream();
 
 			httpDAO.setCountFileSize(0);
-			httpDAO.setSpeed(0);
+	        httpDAO.setSpeed(0);
 
 			final long startTime = System.nanoTime();
 
@@ -482,8 +482,8 @@ public class MyHttpConnection {
 
 					long endTime = System.nanoTime();
 					long totalTime = endTime - startTime;
-					long speed = (long) (nbBytes / (totalTime * Math
-							.pow(10, -9)));
+					long speed = (long) ((nbBytes) / (totalTime * Math.pow(10,
+							-9)));
 
 					if (httpDAO.getMaximumClientDownloadSpeed() != 0) {
 						if (speed > httpDAO.getMaximumClientDownloadSpeed()) {
@@ -498,7 +498,7 @@ public class MyHttpConnection {
 					}
 
 					httpDAO.setCountFileSize(cumulatedBytesDownloaded + nbBytes);
-					httpDAO.setSpeed(speed);
+				    httpDAO.setSpeed(speed);
 
 					if (httpDAO.isAcquiredSemaphore()) {
 						httpDAO.updateObserverDownloadSingleSizeProgress();

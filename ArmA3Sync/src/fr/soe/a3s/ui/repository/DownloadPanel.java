@@ -1393,10 +1393,11 @@ public class DownloadPanel extends JPanel implements UIConstants {
 				.getTotalFilesDeleted()));
 		checkBoxExpandAll.setSelected(false);
 		checkBoxSelectAll.setSelected(false);
-
+		
 		SwingUtilities.invokeLater(new Runnable() {
 			@Override
 			public void run() {
+				
 				arbre.setEnabled(false);
 				arbre.removeAll();
 				AddonSyncTreeModel addonSyncTreeModel = new AddonSyncTreeModel(

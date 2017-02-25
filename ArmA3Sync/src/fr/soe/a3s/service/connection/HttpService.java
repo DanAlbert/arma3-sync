@@ -280,7 +280,7 @@ public class HttpService extends AbstractConnexionService implements
 					leaf.setComplete(0);
 				} else if (noPartialFileTransfer) {
 					leaf.setComplete(0);
-				} else if (leaf.getSize() <= 1000000) {// 1 MB
+				} else if (!leaf.getName().contains(PBO_EXTENSION)) {// zsync only for pbo files
 					leaf.setComplete(0);
 				} else {
 					final String rootDestinationPath = repository

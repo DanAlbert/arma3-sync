@@ -93,19 +93,22 @@ public class AddonsChecker extends Thread {
 
 		this.parent = filesCheckProcessor.run();// blocking
 												// execution
+		if (!canceled) {
+			if (parent == null) {// true if default download location is null
+				executeEnd();
+			} else {
+				System.out
+						.println("Determining file completion on repository: "
+								+ repositoryName);
 
-		if (parent == null) {// true if default download location is null
-			executeEnd();
-		} else {
-			System.out.println("Determining file completion on repository: "
-					+ repositoryName);
+				downloadPanel.getProgressBarCheckForAddons().setIndeterminate(
+						true);
+				downloadPanel.getProgressBarCheckForAddons().setMinimum(0);
+				downloadPanel.getProgressBarCheckForAddons().setMaximum(100);
 
-			downloadPanel.getProgressBarCheckForAddons().setIndeterminate(true);
-			downloadPanel.getProgressBarCheckForAddons().setMinimum(0);
-			downloadPanel.getProgressBarCheckForAddons().setMaximum(100);
-
-			this.serverRangeRequestResponseHeader = filesCompletionProcessor
-					.run(parent); // non blocking execution
+				this.serverRangeRequestResponseHeader = filesCompletionProcessor
+						.run(parent); // non blocking execution
+			}
 		}
 	}
 
@@ -181,17 +184,16 @@ public class AddonsChecker extends Thread {
 			System.out.println("Checking for Addons on repository: "
 					+ repositoryName + " - finished.");
 
-			terminate();
-
 			// Set notification
 			downloadPanel.getLabelCheckForAddonsStatus().setText("Finished!");
 			downloadPanel.getLabelCheckForAddonsStatus().setForeground(
 					DownloadPanel.GREEN);
 
-			initDownlaodPanelForEndCheck();
-			
 			// Update download panel tree
 			downloadPanel.updateArbre(parent);
+
+			initDownlaodPanelForEndCheck();
+			terminate();
 
 			// Download panel
 			observerEnd.end();
@@ -209,17 +211,16 @@ public class AddonsChecker extends Thread {
 			System.out.println("Checking for Addons on repository: "
 					+ repositoryName + " - finished with errors.");
 
-			terminate();
-
 			// Set notification
 			downloadPanel.getLabelCheckForAddonsStatus().setText("Error!");
 			downloadPanel.getLabelCheckForAddonsStatus().setForeground(
 					Color.RED);
 
-			initDownlaodPanelForEndCheck();
-			
 			// Update download panel tree
 			downloadPanel.updateArbre(null);
+
+			initDownlaodPanelForEndCheck();
+			terminate();
 
 			// Download panel
 			List<Exception> errors = new ArrayList<Exception>();
@@ -242,15 +243,14 @@ public class AddonsChecker extends Thread {
 
 		this.canceled = true;
 
-		terminate();
-
 		downloadPanel.getLabelCheckForAddonsStatus().setText("Canceled!");
 		downloadPanel.getLabelCheckForAddonsStatus().setForeground(
 				DownloadPanel.GREEN);
-		
-		initDownlaodPanelForEndCheck();
 
 		downloadPanel.updateArbre(null);
+
+		initDownlaodPanelForEndCheck();
+		terminate();
 	}
 
 	public String getServerRangeRequestResponseHeader() {
