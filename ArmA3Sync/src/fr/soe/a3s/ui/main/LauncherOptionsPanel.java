@@ -1028,6 +1028,7 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener,
 			String path = file.getAbsolutePath();
 			profileService.setArmA3ExePath(path);
 			textFieldArmAExecutableLocation.setText(path);
+			updateOptions();
 		}
 	}
 
