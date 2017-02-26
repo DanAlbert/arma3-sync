@@ -188,11 +188,12 @@ public class AddonsChecker extends Thread {
 			downloadPanel.getLabelCheckForAddonsStatus().setText("Finished!");
 			downloadPanel.getLabelCheckForAddonsStatus().setForeground(
 					DownloadPanel.GREEN);
-
+			
+			initDownlaodPanelForEndCheck();
+			
 			// Update download panel tree
 			downloadPanel.updateArbre(parent);
 
-			initDownlaodPanelForEndCheck();
 			terminate();
 
 			// Download panel
@@ -216,10 +217,11 @@ public class AddonsChecker extends Thread {
 			downloadPanel.getLabelCheckForAddonsStatus().setForeground(
 					Color.RED);
 
+			initDownlaodPanelForEndCheck();
+			
 			// Update download panel tree
 			downloadPanel.updateArbre(null);
 
-			initDownlaodPanelForEndCheck();
 			terminate();
 
 			// Download panel
@@ -247,9 +249,10 @@ public class AddonsChecker extends Thread {
 		downloadPanel.getLabelCheckForAddonsStatus().setForeground(
 				DownloadPanel.GREEN);
 
+		initDownlaodPanelForEndCheck();
+		
 		downloadPanel.updateArbre(null);
 
-		initDownlaodPanelForEndCheck();
 		terminate();
 	}
 
