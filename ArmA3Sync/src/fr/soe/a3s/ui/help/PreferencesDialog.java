@@ -435,8 +435,7 @@ public class PreferencesDialog extends AbstractDialog {
 		if (!newCheckRepositoriesFrequency
 				.equals(CheckRepositoriesFrequency.DISABLED)) {
 			int frequency = newCheckRepositoriesFrequency.getFrequency();// min
-			//long delay = (long) (frequency * 60 * Math.pow(10, 3));// ms
-			long delay =   (long) (10* Math.pow(10, 3));
+			long delay = (long) (frequency * 60 * Math.pow(10, 3));// ms
 			long period = delay;
 			TaskCheckRepositories task = new TaskCheckRepositories(facade);
 			tasksManager.addTask(task, delay, period);
