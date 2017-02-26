@@ -342,84 +342,82 @@ public class SyncPanel extends JPanel implements UIConstants {
 	public void update(int flag) {
 
 		if (flag == OP_PROFILE_CHANGED || flag == OP_REPOSITORY_CHANGED) {
-			updateRepositoriesAndEvents();
+			SwingUtilities.invokeLater(new Runnable() {
+				@Override
+				public void run() {
+					updateRepositoriesAndEvents();
+				}
+			});
 		}
 	}
 
 	private void updateRepositoriesAndEvents() {
 
-		SwingUtilities.invokeLater(new Runnable() {
-			@Override
-			public void run() {
-				isModifying = true;
-				tableRepositories.setRowSelectionAllowed(false);
-				tableRepositories.setEnabled(false);
-				listEvents.setEnabled(false);
+		isModifying = true;
+		tableRepositories.setRowSelectionAllowed(false);
+		tableRepositories.setEnabled(false);
+		listEvents.setEnabled(false);
 
-				mapEvents.clear();
+		mapEvents.clear();
 
-				List<RepositoryDTO> repositoryDTOs = repositoryService
-						.getRepositories();
-				Collections.sort(repositoryDTOs);
-				model.setDataSize(repositoryDTOs.size());
-				Iterator<RepositoryDTO> iter = repositoryDTOs.iterator();
-				int i = 0;
-				while (iter.hasNext()) {
-					RepositoryDTO repositoryDTO = iter.next();
-					String name = repositoryDTO.getName();
-					boolean notify = repositoryDTO.isNotify();
-					boolean auto = repositoryDTO.isAuto();
-					RepositoryStatus status = repositoryService
-							.getRepositorySyncStatus(repositoryDTO.getName());
-					List<EventDTO> eventDTOs = repositoryService
-							.getEvents(name);
-					for (EventDTO eventDTO : eventDTOs) {
-						mapEvents.put(eventDTO, name);
-					}
-					model.addRow(i, i);
-					model.setValueAt(name, i, 0);
-					model.setValueAt(notify, i, 1);
-					model.setValueAt(auto, i, 2);
-					model.setValueAt(status.getDescription(), i, 3);
-					i++;
-				}
-
-				String[] tab = new String[mapEvents.size()];
-				int j = 0;
-				for (Iterator<EventDTO> iter2 = mapEvents.keySet().iterator(); iter2
-						.hasNext();) {
-					EventDTO eventDTO = iter2.next();
-					String text = eventDTO.getName();
-					if (eventDTO.getDescription() != null) {
-						String description = eventDTO.getDescription().trim();
-						if (!description.isEmpty()) {
-							text = text + " - " + eventDTO.getDescription();
-						}
-					}
-					tab[j] = text;
-					j++;
-				}
-
-				listEvents.setListData(tab);
-
-				model.fireTableDataChanged();
-				scrollPane1.updateUI();
-				scrollPane2.updateUI();
-
-				// Re-adjust columns size
-				List<Integer> columnIndexes = new ArrayList<Integer>();
-				columnIndexes.add(1);
-				columnIndexes.add(2);
-				columnIndexes.add(3);
-				ColumnsAutoSizer.sizeColumnsToFit(tableRepositories,
-						columnIndexes);
-
-				tableRepositories.setRowSelectionAllowed(true);
-				tableRepositories.setEnabled(true);
-				listEvents.setEnabled(true);
-				isModifying = false;
+		List<RepositoryDTO> repositoryDTOs = repositoryService
+				.getRepositories();
+		Collections.sort(repositoryDTOs);
+		model.setDataSize(repositoryDTOs.size());
+		Iterator<RepositoryDTO> iter = repositoryDTOs.iterator();
+		int i = 0;
+		while (iter.hasNext()) {
+			RepositoryDTO repositoryDTO = iter.next();
+			String name = repositoryDTO.getName();
+			boolean notify = repositoryDTO.isNotify();
+			boolean auto = repositoryDTO.isAuto();
+			RepositoryStatus status = repositoryService
+					.getRepositorySyncStatus(repositoryDTO.getName());
+			List<EventDTO> eventDTOs = repositoryService.getEvents(name);
+			for (EventDTO eventDTO : eventDTOs) {
+				mapEvents.put(eventDTO, name);
 			}
-		});
+			model.addRow(i, i);
+			model.setValueAt(name, i, 0);
+			model.setValueAt(notify, i, 1);
+			model.setValueAt(auto, i, 2);
+			model.setValueAt(status.getDescription(), i, 3);
+			i++;
+		}
+
+		String[] tab = new String[mapEvents.size()];
+		int j = 0;
+		for (Iterator<EventDTO> iter2 = mapEvents.keySet().iterator(); iter2
+				.hasNext();) {
+			EventDTO eventDTO = iter2.next();
+			String text = eventDTO.getName();
+			if (eventDTO.getDescription() != null) {
+				String description = eventDTO.getDescription().trim();
+				if (!description.isEmpty()) {
+					text = text + " - " + eventDTO.getDescription();
+				}
+			}
+			tab[j] = text;
+			j++;
+		}
+
+		listEvents.setListData(tab);
+
+		model.fireTableDataChanged();
+		scrollPane1.updateUI();
+		scrollPane2.updateUI();
+
+		// Re-adjust columns size
+		List<Integer> columnIndexes = new ArrayList<Integer>();
+		columnIndexes.add(1);
+		columnIndexes.add(2);
+		columnIndexes.add(3);
+		ColumnsAutoSizer.sizeColumnsToFit(tableRepositories, columnIndexes);
+
+		tableRepositories.setRowSelectionAllowed(true);
+		tableRepositories.setEnabled(true);
+		listEvents.setEnabled(true);
+		isModifying = false;
 	}
 
 	private void buttonNewPerformed() {

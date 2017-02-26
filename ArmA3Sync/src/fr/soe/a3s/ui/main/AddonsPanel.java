@@ -441,7 +441,7 @@ public class AddonsPanel extends JPanel implements UIConstants {
 
 	public void update(int flag) {
 
-		if (flag == OP_PROFILE_CHANGED) {
+		if (flag == OP_PROFILE_CHANGED || flag == OP_ADDON_FILES_CHANGED) {
 
 			/* View Mode */
 			boolean isViewTreeMode = configurationService.isViewModeTree();
@@ -453,26 +453,21 @@ public class AddonsPanel extends JPanel implements UIConstants {
 				arbre1.setShowsRootHandles(false);
 			}
 
-			/* Display available addons */
-			reloadAvailableAddons();
+			SwingUtilities.invokeLater(new Runnable() {
+				@Override
+				public void run() {
+					/* Display available addons */
+					reloadAvailableAddons();
 
-			/* Display addon groups */
-			reloadAddonGroups();
-		}
-
-		else if (flag == OP_ADDON_FILES_CHANGED
-				|| flag == OP_ADDON_PRIORITY_CHANGED) {
-
-			/* Display available addons */
-			reloadAvailableAddons();
-
-			/* Display addon groups */
-			reloadAddonGroups();
+					/* Display addon groups */
+					reloadAddonGroups();
+				}
+			});
 		}
 
 		else if (flag == OP_ADDON_SELECTION_CHANGED || flag == OP_GROUP_CHANGED) {
 
-			refresAddonGroups();
+			refreshAddonGroups();
 		}
 	}
 
@@ -494,13 +489,8 @@ public class AddonsPanel extends JPanel implements UIConstants {
 		arbre1.setVisibleRowCount(numberRowShown);
 		arbre1.setPreferredSize(arbre1.getPreferredScrollableViewportSize());
 
-		SwingUtilities.invokeLater(new Runnable() {
-			@Override
-			public void run() {
-				arbre1.updateUI();
-				arbre1.setEnabled(true);
-			}
-		});
+		arbre1.updateUI();
+		arbre1.setEnabled(true);
 	}
 
 	private void reloadAddonGroups() {
@@ -529,16 +519,11 @@ public class AddonsPanel extends JPanel implements UIConstants {
 			arbre2.setToolTipText(null);
 		}
 
-		SwingUtilities.invokeLater(new Runnable() {
-			@Override
-			public void run() {
-				arbre2.updateUI();
-				arbre2.setEnabled(true);
-			}
-		});
+		arbre2.updateUI();
+		arbre2.setEnabled(true);
 	}
 
-	private void refresAddonGroups() {
+	private void refreshAddonGroups() {
 
 		arbre2.setEnabled(false);
 
@@ -555,13 +540,8 @@ public class AddonsPanel extends JPanel implements UIConstants {
 			arbre2.setToolTipText(null);
 		}
 
-		SwingUtilities.invokeLater(new Runnable() {
-			@Override
-			public void run() {
-				arbre2.updateUI();
-				arbre2.setEnabled(true);
-			}
-		});
+		arbre2.updateUI();
+		arbre2.setEnabled(true);
 	}
 
 	private void highlightMissingAddonsSelection() {
@@ -1017,7 +997,6 @@ public class AddonsPanel extends JPanel implements UIConstants {
 
 			profileService.setAddonGroups(racine2);
 			facade.getMainPanel().updateTabs(OP_GROUP_CHANGED);
-			facade.getMainPanel().updateTabs(OP_ADDON_SELECTION_CHANGED);
 		}
 
 		public void select() {
@@ -1089,8 +1068,16 @@ public class AddonsPanel extends JPanel implements UIConstants {
 			}
 		}
 
-		public void addGroupFromRepository(List<String> repositoryNames,boolean updated) {
+		public void addGroupFromRepository(List<String> repositoryNames,
+				boolean updated) {
 
+			onAddGroupFromRepository(repositoryNames, updated);
+			facade.getMainPanel().updateTabs(OP_GROUP_CHANGED);
+		}
+		
+		private void onAddGroupFromRepository(List<String> repositoryNames,
+				boolean updated) {
+			
 			for (String repositoryName : repositoryNames) {
 				TreeDirectoryDTO directory = repositoryService
 						.getGroupFromRepository(repositoryName, false);
@@ -1115,12 +1102,16 @@ public class AddonsPanel extends JPanel implements UIConstants {
 
 			addonService.resolveDuplicates(racine2);
 			profileService.setAddonGroups(racine2);
-			facade.getMainPanel().updateTabs(OP_GROUP_CHANGED);
-			facade.getMainPanel().updateTabs(OP_ADDON_SELECTION_CHANGED);
 		}
 
-		public void addGroupFromEvents(List<EventDTO> eventDTOs,boolean updated) {
+		public void addGroupFromEvents(List<EventDTO> eventDTOs, boolean updated) {
 
+			onAddGroupFromEvents(eventDTOs, updated);
+			facade.getMainPanel().updateTabs(OP_GROUP_CHANGED);
+		}
+		
+		public void onAddGroupFromEvents(List<EventDTO> eventDTOs, boolean updated) {
+			
 			for (EventDTO eventDTO : eventDTOs) {
 
 				TreeNodeDTO nodeToRemove = null;
@@ -1154,12 +1145,9 @@ public class AddonsPanel extends JPanel implements UIConstants {
 
 			addonService.resolveDuplicates(racine2);
 			profileService.setAddonGroups(racine2);
-
-			facade.getMainPanel().updateTabs(OP_GROUP_CHANGED);
-			facade.getMainPanel().updateTabs(OP_ADDON_SELECTION_CHANGED);
 		}
 
-		public boolean updateGroupModsets() {
+		public void updateGroupModsets() {
 
 			System.out
 					.println("Updating modset selection within addon groups...");
@@ -1182,7 +1170,7 @@ public class AddonsPanel extends JPanel implements UIConstants {
 				}
 			}
 
-			addGroupFromRepository(repositoryGroupModsets,true);
+			onAddGroupFromRepository(repositoryGroupModsets, true);
 
 			List<EventDTO> eventGroupModsets = new ArrayList<EventDTO>();
 			for (TreeNodeDTO node : racine2.getList()) {
@@ -1205,16 +1193,10 @@ public class AddonsPanel extends JPanel implements UIConstants {
 				}
 			}
 
-			addGroupFromEvents(eventGroupModsets,true);
+			onAddGroupFromEvents(eventGroupModsets, true);
+			facade.getMainPanel().updateTabs(OP_GROUP_CHANGED);
 
 			System.out.println("Addon groups update done.");
-
-			if (!(repositoryGroupModsets.isEmpty() && eventGroupModsets
-					.isEmpty())) {
-				return true;
-			} else {
-				return false;
-			}
 		}
 	}
 }

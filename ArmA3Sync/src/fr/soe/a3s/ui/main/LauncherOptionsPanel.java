@@ -641,7 +641,7 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener,
 			updateAdditionalRunParameters();
 		}
 
-		else if (flag == OP_ADDON_SELECTION_CHANGED
+		else if (flag == OP_ADDON_SELECTION_CHANGED || flag == OP_GROUP_CHANGED
 				|| flag == OP_ADDON_PRIORITY_CHANGED
 				|| flag == OP_ADDON_FILES_CHANGED) {
 
