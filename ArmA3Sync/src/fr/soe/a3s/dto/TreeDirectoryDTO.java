@@ -11,6 +11,7 @@ public class TreeDirectoryDTO implements TreeNodeDTO {
 	private String name;
 	private boolean selected = false;
 	private ModsetType modsetType;
+	private boolean updated = false;
 	private String modsetRepositoryName;
 	private TreeDirectoryDTO parent;
 
@@ -49,6 +50,14 @@ public class TreeDirectoryDTO implements TreeNodeDTO {
 	@Override
 	public void setSelected(boolean value) {
 		this.selected = value;
+	}
+
+	public boolean isUpdated() {
+		return updated;
+	}
+
+	public void setUpdated(boolean updated) {
+		this.updated = updated;
 	}
 
 	@Override
@@ -92,7 +101,11 @@ public class TreeDirectoryDTO implements TreeNodeDTO {
 
 	@Override
 	public String toString() {
-		return name;
+		if (updated){
+			return name + " " + "(updated)";
+		}else {
+			return name;
+		}
 	}
 
 	public ModsetType getModsetType() {

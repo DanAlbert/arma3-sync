@@ -249,13 +249,13 @@ public class LaunchPanel extends JPanel implements UIConstants {
 							String name = ((RepositoryDTO) objectDTO).getName();
 							list.add(name);
 							facade.getAddonsPanel().getGroupManager()
-									.addGroupFromRepository(list);
+									.addGroupFromRepository(list,false);
 						} else if (objectDTO instanceof EventDTO) {
 							List<EventDTO> eventDTOs = new ArrayList<EventDTO>();
 							EventDTO eventDTO = (EventDTO) objectDTO;
 							eventDTOs.add(eventDTO);
 							facade.getAddonsPanel().getGroupManager()
-									.addGroupFromEvents(eventDTOs);
+									.addGroupFromEvents(eventDTOs,false);
 						}
 						facade.getAddonsPanel().getGroupManager()
 								.select(modsetName);

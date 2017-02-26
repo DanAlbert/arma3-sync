@@ -1089,7 +1089,7 @@ public class AddonsPanel extends JPanel implements UIConstants {
 			}
 		}
 
-		public void addGroupFromRepository(List<String> repositoryNames) {
+		public void addGroupFromRepository(List<String> repositoryNames,boolean updated) {
 
 			for (String repositoryName : repositoryNames) {
 				TreeDirectoryDTO directory = repositoryService
@@ -1107,6 +1107,7 @@ public class AddonsPanel extends JPanel implements UIConstants {
 					directory.setName(repositoryName);
 					directory.setModsetType(ModsetType.REPOSITORY);
 					directory.setModsetRepositoryName(repositoryName);
+					directory.setUpdated(updated);
 					directory.setParent(racine2);
 					racine2.addTreeNode(directory);
 				}
@@ -1118,7 +1119,7 @@ public class AddonsPanel extends JPanel implements UIConstants {
 			facade.getMainPanel().updateTabs(OP_ADDON_SELECTION_CHANGED);
 		}
 
-		public void addGroupFromEvents(List<EventDTO> eventDTOs) {
+		public void addGroupFromEvents(List<EventDTO> eventDTOs,boolean updated) {
 
 			for (EventDTO eventDTO : eventDTOs) {
 
@@ -1136,6 +1137,7 @@ public class AddonsPanel extends JPanel implements UIConstants {
 				directory.setName(eventDTO.getName());
 				directory.setModsetType(ModsetType.EVENT);
 				directory.setModsetRepositoryName(eventDTO.getRepositoryName());
+				directory.setUpdated(updated);
 				directory.setParent(racine2);
 				racine2.addTreeNode(directory);
 				for (Iterator<String> iter = eventDTO.getAddonNames().keySet()
@@ -1180,7 +1182,7 @@ public class AddonsPanel extends JPanel implements UIConstants {
 				}
 			}
 
-			addGroupFromRepository(repositoryGroupModsets);
+			addGroupFromRepository(repositoryGroupModsets,true);
 
 			List<EventDTO> eventGroupModsets = new ArrayList<EventDTO>();
 			for (TreeNodeDTO node : racine2.getList()) {
@@ -1203,7 +1205,7 @@ public class AddonsPanel extends JPanel implements UIConstants {
 				}
 			}
 
-			addGroupFromEvents(eventGroupModsets);
+			addGroupFromEvents(eventGroupModsets,true);
 
 			System.out.println("Addon groups update done.");
 
