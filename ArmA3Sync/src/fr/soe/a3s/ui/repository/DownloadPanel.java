@@ -1100,7 +1100,6 @@ public class DownloadPanel extends JPanel implements UIConstants {
 
 				// Check for Addons
 				checkForAddons(false);
-
 			}
 		});
 		addonsDownloader.addObserverError(new ObserverError() {
