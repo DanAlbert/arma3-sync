@@ -238,8 +238,6 @@ public class FilesSynchronizationProcessor {
 					.getTotalFilesSize());
 			observerCountTotalProgress.update(pourcentage);
 		}
-
-		executeUpdateTotalDownloadedSize(filesManager.getResumedFilesSize());
 	}
 
 	private synchronized void executeUpdateTotalSize(long value) {
