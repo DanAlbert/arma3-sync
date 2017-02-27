@@ -460,7 +460,7 @@ public class AdminPanel extends JPanel implements UIConstants {
 
 		JFileChooser fc = new JFileChooser();
 		fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-		int returnVal = fc.showOpenDialog(this.repositoryPanel);
+		int returnVal = fc.showOpenDialog(facade.getMainPanel());
 		if (returnVal == JFileChooser.APPROVE_OPTION) {
 			File file = fc.getSelectedFile();
 			textFieldMainSharedFolderLocation.setText(file.getAbsolutePath());
@@ -622,10 +622,10 @@ public class AdminPanel extends JPanel implements UIConstants {
 								JOptionPane.INFORMATION_MESSAGE);
 				return;
 			}
-			
+
 			repositoryUploader = new RepositoryUploader(facade, repositoryName,
 					path, this);
-			
+
 			repositoryUploader.addObserverEnd(new ObserverEnd() {
 				@Override
 				public void end() {
@@ -637,7 +637,7 @@ public class AdminPanel extends JPanel implements UIConstants {
 							JOptionPane.INFORMATION_MESSAGE);
 				}
 			});
-			
+
 			repositoryUploader.addObserverError(new ObserverError() {
 				@Override
 				public void error(List<Exception> errors) {
@@ -668,7 +668,7 @@ public class AdminPanel extends JPanel implements UIConstants {
 					}
 				}
 			});
-			
+
 			repositoryUploader
 					.addObserverConnectionLost(new ObserverConnectionLost() {
 						@Override
@@ -688,7 +688,7 @@ public class AdminPanel extends JPanel implements UIConstants {
 
 			repositoryUploader.setDaemon(true);
 			repositoryUploader.start();
-			
+
 		} else if (repositoryUploader != null
 				&& repositoryService.isUploading(repositoryName)) {
 			repositoryUploader.cancel();

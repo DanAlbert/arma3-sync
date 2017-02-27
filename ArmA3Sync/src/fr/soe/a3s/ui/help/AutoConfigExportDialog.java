@@ -191,7 +191,7 @@ public class AutoConfigExportDialog extends AbstractDialog {
 
 		JFileChooser fc = new JFileChooser();
 		fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-		int returnVal = fc.showSaveDialog(AutoConfigExportDialog.this);
+		int returnVal = fc.showSaveDialog(facade.getMainPanel());
 		if (returnVal == JFileChooser.APPROVE_OPTION) {
 			File file = fc.getSelectedFile();
 			String path = file.getAbsolutePath();

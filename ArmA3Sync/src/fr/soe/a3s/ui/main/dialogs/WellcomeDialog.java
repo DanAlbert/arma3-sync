@@ -123,7 +123,7 @@ public class WellcomeDialog extends AbstractDialog {
 		}
 
 		fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
-		int returnVal = fc.showOpenDialog(WellcomeDialog.this);
+		int returnVal = fc.showOpenDialog(facade.getMainPanel());
 		if (returnVal == JFileChooser.APPROVE_OPTION) {
 			File file = fc.getSelectedFile();
 			String path = file.getAbsolutePath();
@@ -170,8 +170,7 @@ public class WellcomeDialog extends AbstractDialog {
 			}
 
 			this.dispose();
-			facade.getMainPanel().updateTabs(
-					OP_ADDON_FILES_CHANGED);
+			facade.getMainPanel().updateTabs(OP_ADDON_FILES_CHANGED);
 		}
 	}
 

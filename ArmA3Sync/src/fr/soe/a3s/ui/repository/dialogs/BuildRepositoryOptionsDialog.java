@@ -488,7 +488,7 @@ public class BuildRepositoryOptionsDialog extends AbstractDialog implements
 		JFileChooser fc = new JFileChooser(
 				repositoryService.getRepositoryPath(repositoryName));
 		fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
-		int returnVal = fc.showOpenDialog(BuildRepositoryOptionsDialog.this);
+		int returnVal = fc.showOpenDialog(facade.getMainPanel());
 		if (returnVal == JFileChooser.APPROVE_OPTION) {
 			File file = fc.getSelectedFile();
 			if (file != null) {
@@ -544,7 +544,7 @@ public class BuildRepositoryOptionsDialog extends AbstractDialog implements
 		JFileChooser fc = new JFileChooser(
 				repositoryService.getRepositoryPath(repositoryName));
 		fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-		int returnVal = fc.showOpenDialog(BuildRepositoryOptionsDialog.this);
+		int returnVal = fc.showOpenDialog(facade.getMainPanel());
 		if (returnVal == JFileChooser.APPROVE_OPTION) {
 			File file = fc.getSelectedFile();
 			if (file != null) {

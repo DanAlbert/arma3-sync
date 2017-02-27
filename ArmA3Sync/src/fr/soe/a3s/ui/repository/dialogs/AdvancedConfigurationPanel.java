@@ -279,8 +279,7 @@ public class AdvancedConfigurationPanel extends JFrame implements UIConstants {
 
 				JFileChooser fc = new JFileChooser(defaultDestinationPath);
 				fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-				int returnVal = fc
-						.showOpenDialog(AdvancedConfigurationPanel.this);
+				int returnVal = fc.showOpenDialog(facade.getMainPanel());
 
 				if (returnVal == JFileChooser.APPROVE_OPTION) {
 					File file = fc.getSelectedFile();

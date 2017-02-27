@@ -392,7 +392,7 @@ public class FirstPageTFARInstallerPanel extends WizardDialog {
 		}
 
 		fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-		int returnVal = fc.showOpenDialog(FirstPageTFARInstallerPanel.this);
+		int returnVal = fc.showOpenDialog(facade.getMainPanel());
 		if (returnVal == JFileChooser.APPROVE_OPTION) {
 			File file = fc.getSelectedFile();
 			String path = file.getAbsolutePath();
@@ -407,7 +407,7 @@ public class FirstPageTFARInstallerPanel extends WizardDialog {
 
 		JFileChooser fc = new JFileChooser();
 		fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-		int returnVal = fc.showOpenDialog(FirstPageTFARInstallerPanel.this);
+		int returnVal = fc.showOpenDialog(facade.getMainPanel());
 		if (returnVal == JFileChooser.APPROVE_OPTION) {
 			File file = fc.getSelectedFile();
 			String path = file.getAbsolutePath();
@@ -425,7 +425,7 @@ public class FirstPageTFARInstallerPanel extends WizardDialog {
 
 		JFileChooser fc = new JFileChooser();
 		fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-		int returnVal = fc.showOpenDialog(FirstPageTFARInstallerPanel.this);
+		int returnVal = fc.showOpenDialog(facade.getMainPanel());
 		if (returnVal == JFileChooser.APPROVE_OPTION) {
 			File file = fc.getSelectedFile();
 			String path = file.getAbsolutePath();
@@ -444,7 +444,7 @@ public class FirstPageTFARInstallerPanel extends WizardDialog {
 
 		JFileChooser fc = new JFileChooser();
 		fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-		int returnVal = fc.showOpenDialog(FirstPageTFARInstallerPanel.this);
+		int returnVal = fc.showOpenDialog(facade.getMainPanel());
 		if (returnVal == JFileChooser.APPROVE_OPTION) {
 			File file = fc.getSelectedFile();
 			String path = file.getAbsolutePath();

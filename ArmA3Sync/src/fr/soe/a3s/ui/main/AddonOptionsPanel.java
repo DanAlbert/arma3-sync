@@ -18,7 +18,6 @@ import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.ListSelectionModel;
-import javax.swing.SwingUtilities;
 import javax.swing.border.BevelBorder;
 
 import fr.soe.a3s.service.AddonService;
@@ -291,7 +290,7 @@ public class AddonOptionsPanel extends JPanel implements UIConstants {
 		}
 
 		fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-		int returnVal = fc.showOpenDialog(AddonOptionsPanel.this);
+		int returnVal = fc.showOpenDialog(facade.getMainPanel());
 		if (returnVal == JFileChooser.APPROVE_OPTION) {
 			File file = fc.getSelectedFile();
 			if (file != null) {

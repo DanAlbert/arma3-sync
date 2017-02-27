@@ -1022,7 +1022,7 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener,
 		}
 
 		fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
-		int returnVal = fc.showOpenDialog(LauncherOptionsPanel.this);
+		int returnVal = fc.showOpenDialog(facade.getMainPanel());
 		if (returnVal == JFileChooser.APPROVE_OPTION) {
 			File file = fc.getSelectedFile();
 			String path = file.getAbsolutePath();

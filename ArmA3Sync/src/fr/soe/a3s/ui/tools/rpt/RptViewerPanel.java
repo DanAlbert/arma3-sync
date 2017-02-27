@@ -106,7 +106,7 @@ public class RptViewerPanel extends JFrame implements UIConstants {
 			}
 		}
 		fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
-		int returnVal = fc.showOpenDialog(RptViewerPanel.this);
+		int returnVal = fc.showOpenDialog(facade.getMainPanel());
 		if (returnVal == JFileChooser.APPROVE_OPTION) {
 			File rpt = fc.getSelectedFile();
 			configurationService.setRptPath(rpt.getAbsolutePath());

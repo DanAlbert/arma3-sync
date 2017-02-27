@@ -191,8 +191,7 @@ public class ExternalApplicationsEditionDialog extends AbstractDialog {
 	private void buttonSelectPerformed() {
 		JFileChooser fc = new JFileChooser();
 		fc.setLocale(Locale.ENGLISH);
-		int returnVal = fc
-				.showOpenDialog(ExternalApplicationsEditionDialog.this);
+		int returnVal = fc.showOpenDialog(facade.getMainPanel());
 
 		if (returnVal == JFileChooser.APPROVE_OPTION) {
 			File file = fc.getSelectedFile();

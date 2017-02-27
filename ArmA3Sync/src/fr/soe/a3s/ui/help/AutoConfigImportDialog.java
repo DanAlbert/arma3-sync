@@ -97,7 +97,7 @@ public class AutoConfigImportDialog extends AbstractDialog {
 		FileFilter typeMission = new ExtensionFilter("ArmA3Sync auto-config ("
 				+ "a3s.autoconfig" + ")", ".a3s.autoconfig");
 		fc.addChoosableFileFilter(typeMission);
-		int returnVal = fc.showOpenDialog(AutoConfigImportDialog.this);
+		int returnVal = fc.showOpenDialog(facade.getMainPanel());
 		if (returnVal == JFileChooser.APPROVE_OPTION) {
 			File file = fc.getSelectedFile();
 			String path = file.getAbsolutePath();
