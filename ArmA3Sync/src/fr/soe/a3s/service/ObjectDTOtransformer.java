@@ -178,6 +178,7 @@ public class ObjectDTOtransformer {
 				treedDirectoryDTO2.setModsetRepositoryName(treeDirectory2
 						.getModsetRepositoryName());
 				treedDirectoryDTO2.setSelected(treeDirectory2.isSelected());
+				treedDirectoryDTO2.setUpdated(treeDirectory2.isUpdated());
 				treedDirectoryDTO2.setParent(treeDirectoryDTO);
 				treeDirectoryDTO.addTreeNode(treedDirectoryDTO2);
 				transformTreeDirectory2DTO(treeDirectory2, treedDirectoryDTO2);
@@ -214,6 +215,7 @@ public class ObjectDTOtransformer {
 				treedDirectory2.setModsetRepositoryName(treeDirectoryDTO2
 						.getModsetRepositoryName());
 				treedDirectory2.setSelected(treeDirectoryDTO2.isSelected());
+				treedDirectory2.setUpdated(treeDirectoryDTO2.isUpdated());
 				treeDirectory.addTreeNode(treedDirectory2);
 				transformDTO2TreeDirectory(treeDirectoryDTO2, treedDirectory2);
 			}

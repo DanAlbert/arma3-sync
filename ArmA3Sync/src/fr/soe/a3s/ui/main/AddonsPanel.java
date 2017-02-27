@@ -465,9 +465,15 @@ public class AddonsPanel extends JPanel implements UIConstants {
 			});
 		}
 
-		else if (flag == OP_ADDON_SELECTION_CHANGED || flag == OP_GROUP_CHANGED) {
+		else if (flag == OP_ADDON_SELECTION_CHANGED) {
 
-			refreshAddonGroups();
+			SwingUtilities.invokeLater(new Runnable() {
+				@Override
+				public void run() {
+					// refreshAddonGroups();
+					reloadAddonGroups();
+				}
+			});
 		}
 	}
 
@@ -709,6 +715,15 @@ public class AddonsPanel extends JPanel implements UIConstants {
 			}
 		}
 	}
+	
+	public void expand(TreePath path) {
+		if (path != null) {
+			TreeNodeDTO treeNodeDTO = (TreeNodeDTO) path.getLastPathComponent();
+			if (!treeNodeDTO.isLeaf()) {
+				arbre2.expandPath(path);
+			}
+		}
+	}
 
 	private void onArbre1Expanded(TreePath path) {
 		int numberRowShown = arbre1.getRowCount();
@@ -886,9 +901,13 @@ public class AddonsPanel extends JPanel implements UIConstants {
 
 	public class GroupManager {
 
-		public void dragAndDrop() {
+		public void dragAndDrop(boolean isLeaf, TreePath newPath) {
 
 			profileService.setAddonGroups(racine2);
+			refreshAddonGroups();
+			if (isLeaf) {
+				expand(newPath);
+			} 
 			facade.getMainPanel().updateTabs(OP_GROUP_CHANGED);
 		}
 
@@ -919,6 +938,7 @@ public class AddonsPanel extends JPanel implements UIConstants {
 			}
 
 			profileService.setAddonGroups(racine2);
+			refreshAddonGroups();
 			facade.getMainPanel().updateTabs(OP_GROUP_CHANGED);
 		}
 
@@ -940,6 +960,7 @@ public class AddonsPanel extends JPanel implements UIConstants {
 			}
 
 			profileService.setAddonGroups(racine2);
+			refreshAddonGroups();
 			facade.getMainPanel().updateTabs(OP_GROUP_CHANGED);
 		}
 
@@ -973,6 +994,7 @@ public class AddonsPanel extends JPanel implements UIConstants {
 			}
 
 			profileService.setAddonGroups(racine2);
+			refreshAddonGroups();
 			facade.getMainPanel().updateTabs(OP_GROUP_CHANGED);
 		}
 
@@ -994,8 +1016,20 @@ public class AddonsPanel extends JPanel implements UIConstants {
 			}
 
 			arbre2.clearSelection();
-
 			profileService.setAddonGroups(racine2);
+			boolean contains = false;
+			for (int i = 0; i < nodes.length; i++) {
+				if (!nodes[i].isLeaf()) {
+					contains = true;
+					break;
+				}
+			}
+			if (contains) {
+				reloadAddonGroups();
+			} else {
+				refreshAddonGroups();
+			}
+			
 			facade.getMainPanel().updateTabs(OP_GROUP_CHANGED);
 		}
 
@@ -1072,12 +1106,13 @@ public class AddonsPanel extends JPanel implements UIConstants {
 				boolean updated) {
 
 			onAddGroupFromRepository(repositoryNames, updated);
+			refreshAddonGroups();
 			facade.getMainPanel().updateTabs(OP_GROUP_CHANGED);
 		}
-		
+
 		private void onAddGroupFromRepository(List<String> repositoryNames,
 				boolean updated) {
-			
+
 			for (String repositoryName : repositoryNames) {
 				TreeDirectoryDTO directory = repositoryService
 						.getGroupFromRepository(repositoryName, false);
@@ -1107,11 +1142,13 @@ public class AddonsPanel extends JPanel implements UIConstants {
 		public void addGroupFromEvents(List<EventDTO> eventDTOs, boolean updated) {
 
 			onAddGroupFromEvents(eventDTOs, updated);
+			refreshAddonGroups();
 			facade.getMainPanel().updateTabs(OP_GROUP_CHANGED);
 		}
-		
-		public void onAddGroupFromEvents(List<EventDTO> eventDTOs, boolean updated) {
-			
+
+		public void onAddGroupFromEvents(List<EventDTO> eventDTOs,
+				boolean updated) {
+
 			for (EventDTO eventDTO : eventDTOs) {
 
 				TreeNodeDTO nodeToRemove = null;
@@ -1195,6 +1232,7 @@ public class AddonsPanel extends JPanel implements UIConstants {
 
 			onAddGroupFromEvents(eventGroupModsets, true);
 			facade.getMainPanel().updateTabs(OP_GROUP_CHANGED);
+			facade.getMainPanel().updateTabs(OP_ADDON_FILES_CHANGED);
 
 			System.out.println("Addon groups update done.");
 		}

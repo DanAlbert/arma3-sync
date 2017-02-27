@@ -19,6 +19,7 @@ public class TreeDirectory implements TreeNode, Serializable {
 	private final List<TreeNode> list = new ArrayList<TreeNode>();
 	private boolean marked = false;
 	private boolean optional = false;
+	private transient boolean updated = false;
 	private ModsetType modsetType;
 	private String modsetRepositoryName;
 
@@ -122,6 +123,14 @@ public class TreeDirectory implements TreeNode, Serializable {
 	@Override
 	public boolean isOptional() {
 		return this.optional;
+	}
+
+	public boolean isUpdated() {
+		return updated;
+	}
+
+	public void setUpdated(boolean updated) {
+		this.updated = updated;
 	}
 
 	public ModsetType getModsetType() {

@@ -158,8 +158,7 @@ public class LaunchPanel extends JPanel implements UIConstants {
 
 	public void update(int flag) {
 
-		if (flag == OP_PROFILE_CHANGED || flag == OP_ONLINE_CHANGED
-				|| flag == OP_REPOSITORY_CHANGED || flag == OP_GROUP_CHANGED) {
+		if (flag == OP_PROFILE_CHANGED || flag == OP_ONLINE_CHANGED) {
 			update();
 		}
 	}

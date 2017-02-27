@@ -302,10 +302,10 @@ public class TreeDnD implements UIConstants {
 				}
 			}
 
+			facade.getAddonsPanel().getGroupManager().dragAndDrop(oldTreeNodeDTO.isLeaf(),newPath);
+
 			oldPaths = null;
 			newPath = null;
-
-			facade.getAddonsPanel().getGroupManager().dragAndDrop();
 		}
 
 		private void duplicateDirectory(TreeDirectoryDTO sourceDirectory,

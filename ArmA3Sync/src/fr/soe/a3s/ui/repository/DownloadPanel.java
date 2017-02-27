@@ -1094,8 +1094,7 @@ public class DownloadPanel extends JPanel implements UIConstants {
 							false, filesManager);
 					userconfigUpdater.run();
 				}
-
-				facade.getMainPanel().updateTabs(OP_ADDON_FILES_CHANGED);
+				
 				facade.getAddonsPanel().getGroupManager().updateGroupModsets();
 
 				// Check for Addons
@@ -1230,7 +1229,6 @@ public class DownloadPanel extends JPanel implements UIConstants {
 				}
 
 				facade.getMainPanel().updateTabs(OP_REPOSITORY_CHANGED);
-				facade.getMainPanel().updateTabs(OP_ADDON_FILES_CHANGED);
 				facade.getAddonsPanel().getGroupManager().updateGroupModsets();
 
 				obs.end();
