@@ -10,6 +10,7 @@ import java.util.List;
 import fr.soe.a3s.constant.GameSystemFolders;
 import fr.soe.a3s.dao.AddonDAO;
 import fr.soe.a3s.dao.ConfigurationDAO;
+import fr.soe.a3s.dao.DataAccessConstants;
 import fr.soe.a3s.dao.ProfileDAO;
 import fr.soe.a3s.dao.repository.RepositoryDAO;
 import fr.soe.a3s.domain.Addon;
@@ -24,7 +25,7 @@ import fr.soe.a3s.dto.TreeLeafDTO;
 import fr.soe.a3s.dto.TreeNodeDTO;
 import fr.soe.a3s.constant.ModsetType;
 
-public class AddonService extends ObjectDTOtransformer {
+public class AddonService extends ObjectDTOtransformer implements DataAccessConstants{
 
 	private static final ConfigurationDAO configurationDAO = new ConfigurationDAO();
 	private static final ProfileDAO profileDAO = new ProfileDAO();
@@ -245,9 +246,16 @@ public class AddonService extends ObjectDTOtransformer {
 				return;
 			}
 			for (File f : subfiles) {
-				if (f.getName().toLowerCase().contains("addons")) {
-					contains = true;
-					break;
+				if (f.getName().toLowerCase().equals("addons")) {
+					File[] subfiles2 = f.listFiles();
+					if (subfiles != null) {
+						for (File f2 : subfiles2) {
+							if (f2.getName().contains(PBO_EXTENSION)){
+								contains = true;
+								break;
+							}
+						}
+					}
 				}
 			}
 			if (contains) {// it is an addon
