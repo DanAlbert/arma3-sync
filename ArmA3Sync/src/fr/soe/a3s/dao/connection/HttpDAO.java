@@ -131,7 +131,10 @@ public class HttpDAO extends AbstractConnexionDAO {
 					this.offset = 0;
 					this.countFileSize = 0;
 					this.speed = 0;
-
+					updateObserverDownloadSpeed();
+					if (acquiredSemaphore) {
+						updateObserverDownloadSingleSizeProgress();
+					}
 					disconnect();
 				}
 			} else {// the file is uncomplete => use .zsync

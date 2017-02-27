@@ -14,7 +14,6 @@ import java.net.ConnectException;
 import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
-import java.nio.channels.WritableByteChannel;
 import java.util.zip.GZIPOutputStream;
 
 import org.apache.commons.io.input.CountingInputStream;
@@ -29,7 +28,6 @@ import org.dom4j.Element;
 import org.dom4j.io.SAXReader;
 
 import fr.soe.a3s.constant.DownloadStatus;
-import fr.soe.a3s.controller.ObserverProceed;
 import fr.soe.a3s.dao.A3SFilesAccessor;
 import fr.soe.a3s.dao.DataAccessConstants;
 import fr.soe.a3s.dao.FileAccessMethods;
@@ -283,6 +281,7 @@ public class FtpDAO extends AbstractConnexionDAO {
 							buffer.clear();
 						}
 
+						setSpeed(0);
 						fos.close();
 						dos.close();
 						inputStream.close();

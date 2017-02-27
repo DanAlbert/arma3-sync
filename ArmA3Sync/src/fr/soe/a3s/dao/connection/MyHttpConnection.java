@@ -33,7 +33,6 @@ import javax.net.ssl.X509TrustManager;
 import org.apache.commons.io.output.CountingOutputStream;
 
 import fr.soe.a3s.constant.ProtocolType;
-import fr.soe.a3s.controller.ObserverProceed;
 import fr.soe.a3s.domain.AbstractProtocole;
 import fr.soe.a3s.exception.HttpException;
 
@@ -329,6 +328,7 @@ public class MyHttpConnection {
 				buffer.clear();
 			}
 
+			httpDAO.setSpeed(0);
 			fos.close();
 			dos.close();
 			inputStream.close();
@@ -469,7 +469,7 @@ public class MyHttpConnection {
 			inputStream = urLConnection.getInputStream();
 
 			httpDAO.setCountFileSize(0);
-	        httpDAO.setSpeed(0);
+			httpDAO.setSpeed(0);
 
 			final long startTime = System.nanoTime();
 
@@ -498,7 +498,7 @@ public class MyHttpConnection {
 					}
 
 					httpDAO.setCountFileSize(cumulatedBytesDownloaded + nbBytes);
-				    httpDAO.setSpeed(speed);
+					httpDAO.setSpeed(speed);
 
 					if (httpDAO.isAcquiredSemaphore()) {
 						httpDAO.updateObserverDownloadSingleSizeProgress();
