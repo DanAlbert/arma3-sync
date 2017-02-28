@@ -35,7 +35,7 @@ import fr.soe.a3s.ui.Facade;
  * PURCHASED FOR THIS MACHINE, SO JIGLOO OR THIS CODE CANNOT BE USED LEGALLY FOR
  * ANY CORPORATE OR COMMERCIAL PURPOSE.
  */
-public class WellcomeDialog extends AbstractDialog {
+public class WelcomeDialog extends AbstractDialog {
 
 	private JTextField textField;
 	private JButton buttonSelect;
@@ -44,7 +44,7 @@ public class WellcomeDialog extends AbstractDialog {
 	private final AddonService addonService = new AddonService();
 	private final ProfileService profileService = new ProfileService();
 
-	public WellcomeDialog(Facade facade) {
+	public WelcomeDialog(Facade facade) {
 		super(facade, "Configuration", true);
 		setResizable(false);
 

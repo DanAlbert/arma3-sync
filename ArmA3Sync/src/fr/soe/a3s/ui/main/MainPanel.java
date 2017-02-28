@@ -68,7 +68,7 @@ import fr.soe.a3s.ui.help.AutoConfigExportDialog;
 import fr.soe.a3s.ui.help.AutoConfigImportDialog;
 import fr.soe.a3s.ui.help.PreferencesDialog;
 import fr.soe.a3s.ui.help.ProxyConfigurationDialog;
-import fr.soe.a3s.ui.main.dialogs.WellcomeDialog;
+import fr.soe.a3s.ui.main.dialogs.WelcomeDialog;
 import fr.soe.a3s.ui.main.tasks.TaskCheckRepositories;
 import fr.soe.a3s.ui.main.tasks.TasksManager;
 import fr.soe.a3s.ui.profiles.ProfileSelectionDialog;
@@ -1035,7 +1035,7 @@ public class MainPanel extends JFrame implements UIConstants {
 		}
 
 		if (show) {
-			WellcomeDialog wellcomePanel = new WellcomeDialog(facade);
+			WelcomeDialog wellcomePanel = new WelcomeDialog(facade);
 			wellcomePanel.toFront();
 			wellcomePanel.setVisible(true);
 		}
