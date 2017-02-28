@@ -188,11 +188,8 @@ public class AddonsChecker extends Thread {
 			downloadPanel.getLabelCheckForAddonsStatus().setText("Finished!");
 			downloadPanel.getLabelCheckForAddonsStatus().setForeground(
 					DownloadPanel.GREEN);
-			
+
 			initDownlaodPanelForEndCheck();
-			
-			// Update download panel tree
-			downloadPanel.updateArbre(parent);
 
 			terminate();
 
@@ -218,9 +215,6 @@ public class AddonsChecker extends Thread {
 					Color.RED);
 
 			initDownlaodPanelForEndCheck();
-			
-			// Update download panel tree
-			downloadPanel.updateArbre(null);
 
 			terminate();
 
@@ -250,8 +244,6 @@ public class AddonsChecker extends Thread {
 				DownloadPanel.GREEN);
 
 		initDownlaodPanelForEndCheck();
-		
-		downloadPanel.updateArbre(null);
 
 		terminate();
 	}
@@ -266,5 +258,9 @@ public class AddonsChecker extends Thread {
 
 	public void addObserverError(ObserverError obs) {
 		this.observerError = obs;
+	}
+
+	public SyncTreeDirectoryDTO getParent() {
+		return this.parent;
 	}
 }

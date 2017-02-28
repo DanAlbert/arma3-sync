@@ -918,6 +918,8 @@ public class DownloadPanel extends JPanel implements UIConstants {
 				}
 
 				facade.getMainPanel().updateTabs(OP_REPOSITORY_CHANGED);
+
+				updateArbre(addonsChecker.getParent());
 			}
 		});
 		addonsChecker.addObserverError(new ObserverError() {
@@ -942,6 +944,8 @@ public class DownloadPanel extends JPanel implements UIConstants {
 				}
 
 				facade.getMainPanel().updateTabs(OP_REPOSITORY_CHANGED);
+
+				updateArbre(null);
 			}
 		});
 		addonsChecker.setDaemon(true);
@@ -1254,6 +1258,8 @@ public class DownloadPanel extends JPanel implements UIConstants {
 				}
 
 				facade.getMainPanel().updateTabs(OP_REPOSITORY_CHANGED);
+
+				updateArbre(null);
 			}
 		});
 		addonsAutoUpdater
@@ -1377,9 +1383,9 @@ public class DownloadPanel extends JPanel implements UIConstants {
 		}
 	}
 
-	public void updateArbre(final SyncTreeDirectoryDTO syncTreeDirectoryDTO) {
+	public void updateArbre(SyncTreeDirectoryDTO newRacine) {
 
-		eventExctractor = new EventExtractor(syncTreeDirectoryDTO, eventName,
+		eventExctractor = new EventExtractor(newRacine, eventName,
 				repositoryName);
 		racine = eventExctractor.run();
 		filesManager.setParent(racine);
