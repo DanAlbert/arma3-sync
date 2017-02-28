@@ -170,7 +170,7 @@ public class WelcomeDialog extends AbstractDialog {
 			}
 
 			this.dispose();
-			facade.getMainPanel().updateTabs(OP_ADDON_FILES_CHANGED);
+			facade.getMainPanel().updateTabs(OP_PROFILE_CHANGED);
 		}
 	}
 
