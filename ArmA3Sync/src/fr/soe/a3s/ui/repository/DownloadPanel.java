@@ -1090,11 +1090,11 @@ public class DownloadPanel extends JPanel implements UIConstants {
 
 				/* Check for Userconfig Update */
 				if (filesManager.isUserconfigUpdated()) {
-					userconfigUpdater = new UserconfigUpdater(facade, repositoryName,
-							false, filesManager);
+					userconfigUpdater = new UserconfigUpdater(facade,
+							repositoryName, false, filesManager);
 					userconfigUpdater.run();
 				}
-				
+
 				facade.getMainPanel().updateTabs(OP_ADDON_FILES_CHANGED);
 				facade.getAddonsPanel().getGroupManager().updateGroupModsets();
 
@@ -1392,24 +1392,16 @@ public class DownloadPanel extends JPanel implements UIConstants {
 				.getTotalFilesDeleted()));
 		checkBoxExpandAll.setSelected(false);
 		checkBoxSelectAll.setSelected(false);
-		
-		SwingUtilities.invokeLater(new Runnable() {
-			@Override
-			public void run() {
-				
-				arbre.setEnabled(false);
-				arbre.removeAll();
-				AddonSyncTreeModel addonSyncTreeModel = new AddonSyncTreeModel(
-						racine);
-				arbre.setModel(addonSyncTreeModel);
-				int numberRowShown = arbre.getRowCount();
-				arbre.setVisibleRowCount(numberRowShown);
-				arbre.setPreferredSize(arbre
-						.getPreferredScrollableViewportSize());
-				arbre.updateUI();
-				arbre.setEnabled(true);
-			}
-		});
+
+		arbre.setEnabled(false);
+		arbre.removeAll();
+		AddonSyncTreeModel addonSyncTreeModel = new AddonSyncTreeModel(racine);
+		arbre.setModel(addonSyncTreeModel);
+		int numberRowShown = arbre.getRowCount();
+		arbre.setVisibleRowCount(numberRowShown);
+		arbre.setPreferredSize(arbre.getPreferredScrollableViewportSize());
+		arbre.updateUI();
+		arbre.setEnabled(true);
 	}
 
 	private void onArbre2Expanded() {
