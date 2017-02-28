@@ -15,7 +15,6 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import javax.swing.BorderFactory;
@@ -46,7 +45,6 @@ import fr.soe.a3s.dto.RepositoryDTO;
 import fr.soe.a3s.dto.TreeDirectoryDTO;
 import fr.soe.a3s.dto.TreeLeafDTO;
 import fr.soe.a3s.dto.TreeNodeDTO;
-import fr.soe.a3s.exception.repository.RepositoryException;
 import fr.soe.a3s.service.AddonService;
 import fr.soe.a3s.service.ConfigurationService;
 import fr.soe.a3s.service.LaunchService;
@@ -94,7 +92,7 @@ public class AddonsPanel extends JPanel implements UIConstants {
 	private JCheckBox checkBoxExpandAll;
 	private JButton buttonModsets;
 	// Manager
-	private GroupManager groupManager = new GroupManager();
+	private final GroupManager groupManager = new GroupManager();
 	// Services
 	private final ConfigurationService configurationService = new ConfigurationService();
 	private final ProfileService profileService = new ProfileService();
@@ -1095,7 +1093,7 @@ public class AddonsPanel extends JPanel implements UIConstants {
 				boolean updated) {
 
 			onAddGroupFromRepository(repositoryNames, updated);
-			refreshAddonGroups();
+			reloadAddonGroups();
 			facade.getMainPanel().updateTabs(OP_GROUP_CHANGED);
 		}
 
@@ -1131,7 +1129,7 @@ public class AddonsPanel extends JPanel implements UIConstants {
 		public void addGroupFromEvents(List<EventDTO> eventDTOs, boolean updated) {
 
 			onAddGroupFromEvents(eventDTOs, updated);
-			refreshAddonGroups();
+			reloadAddonGroups();
 			facade.getMainPanel().updateTabs(OP_GROUP_CHANGED);
 		}
 
@@ -1220,6 +1218,8 @@ public class AddonsPanel extends JPanel implements UIConstants {
 			}
 
 			onAddGroupFromEvents(eventGroupModsets, true);
+
+			reloadAddonGroups();
 			facade.getMainPanel().updateTabs(OP_GROUP_CHANGED);
 
 			System.out.println("Addon groups update done.");
