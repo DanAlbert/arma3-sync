@@ -86,15 +86,20 @@ public class ArmA3Sync implements DataAccessConstants {
 		if (args.length == 0) {
 			System.out.println("DevMode = false");
 			System.out.println("RunMode = false");
-			start(false, false);
+			start(false, false, false);
 		} else if (args.length == 1 && args[0].equalsIgnoreCase("-dev")) {
 			System.out.println("DevMode = true");
 			System.out.println("RunMode = false");
-			start(true, false);
+			start(true, false, false);
 		} else if (args.length == 1 && args[0].equalsIgnoreCase("-run")) {
 			System.out.println("DevMode = false");
 			System.out.println("RunMode = true");
-			start(false, true);
+			start(false, true, false);
+		} else if (args.length == 1 && args[0].equalsIgnoreCase("-safe")) {
+			System.out.println("DevMode = false");
+			System.out.println("RunMode = false");
+			System.out.println("SafeMode = true");
+			start(false, false, true);
 		} else if (args.length == 1 && args[0].equalsIgnoreCase("-console")) {
 			CommandConsole console = new CommandConsole(false);
 			console.displayCommands();
@@ -108,7 +113,7 @@ public class ArmA3Sync implements DataAccessConstants {
 				&& args[1].equalsIgnoreCase("-run")) {
 			System.out.println("DevMode = true");
 			System.out.println("RunMode = true");
-			start(true, true);
+			start(true, true,false);
 		} else if (args.length == 2 && args[0].equalsIgnoreCase("-build")) {
 			CommandLine commandLine = new CommandLine();
 			String repositoryName = args[1];
@@ -148,13 +153,14 @@ public class ArmA3Sync implements DataAccessConstants {
 		}
 	}
 
-	private static void start(final boolean devMode, final boolean runMode) {
+	private static void start(final boolean devMode, final boolean runMode,
+			final boolean safeMode) {
 
 		if (GraphicsEnvironment.isHeadless()) {
 			System.out.println("Can't start ArmA3Sync. GUI is missing.");
 			System.exit(1);
 		} else {
-			applyLookAndFeel();
+			applyLookAndFeel(safeMode);
 		}
 
 		/*
@@ -187,6 +193,7 @@ public class ArmA3Sync implements DataAccessConstants {
 					final Facade facade = new Facade();
 					facade.setDevMode(devMode);
 					facade.setRunMode(runMode);
+					facade.setSafeMode(safeMode);
 					try {
 						mainPanel = new MainPanel(facade);
 						mainPanel.drawGUI();
@@ -251,11 +258,17 @@ public class ArmA3Sync implements DataAccessConstants {
 		return message;
 	}
 
-	private static void applyLookAndFeel() {
+	private static void applyLookAndFeel(final boolean safeMode) {
 
 		// Apply default system look and feel
 		try {
-			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+			if (safeMode) {
+				UIManager.setLookAndFeel(UIManager
+						.getCrossPlatformLookAndFeelClassName());
+			} else {
+				UIManager.setLookAndFeel(UIManager
+						.getSystemLookAndFeelClassName());
+			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

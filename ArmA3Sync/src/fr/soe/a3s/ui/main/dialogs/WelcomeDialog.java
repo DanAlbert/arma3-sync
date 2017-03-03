@@ -3,6 +3,7 @@ package fr.soe.a3s.ui.main.dialogs;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.FileDialog;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -109,25 +110,23 @@ public class WelcomeDialog extends AbstractDialog {
 
 	private void buttonSelectPerformed() {
 
-		JFileChooser fc = null;
+		FileDialog fd = new FileDialog(facade.getMainPanel(), "Open",
+				FileDialog.LOAD);
+
 		String arma3Path = configurationService.determineArmA3Path();
-		if (arma3Path == null) {
-			fc = new JFileChooser();
-		} else {
+		if (arma3Path != null) {
 			File arma3Folder = new File(arma3Path);
 			if (arma3Folder.exists()) {
-				fc = new JFileChooser(arma3Path);
-			} else {
-				fc = new JFileChooser();
+				fd.setDirectory(arma3Folder.getAbsolutePath());
 			}
 		}
-
-		fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
-		int returnVal = fc.showOpenDialog(facade.getMainPanel());
-		if (returnVal == JFileChooser.APPROVE_OPTION) {
-			File file = fc.getSelectedFile();
-			String path = file.getAbsolutePath();
-			textField.setText(path);
+		System.setProperty("apple.awt.fileDialogForDirectories", "true");
+		fd.setLocationRelativeTo(facade.getMainPanel());
+		fd.setVisible(true);
+		
+		if (fd.getFile() != null && fd.getDirectory() != null) {
+			File file = new File(fd.getDirectory() + "/" + fd.getFile());
+			textField.setText(file.getAbsolutePath());
 		} else {
 			textField.setText("");
 		}

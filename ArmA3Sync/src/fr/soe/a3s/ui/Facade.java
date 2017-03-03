@@ -17,6 +17,8 @@ public class Facade {
 	private boolean devMode = false;
 	/** Run mode, true if started as a service */
 	private boolean runMode = false;
+	/** Safe mode, true use Java L&F */
+	private boolean safeMode = false;
 	/** Views single instance */
 	private MainPanel mainPanel;
 	private InfoPanel infoPanel;
@@ -43,6 +45,14 @@ public class Facade {
 
 	public void setRunMode(boolean runMode) {
 		this.runMode = runMode;
+	}
+	
+	public void setSafeMode(boolean safeMode) {
+		this.safeMode = safeMode;
+	}
+
+	public boolean isSafeMode() {
+		return this.safeMode;
 	}
 
 	public void setMainPanel(MainPanel mainPanel) {
