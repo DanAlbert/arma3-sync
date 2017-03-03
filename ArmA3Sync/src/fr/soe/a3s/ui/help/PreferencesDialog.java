@@ -284,7 +284,7 @@ public class PreferencesDialog extends AbstractDialog {
 				c.gridx = 0;
 				c.gridy = 4;
 				c.insets = new Insets(5, 10, 5, 10);
-				panel.add(checkBoxStartWithWindows, c);
+				//panel.add(checkBoxStartWithWindows, c);
 			}
 			{
 				GridBagConstraints c = new GridBagConstraints();
@@ -294,7 +294,7 @@ public class PreferencesDialog extends AbstractDialog {
 				c.gridx = 1;
 				c.gridy = 4;
 				c.insets = new Insets(5, 10, 5, 10);
-				panel.add(comboBoxStartWithWindows, c);
+				//panel.add(comboBoxStartWithWindows, c);
 			}
 			{
 				GridBagConstraints c = new GridBagConstraints();
