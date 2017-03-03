@@ -293,27 +293,27 @@ public class MyHttpConnection {
 
 					long endTime = System.nanoTime();
 					long totalTime = endTime - startTime;
-					long speed = (long) (nbBytes / (totalTime * Math
-							.pow(10, -9)));
-
-					if (httpDAO.getMaximumClientDownloadSpeed() != 0) {
-						if (speed > httpDAO.getMaximumClientDownloadSpeed()) {
-							try {
-								int wait = (int) ((speed / httpDAO
-										.getMaximumClientDownloadSpeed())
-										* Math.pow(10, 3) * 1 / 4);
-								Thread.sleep(wait);
-							} catch (InterruptedException e) {
+					if (totalTime > Math.pow(10, 9) * 0.25) {// 0.25s
+						long speed = (long) ((nbBytes * Math.pow(10, 9)) / totalTime);// B/s
+						if (httpDAO.getMaximumClientDownloadSpeed() != 0) {
+							if (speed > httpDAO.getMaximumClientDownloadSpeed()) {
+								try {
+									int wait = (int) ((speed / httpDAO
+											.getMaximumClientDownloadSpeed())
+											* Math.pow(10, 3) * 1 / 4);
+									Thread.sleep(wait);
+								} catch (InterruptedException e) {
+								}
 							}
 						}
-					}
 
-					httpDAO.setCountFileSize(nbBytes);
-					httpDAO.setSpeed(speed);
+						httpDAO.setCountFileSize(nbBytes);
+						httpDAO.setSpeed(speed);
 
-					if (httpDAO.isAcquiredSemaphore()) {
-						httpDAO.updateObserverDownloadSingleSizeProgress();
-						httpDAO.updateObserverDownloadSpeed();
+						if (httpDAO.isAcquiredSemaphore()) {
+							httpDAO.updateObserverDownloadSingleSizeProgress();
+							httpDAO.updateObserverDownloadSpeed();
+						}
 					}
 				}
 			};
@@ -482,27 +482,27 @@ public class MyHttpConnection {
 
 					long endTime = System.nanoTime();
 					long totalTime = endTime - startTime;
-					long speed = (long) ((nbBytes) / (totalTime * Math.pow(10,
-							-9)));
-
-					if (httpDAO.getMaximumClientDownloadSpeed() != 0) {
-						if (speed > httpDAO.getMaximumClientDownloadSpeed()) {
-							try {
-								int wait = (int) ((speed / httpDAO
-										.getMaximumClientDownloadSpeed())
-										* Math.pow(10, 3) * 1 / 4);
-								Thread.sleep(wait);
-							} catch (InterruptedException e) {
+					if (totalTime > Math.pow(10, 9) * 0.25) {// 0.25s
+						long speed = (long) ((nbBytes * Math.pow(10, 9)) / totalTime);// B/s
+						if (httpDAO.getMaximumClientDownloadSpeed() != 0) {
+							if (speed > httpDAO.getMaximumClientDownloadSpeed()) {
+								try {
+									int wait = (int) ((speed / httpDAO
+											.getMaximumClientDownloadSpeed())
+											* Math.pow(10, 3) * 1 / 4);
+									Thread.sleep(wait);
+								} catch (InterruptedException e) {
+								}
 							}
 						}
-					}
 
-					httpDAO.setCountFileSize(cumulatedBytesDownloaded + nbBytes);
-					httpDAO.setSpeed(speed);
+						httpDAO.setCountFileSize(nbBytes);
+						httpDAO.setSpeed(speed);
 
-					if (httpDAO.isAcquiredSemaphore()) {
-						httpDAO.updateObserverDownloadSingleSizeProgress();
-						httpDAO.updateObserverDownloadSpeed();
+						if (httpDAO.isAcquiredSemaphore()) {
+							httpDAO.updateObserverDownloadSingleSizeProgress();
+							httpDAO.updateObserverDownloadSpeed();
+						}
 					}
 				}
 			};
