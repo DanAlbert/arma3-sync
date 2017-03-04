@@ -1399,15 +1399,22 @@ public class DownloadPanel extends JPanel implements UIConstants {
 		checkBoxExpandAll.setSelected(false);
 		checkBoxSelectAll.setSelected(false);
 
-		arbre.setEnabled(false);
-		arbre.removeAll();
-		AddonSyncTreeModel addonSyncTreeModel = new AddonSyncTreeModel(racine);
-		arbre.setModel(addonSyncTreeModel);
-		int numberRowShown = arbre.getRowCount();
-		arbre.setVisibleRowCount(numberRowShown);
-		arbre.setPreferredSize(arbre.getPreferredScrollableViewportSize());
-		arbre.updateUI();
-		arbre.setEnabled(true);
+		SwingUtilities.invokeLater(new Runnable() {
+			@Override
+			public void run() {
+				arbre.setEnabled(false);
+				arbre.removeAll();
+				AddonSyncTreeModel addonSyncTreeModel = new AddonSyncTreeModel(
+						racine);
+				arbre.setModel(addonSyncTreeModel);
+				int numberRowShown = arbre.getRowCount();
+				arbre.setVisibleRowCount(numberRowShown);
+				arbre.setPreferredSize(arbre
+						.getPreferredScrollableViewportSize());
+				arbre.updateUI();
+				arbre.setEnabled(true);
+			}
+		});
 	}
 
 	private void onArbre2Expanded() {
