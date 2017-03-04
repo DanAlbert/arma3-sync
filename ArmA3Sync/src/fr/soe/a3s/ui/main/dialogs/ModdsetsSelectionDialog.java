@@ -153,11 +153,11 @@ public class ModdsetsSelectionDialog extends AbstractDialog {
 			}
 			if (!repositoryNames.isEmpty()) {
 				facade.getAddonsPanel().getGroupManager()
-						.addGroupFromRepository(repositoryNames,false);
+						.addGroupFromRepository(repositoryNames,true);
 			}
 			if (!selectedEventDTOs.isEmpty()) {
 				facade.getAddonsPanel().getGroupManager()
-						.addGroupFromEvents(selectedEventDTOs,false);
+						.addGroupFromEvents(selectedEventDTOs,true);
 			}
 		}
 		this.dispose();

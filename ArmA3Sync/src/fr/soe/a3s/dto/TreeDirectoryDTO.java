@@ -102,7 +102,7 @@ public class TreeDirectoryDTO implements TreeNodeDTO {
 	@Override
 	public String toString() {
 		if (updated){
-			return name + " " + "(updated)";
+			return name + " " + "(synchronized)";
 		}else {
 			return name;
 		}

@@ -1171,7 +1171,7 @@ public class AddonsPanel extends JPanel implements UIConstants {
 			profileService.setAddonGroups(racine2);
 		}
 
-		public void updateGroupModsets() {
+		public void updateGroupModsets(String updateRepositoryName) {
 
 			System.out
 					.println("Updating modset selection within addon groups...");
@@ -1185,9 +1185,11 @@ public class AddonsPanel extends JPanel implements UIConstants {
 							&& repositoryName != null) {
 						if (directory.getModsetType().equals(
 								ModsetType.REPOSITORY)) {
-							if (!repositoryGroupModsets
-									.contains(repositoryName)) {
-								repositoryGroupModsets.add(repositoryName);
+							if (repositoryName.equals(updateRepositoryName)) {
+								if (!repositoryGroupModsets
+										.contains(repositoryName)) {
+									repositoryGroupModsets.add(repositoryName);
+								}
 							}
 						}
 					}
@@ -1204,12 +1206,14 @@ public class AddonsPanel extends JPanel implements UIConstants {
 					if (directory.getModsetType() != null
 							&& repositoryName != null) {
 						if (directory.getModsetType().equals(ModsetType.EVENT)) {
-							String eventDTOName = directory.getName();
-							List<EventDTO> eventDTOs = repositoryService
-									.getEvents(repositoryName);
-							for (EventDTO eventDTO : eventDTOs) {
-								if (eventDTO.getName().equals(eventDTOName)) {
-									eventGroupModsets.add(eventDTO);
+							if (repositoryName.equals(updateRepositoryName)) {
+								String eventDTOName = directory.getName();
+								List<EventDTO> eventDTOs = repositoryService
+										.getEvents(repositoryName);
+								for (EventDTO eventDTO : eventDTOs) {
+									if (eventDTO.getName().equals(eventDTOName)) {
+										eventGroupModsets.add(eventDTO);
+									}
 								}
 							}
 						}

@@ -1099,7 +1099,7 @@ public class DownloadPanel extends JPanel implements UIConstants {
 					userconfigUpdater.run();
 				}
 
-				facade.getAddonsPanel().getGroupManager().updateGroupModsets();
+				facade.getAddonsPanel().getGroupManager().updateGroupModsets(repositoryName);
 				facade.getMainPanel().updateTabs(OP_ADDON_FILES_CHANGED);
 
 				// Check for Addons
@@ -1233,7 +1233,7 @@ public class DownloadPanel extends JPanel implements UIConstants {
 					userconfigUpdater.run();
 				}
 
-				facade.getAddonsPanel().getGroupManager().updateGroupModsets();
+				facade.getAddonsPanel().getGroupManager().updateGroupModsets(repositoryName);
 				facade.getMainPanel().updateTabs(OP_REPOSITORY_CHANGED);
 				facade.getMainPanel().updateTabs(OP_ADDON_FILES_CHANGED);
 
