@@ -881,6 +881,52 @@ public class AddonsPanel extends JPanel implements UIConstants {
 		progressModsetSelectionPanel.setVisible(true);
 		progressModsetSelectionPanel.init(repositoryNames);
 	}
+	
+	private void getSelectedAddonPaths(TreeNodeDTO node,
+			List<String> selectedAddonPaths) {
+
+		String path = node.getName();
+		TreeNodeDTO parent = node.getParent();
+		while (parent != null) {
+			path = parent.getName() + "/" + path;
+			parent = parent.getParent();
+		}
+
+		if (node.isSelected()) {
+			selectedAddonPaths.add(path);
+		}
+
+		if (!node.isLeaf()) {
+			TreeDirectoryDTO directory = (TreeDirectoryDTO) node;
+			for (TreeNodeDTO n : directory.getList()) {
+				getSelectedAddonPaths(n, selectedAddonPaths);
+			}
+		}
+	}
+
+	private void setSelectedPaths(TreeNodeDTO node,
+			List<String> selectdAddonPaths) {
+
+		String path = node.getName();
+		TreeNodeDTO parent = node.getParent();
+		while (parent != null) {
+			path = parent.getName() + "/" + path;
+			parent = parent.getParent();
+		}
+
+		if (selectdAddonPaths.contains(path)) {
+			node.setSelected(true);
+		} else {
+			node.setSelected(false);
+		}
+
+		if (!node.isLeaf()) {
+			TreeDirectoryDTO directory = (TreeDirectoryDTO) node;
+			for (TreeNodeDTO n : directory.getList()) {
+				setSelectedPaths(n, selectdAddonPaths);
+			}
+		}
+	}
 
 	public GroupManager getGroupManager() {
 		return this.groupManager;
@@ -1105,12 +1151,14 @@ public class AddonsPanel extends JPanel implements UIConstants {
 						.getGroupFromRepository(repositoryName, false);
 				if (directory != null) {
 					TreeNodeDTO nodeToRemove = null;
+					List<String> selectdAddonPaths = new ArrayList<String>();
 					for (TreeNodeDTO node : racine2.getList()) {
 						if (node.getName().equals(repositoryName)) {
 							nodeToRemove = node;
 						}
 					}
 					if (nodeToRemove != null) {
+						getSelectedAddonPaths(nodeToRemove, selectdAddonPaths);
 						racine2.getList().remove(nodeToRemove);
 					}
 					directory.setName(repositoryName);
@@ -1119,6 +1167,7 @@ public class AddonsPanel extends JPanel implements UIConstants {
 					directory.setUpdated(updated);
 					directory.setParent(racine2);
 					racine2.addTreeNode(directory);
+					setSelectedPaths(directory, selectdAddonPaths);
 				}
 			}
 
@@ -1139,12 +1188,14 @@ public class AddonsPanel extends JPanel implements UIConstants {
 			for (EventDTO eventDTO : eventDTOs) {
 
 				TreeNodeDTO nodeToRemove = null;
+				List<String> selectdAddonPaths = new ArrayList<String>();
 				for (TreeNodeDTO node : racine2.getList()) {
 					if (node.getName().equals(eventDTO.getName())) {
 						nodeToRemove = node;
 					}
 				}
 				if (nodeToRemove != null) {
+					getSelectedAddonPaths(nodeToRemove, selectdAddonPaths);
 					racine2.getList().remove(nodeToRemove);
 				}
 
@@ -1165,6 +1216,7 @@ public class AddonsPanel extends JPanel implements UIConstants {
 					leaf.setParent(directory);
 					directory.addTreeNode(leaf);
 				}
+				setSelectedPaths(directory, selectdAddonPaths);
 			}
 
 			addonService.resolveDuplicates(racine2);
