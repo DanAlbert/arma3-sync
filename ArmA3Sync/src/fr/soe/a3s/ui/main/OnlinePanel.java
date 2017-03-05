@@ -207,6 +207,7 @@ public class OnlinePanel extends JPanel implements UIConstants {
 				@Override
 				public void run() {
 					updateTableServers();
+					facade.getMainPanel().updateTabs(OP_ONLINE_CHANGED);
 				}
 			});
 		}
@@ -262,8 +263,6 @@ public class OnlinePanel extends JPanel implements UIConstants {
 
 		tableServers.setEnabled(true);
 		isModifying = false;
-		
-		facade.getMainPanel().updateTabs(OP_ONLINE_CHANGED);
 	}
 
 	private void buttonAddPerformed() {
