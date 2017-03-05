@@ -1078,6 +1078,7 @@ public class RepositoryService extends ObjectDTOtransformer
 			repository.getFavoriteServersSetToAutoconfig().clear();
 			for (FavoriteServerDTO favoriteServerDTO : favoriteServerDTOs) {
 				FavoriteServer favoriteServer = transformDTO2FavoriteServer(favoriteServerDTO);
+				favoriteServer.setRepositoryName(repositoryName);
 				repository.getFavoriteServersSetToAutoconfig().add(
 						favoriteServer);
 			}

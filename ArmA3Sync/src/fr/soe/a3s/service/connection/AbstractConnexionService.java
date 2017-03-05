@@ -15,37 +15,47 @@ public class AbstractConnexionService extends ObjectDTOtransformer {
 	protected void updateFavoriteServersFromAutoconfig(AutoConfig autoConfig) {
 
 		if (autoConfig != null) {
-
 			List<FavoriteServer> list1 = autoConfig.getFavoriteServers();
+			for (FavoriteServer favoriteServerList1 : list1) {
+				favoriteServerList1.setRepositoryName(autoConfig.getRepositoryName());
+			}
+			
 			List<FavoriteServer> list2 = configurationDAO.getConfiguration()
 					.getFavoriteServers();
-
-			List<FavoriteServer> newList = new ArrayList<FavoriteServer>();
-
+			
+			List<FavoriteServer> newList2 = new ArrayList<FavoriteServer>();
+			
+			for (FavoriteServer favoriteServerList1 : list1) {
+				newList2.add(favoriteServerList1);
+			}
+			
 			for (FavoriteServer favoriteServerList2 : list2) {
-				if (autoConfig.getRepositoryName() != null
-						&& favoriteServerList2.getRepositoryName() != null) {
-					if (!autoConfig.getRepositoryName().equals(
-							favoriteServerList2.getRepositoryName())) {
-						boolean nameIsDifferent = true;
-						for (FavoriteServer favoriteServerList1 : list1) {
-							if (favoriteServerList1.getName().equals(
-									favoriteServerList2.getName())) {
-								nameIsDifferent = false;
-							}
+				if (favoriteServerList2.getRepositoryName()==null){
+					boolean found = false;
+					for (FavoriteServer favoriteServerNewList2: newList2){
+						if (favoriteServerNewList2.getName().equals(favoriteServerList2.getName())){
+							found = true;
 						}
-						if (nameIsDifferent) {
-							newList.add(favoriteServerList2);
+					}
+					if (!found){
+						newList2.add(favoriteServerList2);
+					}
+				}else if(favoriteServerList2.getRepositoryName()==autoConfig.getRepositoryName()){
+					boolean found = false;
+					for (FavoriteServer favoriteServerNewList2: newList2){
+						if (favoriteServerNewList2.getName().equals(favoriteServerList2.getName())){
+							found = true;
 						}
+					}
+					if (!found){
+						newList2.add(favoriteServerList2);
 					}
 				}
 			}
-			
-			newList.addAll(list1);
 
 			configurationDAO.getConfiguration().getFavoriteServers().clear();
 			configurationDAO.getConfiguration().getFavoriteServers()
-					.addAll(newList);
+					.addAll(newList2);
 		}
 	}
 }
