@@ -58,17 +58,15 @@ public class PreferencesDAO implements DataAccessConstants {
 	public boolean addToWindowsRegistry(boolean devMode) {
 
 		boolean ok = true;
+		
 		try {
+			
 			String key = "Software\\Microsoft\\Windows\\CurrentVersion\\Run";
 			String value = "ArmA3Sync";
 			String path = "\""
 					+ FileAccessMethods.getCanonicalPath(new File(""))
-					+ "\\ArmA3Sync.exe" + "\"";
-			if (devMode) {
-				path = path + " " + "-dev -run";
-			} else {
-				path = path + " " + "-run";
-			}
+					+ "\\ArmA3Sync-registry-lnk.lnk" + "\"";
+
 			WinRegistry.writeStringValue(WinRegistry.HKEY_LOCAL_MACHINE, key,
 					value, path);
 		} catch (Exception e) {
