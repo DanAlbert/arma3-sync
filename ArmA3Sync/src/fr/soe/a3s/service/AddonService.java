@@ -8,6 +8,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import fr.soe.a3s.constant.GameSystemFolders;
+import fr.soe.a3s.constant.ModsetType;
 import fr.soe.a3s.dao.AddonDAO;
 import fr.soe.a3s.dao.ConfigurationDAO;
 import fr.soe.a3s.dao.DataAccessConstants;
@@ -19,13 +20,12 @@ import fr.soe.a3s.domain.TreeDirectory;
 import fr.soe.a3s.domain.TreeLeaf;
 import fr.soe.a3s.domain.TreeNode;
 import fr.soe.a3s.domain.repository.Repository;
-import fr.soe.a3s.dto.RepositoryDTO;
 import fr.soe.a3s.dto.TreeDirectoryDTO;
 import fr.soe.a3s.dto.TreeLeafDTO;
 import fr.soe.a3s.dto.TreeNodeDTO;
-import fr.soe.a3s.constant.ModsetType;
 
-public class AddonService extends ObjectDTOtransformer implements DataAccessConstants{
+public class AddonService extends ObjectDTOtransformer implements
+		DataAccessConstants {
 
 	private static final ConfigurationDAO configurationDAO = new ConfigurationDAO();
 	private static final ProfileDAO profileDAO = new ProfileDAO();
@@ -160,9 +160,17 @@ public class AddonService extends ObjectDTOtransformer implements DataAccessCons
 		// keep marked directory, change terminal directory to leaf
 		TreeDirectory availableAddonsTree = new TreeDirectory("racine1", null);
 
-		for (TreeNode directory : racine.getList()) {
-			TreeDirectory d = (TreeDirectory) directory;
-			cleanTree(d, availableAddonsTree);
+		if (racine.getList().size() == 1) {
+			TreeDirectory parent = (TreeDirectory) racine.getList().get(0);
+			for (TreeNode directory : parent.getList()) {
+				TreeDirectory d = (TreeDirectory) directory;
+				cleanTree(d, availableAddonsTree);
+			}
+		} else {
+			for (TreeNode directory : racine.getList()) {
+				TreeDirectory d = (TreeDirectory) directory;
+				cleanTree(d, availableAddonsTree);
+			}
 		}
 
 		return availableAddonsTree;
@@ -250,7 +258,7 @@ public class AddonService extends ObjectDTOtransformer implements DataAccessCons
 					File[] subfiles2 = f.listFiles();
 					if (subfiles != null) {
 						for (File f2 : subfiles2) {
-							if (f2.getName().contains(PBO_EXTENSION)){
+							if (f2.getName().contains(PBO_EXTENSION)) {
 								contains = true;
 								break;
 							}
