@@ -31,6 +31,7 @@ import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
 import org.apache.commons.io.output.CountingOutputStream;
+import org.apache.commons.net.util.Base64;
 
 import fr.soe.a3s.constant.ProtocolType;
 import fr.soe.a3s.domain.AbstractProtocole;
@@ -146,10 +147,11 @@ public class MyHttpConnection {
 
 			// Login
 			if (!(login.equalsIgnoreCase("anonymous"))) {
-				String encoding = Base64Coder
-						.encodeLines((login + ":" + password).getBytes());
-				urLConnection.setRequestProperty("Authorization", "Basic "
-						+ encoding.substring(0, encoding.length() - 1));
+				String userCredentials = login + ":" + password;
+				String basicAuth = "Basic "
+						+ new String(new Base64().encode(userCredentials
+								.getBytes()));
+				urLConnection.setRequestProperty("Authorization", basicAuth);
 			}
 		} catch (NumberFormatException | NoSuchAlgorithmException
 				| KeyManagementException | URISyntaxException e) {
