@@ -15,6 +15,7 @@ import java.net.URLConnection;
 import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
+import java.nio.charset.StandardCharsets;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
@@ -29,6 +30,7 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSession;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
+import javax.xml.bind.DatatypeConverter;
 
 import org.apache.commons.io.output.CountingOutputStream;
 import org.apache.commons.net.util.Base64;
@@ -146,11 +148,11 @@ public class MyHttpConnection {
 			urLConnection.setRequestProperty("User-Agent", "ArmA3Sync");
 
 			// Login
+			// http://stackoverflow.com/questions/37170850/java-illegal-characters-in-message-header-value-basic
 			if (!(login.equalsIgnoreCase("anonymous"))) {
 				String userCredentials = login + ":" + password;
-				String basicAuth = "Basic "
-						+ new String(new Base64().encode(userCredentials
-								.getBytes()));
+				String basicAuth = DatatypeConverter.printBase64Binary(
+						userCredentials.getBytes(StandardCharsets.UTF_8));
 				urLConnection.setRequestProperty("Authorization", basicAuth);
 			}
 		} catch (NumberFormatException | NoSuchAlgorithmException
