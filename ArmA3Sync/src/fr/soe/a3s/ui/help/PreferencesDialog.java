@@ -276,6 +276,7 @@ public class PreferencesDialog extends AbstractDialog {
 				c.insets = new Insets(5, 10, 5, 10);
 				panel.add(comboBoxIconResize, c);
 			}
+			/*
 			{
 				GridBagConstraints c = new GridBagConstraints();
 				c.fill = GridBagConstraints.HORIZONTAL;
@@ -296,6 +297,7 @@ public class PreferencesDialog extends AbstractDialog {
 				c.insets = new Insets(5, 10, 5, 10);
 				panel.add(comboBoxStartWithWindows, c);
 			}
+			*/
 			{
 				GridBagConstraints c = new GridBagConstraints();
 				c.fill = GridBagConstraints.HORIZONTAL;

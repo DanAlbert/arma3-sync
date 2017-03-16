@@ -203,13 +203,8 @@ public class OnlinePanel extends JPanel implements UIConstants {
 
 		if (flag == OP_PROFILE_CHANGED || flag == OP_REPOSITORY_CHANGED
 				|| flag == OP_GROUP_CHANGED) {
-			SwingUtilities.invokeLater(new Runnable() {
-				@Override
-				public void run() {
-					updateTableServers();
-					facade.getMainPanel().updateTabs(OP_ONLINE_CHANGED);
-				}
-			});
+			updateTableServers();
+			facade.getMainPanel().updateTabs(OP_ONLINE_CHANGED);
 		}
 	}
 

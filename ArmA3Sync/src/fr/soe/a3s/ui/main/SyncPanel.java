@@ -342,12 +342,7 @@ public class SyncPanel extends JPanel implements UIConstants {
 	public void update(int flag) {
 
 		if (flag == OP_PROFILE_CHANGED || flag == OP_REPOSITORY_CHANGED) {
-			SwingUtilities.invokeLater(new Runnable() {
-				@Override
-				public void run() {
-					updateRepositoriesAndEvents();
-				}
-			});
+			updateRepositoriesAndEvents();
 		}
 	}
 

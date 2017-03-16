@@ -164,12 +164,7 @@ public class ExternalApplicationsPanel extends JPanel implements UIConstants {
 	public void update(int flag) {
 
 		if (flag == OP_PROFILE_CHANGED) {
-			SwingUtilities.invokeLater(new Runnable() {
-				@Override
-				public void run() {
-					updateTableApplications();
-				}
-			});
+			updateTableApplications();
 		}
 	}
 
