@@ -918,9 +918,13 @@ public class DownloadPanel extends JPanel implements UIConstants {
 				}
 
 				facade.getMainPanel().updateTabs(OP_REPOSITORY_CHANGED);
-				facade.getAddonsPanel().getGroupManager().updateGroupModsets(repositoryName);
+				facade.getAddonsPanel().getGroupManager()
+						.updateGroupModsets(repositoryName);
 
 				updateArbre(addonsChecker.getParent());
+
+				addonsChecker = null;
+				System.gc();
 			}
 		});
 		addonsChecker.addObserverError(new ObserverError() {
@@ -947,6 +951,9 @@ public class DownloadPanel extends JPanel implements UIConstants {
 				facade.getMainPanel().updateTabs(OP_REPOSITORY_CHANGED);
 
 				updateArbre(null);
+
+				addonsChecker = null;
+				System.gc();
 			}
 		});
 		addonsChecker.setDaemon(true);
@@ -1104,6 +1111,9 @@ public class DownloadPanel extends JPanel implements UIConstants {
 
 				// Check for Addons
 				checkForAddons(false);
+
+				addonsDownloader = null;
+				System.gc();
 			}
 		});
 		addonsDownloader.addObserverError(new ObserverError() {
@@ -1130,6 +1140,9 @@ public class DownloadPanel extends JPanel implements UIConstants {
 
 				// Check for Addons
 				checkForAddons(false);
+
+				addonsDownloader = null;
+				System.gc();
 			}
 		});
 		addonsDownloader
@@ -1145,6 +1158,7 @@ public class DownloadPanel extends JPanel implements UIConstants {
 							// Reset tree
 							updateArbre(null);
 							addonsDownloader = null;
+							System.gc();
 						} else {
 							addonsDownloader.run();
 						}
@@ -1235,9 +1249,12 @@ public class DownloadPanel extends JPanel implements UIConstants {
 
 				facade.getMainPanel().updateTabs(OP_REPOSITORY_CHANGED);
 				facade.getMainPanel().updateTabs(OP_ADDON_FILES_CHANGED);
-				facade.getAddonsPanel().getGroupManager().updateGroupModsets(repositoryName);
+				facade.getAddonsPanel().getGroupManager()
+						.updateGroupModsets(repositoryName);
 
 				obs.end();
+				addonsAutoUpdater = null;
+				System.gc();
 			}
 		});
 		addonsAutoUpdater.addObserverError(new ObserverError() {
@@ -1260,6 +1277,8 @@ public class DownloadPanel extends JPanel implements UIConstants {
 				facade.getMainPanel().updateTabs(OP_REPOSITORY_CHANGED);
 
 				updateArbre(null);
+				addonsAutoUpdater = null;
+				System.gc();
 			}
 		});
 		addonsAutoUpdater
@@ -1274,6 +1293,7 @@ public class DownloadPanel extends JPanel implements UIConstants {
 						if (!dialog.reconnect()) {
 							updateArbre(null);
 							addonsDownloader = null;
+							System.gc();
 						} else {
 							addonsDownloader.run();
 						}

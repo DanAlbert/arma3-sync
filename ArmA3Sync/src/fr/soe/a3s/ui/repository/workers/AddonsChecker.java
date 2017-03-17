@@ -229,7 +229,6 @@ public class AddonsChecker extends Thread {
 
 		filesCheckProcessor.cancel();
 		filesCompletionProcessor.cancel();
-		System.gc();
 	}
 
 	public void cancel() {

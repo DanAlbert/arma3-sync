@@ -416,7 +416,6 @@ public class AddonsDownloader extends Thread implements DataAccessConstants {
 	private void terminate() {
 
 		filesSynchronizationProcessor.cancel();
-		System.gc();
 	}
 
 	public void addObserverEnd(ObserverEnd obs) {
