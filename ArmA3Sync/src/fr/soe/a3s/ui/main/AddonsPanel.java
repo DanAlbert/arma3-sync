@@ -1275,7 +1275,13 @@ public class AddonsPanel extends JPanel implements UIConstants {
 
 			onAddGroupFromEvents(eventGroupModsets, true);
 
-			reloadAddonGroups();
+			SwingUtilities.invokeLater(new Runnable() {
+				@Override
+				public void run() {
+					reloadAddonGroups();
+				}
+			});
+
 			facade.getMainPanel().updateTabs(OP_GROUP_CHANGED);
 
 			System.out.println("Addon groups update done.");

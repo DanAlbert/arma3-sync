@@ -91,6 +91,7 @@ public class AddonsAutoUpdater extends Thread {
 					+ repositoryName + " finished.");
 			observerEnd.end();
 		} else if (check1IsDone && !check2IsDone) {
+			downloadPanel.updateArbre(addonsChecker.getParent());
 			downloadPanel.getCheckBoxSelectAll().setSelected(true);
 			downloadPanel.checkBoxSelectAllPerformed();
 			addonsDownloader.run();
