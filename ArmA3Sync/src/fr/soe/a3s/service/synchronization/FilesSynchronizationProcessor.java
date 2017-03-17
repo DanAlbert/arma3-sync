@@ -345,11 +345,6 @@ public class FilesSynchronizationProcessor {
 		String report = generateReport("Download finished successfully.");
 		repositoryService.setReport(repositoryName, report);
 
-		/* Update repository revision and status */
-		repositoryService.updateRepositoryRevision(repositoryName);
-		repositoryService.setRepositorySyncStatus(repositoryName,
-				RepositoryStatus.OK);
-
 		/* End */
 		observerEnd.end();
 	}
@@ -364,11 +359,6 @@ public class FilesSynchronizationProcessor {
 		/* Generate Report */
 		String report = generateReport(message, errors);
 		repositoryService.setReport(repositoryName, report);
-
-		/* Reset repository revision and status */
-		repositoryService.resetRepositoryRevision(repositoryName);
-		repositoryService.setRepositorySyncStatus(repositoryName,
-				RepositoryStatus.ERROR);
 
 		/* End */
 		observerError.error(errors);
@@ -394,11 +384,6 @@ public class FilesSynchronizationProcessor {
 	private void executeConnectionLost() {
 
 		repositoryService.setDownloading(repositoryName, false);
-
-		/* Reset repository revision and status */
-		repositoryService.resetRepositoryRevision(repositoryName);
-		repositoryService.setRepositorySyncStatus(repositoryName,
-				RepositoryStatus.ERROR);
 
 		/* End */
 		observerConnectionLost.lost();

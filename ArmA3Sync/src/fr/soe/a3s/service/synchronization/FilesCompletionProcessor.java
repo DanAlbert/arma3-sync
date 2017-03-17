@@ -3,6 +3,7 @@ package fr.soe.a3s.service.synchronization;
 import java.util.ArrayList;
 import java.util.List;
 
+import fr.soe.a3s.constant.RepositoryStatus;
 import fr.soe.a3s.controller.ObserverCountInt;
 import fr.soe.a3s.controller.ObserverEnd;
 import fr.soe.a3s.controller.ObserverError;
@@ -89,7 +90,6 @@ public class FilesCompletionProcessor {
 
 	private void executeEnd() {
 		repositoryService.setCheckingForAddons(repositoryName, false);
-		// repositoryService.updateRepositoryRevision(repositoryName);
 		observerEnd.end();
 	}
 

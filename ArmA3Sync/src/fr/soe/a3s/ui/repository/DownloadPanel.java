@@ -57,6 +57,7 @@ import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 
 import fr.soe.a3s.constant.GameExecutables;
+import fr.soe.a3s.constant.RepositoryStatus;
 import fr.soe.a3s.controller.ObserverConnectionLost;
 import fr.soe.a3s.controller.ObserverEnd;
 import fr.soe.a3s.controller.ObserverError;
@@ -896,11 +897,11 @@ public class DownloadPanel extends JPanel implements UIConstants {
 					.getSelectedItem();
 			repositoryService.setDefaultDownloadLocation(repositoryName,
 					defaultDownloadLocation);
-			checkForAddons(showHeaderWarningMessage);
+			checkForAddons(showHeaderWarningMessage,false);
 		}
 	}
 
-	private void checkForAddons(final boolean showHeaderWarningMessage) {
+	private void checkForAddons(final boolean showHeaderWarningMessage,final boolean statusInError) {
 
 		addonsChecker = new AddonsChecker(facade, repositoryName,
 				eventName != null, this);
@@ -917,11 +918,16 @@ public class DownloadPanel extends JPanel implements UIConstants {
 					dialog.show();
 				}
 
-				facade.getMainPanel().updateTabs(OP_REPOSITORY_CHANGED);
 				facade.getAddonsPanel().getGroupManager()
 						.updateGroupModsets(repositoryName);
 
 				updateArbre(addonsChecker.getParent());
+				
+				if (statusInError){
+					updateStatusError();
+				}else {
+					updateStatusOK();
+				}
 
 				addonsChecker = null;
 				System.gc();
@@ -948,9 +954,9 @@ public class DownloadPanel extends JPanel implements UIConstants {
 					dialog.show();
 				}
 
-				facade.getMainPanel().updateTabs(OP_REPOSITORY_CHANGED);
-
 				updateArbre(null);
+				
+				updateStatusError();
 
 				addonsChecker = null;
 				System.gc();
@@ -958,6 +964,24 @@ public class DownloadPanel extends JPanel implements UIConstants {
 		});
 		addonsChecker.setDaemon(true);
 		addonsChecker.start();
+	}
+
+	private void updateStatusOK() {
+
+		/* Update repository revision and status */
+		repositoryService.updateRepositoryRevision(repositoryName);
+		repositoryService.setRepositorySyncStatus(repositoryName,
+				RepositoryStatus.OK);
+		facade.getMainPanel().updateTabs(OP_REPOSITORY_CHANGED);
+	}
+
+	private void updateStatusError() {
+
+		/* Reset repository revision and status */
+		repositoryService.resetRepositoryRevision(repositoryName);
+		repositoryService.setRepositorySyncStatus(repositoryName,
+				RepositoryStatus.ERROR);
+		facade.getMainPanel().updateTabs(OP_REPOSITORY_CHANGED);
 	}
 
 	private void buttonCheckForAddonsCancelPerformed() {
@@ -1110,7 +1134,7 @@ public class DownloadPanel extends JPanel implements UIConstants {
 				facade.getMainPanel().updateTabs(OP_ADDON_FILES_CHANGED);
 
 				// Check for Addons
-				checkForAddons(false);
+				checkForAddons(false,false);
 
 				addonsDownloader = null;
 				System.gc();
@@ -1139,7 +1163,7 @@ public class DownloadPanel extends JPanel implements UIConstants {
 				}
 
 				// Check for Addons
-				checkForAddons(false);
+				checkForAddons(false,true);
 
 				addonsDownloader = null;
 				System.gc();
@@ -1156,6 +1180,7 @@ public class DownloadPanel extends JPanel implements UIConstants {
 						dialog.setVisible(true);
 						if (!dialog.reconnect()) {
 							// Reset tree
+							updateStatusError();
 							updateArbre(null);
 							addonsDownloader = null;
 							System.gc();
@@ -1184,7 +1209,7 @@ public class DownloadPanel extends JPanel implements UIConstants {
 		if (addonsDownloader != null) {
 			addonsDownloader.cancel();
 			addonsDownloader = null;
-			checkForAddons(false);
+			checkForAddons(false,false);
 		}
 	}
 
@@ -1247,10 +1272,12 @@ public class DownloadPanel extends JPanel implements UIConstants {
 					userconfigUpdater.run();
 				}
 
-				facade.getMainPanel().updateTabs(OP_REPOSITORY_CHANGED);
 				facade.getMainPanel().updateTabs(OP_ADDON_FILES_CHANGED);
+
 				facade.getAddonsPanel().getGroupManager()
 						.updateGroupModsets(repositoryName);
+
+				updateStatusOK();
 
 				obs.end();
 				addonsAutoUpdater = null;
@@ -1274,7 +1301,7 @@ public class DownloadPanel extends JPanel implements UIConstants {
 					}
 				}
 
-				facade.getMainPanel().updateTabs(OP_REPOSITORY_CHANGED);
+				updateStatusError();
 
 				updateArbre(null);
 				addonsAutoUpdater = null;
@@ -1291,6 +1318,7 @@ public class DownloadPanel extends JPanel implements UIConstants {
 						dialog.init();
 						dialog.setVisible(true);
 						if (!dialog.reconnect()) {
+							updateStatusError();
 							updateArbre(null);
 							addonsDownloader = null;
 							System.gc();
