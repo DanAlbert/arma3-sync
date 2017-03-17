@@ -59,7 +59,7 @@ public class ConnectionDownloadProcessor implements DataAccessConstants {
 
 								File downloadedFile = downloadFile(
 										connexionDAO, node);
-								
+
 								connexionDAO.setActiveConnection(false);
 								connexionDAO
 										.updateObserverDownloadActiveConnections();
@@ -68,7 +68,7 @@ public class ConnectionDownloadProcessor implements DataAccessConstants {
 									releaseSemaphore();
 									connexionDAO.setAcquiredSemaphore(false);
 								}
-								
+
 								// Give semaphore to the other DAOs
 								for (final AbstractConnexionDAO connexionDAO : connexionDAOs) {
 									if (connexionDAO.isActiveConnection()
@@ -91,6 +91,13 @@ public class ConnectionDownloadProcessor implements DataAccessConstants {
 									}
 								}
 							} catch (IOException e) {
+
+								connexionDAO.setActiveConnection(false);
+								if (connexionDAO.isAcquiredSemaphore()) {
+									releaseSemaphore();
+									connexionDAO.setAcquiredSemaphore(false);
+								}
+
 								// e.printStackTrace();
 								if (!connexionDAO.isCanceled()) {
 									if (e instanceof SocketException
