@@ -151,7 +151,7 @@ public class MyHttpConnection {
 			// http://stackoverflow.com/questions/37170850/java-illegal-characters-in-message-header-value-basic
 			if (!(login.equalsIgnoreCase("anonymous"))) {
 				String userCredentials = login + ":" + password;
-				String basicAuth = DatatypeConverter.printBase64Binary(
+				String basicAuth = "Basic " + DatatypeConverter.printBase64Binary(
 						userCredentials.getBytes(StandardCharsets.UTF_8));
 				urLConnection.setRequestProperty("Authorization", basicAuth);
 			}
