@@ -897,11 +897,12 @@ public class DownloadPanel extends JPanel implements UIConstants {
 					.getSelectedItem();
 			repositoryService.setDefaultDownloadLocation(repositoryName,
 					defaultDownloadLocation);
-			checkForAddons(showHeaderWarningMessage,false);
+			checkForAddons(showHeaderWarningMessage, false);
 		}
 	}
 
-	private void checkForAddons(final boolean showHeaderWarningMessage,final boolean statusInError) {
+	private void checkForAddons(final boolean showHeaderWarningMessage,
+			final boolean statusInError) {
 
 		addonsChecker = new AddonsChecker(facade, repositoryName,
 				eventName != null, this);
@@ -922,10 +923,10 @@ public class DownloadPanel extends JPanel implements UIConstants {
 						.updateGroupModsets(repositoryName);
 
 				updateArbre(addonsChecker.getParent());
-				
-				if (statusInError){
+
+				if (statusInError) {
 					updateStatusError();
-				}else {
+				} else {
 					updateStatusOK();
 				}
 
@@ -955,7 +956,7 @@ public class DownloadPanel extends JPanel implements UIConstants {
 				}
 
 				updateArbre(null);
-				
+
 				updateStatusError();
 
 				addonsChecker = null;
@@ -1134,7 +1135,7 @@ public class DownloadPanel extends JPanel implements UIConstants {
 				facade.getMainPanel().updateTabs(OP_ADDON_FILES_CHANGED);
 
 				// Check for Addons
-				checkForAddons(false,false);
+				checkForAddons(false, false);
 
 				addonsDownloader = null;
 				System.gc();
@@ -1163,7 +1164,7 @@ public class DownloadPanel extends JPanel implements UIConstants {
 				}
 
 				// Check for Addons
-				checkForAddons(false,true);
+				checkForAddons(false, true);
 
 				addonsDownloader = null;
 				System.gc();
@@ -1209,7 +1210,7 @@ public class DownloadPanel extends JPanel implements UIConstants {
 		if (addonsDownloader != null) {
 			addonsDownloader.cancel();
 			addonsDownloader = null;
-			checkForAddons(false,false);
+			checkForAddons(false, false);
 		}
 	}
 

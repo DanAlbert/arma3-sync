@@ -54,9 +54,8 @@ import fr.soe.a3s.exception.repository.RepositoryMainFolderLocationNotFoundExcep
 import fr.soe.a3s.exception.repository.RepositoryNotFoundException;
 import fr.soe.a3s.exception.repository.SyncFileNotFoundException;
 
-public class RepositoryService extends ObjectDTOtransformer
-		implements
-			DataAccessConstants {
+public class RepositoryService extends ObjectDTOtransformer implements
+		DataAccessConstants {
 
 	private static final RepositoryDAO repositoryDAO = new RepositoryDAO();
 	private static final AddonDAO addonDAO = new AddonDAO();
@@ -633,6 +632,11 @@ public class RepositoryService extends ObjectDTOtransformer
 			ServerInfo serverInfo = repository.getServerInfo();
 			if (serverInfo != null) {
 				repository.setRevision(serverInfo.getRevision());
+				try {
+					write(repositoryName);
+				} catch (WritingException e) {
+					e.printStackTrace();
+				}
 			}
 		}
 	}
@@ -856,7 +860,7 @@ public class RepositoryService extends ObjectDTOtransformer
 	}
 
 	public TreeDirectoryDTO getGroupFromRepository(String repositoryName,
-			boolean withUserconfig){
+			boolean withUserconfig) {
 
 		Repository repository = repositoryDAO.getMap().get(repositoryName);
 		if (repository != null) {
@@ -899,7 +903,7 @@ public class RepositoryService extends ObjectDTOtransformer
 				transformTreeDirectory2DTO(racineCleaned, treeDirectoryDTO);
 				return treeDirectoryDTO;
 			}
-		} 
+		}
 		return null;
 	}
 
