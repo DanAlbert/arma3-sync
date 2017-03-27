@@ -368,6 +368,9 @@ public class LaunchService {
 		if (launcherOptions.isEnableHT()) {
 			params.add("-enableHT");
 		}
+		if (launcherOptions.isHugePages()) {
+			params.add("-hugepages");
+		}
 		if (launcherOptions.isNoSplashScreen()) {
 			params.add("-nosplash");
 		}

@@ -72,7 +72,7 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener,
 			checkBoxNoSplashScreen, checkBoxDefaultWorld, checkBoxNoLogs,
 			checkBoxCheckSignatures, checkBoxExThreads, checkBoxEnableHT,
 			checkBoxFilePatching, checkBoxAutoRestart, checkBoxMalloc,
-			checkBoxEnableBattleye;
+			checkBoxEnableBattleye, checkBoxHugePages;
 	private JLabel labelMallocPath;
 
 	/* Services */
@@ -384,6 +384,15 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener,
 			vBox.add(hBox);
 		}
 		{
+			checkBoxHugePages = new JCheckBox();
+			checkBoxHugePages.setText("Huge pages");
+			checkBoxHugePages.setFocusable(false);
+			Box hBox = Box.createHorizontalBox();
+			hBox.add(checkBoxHugePages);
+			hBox.add(Box.createHorizontalGlue());
+			vBox.add(hBox);
+		}
+		{
 			checkBoxNoSplashScreen = new JCheckBox();
 			checkBoxNoSplashScreen.setText("No Splash Screen");
 			checkBoxNoSplashScreen.setFocusable(false);
@@ -564,13 +573,19 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener,
 		comboBoxMalloc.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
-				buttonSelectMallocDllPathPerformed();
+				comboBoxMallocDllPathPerformed();
 			}
 		});
 		checkBoxEnableHT.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				checkBoxEnableHTPerformed();
+			}
+		});
+		checkBoxHugePages.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				checkBoxHugePagesPerformed();
 			}
 		});
 		checkBoxNoSplashScreen.addActionListener(new ActionListener() {
@@ -620,6 +635,8 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener,
 		comboBoxExThreads.setToolTipText("Sets number of extra threads to use");
 		checkBoxExThreads.setToolTipText("Sets number of extra threads to use");
 		checkBoxEnableHT.setToolTipText("Use all hyper-threaded cpu cores");
+		checkBoxHugePages
+				.setToolTipText("Enables huge pages with the default memory allocator");
 		checkBoxNoSplashScreen.setToolTipText("Disables splash screens");
 		checkBoxDefaultWorld.setToolTipText("No world loaded at game startup");
 		checkBoxNoLogs.setToolTipText("Do not write errors into RPT file");
@@ -699,6 +716,7 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener,
 		}
 
 		checkBoxEnableHT.setSelected(launcherOptionsDTO.isEnableHT());
+		checkBoxHugePages.setSelected(launcherOptionsDTO.isHugePages());
 		checkBoxNoSplashScreen.setSelected(launcherOptionsDTO
 				.isNoSplashScreen());
 		checkBoxDefaultWorld.setSelected(launcherOptionsDTO.isDefaultWorld());
@@ -744,6 +762,8 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener,
 					comboBoxMalloc.setSelectedItem(launcherOptionsDTO
 							.getMallocSelection());
 					checkBoxMalloc.setSelected(true);
+					checkBoxHugePages.setSelected(false);
+					checkBoxHugePages.setEnabled(false);
 				} else {
 					comboBoxMalloc.setSelectedIndex(0);
 				}
@@ -956,7 +976,7 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener,
 		updateRunParameters();
 	}
 
-	private void buttonSelectMallocDllPathPerformed() {
+	private void comboBoxMallocDllPathPerformed() {
 
 		String mallocDll = (String) comboBoxMalloc.getSelectedItem();
 		if (mallocDll == null) {
@@ -965,15 +985,24 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener,
 		if (!mallocDll.isEmpty()) {
 			checkBoxMalloc.setSelected(true);
 			profileService.setMalloc(mallocDll);
+			checkBoxHugePages.setSelected(false);
+			checkBoxHugePages.setEnabled(false);
+			profileService.setHugePages(false);
 		} else {
 			checkBoxMalloc.setSelected(false);
 			profileService.setMalloc(null);
+			checkBoxHugePages.setEnabled(true);
 		}
 		updateRunParameters();
 	}
 
 	private void checkBoxEnableHTPerformed() {
 		profileService.setEnableHT(checkBoxEnableHT.isSelected());
+		updateRunParameters();
+	}
+
+	private void checkBoxHugePagesPerformed() {
+		profileService.setHugePages(checkBoxHugePages.isSelected());
 		updateRunParameters();
 	}
 

@@ -86,6 +86,7 @@ public class ObjectDTOtransformer {
 		launcherOptionsDTO.setMallocSelection(launcherOptions
 				.getMallocSelection());
 		launcherOptionsDTO.setEnableHT(launcherOptions.isEnableHT());
+		launcherOptionsDTO.setHugePages(launcherOptions.isHugePages());
 		launcherOptionsDTO.setNoPause(launcherOptions.isNoPause());
 		launcherOptionsDTO.setFilePatching(launcherOptions.isFilePatching());
 		launcherOptionsDTO

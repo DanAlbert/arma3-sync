@@ -182,6 +182,7 @@ public class ProfileService extends ObjectDTOtransformer {
 		duplicateLauncherOptions.setNoLogs(launcherOptions.isNologs());
 		duplicateLauncherOptions.setNoPause(launcherOptions.isNoPause());
 		duplicateLauncherOptions.setEnableHT(launcherOptions.isEnableHT());
+		duplicateLauncherOptions.setHugePages(launcherOptions.isHugePages());
 		duplicateLauncherOptions.setNoSplashScreen(launcherOptions.isNoPause());
 		duplicateLauncherOptions.setShowScriptErrors(launcherOptions
 				.isShowScriptErrors());
@@ -601,6 +602,21 @@ public class ProfileService extends ObjectDTOtransformer {
 		Profile profile = profileDAO.getMap().get(profileName);
 		if (profile != null) {
 			profile.getLauncherOptions().setEnableHT(selected);
+			try {
+				profileDAO.write(profile);
+			} catch (WritingException e) {
+			}
+		}
+	}
+
+	public void setHugePages(boolean selected) {
+
+		String profileName = configurationDAO.getConfiguration()
+				.getProfileName();
+
+		Profile profile = profileDAO.getMap().get(profileName);
+		if (profile != null) {
+			profile.getLauncherOptions().setHugePages(selected);
 			try {
 				profileDAO.write(profile);
 			} catch (WritingException e) {

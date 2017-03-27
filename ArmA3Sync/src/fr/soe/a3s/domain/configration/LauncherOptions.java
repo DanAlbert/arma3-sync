@@ -23,13 +23,12 @@ public class LauncherOptions implements Serializable {
 	private String exThreadsSelection;
 	private String mallocSelection;
 	private boolean enableHT = false;
+	private boolean hugePages = false;
 	private boolean noSplashScreen = false;
 	private boolean defaultWorld = false;
 	private boolean nologs = false;
-
 	/* Executable location */
 	private String arma3ExePath;
-
 	private String steamExePath;
 
 	public String getGameProfile() {
@@ -158,6 +157,14 @@ public class LauncherOptions implements Serializable {
 
 	public void setEnableHT(boolean value) {
 		this.enableHT = value;
+	}
+
+	public boolean isHugePages() {
+		return this.hugePages;
+	}
+
+	public void setHugePages(boolean value) {
+		this.hugePages = value;
 	}
 
 	public boolean isCheckSignatures() {

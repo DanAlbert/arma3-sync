@@ -15,10 +15,10 @@ public class LauncherOptionsDTO {
 	private String exThreadsSelection;
 	private String mallocSelection;
 	private boolean enableHT;
+	private boolean hugePages;
 	private boolean noSplashScreen;
 	private boolean defaultWorld;
 	private boolean noLogs;
-
 	/* Executable location */
 	private String arma3ExePath;
 	private String steamExePath;
@@ -125,6 +125,14 @@ public class LauncherOptionsDTO {
 
 	public void setEnableHT(boolean enableHT) {
 		this.enableHT = enableHT;
+	}
+
+	public boolean isHugePages() {
+		return this.hugePages;
+	}
+
+	public void setHugePages(boolean hugePages) {
+		this.hugePages = hugePages;
 	}
 
 	public boolean isFilePatching() {

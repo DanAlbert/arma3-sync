@@ -550,6 +550,7 @@ public class MainPanel extends JFrame implements UIConstants {
 					.getCpuCountSelection()));
 			profileService.setDefaultWorld(oldLps.isDefaultWorld());
 			profileService.setEnableHT(oldLps.isEnableHT());
+			profileService.setHugePages(oldLps.isHugePages());
 			profileService.setExThreads(oldLps.getExThreadsSelection());
 			profileService.setGameProfile(oldLps.getGameProfile());
 			profileService.setMalloc(oldLps.getMallocSelection());
