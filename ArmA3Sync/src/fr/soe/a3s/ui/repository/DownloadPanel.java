@@ -919,9 +919,6 @@ public class DownloadPanel extends JPanel implements UIConstants {
 					dialog.show();
 				}
 
-				facade.getAddonsPanel().getGroupManager()
-						.updateGroupModsets(repositoryName);
-
 				updateArbre(addonsChecker.getParent());
 
 				if (statusInError) {
@@ -929,6 +926,9 @@ public class DownloadPanel extends JPanel implements UIConstants {
 				} else {
 					updateStatusOK();
 				}
+
+				facade.getAddonsPanel().getGroupManager()
+						.updateGroupModsets(repositoryName);
 
 				addonsChecker = null;
 				System.gc();
