@@ -881,7 +881,7 @@ public class AddonsPanel extends JPanel implements UIConstants {
 		progressModsetSelectionPanel.setVisible(true);
 		progressModsetSelectionPanel.init(repositoryNames);
 	}
-	
+
 	private void getSelectedAddonPaths(TreeNodeDTO node,
 			List<String> selectedAddonPaths) {
 
@@ -1275,12 +1275,7 @@ public class AddonsPanel extends JPanel implements UIConstants {
 
 			onAddGroupFromEvents(eventGroupModsets, true);
 
-			SwingUtilities.invokeLater(new Runnable() {
-				@Override
-				public void run() {
-					reloadAddonGroups();
-				}
-			});
+			reloadAddonGroups();
 
 			facade.getMainPanel().updateTabs(OP_GROUP_CHANGED);
 
