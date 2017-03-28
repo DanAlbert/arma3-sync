@@ -7,29 +7,29 @@ import java.util.ArrayList;
 import java.util.List;
 
 import fr.soe.a3s.dao.connection.AbstractConnexionDAO;
+import fr.soe.a3s.dao.connection.FtpDAO;
 import fr.soe.a3s.dao.connection.RemoteFile;
 import fr.soe.a3s.domain.AbstractProtocole;
+import fr.soe.a3s.domain.Http;
+import fr.soe.a3s.domain.repository.Repository;
 import fr.soe.a3s.dto.sync.SyncTreeNodeDTO;
 
 public class ConnectionUploadProcessor extends AbstractConnectionProcessor {
 
-	private final String repositoryName;
-	private final String repositoryPath;
+	private final Repository repository;
 	private final AbstractProtocole protocole;
 	private List<RemoteFile> missingRemoteFiles = null;
 	private final int lastIndexFileUploaded;
 
 	public ConnectionUploadProcessor(AbstractConnexionDAO abstractConnexionDAO,
 			List<SyncTreeNodeDTO> filesToUpload,
-			boolean isCompressedPboFilesOnly, boolean withzsync,
-			String repositoryName, AbstractProtocole protocole,
-			String repositoryPath, List<RemoteFile> missingRemoteFiles,
-			int lastIndexFileUploaded) {
-		super(abstractConnexionDAO, filesToUpload, isCompressedPboFilesOnly,
-				withzsync);
-		this.repositoryName = repositoryName;
-		this.repositoryPath = repositoryPath;
-		this.protocole = protocole;
+			List<RemoteFile> missingRemoteFiles, int lastIndexFileUploaded,
+			Repository repository) {
+		super(abstractConnexionDAO, filesToUpload, repository
+				.isUploadCompressedPboFilesOnly(),
+				(repository.getProtocol() instanceof Http));
+		this.repository = repository;
+		this.protocole = repository.getUploadProtocole();
 		this.missingRemoteFiles = missingRemoteFiles;
 		this.lastIndexFileUploaded = lastIndexFileUploaded;
 	}
@@ -59,8 +59,8 @@ public class ConnectionUploadProcessor extends AbstractConnectionProcessor {
 			String fileName = remoteFile.getFilename();
 			boolean isFile = !remoteFile.isDirectory();
 			if (isFile) {
-				File file = new File(repositoryPath + "/" + relativePath + "/"
-						+ fileName);
+				File file = new File(repository.getPath() + "/" + relativePath
+						+ "/" + fileName);
 				if (!file.exists()) {
 					throw new FileNotFoundException("File not found: "
 							+ file.getAbsolutePath());
@@ -77,8 +77,32 @@ public class ConnectionUploadProcessor extends AbstractConnectionProcessor {
 			if (abstractConnexionDAO.isCanceled()) {
 				break;
 			} else {
-				abstractConnexionDAO.uploadFile(remoteFile, repositoryPath,
-						this.protocole.getRemotePath());
+				abstractConnexionDAO.uploadFile(remoteFile,
+						repository.getPath(), this.protocole.getRemotePath());
+			}
+		}
+
+		// Set serverInfo with upload options
+		repository.getLocalServerInfo().setCompressedPboFilesOnly(
+				repository.isUploadCompressedPboFilesOnly());
+
+		if (!abstractConnexionDAO.isCanceled()) {
+			((FtpDAO) abstractConnexionDAO).uploadSync(repository
+					.getLocalSync(), repository.getUploadProtocole()
+					.getRemotePath());
+			((FtpDAO) abstractConnexionDAO).uploadServerInfo(repository
+					.getLocalServerInfo(), repository.getUploadProtocole()
+					.getRemotePath());
+			((FtpDAO) abstractConnexionDAO).uploadChangelogs(repository
+					.getLocalChangelogs(), repository.getUploadProtocole()
+					.getRemotePath());
+			((FtpDAO) abstractConnexionDAO).uploadAutoconfig(repository
+					.getLocalAutoConfig(), repository.getUploadProtocole()
+					.getRemotePath());
+			if (repository.getLocalEvents() != null) {
+				((FtpDAO) abstractConnexionDAO).uploadEvents(repository
+						.getLocalEvents(), repository.getUploadProtocole()
+						.getRemotePath());
 			}
 		}
 	}

@@ -419,11 +419,8 @@ public class FtpService extends AbstractConnexionService implements
 			ftpDAOPool.get(0).updateObserverText("Uploading files...");
 
 			ConnectionUploadProcessor uploadProcessor = new ConnectionUploadProcessor(
-					ftpDAOPool.get(0), filesToUpload,
-					repository.isUploadCompressedPboFilesOnly(),
-					(repository.getProtocol() instanceof Http), repositoryName,
-					repository.getUploadProtocole(), repository.getPath(),
-					missingRemoteFiles, lastIndexFileUploaded);
+					ftpDAOPool.get(0), filesToUpload, missingRemoteFiles,
+					lastIndexFileUploaded, repository);
 			uploadProcessor.run();
 
 			/* Delete extra remote files */
@@ -435,27 +432,6 @@ public class FtpService extends AbstractConnexionService implements
 					(repository.getProtocol() instanceof Http),
 					repository.getUploadProtocole());
 			deleteProcessor.run();
-
-			/* Upload sync files */
-			ftpDAOPool.get(0).updateObserverText(
-					"Uploading synchronization files...");
-
-			// Set serverInfo with upload options
-			repository.getLocalServerInfo().setCompressedPboFilesOnly(
-					repository.isUploadCompressedPboFilesOnly());
-
-			ftpDAOPool.get(0).uploadSync(repository.getLocalSync(),
-					repository.getUploadProtocole().getRemotePath());
-			ftpDAOPool.get(0).uploadServerInfo(repository.getLocalServerInfo(),
-					repository.getUploadProtocole().getRemotePath());
-			ftpDAOPool.get(0).uploadChangelogs(repository.getLocalChangelogs(),
-					repository.getUploadProtocole().getRemotePath());
-			ftpDAOPool.get(0).uploadAutoconfig(repository.getLocalAutoConfig(),
-					repository.getUploadProtocole().getRemotePath());
-			if (repository.getLocalEvents() != null) {
-				ftpDAOPool.get(0).uploadEvents(repository.getLocalEvents(),
-						repository.getUploadProtocole().getRemotePath());
-			}
 		} finally {
 			ftpDAOPool.get(0).disconnect();
 		}
