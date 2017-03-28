@@ -18,7 +18,7 @@ public class Preferences implements Serializable {
 	private MinimizationType launchPanelMinimized = MinimizationType.TASK_BAR;
 	private final MinimizationType syncPanelMinimized = MinimizationType.TRAY;
 	private LookAndFeel lookAndFeel = LookAndFeel.LAF_DEFAULT;
-	private IconResize iconResizeSize = IconResize.AUTO;
+	private IconResize iconResizeSize = IconResize.DEFAULT;
 	private StartWithOS startWithOS = StartWithOS.DISABLED;
 	private CheckRepositoriesFrequency checkRepositoriesFrequency = CheckRepositoriesFrequency.FREQ3;
 
@@ -51,7 +51,7 @@ public class Preferences implements Serializable {
 
 	public IconResize getIconResizeSize() {
 		if (iconResizeSize == null) {
-			iconResizeSize = IconResize.AUTO;
+			iconResizeSize = IconResize.DEFAULT;
 		}
 		return iconResizeSize;
 	}

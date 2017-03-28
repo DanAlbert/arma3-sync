@@ -140,7 +140,8 @@ public class PreferencesDialog extends AbstractDialog {
 				checkBoxCheckRepositories = new JCheckBox();
 				checkBoxCheckRepositories.setSelected(true);
 				checkBoxCheckRepositories.setFocusable(false);
-				checkBoxCheckRepositories.setText("Periodical repositories check:");
+				checkBoxCheckRepositories
+						.setText("Periodical repositories check:");
 			}
 			{
 				String[] tab = new String[] {
@@ -157,12 +158,13 @@ public class PreferencesDialog extends AbstractDialog {
 				comboBoxLookAndFeel.setFocusable(false);
 			}
 			{
-				String[] tab = new String[] { IconResize.NONE.getDescription(),
+				String[] tab = new String[] {
+						IconResize.DEFAULT.getDescription(),
 						IconResize.SIZE1.getDescription(),
 						IconResize.SIZE2.getDescription(),
 						IconResize.SIZE3.getDescription(),
 						IconResize.SIZE4.getDescription(),
-						IconResize.AUTO.getDescription() };
+						IconResize.NONE.getDescription() };
 
 				ComboBoxModel comboBoxIconResizeModel = new DefaultComboBoxModel(
 						tab);
@@ -277,27 +279,15 @@ public class PreferencesDialog extends AbstractDialog {
 				panel.add(comboBoxIconResize, c);
 			}
 			/*
-			{
-				GridBagConstraints c = new GridBagConstraints();
-				c.fill = GridBagConstraints.HORIZONTAL;
-				c.weightx = 0.5;
-				c.weighty = 0;
-				c.gridx = 0;
-				c.gridy = 4;
-				c.insets = new Insets(5, 10, 5, 10);
-				panel.add(checkBoxStartWithWindows, c);
-			}
-			{
-				GridBagConstraints c = new GridBagConstraints();
-				c.fill = GridBagConstraints.BOTH;
-				c.weightx = 0.5;
-				c.weighty = 0;
-				c.gridx = 1;
-				c.gridy = 4;
-				c.insets = new Insets(5, 10, 5, 10);
-				panel.add(comboBoxStartWithWindows, c);
-			}
-			*/
+			 * { GridBagConstraints c = new GridBagConstraints(); c.fill =
+			 * GridBagConstraints.HORIZONTAL; c.weightx = 0.5; c.weighty = 0;
+			 * c.gridx = 0; c.gridy = 4; c.insets = new Insets(5, 10, 5, 10);
+			 * panel.add(checkBoxStartWithWindows, c); } { GridBagConstraints c
+			 * = new GridBagConstraints(); c.fill = GridBagConstraints.BOTH;
+			 * c.weightx = 0.5; c.weighty = 0; c.gridx = 1; c.gridy = 4;
+			 * c.insets = new Insets(5, 10, 5, 10);
+			 * panel.add(comboBoxStartWithWindows, c); }
+			 */
 			{
 				GridBagConstraints c = new GridBagConstraints();
 				c.fill = GridBagConstraints.HORIZONTAL;
