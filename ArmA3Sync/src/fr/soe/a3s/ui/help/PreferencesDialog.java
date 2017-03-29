@@ -186,10 +186,10 @@ public class PreferencesDialog extends AbstractDialog {
 			}
 			{
 				String[] tab = new String[] {
-						CheckRepositoriesFrequency.DISABLED.getDescription(),
 						CheckRepositoriesFrequency.FREQ1.getDescription(),
 						CheckRepositoriesFrequency.FREQ2.getDescription(),
-						CheckRepositoriesFrequency.FREQ3.getDescription() };
+						CheckRepositoriesFrequency.FREQ3.getDescription(),
+						CheckRepositoriesFrequency.DISABLED.getDescription() };
 
 				ComboBoxModel comboBoxCheckRepositoryFrequencyModel = new DefaultComboBoxModel(
 						tab);
