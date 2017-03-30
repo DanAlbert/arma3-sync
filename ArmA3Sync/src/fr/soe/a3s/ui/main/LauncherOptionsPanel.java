@@ -256,13 +256,16 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener,
 				checkBoxMaxMemory.setFocusable(false);
 				comboBoxMaxMemory = new JComboBox();
 				comboBoxMaxMemory.setFocusable(false);
+
 				ComboBoxModel maxMemoryModel = new DefaultComboBoxModel(
 						new String[] {
 								"",
 								Integer.toString(MaxMemoryValues.MIN.getValue()),
 								Integer.toString(MaxMemoryValues.MEDIUM
 										.getValue()),
-								Integer.toString(MaxMemoryValues.MAX.getValue()) });
+								Integer.toString(MaxMemoryValues.MAX.getValue()),
+								Integer.toString(MaxMemoryValues.MAX64
+										.getValue()) });
 				comboBoxMaxMemory.setModel(maxMemoryModel);
 			}
 			{
