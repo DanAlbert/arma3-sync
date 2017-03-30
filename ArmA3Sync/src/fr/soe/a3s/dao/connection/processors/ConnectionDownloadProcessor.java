@@ -120,6 +120,12 @@ public class ConnectionDownloadProcessor implements DataAccessConstants {
 								}
 							}
 						} else {// no more file to download for this DAO
+							
+							connexionDAO.setActiveConnection(false);
+							if (connexionDAO.isAcquiredSemaphore()) {
+								releaseSemaphore();
+								connexionDAO.setAcquiredSemaphore(false);
+							}
 
 							// Check if there is no more active connections
 							boolean downloadFinished = true;
