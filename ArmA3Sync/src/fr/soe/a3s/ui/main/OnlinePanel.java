@@ -306,6 +306,11 @@ public class OnlinePanel extends JPanel implements UIConstants {
 		}
 
 		if (index < list.size()) {
+			if (list.get(index).getName()
+					.equals(configurationService.getServerName())) {
+				configurationService.setServerName(null);
+				facade.getMainPanel().updateTabs(OP_ADDON_SELECTION_CHANGED);
+			}
 			list.remove(index);
 		}
 

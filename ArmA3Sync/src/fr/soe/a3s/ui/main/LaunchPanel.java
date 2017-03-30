@@ -204,7 +204,6 @@ public class LaunchPanel extends JPanel implements UIConstants {
 			if (defaultModset != null) {
 				this.joinServerComboBox.setSelectedItem(serverName + " - "
 						+ defaultModset);
-
 			} else {
 				this.joinServerComboBox.setSelectedItem(serverName);
 			}
