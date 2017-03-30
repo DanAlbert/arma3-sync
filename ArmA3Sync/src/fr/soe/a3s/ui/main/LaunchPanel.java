@@ -248,19 +248,20 @@ public class LaunchPanel extends JPanel implements UIConstants {
 							String name = ((RepositoryDTO) objectDTO).getName();
 							list.add(name);
 							facade.getAddonsPanel().getGroupManager()
-									.addGroupFromRepository(list,false);
+									.addGroupFromRepository(list, false);
 						} else if (objectDTO instanceof EventDTO) {
 							List<EventDTO> eventDTOs = new ArrayList<EventDTO>();
 							EventDTO eventDTO = (EventDTO) objectDTO;
 							eventDTOs.add(eventDTO);
 							facade.getAddonsPanel().getGroupManager()
-									.addGroupFromEvents(eventDTOs,false);
+									.addGroupFromEvents(eventDTOs, false);
 						}
 						facade.getAddonsPanel().getGroupManager()
 								.select(modsetName);
 					}
 				}
 			}
+			facade.getMainPanel().updateTabs(OP_ADDON_SELECTION_CHANGED);
 		}
 	}
 
@@ -286,8 +287,7 @@ public class LaunchPanel extends JPanel implements UIConstants {
 		/* Blocking messages */
 		try {
 			// Check selected addons
-			facade.getMainPanel().updateTabs(
-					OP_ADDON_FILES_CHANGED);
+			facade.getMainPanel().updateTabs(OP_ADDON_FILES_CHANGED);
 			List<String> missingAddons = launchService.getMissingAddons();
 			if (missingAddons.size() != 0) {
 				throw new LaunchException("Some addons are missing.");

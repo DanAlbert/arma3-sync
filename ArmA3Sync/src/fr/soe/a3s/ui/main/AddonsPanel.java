@@ -1128,8 +1128,6 @@ public class AddonsPanel extends JPanel implements UIConstants {
 					TreeDirectoryDTO treeDirectoryDTO = treeDirectoryDTO = (TreeDirectoryDTO) node;
 					selectAllDescending(treeDirectoryDTO);
 					profileService.setAddonGroups(racine2);
-					facade.getMainPanel()
-							.updateTabs(OP_ADDON_SELECTION_CHANGED);
 					break;
 				}
 			}
