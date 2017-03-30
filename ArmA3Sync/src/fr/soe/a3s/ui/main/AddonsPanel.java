@@ -1044,9 +1044,11 @@ public class AddonsPanel extends JPanel implements UIConstants {
 			for (int i = 0; i < nodes.length; i++) {
 				TreeNodeDTO parent = nodes[i].getParent();
 				if (parent != null) {
-					if (configurationService.getDefaultModset().equals(
-							nodes[i].getName())) {
-						configurationService.setDefautlModset(null);
+					if (configurationService.getDefaultModset()!=null){
+						if (configurationService.getDefaultModset().equals(
+								nodes[i].getName())) {
+							configurationService.setDefautlModset(null);
+						}
 					}
 					((TreeDirectoryDTO) parent).removeTreeNode(nodes[i]);
 				}
