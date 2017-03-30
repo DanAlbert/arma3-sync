@@ -2,13 +2,13 @@ package fr.soe.a3s.main;
 
 public class Version {
 
-	private static final String NAME = "1.6 Beta 4";
+	private static final String NAME = "1.6";
 
 	private static final int MAJOR = 1;
 
 	private static final int MINOR = 6;
 
-	private static final int BUILD = 88;
+	private static final int BUILD = 89;
 
 	private static final String YEAR = "2013-2017";
 

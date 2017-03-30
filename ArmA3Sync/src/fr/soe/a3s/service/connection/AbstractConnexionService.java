@@ -36,11 +36,21 @@ public class AbstractConnexionService extends ObjectDTOtransformer {
 					if (favoriteServerNewList2.getName().equals(
 							favoriteServerList2.getName())) {
 						found = true;
+						favoriteServerNewList2.setIpAddress(favoriteServerList2.getIpAddress());
+						favoriteServerNewList2.setPort(favoriteServerList2.getPort());
+						favoriteServerNewList2.setPassword(favoriteServerList2.getPassword());
+						if (favoriteServerList2.getModsetName()!=null){
+							if (!favoriteServerList2.getModsetName().isEmpty()){
+								favoriteServerNewList2.setModsetName(favoriteServerList2.getModsetName());
+							}
+						}
 						break;
 					}
 				}
 				if (!found){
 					newList2.add(favoriteServerList2);
+				}else {
+					
 				}
 			}
 
