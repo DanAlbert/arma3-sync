@@ -61,7 +61,7 @@ public class ImageResizer {
 
 		IconResize iconResize = preferencesService.getPreferences()
 				.getIconResizeSize();
-		if (iconResize.equals(IconResize.DEFAULT)) {
+		if (iconResize.equals(IconResize.AUTO)) {
 			newImageHeight = screenHeight * imageHeight / 1050;
 			newImageWidth = screenWidth * imageWidth / 1680;
 		} else {

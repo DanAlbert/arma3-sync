@@ -158,8 +158,7 @@ public class PreferencesDialog extends AbstractDialog {
 				comboBoxLookAndFeel.setFocusable(false);
 			}
 			{
-				String[] tab = new String[] {
-						IconResize.DEFAULT.getDescription(),
+				String[] tab = new String[] { IconResize.AUTO.getDescription(),
 						IconResize.SIZE1.getDescription(),
 						IconResize.SIZE2.getDescription(),
 						IconResize.SIZE3.getDescription(),
@@ -353,22 +352,20 @@ public class PreferencesDialog extends AbstractDialog {
 			comboBoxIconResize.setSelectedItem(iconResize);
 		}
 
-		if (System.getProperty("os.name").toLowerCase().contains("Windows")) {
-			comboBoxStartWithWindows.setEnabled(false);
-			checkBoxStartWithWindows.setSelected(false);
-			checkBoxStartWithWindows.setEnabled(false);
-			comboBoxStartWithWindows.setSelectedItem(StartWithOS.DISABLED
-					.getDescription());
-		} else {
-			comboBoxStartWithWindows.setEnabled(true);
-			checkBoxStartWithWindows.setSelected(true);
-			checkBoxStartWithWindows.setEnabled(true);
-			String startWithWindows = preferencesDTO.getStartWithOS()
-					.getDescription();
-			if (startWithWindows != null) {
-				comboBoxStartWithWindows.setSelectedItem(startWithWindows);
-			}
-		}
+		/*
+		 * if (System.getProperty("os.name").toLowerCase().contains("Windows"))
+		 * { comboBoxStartWithWindows.setEnabled(false);
+		 * checkBoxStartWithWindows.setSelected(false);
+		 * checkBoxStartWithWindows.setEnabled(false);
+		 * comboBoxStartWithWindows.setSelectedItem(StartWithOS.DISABLED
+		 * .getDescription()); } else {
+		 * comboBoxStartWithWindows.setEnabled(true);
+		 * checkBoxStartWithWindows.setSelected(true);
+		 * checkBoxStartWithWindows.setEnabled(true); String startWithWindows =
+		 * preferencesDTO.getStartWithOS() .getDescription(); if
+		 * (startWithWindows != null) {
+		 * comboBoxStartWithWindows.setSelectedItem(startWithWindows); } }
+		 */
 
 		String checkRepositoryFrequency = preferencesDTO
 				.getCheckRepositoriesFrequency().getDescription();
@@ -406,20 +403,14 @@ public class PreferencesDialog extends AbstractDialog {
 				.setCheckRepositoriesFrequency(newCheckRepositoriesFrequency);
 
 		/* Update Windows Registry */
-		if (System.getProperty("os.name").toLowerCase().contains("windows")) {
-			if (newStartWithOS.equals(StartWithOS.ENABLED)) {
-				boolean ok = preferencesServices.addToRunWindowsRegistry(facade
-						.isDevMode());
-				if (ok) {
-					facade.setRunMode(true);
-				} else {
-					facade.setRunMode(false);
-				}
-			} else {
-				preferencesServices.deleteFromRunWindowsRegistry();
-				facade.setRunMode(false);
-			}
-		}
+		/*
+		 * if (System.getProperty("os.name").toLowerCase().contains("windows"))
+		 * { if (newStartWithOS.equals(StartWithOS.ENABLED)) { boolean ok =
+		 * preferencesServices.addToRunWindowsRegistry(facade .isDevMode()); if
+		 * (ok) { facade.setRunMode(true); } else { facade.setRunMode(false); }
+		 * } else { preferencesServices.deleteFromRunWindowsRegistry();
+		 * facade.setRunMode(false); } }
+		 */
 
 		/* Update task manager */
 		TasksManager tasksManager = TasksManager.getInstance();

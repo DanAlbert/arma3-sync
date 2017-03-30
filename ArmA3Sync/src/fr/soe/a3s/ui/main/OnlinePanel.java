@@ -22,7 +22,6 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
-import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.border.BevelBorder;
 import javax.swing.event.PopupMenuEvent;
@@ -171,7 +170,7 @@ public class OnlinePanel extends JPanel implements UIConstants {
 					configurationService.setFavoriteServers(list);
 					configurationService.setServerName(null);
 					configurationService.setDefautlModset(null);
-					updateTableServers();
+					updateTableServers(-1);
 					facade.getMainPanel().updateTabs(OP_ONLINE_CHANGED);
 				}
 			}
@@ -203,17 +202,15 @@ public class OnlinePanel extends JPanel implements UIConstants {
 
 		if (flag == OP_PROFILE_CHANGED || flag == OP_REPOSITORY_CHANGED
 				|| flag == OP_GROUP_CHANGED) {
-			updateTableServers();
+			updateTableServers(flag);
 			facade.getMainPanel().updateTabs(OP_ONLINE_CHANGED);
 		}
 	}
 
-	private void updateTableServers() {
+	private void updateTableServers(int flag) {
 
 		isModifying = true;
 		tableServers.setEnabled(false);
-
-		List<String> list = getModsetList();
 
 		List<FavoriteServerDTO> favoriteServersDTO = configurationService
 				.getFavoriteServers();
@@ -227,6 +224,15 @@ public class OnlinePanel extends JPanel implements UIConstants {
 			int port = favoriteServerDTO.getPort();
 			String password = favoriteServerDTO.getPassword();
 			String modsetName = favoriteServerDTO.getModsetName();
+
+			if (flag == OP_GROUP_CHANGED) {
+				List<String> list = getModsetList();
+				if (!list.contains(modsetName)) {
+					modsetName = null;
+					favoriteServerDTO.setModsetName(null);
+				}
+			}
+
 			if (description == null) {
 				description = "";
 			}
@@ -238,10 +244,8 @@ public class OnlinePanel extends JPanel implements UIConstants {
 			}
 			if (modsetName == null) {
 				modsetName = "";
-			} else if (!list.contains(modsetName)) {
-				modsetName = "";
-				favoriteServerDTO.setModsetName(null);
 			}
+
 			model.addRow(i, i);
 			model.setValueAt(description, i, 0);
 			model.setValueAt(ipAddress, i, 1);
@@ -272,7 +276,7 @@ public class OnlinePanel extends JPanel implements UIConstants {
 		favoriteServerDTO.setPort(0);
 		list.add(favoriteServerDTO);
 		configurationService.setFavoriteServers(list);
-		updateTableServers();
+		updateTableServers(-1);
 		facade.getMainPanel().updateTabs(OP_ONLINE_CHANGED);
 	}
 
@@ -306,7 +310,7 @@ public class OnlinePanel extends JPanel implements UIConstants {
 		}
 
 		configurationService.setFavoriteServers(list);
-		updateTableServers();
+		updateTableServers(-1);
 		if (index != 0) {
 			tableServers.setRowSelectionInterval(index - 1, index - 1);
 		}

@@ -2,7 +2,7 @@ package fr.soe.a3s.constant;
 
 public enum IconResize {
 
-	DEFAULT("Default", 0), SIZE1("x1.25", 1.25), SIZE2("x1.5", 1.5), SIZE3(
+	AUTO("Default", 0), SIZE1("x1.25", 1.25), SIZE2("x1.5", 1.5), SIZE3(
 			"x1.75", 1.75), SIZE4("x2", 2), NONE("Disabled", 1);
 
 	private String description;
@@ -34,8 +34,8 @@ public enum IconResize {
 			return SIZE3;
 		} else if (iconResize.equals(SIZE4.getDescription())) {
 			return SIZE4;
-		} else if (iconResize.equals(DEFAULT.getDescription())) {
-			return DEFAULT;
+		} else if (iconResize.equals(AUTO.getDescription())) {
+			return AUTO;
 		} else {
 			return null;
 		}
