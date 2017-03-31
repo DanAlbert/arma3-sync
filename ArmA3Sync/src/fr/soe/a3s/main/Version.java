@@ -2,7 +2,7 @@ package fr.soe.a3s.main;
 
 public class Version {
 
-	private static final String NAME = "1.6";
+	private static final String NAME = "1.6 Beta 5";
 
 	private static final int MAJOR = 1;
 
