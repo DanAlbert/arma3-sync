@@ -33,7 +33,6 @@ import javax.net.ssl.X509TrustManager;
 import javax.xml.bind.DatatypeConverter;
 
 import org.apache.commons.io.output.CountingOutputStream;
-import org.apache.commons.net.util.Base64;
 
 import fr.soe.a3s.constant.ProtocolType;
 import fr.soe.a3s.domain.AbstractProtocole;
@@ -151,8 +150,9 @@ public class MyHttpConnection {
 			// http://stackoverflow.com/questions/37170850/java-illegal-characters-in-message-header-value-basic
 			if (!(login.equalsIgnoreCase("anonymous"))) {
 				String userCredentials = login + ":" + password;
-				String basicAuth = "Basic " + DatatypeConverter.printBase64Binary(
-						userCredentials.getBytes(StandardCharsets.UTF_8));
+				String basicAuth = "Basic "
+						+ DatatypeConverter.printBase64Binary(userCredentials
+								.getBytes(StandardCharsets.UTF_8));
 				urLConnection.setRequestProperty("Authorization", basicAuth);
 			}
 		} catch (NumberFormatException | NoSuchAlgorithmException
@@ -444,6 +444,8 @@ public class MyHttpConnection {
 
 		InputStream inputStream = null;
 		CountingOutputStream dos = null;
+		byte[] bytes = null;
+		ByteArrayOutputStream byteArrayBuffer = null;
 
 		try {
 			long start = rangeList.get(0).getStart();
@@ -477,7 +479,7 @@ public class MyHttpConnection {
 
 			final long startTime = System.nanoTime();
 
-			ByteArrayOutputStream byteArrayBuffer = new ByteArrayOutputStream();
+			byteArrayBuffer = new ByteArrayOutputStream();
 			dos = new CountingOutputStream(byteArrayBuffer) {
 				@Override
 				protected void afterWrite(int n) throws IOException {
@@ -521,10 +523,9 @@ public class MyHttpConnection {
 				buffer.clear();
 			}
 
-			byte[] bytes = byteArrayBuffer.toByteArray();
+			bytes = byteArrayBuffer.toByteArray();
 			contLen = bytes.length;
 			allData += contLen;
-			return bytes;
 		} finally {
 			if (inputStream != null) {
 				inputStream.close();
@@ -532,7 +533,11 @@ public class MyHttpConnection {
 			if (dos != null) {
 				dos.close();
 			}
+			if (byteArrayBuffer != null) {
+				byteArrayBuffer.close();
+			}
 		}
+		return bytes;
 	}
 
 	/**

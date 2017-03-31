@@ -264,9 +264,14 @@ public class FileMaker {
 						http.openConnection(targetRelativeFileUrl);
 						data = http.getResponseBody(rangeList, partFile,
 								cumulatedBytesDownloaded);
+						http.closeConnection();
+
+						if (data == null) {
+							break;
+						}
+
 						cumulatedBytesDownloaded = cumulatedBytesDownloaded
 								+ data.length;
-						http.closeConnection();
 					}
 
 					if (http.getHttpDAO().isCanceled()) {
@@ -277,9 +282,14 @@ public class FileMaker {
 							(int) mfr.getLength());
 					int offset = (range - rangeList.size())
 							* mfr.getBlocksize();
-					buffer.put(data, offset, blockLength);
-					buffer.flip();
-					wChannel.write(buffer);
+
+					if (offset >= 0 && offset <= data.length
+							&& blockLength >= 0
+							&& blockLength <= (data.length - offset)) {
+						buffer.put(data, offset, blockLength);
+						buffer.flip();
+						wChannel.write(buffer);
+					}
 					buffer.clear();
 					rangeList.remove(0);
 					if (rangeList.isEmpty()) {
