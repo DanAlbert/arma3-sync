@@ -233,6 +233,7 @@ public class CommandGeneral {
 	private class AddonsUpdater {
 
 		private final String repositoryName;
+		private boolean lost;
 		//
 		private AddonsChecker addonsChecker;
 		private AddonsDownloader addonsDownloader;
@@ -250,6 +251,8 @@ public class CommandGeneral {
 
 			System.out.println("Synchronising with repository: "
 					+ repositoryName);
+
+			lost = false;
 
 			filesManager = new FilesSynchronizationManager();
 			addonsChecker = new AddonsChecker();
@@ -304,6 +307,9 @@ public class CommandGeneral {
 			if (check1IsDone && check2IsDone) {
 				System.out.println("Synchronization with repository: "
 						+ repositoryName + " finished.");
+				addonsChecker = null;
+				addonsDownloader = null;
+				System.gc();
 				observerEndUpdate.end();
 			} else if (check1IsDone && !check2IsDone) {
 				addonsDownloader.run();
@@ -327,17 +333,23 @@ public class CommandGeneral {
 							ex);
 				}
 			}
+			addonsChecker = null;
+			addonsDownloader = null;
+			System.gc();
 			observerEndUpdate.end();
 		}
 
 		private void executeConnectionLost() {
 
-			System.out.println("Synchronization with repository: "
-					+ repositoryName + " - Connection failed.");
-			try {
-				Thread.sleep(5000);
-				addonsDownloader.run();
-			} catch (InterruptedException e) {
+			if (!lost) {
+				lost = true;
+				System.out.println("Synchronization with repository: "
+						+ repositoryName + " - Connection failed.");
+				try {
+					Thread.sleep(5000);
+					addonsDownloader.run();
+				} catch (InterruptedException e) {
+				}
 			}
 		}
 
@@ -363,7 +375,12 @@ public class CommandGeneral {
 						executeUpdateCheck(value);
 					}
 				});
-				filesCheckProcessor.addObserverError(observerError);
+				filesCheckProcessor.addObserverError(new ObserverError() {
+					@Override
+					public void error(List<Exception> errors) {
+						executeError(errors);
+					}
+				});
 
 				filesCompletionProcessor = new FilesCompletionProcessor(
 						repositoryName);
@@ -380,7 +397,12 @@ public class CommandGeneral {
 						executeEnd();
 					}
 				});
-				filesCompletionProcessor.addObserverError(observerError);
+				filesCompletionProcessor.addObserverError(new ObserverError() {
+					@Override
+					public void error(List<Exception> errors) {
+						executeError(errors);
+					}
+				});
 
 				this.parent = filesCheckProcessor.run();// blocking
 														// execution
@@ -404,19 +426,29 @@ public class CommandGeneral {
 
 			private void executeEnd() {
 
-				filesManager.setParent(parent);
-				selectAll(parent);
-				filesManager.update();
+				if (parent != null) {
+					filesManager.setParent(parent);
+					selectAll(parent);
+					filesManager.update();
 
-				System.out.println("Number of files to update = "
-						+ filesManager.getListFilesToUpdate().size());
-				System.out.println("Number of files to delete = "
-						+ filesManager.getListFilesToDelete().size());
-				System.out.println("Update files size: "
-						+ UnitConverter.convertSize(filesManager
-								.getTotalDownloadFilesSize()));
-
+					System.out.println("Number of files to update = "
+							+ filesManager.getListFilesToUpdate().size());
+					System.out.println("Number of files to delete = "
+							+ filesManager.getListFilesToDelete().size());
+					System.out.println("Update files size: "
+							+ UnitConverter.convertSize(filesManager
+									.getTotalDownloadFilesSize()));
+				}
+				filesCheckProcessor.cancel();
+				filesCompletionProcessor.cancel();
 				observerEnd.end();
+			}
+
+			private void executeError(List<Exception> errors) {
+
+				filesCheckProcessor.cancel();
+				filesCompletionProcessor.cancel();
+				observerError.error(errors);
 			}
 
 			private void selectAll(SyncTreeNodeDTO node) {
@@ -477,11 +509,23 @@ public class CommandGeneral {
 								executeProceedDelete();
 							}
 						});
-				filesSynchronizationProcessor.addObserverError(observerError);
 				filesSynchronizationProcessor
-						.addObserverConnectionLost(observerConnectionLost);
+						.addObserverError(new ObserverError() {
+							@Override
+							public void error(List<Exception> errors) {
+								executeError(errors);
+							}
+						});
+				filesSynchronizationProcessor
+						.addObserverConnectionLost(new ObserverConnectionLost() {
+							@Override
+							public void lost() {
+								executeConnectionLost();
+							}
+						});
 
 				value = 0;
+				lost = false;
 				filesSynchronizationProcessor.run();
 			}
 
@@ -497,7 +541,18 @@ public class CommandGeneral {
 			}
 
 			private void executeEnd() {
+				filesSynchronizationProcessor.cancel();
 				observerEnd.end();
+			}
+
+			private void executeError(List<Exception> errors) {
+				filesSynchronizationProcessor.cancel();
+				observerError.error(errors);
+			}
+
+			private void executeConnectionLost() {
+				filesSynchronizationProcessor.cancel();
+				observerConnectionLost.lost();
 			}
 
 			public void addObserverEnd(ObserverEnd obs) {
