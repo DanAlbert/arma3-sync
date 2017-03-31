@@ -270,8 +270,12 @@ public class AddonsDownloader extends Thread implements DataAccessConstants {
 
 	private void executeUpdateSpeed(final long value) {
 		if (!canceled) {
-			downloadPanel.getLabelSpeedValue().setText(
-					UnitConverter.convertSpeed(value));
+			if (value == 0) {
+				downloadPanel.getLabelSpeedValue().setText("-");
+			} else {
+				downloadPanel.getLabelSpeedValue().setText(
+						UnitConverter.convertSpeed(value));
+			}
 		}
 	}
 
@@ -381,7 +385,7 @@ public class AddonsDownloader extends Thread implements DataAccessConstants {
 
 			initDownloadPanelForEndDownload();
 			terminate();
-			
+
 			// Download panel
 			observerConnectionLost.lost();
 		}
