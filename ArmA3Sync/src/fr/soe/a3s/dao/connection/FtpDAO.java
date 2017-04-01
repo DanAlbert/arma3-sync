@@ -227,14 +227,10 @@ public class FtpDAO extends AbstractConnexionDAO {
 					long nbBytes = getByteCount();
 					long endTime = System.nanoTime();
 					long totalTime = endTime - startTime;
-					
+
 					setCountFileSize(nbBytes);
-					
-					if (acquiredSemaphore) {
-						updateObserverDownloadSingleSizeProgress();
-					}
-					
-					if (totalTime > Math.pow(10, 9) * 0.25) {//0.25s
+
+					if (totalTime > Math.pow(10, 9) * 0.25) {// 0.25s
 						long speed = (long) ((nbBytes * Math.pow(10, 9)) / totalTime);// B/s
 						if (maximumClientDownloadSpeed != 0) {
 							if (speed > maximumClientDownloadSpeed) {
@@ -246,12 +242,13 @@ public class FtpDAO extends AbstractConnexionDAO {
 								}
 							}
 						}
-			
-						setSpeed(speed);
 
-						if (acquiredSemaphore) {
-							updateObserverDownloadSpeed();
-						}
+						setSpeed(speed);
+					}
+
+					if (acquiredSemaphore) {
+						updateObserverDownloadSingleSizeProgress();
+						updateObserverDownloadSpeed();
 					}
 				}
 			};

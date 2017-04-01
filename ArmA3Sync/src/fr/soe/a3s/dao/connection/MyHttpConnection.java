@@ -297,13 +297,9 @@ public class MyHttpConnection {
 
 					long endTime = System.nanoTime();
 					long totalTime = endTime - startTime;
-					
+
 					httpDAO.setCountFileSize(nbBytes);
-					
-					if (httpDAO.isAcquiredSemaphore()) {
-						httpDAO.updateObserverDownloadSingleSizeProgress();
-					}
-					
+
 					if (totalTime > Math.pow(10, 9) * 0.25) {// 0.25s
 						long speed = (long) ((nbBytes * Math.pow(10, 9)) / totalTime);// B/s
 						if (httpDAO.getMaximumClientDownloadSpeed() != 0) {
@@ -319,10 +315,11 @@ public class MyHttpConnection {
 						}
 
 						httpDAO.setSpeed(speed);
+					}
 
-						if (httpDAO.isAcquiredSemaphore()) {
-							httpDAO.updateObserverDownloadSpeed();
-						}
+					if (httpDAO.isAcquiredSemaphore()) {
+						httpDAO.updateObserverDownloadSingleSizeProgress();
+						httpDAO.updateObserverDownloadSpeed();
 					}
 				}
 			};
@@ -493,14 +490,9 @@ public class MyHttpConnection {
 
 					long endTime = System.nanoTime();
 					long totalTime = endTime - startTime;
-	
-					httpDAO.setCountFileSize(cumulatedBytesDownloaded
-							+ nbBytes);
-					
-					if (httpDAO.isAcquiredSemaphore()) {
-						httpDAO.updateObserverDownloadSingleSizeProgress();
-					}
-					
+
+					httpDAO.setCountFileSize(cumulatedBytesDownloaded + nbBytes);
+
 					if (totalTime > Math.pow(10, 9) * 0.25) {// 0.25s
 						long speed = (long) ((nbBytes * Math.pow(10, 9)) / totalTime);// B/s
 						if (httpDAO.getMaximumClientDownloadSpeed() != 0) {
@@ -516,10 +508,11 @@ public class MyHttpConnection {
 						}
 
 						httpDAO.setSpeed(speed);
+					}
 
-						if (httpDAO.isAcquiredSemaphore()) {
-							httpDAO.updateObserverDownloadSpeed();
-						}
+					if (httpDAO.isAcquiredSemaphore()) {
+						httpDAO.updateObserverDownloadSingleSizeProgress();
+						httpDAO.updateObserverDownloadSpeed();
 					}
 				}
 			};
