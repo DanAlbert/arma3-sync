@@ -400,8 +400,24 @@ public class AddonService extends ObjectDTOtransformer implements
 							.getName());
 					for (String key : duplicateKeys) {
 						Addon addon = addonDAO.getMap().get(key);
-						if (addon.getPath().contains(repositoryPath)) {
+						if (addon.getPath().equals(repositoryPath)) {
 							leaf.setName(key);
+						} else if (addon.getPath().contains(repositoryPath)) {
+							File file = new File(addon.getPath());
+							File parent = file.getParentFile();
+							boolean found = false;
+							while (parent != null) {
+								if (parent.getAbsolutePath().equals(
+										repositoryPath)) {
+									found = true;
+									break;
+								} else {
+									parent = file.getParentFile();
+								}
+							}
+							if (found) {
+								leaf.setName(key);
+							}
 						}
 					}
 				}
