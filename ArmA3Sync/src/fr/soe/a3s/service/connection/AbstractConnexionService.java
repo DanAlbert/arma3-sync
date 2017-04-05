@@ -12,7 +12,8 @@ public class AbstractConnexionService extends ObjectDTOtransformer {
 
 	protected static final ConfigurationDAO configurationDAO = new ConfigurationDAO();
 
-	protected void updateFavoriteServersFromAutoconfig(AutoConfig autoConfig) {
+	protected synchronized void updateFavoriteServersFromAutoconfig(
+			AutoConfig autoConfig) {
 
 		if (autoConfig != null) {
 			List<FavoriteServer> list1 = autoConfig.getFavoriteServers();
@@ -29,28 +30,33 @@ public class AbstractConnexionService extends ObjectDTOtransformer {
 			for (FavoriteServer favoriteServerList1 : list1) {
 				newList2.add(favoriteServerList1);
 			}
-			
+
 			for (FavoriteServer favoriteServerList2 : list2) {
 				boolean found = false;
 				for (FavoriteServer favoriteServerNewList2 : newList2) {
 					if (favoriteServerNewList2.getName().equals(
 							favoriteServerList2.getName())) {
 						found = true;
-						favoriteServerNewList2.setIpAddress(favoriteServerList2.getIpAddress());
-						favoriteServerNewList2.setPort(favoriteServerList2.getPort());
-						favoriteServerNewList2.setPassword(favoriteServerList2.getPassword());
-						if (favoriteServerList2.getModsetName()!=null){
-							if (!favoriteServerList2.getModsetName().isEmpty()){
-								favoriteServerNewList2.setModsetName(favoriteServerList2.getModsetName());
+						favoriteServerNewList2.setIpAddress(favoriteServerList2
+								.getIpAddress());
+						favoriteServerNewList2.setPort(favoriteServerList2
+								.getPort());
+						favoriteServerNewList2.setPassword(favoriteServerList2
+								.getPassword());
+						if (favoriteServerList2.getModsetName() != null) {
+							if (!favoriteServerList2.getModsetName().isEmpty()) {
+								favoriteServerNewList2
+										.setModsetName(favoriteServerList2
+												.getModsetName());
 							}
 						}
 						break;
 					}
 				}
-				if (!found){
+				if (!found) {
 					newList2.add(favoriteServerList2);
-				}else {
-					
+				} else {
+
 				}
 			}
 
