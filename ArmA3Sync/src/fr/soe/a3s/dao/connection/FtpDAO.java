@@ -704,7 +704,8 @@ public class FtpDAO extends AbstractConnexionDAO {
 					throw new IOException();
 				} else {
 					int bytesRead = -1;
-					byte[] buffer = new byte[BUFFER_SIZE];
+					byte[] buffer = new byte[1048576];// 1024*1024
+														// http://stackoverflow.com/questions/14000341/why-is-ftp-upload-slow-in-java-7
 					while ((bytesRead = uis.read(buffer)) != -1 && !canceled) {
 						outputStream.write(buffer, 0, bytesRead);
 					}
