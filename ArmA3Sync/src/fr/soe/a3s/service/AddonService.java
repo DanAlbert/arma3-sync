@@ -411,8 +411,11 @@ public class AddonService extends ObjectDTOtransformer implements
 										repositoryPath)) {
 									found = true;
 									break;
-								} else {
+								} else if (parent.getAbsolutePath().contains(
+										repositoryPath)) {
 									parent = file.getParentFile();
+								} else {
+									break;
 								}
 							}
 							if (found) {
