@@ -48,6 +48,7 @@ public class RepositoryBuildProcessor {
 			observerEnd.end();
 		} catch (Exception e) {
 			List<Exception> errors = new ArrayList<Exception>();
+			errors.add(e);
 			observerError.error(errors);
 		} finally {
 			repositoryService.setBuilding(repositoryName, false);
