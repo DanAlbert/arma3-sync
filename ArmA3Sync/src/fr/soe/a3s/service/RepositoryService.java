@@ -16,6 +16,7 @@ import java.util.TreeMap;
 import fr.soe.a3s.constant.ProtocolType;
 import fr.soe.a3s.constant.RepositoryStatus;
 import fr.soe.a3s.dao.AddonDAO;
+import fr.soe.a3s.dao.ConfigurationDAO;
 import fr.soe.a3s.dao.DataAccessConstants;
 import fr.soe.a3s.dao.repository.RepositoryBuildProcessor;
 import fr.soe.a3s.dao.repository.RepositoryDAO;
@@ -58,6 +59,7 @@ public class RepositoryService extends ObjectDTOtransformer implements
 		DataAccessConstants {
 
 	private static final RepositoryDAO repositoryDAO = new RepositoryDAO();
+	private static final ConfigurationDAO configurationDAO = new ConfigurationDAO();
 	private static final AddonDAO addonDAO = new AddonDAO();
 	private final RepositoryBuildProcessor repositoryBuildProcessor = new RepositoryBuildProcessor();
 	private final RepositorySHA1Processor repositorySHA1Processor = new RepositorySHA1Processor();
@@ -260,6 +262,124 @@ public class RepositoryService extends ObjectDTOtransformer implements
 			}
 		} else {
 			throw new RepositoryNotFoundException(repositoryName);
+		}
+	}
+
+	public void updateRepository(String repositoryName) {
+
+		Repository repository = repositoryDAO.getMap().get(repositoryName);
+		if (repository != null) {
+			if (!repository.isUpdating()){
+				repository.setUpdating(true);
+				
+				/**/
+				if (repository.getServerInfo() != null) {
+					repository.getHiddenFolderPath().addAll(
+							repository.getServerInfo().getHiddenFolderPaths());
+					if (repository.getNumberOfClientConnections() == 0) {
+						repository.setNumberOfClientConnections(repository
+								.getServerInfo().getNumberOfConnections());
+					}
+				}
+				
+				/**/
+				if (repository.getAutoConfig() != null) {
+
+					List<FavoriteServer> list1 = repository.getAutoConfig()
+							.getFavoriteServers();
+					for (FavoriteServer favoriteServerList1 : list1) {
+						favoriteServerList1.setRepositoryName(repositoryName);
+					}
+
+					List<FavoriteServer> list2 = configurationDAO
+							.getConfiguration().getFavoriteServers();
+
+					List<FavoriteServer> newList2 = new ArrayList<FavoriteServer>();
+
+					for (FavoriteServer favoriteServerList1 : list1) {
+						newList2.add(favoriteServerList1);
+					}
+
+					for (FavoriteServer favoriteServerList2 : list2) {
+						boolean found = false;
+						for (FavoriteServer favoriteServerNewList2 : newList2) {
+							if (favoriteServerNewList2.getName().equals(
+									favoriteServerList2.getName())) {
+								found = true;
+								favoriteServerNewList2
+										.setIpAddress(favoriteServerList2
+												.getIpAddress());
+								favoriteServerNewList2.setPort(favoriteServerList2
+										.getPort());
+								favoriteServerNewList2
+										.setPassword(favoriteServerList2
+												.getPassword());
+								if (favoriteServerList2.getModsetName() != null) {
+									if (!favoriteServerList2.getModsetName()
+											.isEmpty()) {
+										favoriteServerNewList2
+												.setModsetName(favoriteServerList2
+														.getModsetName());
+									}
+								}
+								break;
+							}
+						}
+						if (!found) {
+							newList2.add(favoriteServerList2);
+						} else {
+
+						}
+					}
+
+					configurationDAO.getConfiguration().updateFavoriteServers(newList2);
+				}
+
+				/**/
+				RepositoryStatus repositoryStatus = RepositoryStatus.INDETERMINATED;
+				ServerInfo serverInfo = repository.getServerInfo();
+				if (serverInfo != null) {
+					if (repository.getRevision() == serverInfo.getRevision()) {
+						repositoryStatus = RepositoryStatus.OK;
+					} else if (repository.getRevision() < serverInfo.getRevision()) {
+						if (serverInfo.isRepositoryContentUpdated()) {
+							repositoryStatus = RepositoryStatus.UPDATED;
+						} else {
+							Changelogs changelogs = repository.getChangelogs();
+							if (changelogs != null) {
+								List<Changelog> list = changelogs.getList();
+								Map<Integer, Boolean> map = new TreeMap<Integer, Boolean>();
+								for (Changelog changelog : list) {
+									map.put(changelog.getRevision(),
+											changelog.isContentUpdated());
+								}
+								boolean change = false;
+								if (map.containsKey(repository.getRevision())) {
+									for (Iterator<Integer> iter = map.keySet()
+											.iterator(); iter.hasNext();) {
+										int revision = iter.next();
+										if (revision > repository.getRevision()) {
+											change = map.get(revision);
+											if (change) {
+												break;
+											}
+										}
+									}
+									if (change) {
+										repositoryStatus = RepositoryStatus.UPDATED;
+									} else {
+										repositoryStatus = RepositoryStatus.OK;
+									}
+								}
+							}
+						}
+					}
+				}
+				// Set Repository Synchronization Status
+				repository.setRepositorySyncStatus(repositoryStatus);
+				
+				repository.setUpdating(false);
+			}
 		}
 	}
 

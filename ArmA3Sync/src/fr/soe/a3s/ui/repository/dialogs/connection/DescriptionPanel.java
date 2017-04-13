@@ -290,6 +290,7 @@ public class DescriptionPanel extends JPanel {
 				try {
 					AutoConfigDTO autoConfigDTO = connexion
 							.importAutoConfig(protocol);
+					
 					if (autoConfigDTO != null) {
 
 						labelConnection.setText("Connection success!");

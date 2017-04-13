@@ -31,8 +31,9 @@ import fr.soe.a3s.exception.FtpException;
 import fr.soe.a3s.exception.repository.RepositoryException;
 import fr.soe.a3s.exception.repository.RepositoryNotFoundException;
 import fr.soe.a3s.main.Version;
+import fr.soe.a3s.service.ObjectDTOtransformer;
 
-public class FtpService extends AbstractConnexionService implements
+public class FtpService extends ObjectDTOtransformer implements
 		ConnexionService, DataAccessConstants {
 
 	private final List<FtpDAO> ftpDAOPool = new ArrayList<FtpDAO>();
@@ -182,14 +183,6 @@ public class FtpService extends AbstractConnexionService implements
 		/* Serverinfo */
 		if (!ftpDAOPool.get(0).isCanceled()) {
 			getServerInfo(repositoryName);
-			if (repository.getServerInfo() != null) {
-				repository.getHiddenFolderPath().addAll(
-						repository.getServerInfo().getHiddenFolderPaths());
-				if (repository.getNumberOfClientConnections() == 0) {
-					repository.setNumberOfClientConnections(repository
-							.getServerInfo().getNumberOfConnections());
-				}
-			}
 		}
 		/* Changelogs */
 		if (!ftpDAOPool.get(0).isCanceled()) {
@@ -202,9 +195,6 @@ public class FtpService extends AbstractConnexionService implements
 		/* Autoconfig */
 		if (!ftpDAOPool.get(0).isCanceled()) {
 			getAutoconfig(repositoryName);
-			if (repository.getAutoConfig() != null) {
-				updateFavoriteServersFromAutoconfig(repository.getAutoConfig());
-			}
 		}
 	}
 
@@ -225,7 +215,6 @@ public class FtpService extends AbstractConnexionService implements
 			AutoConfig autoConfig = ftpDAOPool.get(0)
 					.importAutoConfig(protocol);
 			if (autoConfig != null) {
-				updateFavoriteServersFromAutoconfig(autoConfig);
 				autoConfigDTO = transformAutoConfig2DTO(autoConfig);
 			}
 		} finally {

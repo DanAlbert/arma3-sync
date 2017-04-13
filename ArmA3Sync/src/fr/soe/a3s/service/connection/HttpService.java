@@ -28,8 +28,9 @@ import fr.soe.a3s.exception.repository.RepositoryException;
 import fr.soe.a3s.exception.repository.RepositoryNotFoundException;
 import fr.soe.a3s.exception.repository.ServerInfoNotFoundException;
 import fr.soe.a3s.exception.repository.SyncFileNotFoundException;
+import fr.soe.a3s.service.ObjectDTOtransformer;
 
-public class HttpService extends AbstractConnexionService implements
+public class HttpService extends ObjectDTOtransformer implements
 		ConnexionService, DataAccessConstants {
 
 	private final List<HttpDAO> httpDAOPool = new ArrayList<HttpDAO>();
@@ -169,14 +170,6 @@ public class HttpService extends AbstractConnexionService implements
 		/* Serverinfo */
 		if (!httpDAOPool.get(0).isCanceled()) {
 			getServerInfo(repositoryName);
-			if (repository.getServerInfo() != null) {
-				repository.getHiddenFolderPath().addAll(
-						repository.getServerInfo().getHiddenFolderPaths());
-				if (repository.getNumberOfClientConnections() == 0) {
-					repository.setNumberOfClientConnections(repository
-							.getServerInfo().getNumberOfConnections());
-				}
-			}
 		}
 		/* Changelogs */
 		if (!httpDAOPool.get(0).isCanceled()) {
@@ -189,9 +182,6 @@ public class HttpService extends AbstractConnexionService implements
 		/* Autoconfig */
 		if (!httpDAOPool.get(0).isCanceled()) {
 			getAutoconfig(repositoryName);
-			if (repository.getAutoConfig() != null) {
-				updateFavoriteServersFromAutoconfig(repository.getAutoConfig());
-			}
 		}
 	}
 
@@ -212,7 +202,6 @@ public class HttpService extends AbstractConnexionService implements
 			AutoConfig autoConfig = httpDAOPool.get(0).importAutoConfig(
 					protocol);
 			if (autoConfig != null) {
-				updateFavoriteServersFromAutoconfig(autoConfig);
 				autoConfigDTO = transformAutoConfig2DTO(autoConfig);
 			}
 		} finally {

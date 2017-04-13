@@ -78,6 +78,9 @@ public class Repository implements Serializable {
 
 	/** Repository content check */
 	private transient boolean checking = false;
+	
+	/** Repository updating */
+	private transient boolean updating = false;
 
 	public Repository(String name, AbstractProtocole protocole) {
 		this.name = name;
@@ -423,5 +426,13 @@ public class Repository implements Serializable {
 
 	public void setRepositorySyncStatus(RepositoryStatus repositorySyncStatus) {
 		this.repositorySyncStatus = repositorySyncStatus;
+	}
+	
+	public void setUpdating(boolean value){
+		this.updating = value;
+	}
+
+	public boolean isUpdating() {
+		return this.updating;
 	}
 }

@@ -17,8 +17,9 @@ import fr.soe.a3s.dto.sync.SyncTreeDirectoryDTO;
 import fr.soe.a3s.dto.sync.SyncTreeNodeDTO;
 import fr.soe.a3s.exception.repository.RepositoryException;
 import fr.soe.a3s.exception.repository.RepositoryNotFoundException;
+import fr.soe.a3s.service.ObjectDTOtransformer;
 
-public class BitTorrentService extends AbstractConnexionService implements
+public class BitTorrentService extends ObjectDTOtransformer implements
 		ConnexionService, DataAccessConstants {
 
 	private final List<BitTorrentDAO> bitTorrentDAOpool = new ArrayList<BitTorrentDAO>();

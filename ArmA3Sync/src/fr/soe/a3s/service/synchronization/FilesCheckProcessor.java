@@ -53,6 +53,8 @@ public class FilesCheckProcessor {
 					&& repositoryService.getEvents(repositoryName) == null) {
 				throw new RemoteEventsFileNotFoundException();
 			}
+			
+			repositoryService.updateRepository(repositoryName);
 
 			repositoryService.getRepositorySHA1Processor().addObserverCount(
 					new ObserverCountInt() {

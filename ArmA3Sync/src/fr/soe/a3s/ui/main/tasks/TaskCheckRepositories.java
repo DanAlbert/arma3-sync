@@ -72,6 +72,13 @@ public class TaskCheckRepositories extends TimerTask implements UIConstants {
 		executor.shutdownNow();
 	
 		System.out.println("Checking repositories done.");
+		
+		/* Update local repositories info with remote a3s folder content changed */
+		for (RepositoryDTO repositoryDTO : list) {
+			repositoryService.updateRepository(repositoryDTO.getName());
+		}
+		
+		facade.getMainPanel().updateTabs(OP_REPOSITORY_CHANGED);
 
 		/* Get updated repositories */
 
@@ -79,7 +86,7 @@ public class TaskCheckRepositories extends TimerTask implements UIConstants {
 
 		for (RepositoryDTO repositoryDTO : list) {
 			RepositoryStatus repositoryStatus = repositoryService
-					.determineRepositorySyncStatus(repositoryDTO.getName());
+					.getRepositorySyncStatus(repositoryDTO.getName());
 			if (repositoryStatus.equals(RepositoryStatus.UPDATED)) {
 				updatedRepositoryDTOs.add(repositoryDTO);
 			}
@@ -96,8 +103,6 @@ public class TaskCheckRepositories extends TimerTask implements UIConstants {
 			message = "Repositories updates!";
 			facade.getMainPanel().displayMessageToSystemTray(message);
 		}
-		
-		facade.getMainPanel().updateTabs(OP_REPOSITORY_CHANGED);
 
 		/* Run auto update on repositories */
 

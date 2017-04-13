@@ -57,8 +57,13 @@ public class Configuration implements Serializable {
 		this.serverName = serverName;
 	}
 
-	public List<FavoriteServer> getFavoriteServers() {
+	public synchronized List<FavoriteServer> getFavoriteServers() {
 		return favoriteServers;
+	}
+
+	public synchronized void updateFavoriteServers(List<FavoriteServer> newList) {
+		this.favoriteServers.clear();
+		this.favoriteServers.addAll(newList);
 	}
 
 	public List<ExternalApplication> getExternalApplications() {
@@ -163,5 +168,4 @@ public class Configuration implements Serializable {
 	public void resetLauncherOptions() {
 		launcherOptions = null;
 	}
-
 }

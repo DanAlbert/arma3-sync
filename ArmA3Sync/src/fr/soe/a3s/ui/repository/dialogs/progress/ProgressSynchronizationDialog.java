@@ -10,6 +10,7 @@ import java.util.concurrent.Executors;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
+import fr.soe.a3s.dto.RepositoryDTO;
 import fr.soe.a3s.exception.repository.RepositoryException;
 import fr.soe.a3s.service.RepositoryService;
 import fr.soe.a3s.service.connection.ConnexionService;
@@ -64,6 +65,9 @@ public class ProgressSynchronizationDialog extends AbstractProgressDialog {
 				}
 
 				System.out.println("Synchronization with repositories done.");
+				
+				/* Update local repositories info with remote a3s folder content changed */
+				repositoryService.updateRepository(repositoryName);
 
 				facade.getMainPanel().updateTabs(OP_REPOSITORY_CHANGED);
 
@@ -127,6 +131,11 @@ public class ProgressSynchronizationDialog extends AbstractProgressDialog {
 
 					System.out
 							.println("Synchronization with repositories done.");
+					
+					/* Update local repositories info with remote a3s folder content changed */
+					for (final String repositoryName : repositoryNames) {
+						repositoryService.updateRepository(repositoryName);
+					}
 
 					facade.getMainPanel().updateTabs(OP_REPOSITORY_CHANGED);
 

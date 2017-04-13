@@ -47,7 +47,7 @@ public class MetaFileReader {
 	private File metafile;;
 	private ChainingHash hashtable;
 	private int fileOffset;
-	private final int blockNum;
+	private int blockNum;
 
 	/** Authentication variables */
 	private String username;
@@ -73,7 +73,7 @@ public class MetaFileReader {
 	private final boolean downMetaFile = false;
 	private String extraInputFile;
 	private final int ranges = 100;
-	private long downloadedMetafile = 0;
+	private long downloadedMetafile;
 
 	/**
 	 * Metafile constructor
@@ -92,10 +92,15 @@ public class MetaFileReader {
 		http.getResponseHeader();
 		byte[] mfBytes = http.getResponseBody();
 		http.closeConnection();
-		downloadedMetafile = mfBytes.length;
-		readMetaFile(convertBytesToString(mfBytes));
-		blockNum = (int) Math.ceil((double) mf_length / (double) mf_blocksize);
-		fillHashTable(mfBytes);
+		downloadedMetafile = 0;
+		blockNum = 0;
+		if (mfBytes != null) {
+			downloadedMetafile = mfBytes.length;
+			readMetaFile(convertBytesToString(mfBytes));
+			blockNum = (int) Math.ceil((double) mf_length
+					/ (double) mf_blocksize);
+			fillHashTable(mfBytes);
+		}
 	}
 
 	/**
