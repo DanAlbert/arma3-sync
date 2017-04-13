@@ -111,8 +111,10 @@ public class ConfigurationService extends ObjectDTOtransformer {
 				.getConfiguration().getFavoriteServers();
 		List<FavoriteServerDTO> favoriteServerDTOs = new ArrayList<FavoriteServerDTO>();
 		for (FavoriteServer favoriteServer : favoriteServers) {
-			FavoriteServerDTO f = transformFavoriteServers2DTO(favoriteServer);
-			favoriteServerDTOs.add(f);
+			if (favoriteServer != null) {
+				FavoriteServerDTO f = transformFavoriteServers2DTO(favoriteServer);
+				favoriteServerDTOs.add(f);
+			}
 		}
 		return favoriteServerDTOs;
 	}
