@@ -123,32 +123,38 @@ public class LauncherDAO implements DataAccessConstants, ObservableError,
 			@Override
 			public Integer call() {
 
+				String osName = System.getProperty("os.name");
 				int response = 0;
 				try {
 					if (executableName.contains(".exe")) {
-						int nbParameters = params.size();
-						String[] cmd = new String[1 + nbParameters];
-						cmd[0] = exePath;
-						for (int i = 0; i < nbParameters; i++) {
-							cmd[1 + i] = params.get(i).trim();
-						}
-						Process p = Runtime.getRuntime().exec(cmd);
-						AfficheurFlux fluxSortie = new AfficheurFlux(
-								p.getInputStream());
-						AfficheurFlux fluxErreur = new AfficheurFlux(
-								p.getErrorStream());
-						new Thread(fluxSortie).start();
-						new Thread(fluxErreur).start();
-						p.waitFor();
-						response = p.exitValue();
-					} else if (executableName.contains(".bat")) {
-						String osName = System.getProperty("os.name");
 						if (osName.contains("Windows")) {
-							String[] cmd = new String[4];
+							int nbParameters = params.size();
+							String[] cmd = new String[1 + nbParameters];
+							cmd[0] = exePath;
+							for (int i = 0; i < nbParameters; i++) {
+								cmd[1 + i] = params.get(i).trim();
+							}
+							Process p = Runtime.getRuntime().exec(cmd);
+							AfficheurFlux fluxSortie = new AfficheurFlux(
+									p.getInputStream());
+							AfficheurFlux fluxErreur = new AfficheurFlux(
+									p.getErrorStream());
+							new Thread(fluxSortie).start();
+							new Thread(fluxErreur).start();
+							p.waitFor();
+							response = p.exitValue();
+						}
+					} else if (executableName.contains(".bat")) {
+						if (osName.contains("Windows")) {
+							int nbParameters = params.size();
+							String[] cmd = new String[4 + nbParameters];
 							cmd[0] = "cmd.exe";
 							cmd[1] = "/C";
 							cmd[2] = "start";
 							cmd[3] = exePath;
+							for (int i = 0; i < nbParameters; i++) {
+								cmd[4 + i] = params.get(i).trim();
+							}
 							Process p = Runtime.getRuntime().exec(cmd);
 							AfficheurFlux fluxSortie = new AfficheurFlux(
 									p.getInputStream());
@@ -160,12 +166,15 @@ public class LauncherDAO implements DataAccessConstants, ObservableError,
 							response = p.exitValue();
 						}
 					} else if (executableName.contains(".sh")) {
-						String osName = System.getProperty("os.name");
 						if (osName.contains("Linux")) {
-							String[] cmd = new String[3];
+							int nbParameters = params.size();
+							String[] cmd = new String[3 + nbParameters];
 							cmd[0] = "/bin/bash";
 							cmd[1] = "-c";
 							cmd[2] = exePath;
+							for (int i = 0; i < nbParameters; i++) {
+								cmd[3 + i] = params.get(i).trim();
+							}
 							Process p = Runtime.getRuntime().exec(cmd);
 							AfficheurFlux fluxSortie = new AfficheurFlux(
 									p.getInputStream());
@@ -181,7 +190,7 @@ public class LauncherDAO implements DataAccessConstants, ObservableError,
 								+ " - invalid executable file.");
 					}
 				} catch (Exception e) {
-					List errors = new ArrayList<>();
+					List<Exception> errors = new ArrayList<Exception>();
 					errors.add(e);
 					updateObserverError(errors);
 				}
@@ -199,50 +208,57 @@ public class LauncherDAO implements DataAccessConstants, ObservableError,
 			@Override
 			public Integer call() {
 
+				String osName = System.getProperty("os.name");
 				int response = 0;
 				try {
 					if (executableName.contains(".exe")) {
-						int nbParameters = params.size();
-						String[] cmd = null;
-						if (executableName
-								.equalsIgnoreCase(GameExecutables.BATTLEYE
-										.getDescription())) {
-							cmd = new String[3 + nbParameters];
-							cmd[0] = exePath;
-							cmd[1] = "2";
-							cmd[2] = "1";
-							for (int i = 0; i < nbParameters; i++) {
-								cmd[3 + i] = params.get(i);
+						if (osName.contains("Windows")) {
+							int nbParameters = params.size();
+							String[] cmd = null;
+							if (executableName
+									.equalsIgnoreCase(GameExecutables.BATTLEYE
+											.getDescription())) {
+								cmd = new String[3 + nbParameters];
+								cmd[0] = exePath;
+								cmd[1] = "2";
+								cmd[2] = "1";
+								for (int i = 0; i < nbParameters; i++) {
+									cmd[3 + i] = params.get(i);
+								}
+							} else {
+								cmd = new String[1 + nbParameters];
+								cmd[0] = exePath;
+								for (int i = 0; i < nbParameters; i++) {
+									cmd[1 + i] = params.get(i);
+								}
 							}
-						} else {
-							cmd = new String[1 + nbParameters];
-							cmd[0] = exePath;
-							for (int i = 0; i < nbParameters; i++) {
-								cmd[1 + i] = params.get(i);
+
+							Process p = Runtime.getRuntime().exec(cmd);
+							AfficheurFlux fluxSortie = new AfficheurFlux(
+									p.getInputStream());
+							AfficheurFlux fluxErreur = new AfficheurFlux(
+									p.getErrorStream());
+							new Thread(fluxSortie).start();
+							new Thread(fluxErreur).start();
+							updateObserverEnd();
+							p.waitFor();
+							if (launcherOptions.isAutoRestart()) {
+								call();
 							}
+							response = p.exitValue();
 						}
 
-						Process p = Runtime.getRuntime().exec(cmd);
-						AfficheurFlux fluxSortie = new AfficheurFlux(
-								p.getInputStream());
-						AfficheurFlux fluxErreur = new AfficheurFlux(
-								p.getErrorStream());
-						new Thread(fluxSortie).start();
-						new Thread(fluxErreur).start();
-						updateObserverEnd();
-						p.waitFor();
-						if (launcherOptions.isAutoRestart()) {
-							call();
-						}
-						response = p.exitValue();
 					} else if (executableName.contains(".bat")) {
-						String osName = System.getProperty("os.name");
 						if (osName.contains("Windows")) {
-							String[] cmd = new String[4];
+							int nbParameters = params.size();
+							String[] cmd = new String[4 + nbParameters];
 							cmd[0] = "cmd.exe";
 							cmd[1] = "/C";
 							cmd[2] = "start";
 							cmd[3] = exePath;
+							for (int i = 0; i < nbParameters; i++) {
+								cmd[4 + i] = params.get(i).trim();
+							}
 							Process p = Runtime.getRuntime().exec(cmd);
 							AfficheurFlux fluxSortie = new AfficheurFlux(
 									p.getInputStream());
@@ -258,12 +274,15 @@ public class LauncherDAO implements DataAccessConstants, ObservableError,
 							response = p.exitValue();
 						}
 					} else if (executableName.contains(".sh")) {
-						String osName = System.getProperty("os.name");
 						if (osName.contains("Linux")) {
-							String[] cmd = new String[3];
+							int nbParameters = params.size();
+							String[] cmd = new String[3 + nbParameters];
 							cmd[0] = "/bin/bash";
 							cmd[1] = "-c";
 							cmd[2] = exePath;
+							for (int i = 0; i < nbParameters; i++) {
+								cmd[3 + i] = params.get(i).trim();
+							}
 							Process p = Runtime.getRuntime().exec(cmd);
 							AfficheurFlux fluxSortie = new AfficheurFlux(
 									p.getInputStream());
@@ -283,7 +302,7 @@ public class LauncherDAO implements DataAccessConstants, ObservableError,
 								+ " - invalid executable file.");
 					}
 				} catch (Exception e) {
-					List errors = new ArrayList<>();
+					List<Exception> errors = new ArrayList<Exception>();
 					errors.add(e);
 					updateObserverError(errors);
 				}
