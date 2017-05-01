@@ -751,6 +751,10 @@ public class FtpDAO extends AbstractConnexionDAO {
 
 	public void makeDir(String remotePath, String dirTree) throws IOException {
 
+		if (remotePath.isEmpty()){
+			remotePath = "/"; // ftpClient.changeWorkingDirectory("") return false!
+		}
+		
 		boolean dirExists = ftpClient.changeWorkingDirectory(remotePath);
 		if (!dirExists) {
 			if (!ftpClient.makeDirectory(remotePath)) {
