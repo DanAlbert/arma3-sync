@@ -248,24 +248,24 @@ public class AddonService extends ObjectDTOtransformer implements
 				}
 			}
 
-			File[] subfiles = file.listFiles();
 			boolean contains = false;
-			if (subfiles == null) {
-				return;
-			}
-			for (File f : subfiles) {
-				if (f.getName().toLowerCase().equals("addons")) {
-					File[] subfiles2 = f.listFiles();
-					if (subfiles != null) {
-						for (File f2 : subfiles2) {
-							if (f2.getName().contains(PBO_EXTENSION)) {
-								contains = true;
-								break;
+			File[] subfiles = file.listFiles();
+			if (subfiles != null) {
+				for (File f : subfiles) {
+					if (f.getName().toLowerCase().equals("addons")) {
+						File[] subfiles2 = f.listFiles();
+						if (subfiles2 != null) {
+							for (File f2 : subfiles2) {
+								if (f2.getName().contains(PBO_EXTENSION)) {
+									contains = true;
+									break;
+								}
 							}
 						}
 					}
 				}
 			}
+
 			if (contains) {// it is an addon
 				String name = treeDirectory.getName();
 				Addon addon = new Addon(name, file.getParentFile()
