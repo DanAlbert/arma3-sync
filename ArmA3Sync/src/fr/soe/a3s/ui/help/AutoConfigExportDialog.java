@@ -24,6 +24,7 @@ import javax.swing.JTextField;
 import javax.swing.border.BevelBorder;
 
 import fr.soe.a3s.constant.DefaultProfileName;
+import fr.soe.a3s.dao.DataAccessConstants;
 import fr.soe.a3s.dto.RepositoryDTO;
 import fr.soe.a3s.dto.configuration.FavoriteServerDTO;
 import fr.soe.a3s.exception.WritingException;
@@ -213,14 +214,24 @@ public class AutoConfigExportDialog extends AbstractDialog {
 			return;
 		}
 
-		File file = new File(path);
-		if (!file.exists()) {
+		File destinationFolder = new File(path);
+		if (!destinationFolder.exists()) {
 			JOptionPane.showMessageDialog(facade.getMainPanel(),
 					"Destination directory does not exists.",
 					"Export auto-config", JOptionPane.ERROR_MESSAGE);
 			return;
 		}
-
+		
+		File file = new File(destinationFolder,DataAccessConstants.AUTOCONFIG_EXPORT_FILE_NAME);
+		if (file.exists()){
+			int val = JOptionPane.showConfirmDialog(facade.getMainPanel(),
+					"The file " + DataAccessConstants.AUTOCONFIG_EXPORT_FILE_NAME + " already exists into destination directory.\nDo you want to overwrite it?",
+					"Export auto-config", JOptionPane.ERROR_MESSAGE);
+			if (val==1){
+				return;
+			}
+		}
+			
 		List<String> listSelectedProfileNames = new ArrayList<String>();
 		List<String> listSelectedFavoriteServerNames = new ArrayList<String>();
 		List<String> listSelectedRepositoryNames = new ArrayList<String>();
@@ -253,7 +264,7 @@ public class AutoConfigExportDialog extends AbstractDialog {
 			CommonService commonService = new CommonService();
 			commonService.exportAutoConfig(listSelectedProfileNames,
 					listSelectedFavoriteServerNames,
-					listSelectedRepositoryNames, file);
+					listSelectedRepositoryNames, destinationFolder);
 			JOptionPane.showMessageDialog(facade.getMainPanel(),
 					"Auto-config file has been exported.",
 					"Export auto-config", JOptionPane.INFORMATION_MESSAGE);

@@ -46,7 +46,7 @@ public class CommonService {
 
 	public void exportAutoConfig(List<String> listSelectedProfileNames,
 			List<String> listSelectedFavoriteServerNames,
-			List<String> listSelectedRepositoryNames, File file)
+			List<String> listSelectedRepositoryNames, File destinationFolder)
 			throws WritingException {
 
 		AutoConfig autoConfig = new AutoConfig();
@@ -78,7 +78,7 @@ public class CommonService {
 			}
 		}
 
-		commonDAO.exportAutoConfig(autoConfig, file);
+		commonDAO.exportAutoConfig(autoConfig, destinationFolder);
 	}
 
 	public void importAutoConfig(File file) throws WritingException,

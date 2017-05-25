@@ -49,7 +49,10 @@ public interface DataAccessConstants {
 	String SYNC = "sync";
 	String CHANGELOGS = "changelogs";
 	String EVENTS = "events";
-
-	/** Log */
+	
+	/** AUTOCONFIG EXPORT FILE */
+	String AUTOCONFIG_EXPORT_FILE_NAME = "export" + AUTOCONFIG_EXTENSION;
+	
+	/** Log FILE */
 	String LOG_FILE_NAME = "ArmA3Sync-log.txt";
 }

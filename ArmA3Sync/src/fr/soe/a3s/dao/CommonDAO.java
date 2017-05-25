@@ -1,17 +1,11 @@
 package fr.soe.a3s.dao;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.zip.GZIPInputStream;
-import java.util.zip.GZIPOutputStream;
 
 import fr.soe.a3s.domain.AutoConfig;
 import fr.soe.a3s.exception.CheckException;
@@ -39,13 +33,14 @@ public class CommonDAO implements DataAccessConstants {
 		return autoConfig;
 	}
 
-	public void exportAutoConfig(AutoConfig autoConfig, File file)
+	public void exportAutoConfig(AutoConfig autoConfig, File destinationFolder)
 			throws WritingException {
 
 		assert (autoConfig != null);
 
 		try {
-			A3SFilesAccessor.write(autoConfig, file);
+			File autoconfigFile = new File(destinationFolder, AUTOCONFIG_EXPORT_FILE_NAME);
+			A3SFilesAccessor.write(autoConfig, autoconfigFile);
 		} catch (IOException e) {
 			e.printStackTrace();
 			throw new WritingException("Failed to write autoconfig file."
