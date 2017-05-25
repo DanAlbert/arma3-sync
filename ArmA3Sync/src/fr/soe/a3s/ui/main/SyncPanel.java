@@ -335,8 +335,10 @@ public class SyncPanel extends JPanel implements UIConstants {
 		buttonEdit.setToolTipText("Edit repository");
 		buttonRemove.setToolTipText("Remove repository");
 		buttonSync1.setToolTipText("Update repositories status");
+		buttonSync2.setToolTipText("Update events list");
 		buttonAdmin.setToolTipText("Administrate repository");
 		buttonConnectToRepository.setToolTipText("Connect to repository");
+		buttonCheckEvent.setToolTipText("Connect to event");
 	}
 
 	public void update(int flag) {
