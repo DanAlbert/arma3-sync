@@ -25,13 +25,12 @@ public class ProfileService extends ObjectDTOtransformer {
 	private static final ProfileDAO profileDAO = new ProfileDAO();
 
 	public void readAll() throws LoadingException {
-
+		System.out.println("Loading profiles...");
 		profileDAO.readProfiles();
 	}
 
 	public void setAdditionalParameters(String additionalParameters) {
 
-		// System.out.println(additionalParameters);
 		String profileName = configurationDAO.getConfiguration()
 				.getProfileName();
 		Profile profile = profileDAO.getMap().get(profileName);

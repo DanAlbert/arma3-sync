@@ -35,6 +35,7 @@ public class ConfigurationService extends ObjectDTOtransformer {
 
 	/* Read/Write configuration */
 	public void read() throws LoadingException {
+		System.out.println("Loading configuration...");
 		configurationDAO.read();
 	}
 

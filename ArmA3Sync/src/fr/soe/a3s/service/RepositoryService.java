@@ -65,7 +65,7 @@ public class RepositoryService extends ObjectDTOtransformer implements
 	private final RepositorySHA1Processor repositorySHA1Processor = new RepositorySHA1Processor();
 
 	public void readAll() throws LoadingException {
-
+		System.out.println("Loading repositories...");
 		repositoryDAO.readAll();
 	}
 
