@@ -872,10 +872,23 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener,
 			if (parent != null) {
 				if (arma3ExeFile.getName().equals(
 						GameExecutables.BATTLEYE.getDescription())) {
-					newArma3ExePath = parent.getAbsolutePath() + "/"
-							+ GameExecutables.GAME.getDescription();
+					
+					boolean is64bit = false;
+					if (System.getProperty("os.name").toLowerCase().contains("windows")) {
+						is64bit = (System.getenv("ProgramFiles(x86)") != null);
+					}
+				
+					if (is64bit){
+						newArma3ExePath = parent.getAbsolutePath() + "/"
+								+ GameExecutables.GAME_x64.getDescription();
+					}
+					else {
+						newArma3ExePath = parent.getAbsolutePath() + "/"
+								+ GameExecutables.GAME.getDescription();
+					}
 				} else if (arma3ExeFile.getName().equals(
-						GameExecutables.GAME.getDescription())) {
+						GameExecutables.GAME.getDescription())|| arma3ExeFile.getName().equals(
+								GameExecutables.GAME_x64.getDescription())) {
 					newArma3ExePath = parent.getAbsolutePath() + "/"
 							+ GameExecutables.BATTLEYE.getDescription();
 				}

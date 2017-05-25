@@ -115,7 +115,8 @@ public class LaunchService {
 
 	public boolean isArmA3Running() {
 		if (!launcherDAO.isApplicationRunning(GameExecutables.GAME
-				.getDescription())) {
+				.getDescription()) && !launcherDAO.isApplicationRunning(GameExecutables.GAME_x64
+						.getDescription())) {
 			return false;
 		} else {
 			return true;
@@ -124,7 +125,10 @@ public class LaunchService {
 
 	public boolean isArmA3ServerRunning() {
 		if (!launcherDAO.isApplicationRunning(GameExecutables.WIN_SERVER
-				.getDescription())) {
+				.getDescription())
+				&& !launcherDAO
+						.isApplicationRunning(GameExecutables.WIN_SERVER_x64
+								.getDescription())) {
 			return false;
 		} else {
 			return true;
