@@ -427,7 +427,8 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener,
 		/* Run parameters */
 		runParametersTextArea = new JTextArea();
 		Font labelFont = UIManager.getFont("Label.font");
-		runParametersTextArea.setFont(labelFont);
+		runParametersTextArea.setFont(new Font(labelFont.getName(),
+				labelFont.getStyle(), labelFont.getSize()));
 		runParametersTextArea.setLineWrap(true);
 		runParametersTextArea.setEditable(false);
 		runParametersTextArea.setBorder(BorderFactory
@@ -439,7 +440,7 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener,
 		/* Additional parameters */
 		additionalParametersTextArea = new JTextArea();
 		additionalParametersTextArea.setFont(new Font(labelFont.getName(),
-				Font.ITALIC, labelFont.getSize()));
+				labelFont.getStyle(), labelFont.getSize()));
 		additionalParametersTextArea.setLineWrap(true);
 		additionalParametersTextArea.setBorder(BorderFactory
 				.createBevelBorder(BevelBorder.LOWERED));
