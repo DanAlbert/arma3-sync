@@ -4,6 +4,7 @@ import fr.soe.a3s.controller.ObserverConnectionLost;
 import fr.soe.a3s.controller.ObserverProceed;
 import fr.soe.a3s.domain.AbstractProtocole;
 
+@Deprecated
 public class ConnectionListener extends Thread {
 
 	private long startTime;
