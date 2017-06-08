@@ -3,7 +3,6 @@ package fr.soe.a3s.service.synchronization;
 import java.util.ArrayList;
 import java.util.List;
 
-import fr.soe.a3s.constant.RepositoryStatus;
 import fr.soe.a3s.controller.ObserverCountInt;
 import fr.soe.a3s.controller.ObserverEnd;
 import fr.soe.a3s.controller.ObserverError;
@@ -38,16 +37,22 @@ public class FilesCompletionProcessor {
 			repositoryService.setCheckingForAddons(repositoryName, true);
 
 			// Determine number of connections to use
-			int numberConnections = repositoryService
+			int numberOfServerInfoConnections = repositoryService
 					.getServerInfoNumberOfConnections(repositoryName);
 
-			if (numberConnections > Runtime.getRuntime().availableProcessors()) {
-				numberConnections = Runtime.getRuntime().availableProcessors();
+			if (numberOfServerInfoConnections == 0) {
+				numberOfServerInfoConnections = 1;
+			}
+
+			if (numberOfServerInfoConnections > Runtime.getRuntime()
+					.availableProcessors()) {
+				numberOfServerInfoConnections = Runtime.getRuntime()
+						.availableProcessors();
 			}
 
 			connexionService = ConnexionServiceFactory
 					.getServiceForFilesSynchronization(repositoryName,
-							numberConnections);
+							numberOfServerInfoConnections);
 
 			for (AbstractConnexionDAO connect : connexionService
 					.getConnexionDAOs()) {
