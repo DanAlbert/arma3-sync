@@ -413,6 +413,7 @@ public class HttpDAO extends AbstractConnexionDAO {
 			}
 		} finally {
 			FileAccessMethods.deleteFile(file);
+			disconnect();
 		}
 		return autoConfig;
 	}
@@ -502,6 +503,8 @@ public class HttpDAO extends AbstractConnexionDAO {
 			String coreMessage = "Failed to check file " + relativeFilePath;
 			IOException ioe = transferIOExceptionFactory(coreMessage, e);
 			throw ioe;
+		} finally {
+			disconnect();
 		}
 
 		if (exists) {

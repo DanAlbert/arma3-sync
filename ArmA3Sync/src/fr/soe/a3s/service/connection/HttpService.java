@@ -193,14 +193,9 @@ public class HttpService extends ObjectDTOtransformer implements
 				+ DataAccessConstants.AUTOCONFIG);
 
 		AutoConfigDTO autoConfigDTO = null;
-		try {
-			AutoConfig autoConfig = httpDAOPool.get(0).importAutoConfig(
-					protocol);
-			if (autoConfig != null) {
-				autoConfigDTO = transformAutoConfig2DTO(autoConfig);
-			}
-		} finally {
-			httpDAOPool.get(0).disconnect();
+		AutoConfig autoConfig = httpDAOPool.get(0).importAutoConfig(protocol);
+		if (autoConfig != null) {
+			autoConfigDTO = transformAutoConfig2DTO(autoConfig);
 		}
 		return autoConfigDTO;
 	}
@@ -379,15 +374,11 @@ public class HttpService extends ObjectDTOtransformer implements
 				.isCompressedPboFilesOnly();
 		boolean withzsync = true;
 
-		try {
-			ConnectionCheckProcessor checkProcessor = new ConnectionCheckProcessor(
-					httpDAOPool.get(0), filesToCheck, isCompressedPboFilesOnly,
-					withzsync, repository.getProtocol());
-			checkProcessor.run();
-			return checkProcessor.getErrors();
-		} finally {
-			httpDAOPool.get(0).disconnect();
-		}
+		ConnectionCheckProcessor checkProcessor = new ConnectionCheckProcessor(
+				httpDAOPool.get(0), filesToCheck, isCompressedPboFilesOnly,
+				withzsync, repository.getProtocol());
+		checkProcessor.run();
+		return checkProcessor.getErrors();
 	}
 
 	/* Upload Repository */
