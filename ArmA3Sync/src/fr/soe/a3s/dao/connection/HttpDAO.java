@@ -252,6 +252,7 @@ public class HttpDAO extends AbstractConnexionDAO {
 			}
 		} finally {
 			FileAccessMethods.deleteDirectory(directory);
+			disconnect();
 		}
 		return sync;
 	}
@@ -282,6 +283,7 @@ public class HttpDAO extends AbstractConnexionDAO {
 			}
 		} finally {
 			FileAccessMethods.deleteDirectory(directory);
+			disconnect();
 		}
 		return serverInfo;
 	}
@@ -312,6 +314,7 @@ public class HttpDAO extends AbstractConnexionDAO {
 			}
 		} finally {
 			FileAccessMethods.deleteDirectory(directory);
+			disconnect();
 		}
 		return changelogs;
 	}
@@ -341,6 +344,7 @@ public class HttpDAO extends AbstractConnexionDAO {
 			}
 		} finally {
 			FileAccessMethods.deleteDirectory(directory);
+			disconnect();
 		}
 		return events;
 	}
@@ -371,6 +375,7 @@ public class HttpDAO extends AbstractConnexionDAO {
 			}
 		} finally {
 			FileAccessMethods.deleteDirectory(directory);
+			disconnect();
 		}
 		return autoConfig;
 	}

@@ -68,7 +68,6 @@ public class HttpService extends ObjectDTOtransformer implements
 			syncTreeDirectory = httpDAOPool.get(0).downloadSync(repository);
 		} finally {
 			repository.setSync(syncTreeDirectory);
-			httpDAOPool.get(0).disconnect();
 		}
 	}
 
@@ -86,7 +85,6 @@ public class HttpService extends ObjectDTOtransformer implements
 			serverInfo = httpDAOPool.get(0).downloadSeverInfo(repository);
 		} finally {
 			repository.setServerInfo(serverInfo);
-			httpDAOPool.get(0).disconnect();
 		}
 	}
 
@@ -104,7 +102,6 @@ public class HttpService extends ObjectDTOtransformer implements
 			changelogs = httpDAOPool.get(0).downloadChangelogs(repository);
 		} finally {
 			repository.setChangelogs(changelogs);
-			httpDAOPool.get(0).disconnect();
 		}
 	}
 
@@ -122,7 +119,6 @@ public class HttpService extends ObjectDTOtransformer implements
 			autoConfig = httpDAOPool.get(0).downloadAutoconfig(repository);
 		} finally {
 			repository.setAutoConfig(autoConfig);
-			httpDAOPool.get(0).disconnect();
 		}
 	}
 
@@ -140,7 +136,6 @@ public class HttpService extends ObjectDTOtransformer implements
 			events = httpDAOPool.get(0).downloadEvents(repository);
 		} finally {
 			repository.setEvents(events);
-			httpDAOPool.get(0).disconnect();
 		}
 	}
 
@@ -269,7 +264,11 @@ public class HttpService extends ObjectDTOtransformer implements
 					leaf.setComplete(0);
 				} else if (noPartialFileTransfer) {
 					leaf.setComplete(0);
-				} else if (!leaf.getName().contains(PBO_EXTENSION)) {// zsync only for pbo files
+				} else if (!leaf.getName().contains(PBO_EXTENSION)) {// zsync
+																		// only
+																		// for
+																		// pbo
+																		// files
 					leaf.setComplete(0);
 				} else {
 					final String rootDestinationPath = repository
