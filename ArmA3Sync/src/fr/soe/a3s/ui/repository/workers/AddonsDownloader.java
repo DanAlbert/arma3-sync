@@ -129,13 +129,6 @@ public class AddonsDownloader extends Thread implements DataAccessConstants {
 						executeProceedUncompress();
 					}
 				});
-		filesSynchronizationProcessor
-				.addObserverProceedDelete(new ObserverProceed() {
-					@Override
-					public void proceed() {
-						executeProceedDelete();
-					}
-				});
 
 		filesSynchronizationProcessor.run();
 	}
@@ -175,20 +168,6 @@ public class AddonsDownloader extends Thread implements DataAccessConstants {
 	private void initDownloadPanelForStartUncompressing() {
 
 		downloadPanel.getLabelDownloadStatus().setText("Uncompressing...");
-		downloadPanel.getLabelDownloadStatus().setForeground(
-				DownloadPanel.GREEN);
-		downloadPanel.getLabelSpeedValue().setText("");
-		downloadPanel.getLabelRemainingTimeValue().setText("");
-		downloadPanel.getLabelActiveConnectionsValue().setText("");
-		downloadPanel.getProgressBarDownloadAddons().setMinimum(0);
-		downloadPanel.getProgressBarDownloadAddons().setMaximum(100);
-		downloadPanel.getProgressBarDownloadSingleAddon()
-				.setIndeterminate(true);
-	}
-
-	private void initDownloadPanelForStartDeleting() {
-
-		downloadPanel.getLabelDownloadStatus().setText("Deleting...");
 		downloadPanel.getLabelDownloadStatus().setForeground(
 				DownloadPanel.GREEN);
 		downloadPanel.getLabelSpeedValue().setText("");
@@ -279,21 +258,6 @@ public class AddonsDownloader extends Thread implements DataAccessConstants {
 		}
 	}
 
-	private void executeUpdateWaitingForServer(final boolean waiting) {
-		if (!canceled) {
-			if (waiting) {
-				downloadPanel.getLabelDownloadStatus().setText(
-						"Waiting for server...");
-				downloadPanel.getLabelDownloadStatus().setForeground(Color.RED);
-			} else {
-				downloadPanel.getLabelDownloadStatus()
-						.setText("Downloading...");
-				downloadPanel.getLabelDownloadStatus().setForeground(
-						DownloadPanel.GREEN);
-			}
-		}
-	}
-
 	private void executeUpdateActiveConnections(int value) {
 		if (!canceled) {
 			downloadPanel.getLabelActiveConnectionsValue().setText(
@@ -312,10 +276,6 @@ public class AddonsDownloader extends Thread implements DataAccessConstants {
 
 	private void executeProceedUncompress() {
 		initDownloadPanelForStartUncompressing();
-	}
-
-	private void executeProceedDelete() {
-		initDownloadPanelForStartDeleting();
 	}
 
 	private void executeEnd() {

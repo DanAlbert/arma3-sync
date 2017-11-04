@@ -6,15 +6,17 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import fr.soe.a3s.service.connection.ConnexionService;
-import fr.soe.a3s.service.connection.ConnexionServiceFactory;
+import fr.soe.a3s.domain.AbstractProtocole;
+import fr.soe.a3s.service.ConnectionService;
+import fr.soe.a3s.service.RepositoryService;
 import fr.soe.a3s.ui.AbstractProgressDialog;
 import fr.soe.a3s.ui.Facade;
 import fr.soe.a3s.ui.main.dialogs.ModdsetsSelectionDialog;
 
 public class ProgressModsetsSelectionDialog extends AbstractProgressDialog {
 
-	private ConnexionService connexion = null;
+	private final RepositoryService repositoryService = new RepositoryService();
+	private ConnectionService connexionService = null;
 	private Thread t = null;
 
 	public ProgressModsetsSelectionDialog(Facade facade) {
@@ -34,9 +36,12 @@ public class ProgressModsetsSelectionDialog extends AbstractProgressDialog {
 						@Override
 						public Integer call() {
 							try {
-								ConnexionService connexion = ConnexionServiceFactory
-										.getServiceForRepositoryManagement(repositoryName);
-								connexion.checkRepository(repositoryName);
+								AbstractProtocole protocole = repositoryService
+										.getProtocol(repositoryName);
+								connexionService = new ConnectionService(
+										protocole);
+								connexionService
+										.checkRepository(repositoryName);
 							} catch (Exception e) {
 								System.out
 										.println("Error when checking repository "
@@ -58,9 +63,9 @@ public class ProgressModsetsSelectionDialog extends AbstractProgressDialog {
 					System.out
 							.println("Checking repositories has been anormaly interrupted.");
 				}
-				
+
 				executor.shutdownNow();
-				
+
 				if (!canceled) {
 					exit();
 					terminate();
@@ -80,8 +85,8 @@ public class ProgressModsetsSelectionDialog extends AbstractProgressDialog {
 
 		this.setVisible(false);
 		canceled = true;
-		if (connexion != null) {
-			connexion.cancel();
+		if (connexionService != null) {
+			connexionService.cancel();
 		}
 		progressBar.setIndeterminate(false);
 		dispose();

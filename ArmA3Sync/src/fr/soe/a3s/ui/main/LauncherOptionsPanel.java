@@ -51,28 +51,21 @@ import fr.soe.a3s.ui.UIConstants;
  * PURCHASED FOR THIS MACHINE, SO JIGLOO OR THIS CODE CANNOT BE USED LEGALLY FOR
  * ANY CORPORATE OR COMMERCIAL PURPOSE.
  */
-public class LauncherOptionsPanel extends JPanel implements DocumentListener,
-		UIConstants {
+public class LauncherOptionsPanel extends JPanel implements DocumentListener, UIConstants {
 
 	private final Facade facade;
 	private final JPanel launcherOptionsPanel, performancePanel;
 	private JPanel armaPanel;
 	private JPanel steamPanel;
-	private final JTextArea runParametersTextArea,
-			additionalParametersTextArea;
-	private final JScrollPane scrollPaneRunParameters,
-			scrollPaneAditionalParameters;
-	private JTextField textFieldArmAExecutableLocation,
-			textFieldSteamExecutableLocation;
+	private final JTextArea runParametersTextArea, additionalParametersTextArea;
+	private final JScrollPane scrollPaneRunParameters, scrollPaneAditionalParameters;
+	private JTextField textFieldArmAExecutableLocation, textFieldSteamExecutableLocation;
 	private JButton buttonSelectArmAExe, buttonSelectSteamExe;
-	private JComboBox comboBoxProfiles, comboBoxMaxMemory, comboBoxCpuCount,
-			comboBoxExThreads, comboBoxMalloc;
-	private JCheckBox checkBoxProfiles, checkBoxNoPause, checkBoxWindowMode,
-			checkBoxShowScriptErrors, checkBoxMaxMemory, checkBoxCpuCount,
-			checkBoxNoSplashScreen, checkBoxDefaultWorld, checkBoxNoLogs,
-			checkBoxCheckSignatures, checkBoxExThreads, checkBoxEnableHT,
-			checkBoxFilePatching, checkBoxAutoRestart, checkBoxMalloc,
-			checkBoxEnableBattleye, checkBoxHugePages;
+	private JComboBox comboBoxProfiles, comboBoxMaxMemory, comboBoxCpuCount, comboBoxExThreads, comboBoxMalloc;
+	private JCheckBox checkBoxProfiles, checkBoxNoPause, checkBoxWindowMode, checkBoxShowScriptErrors,
+			checkBoxMaxMemory, checkBoxCpuCount, checkBoxNoSplashScreen, checkBoxDefaultWorld, checkBoxNoLogs,
+			checkBoxCheckSignatures, checkBoxExThreads, checkBoxEnableHT, checkBoxFilePatching, checkBoxAutoRestart,
+			checkBoxMalloc, checkBoxEnableBattleye, checkBoxHugePages;
 	private JLabel labelMallocPath;
 
 	/* Services */
@@ -103,12 +96,11 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener,
 		//
 
 		launcherOptionsPanel = new JPanel();
-		launcherOptionsPanel.setBorder(BorderFactory.createTitledBorder(
-				BorderFactory.createEtchedBorder(), "Launcher Options"));
+		launcherOptionsPanel
+				.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "Launcher Options"));
 
 		performancePanel = new JPanel();
-		performancePanel.setBorder(BorderFactory.createTitledBorder(
-				BorderFactory.createEtchedBorder(), "Performance"));
+		performancePanel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "Performance"));
 
 		/* Launcher options */
 		launcherOptionsPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
@@ -123,8 +115,7 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener,
 				checkBoxProfiles.setText("Profile:");
 				checkBoxProfiles.setFocusable(false);
 				comboBoxProfiles = new JComboBox();
-				javax.swing.filechooser.FileSystemView fsv = javax.swing.filechooser.FileSystemView
-						.getFileSystemView();
+				javax.swing.filechooser.FileSystemView fsv = javax.swing.filechooser.FileSystemView.getFileSystemView();
 				File myDocuments = fsv.getDefaultDirectory();
 				List<String> listProfileNames = new ArrayList<String>();
 				if (myDocuments != null) {
@@ -132,14 +123,12 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener,
 					if (subfiles != null) {
 						for (File file : subfiles) {
 							String name = file.getName().toUpperCase();
-							if (name.contains("ARMA 3")
-									&& name.contains("OTHER PROFILES")) {
+							if (name.contains("ARMA 3") && name.contains("OTHER PROFILES")) {
 								File[] subf = file.listFiles();
 								if (subf != null) {
 									for (int i = 0; i < subf.length; i++) {
-										listProfileNames.add(subf[i].getName()
-												.replaceAll("(%*)20", " ")
-												.replaceAll("%2e", "."));
+										listProfileNames.add(
+												subf[i].getName().replaceAll("(%*)20", " ").replaceAll("%2e", "."));
 									}
 								}
 							}
@@ -179,8 +168,7 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener,
 			checkBoxShowScriptErrors = new JCheckBox();
 			checkBoxShowScriptErrors.setText("Show script errors");
 			checkBoxShowScriptErrors.setFocusable(false);
-			Font boldFont = checkBoxShowScriptErrors.getFont().deriveFont(
-					Font.BOLD);
+			Font boldFont = checkBoxShowScriptErrors.getFont().deriveFont(Font.BOLD);
 			checkBoxShowScriptErrors.setFont(boldFont);
 			Box hBox = Box.createHorizontalBox();
 			hBox.add(checkBoxShowScriptErrors);
@@ -258,14 +246,9 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener,
 				comboBoxMaxMemory.setFocusable(false);
 
 				ComboBoxModel maxMemoryModel = new DefaultComboBoxModel(
-						new String[] {
-								"",
-								Integer.toString(MaxMemoryValues.MIN.getValue()),
-								Integer.toString(MaxMemoryValues.MEDIUM
-										.getValue()),
-								Integer.toString(MaxMemoryValues.MAX.getValue()),
-								Integer.toString(MaxMemoryValues.MAX64
-										.getValue()) });
+						new String[] { "", Integer.toString(MaxMemoryValues.MIN.getValue()),
+								Integer.toString(MaxMemoryValues.MAX32.getValue()),
+								Integer.toString(MaxMemoryValues.MAX64.getValue()) });
 				comboBoxMaxMemory.setModel(maxMemoryModel);
 			}
 			{
@@ -290,8 +273,7 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener,
 				checkBoxExThreads.setFocusable(false);
 				comboBoxExThreads = new JComboBox();
 				comboBoxExThreads.setFocusable(false);
-				ComboBoxModel exThreadsModel = new DefaultComboBoxModel(
-						new String[] { "", "0", "1", "3", "5", "7" });
+				ComboBoxModel exThreadsModel = new DefaultComboBoxModel(new String[] { "", "0", "1", "3", "5", "7" });
 				comboBoxExThreads.setModel(exThreadsModel);
 			}
 			{
@@ -300,8 +282,7 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener,
 				checkBoxMalloc.setFocusable(false);
 				comboBoxMalloc = new JComboBox();
 				comboBoxMalloc.setFocusable(false);
-				ComboBoxModel mallocModel = new DefaultComboBoxModel(
-						new String[] { "", "system" });
+				ComboBoxModel mallocModel = new DefaultComboBoxModel(new String[] { "", "system" });
 				comboBoxMalloc.setModel(mallocModel);
 			}
 			{
@@ -427,28 +408,22 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener,
 		/* Run parameters */
 		runParametersTextArea = new JTextArea();
 		Font labelFont = UIManager.getFont("Label.font");
-		runParametersTextArea.setFont(new Font(labelFont.getName(),
-				labelFont.getStyle(), labelFont.getSize()));
+		runParametersTextArea.setFont(new Font(labelFont.getName(), labelFont.getStyle(), labelFont.getSize()));
 		runParametersTextArea.setLineWrap(true);
 		runParametersTextArea.setEditable(false);
-		runParametersTextArea.setBorder(BorderFactory
-				.createBevelBorder(BevelBorder.LOWERED));
+		runParametersTextArea.setBorder(BorderFactory.createBevelBorder(BevelBorder.LOWERED));
 		scrollPaneRunParameters = new JScrollPane(runParametersTextArea);
-		scrollPaneRunParameters.setBorder(BorderFactory.createTitledBorder(
-				BorderFactory.createEtchedBorder(), "Run Parameters"));
+		scrollPaneRunParameters
+				.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "Run Parameters"));
 
 		/* Additional parameters */
 		additionalParametersTextArea = new JTextArea();
-		additionalParametersTextArea.setFont(new Font(labelFont.getName(),
-				labelFont.getStyle(), labelFont.getSize()));
+		additionalParametersTextArea.setFont(new Font(labelFont.getName(), labelFont.getStyle(), labelFont.getSize()));
 		additionalParametersTextArea.setLineWrap(true);
-		additionalParametersTextArea.setBorder(BorderFactory
-				.createBevelBorder(BevelBorder.LOWERED));
-		scrollPaneAditionalParameters = new JScrollPane(
-				additionalParametersTextArea);
-		scrollPaneAditionalParameters.setBorder(BorderFactory
-				.createTitledBorder(BorderFactory.createEtchedBorder(),
-						"Additional Parameters"));
+		additionalParametersTextArea.setBorder(BorderFactory.createBevelBorder(BevelBorder.LOWERED));
+		scrollPaneAditionalParameters = new JScrollPane(additionalParametersTextArea);
+		scrollPaneAditionalParameters.setBorder(
+				BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "Additional Parameters"));
 
 		centerPanel.add(launcherOptionsPanel);
 		centerPanel.add(scrollPaneRunParameters);
@@ -459,16 +434,14 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener,
 		vBox = Box.createVerticalBox();
 		vBox.add(Box.createVerticalStrut(5));
 		JPanel southPanel = new JPanel();
-		southPanel.setBorder(BorderFactory.createTitledBorder(
-				BorderFactory.createEtchedBorder(),
+		southPanel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(),
 				"ArmA III Executable Location (game/server)"));
 		southPanel.setLayout(new BorderLayout());
 		{
 			textFieldArmAExecutableLocation = new JTextField();
 			textFieldArmAExecutableLocation.setEditable(false);
 			buttonSelectArmAExe = new JButton("Select");
-			southPanel
-					.add(textFieldArmAExecutableLocation, BorderLayout.CENTER);
+			southPanel.add(textFieldArmAExecutableLocation, BorderLayout.CENTER);
 			southPanel.add(buttonSelectArmAExe, BorderLayout.EAST);
 		}
 		vBox.add(southPanel);
@@ -622,15 +595,11 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener,
 
 	private void setContextualHelp() {
 
-		comboBoxProfiles
-				.setToolTipText("(optional) Select in game profile name");
+		comboBoxProfiles.setToolTipText("(optional) Select in game profile name");
 		checkBoxShowScriptErrors.setToolTipText("Show in game script error");
-		checkBoxNoPause
-				.setToolTipText("Don't suspend the game when placed in background");
-		checkBoxFilePatching
-				.setToolTipText("Allow the game to load unpacked data");
-		checkBoxWindowMode
-				.setToolTipText("Display the game windowed instead of full screen");
+		checkBoxNoPause.setToolTipText("Don't suspend the game when placed in background");
+		checkBoxFilePatching.setToolTipText("Allow the game to load unpacked data");
+		checkBoxWindowMode.setToolTipText("Display the game windowed instead of full screen");
 		checkBoxCheckSignatures.setToolTipText("Check signatures of PBO files");
 		comboBoxMaxMemory.setToolTipText("Restricts memory allocation");
 		checkBoxMaxMemory.setToolTipText("Restricts memory allocation");
@@ -639,8 +608,7 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener,
 		comboBoxExThreads.setToolTipText("Sets number of extra threads to use");
 		checkBoxExThreads.setToolTipText("Sets number of extra threads to use");
 		checkBoxEnableHT.setToolTipText("Use all hyper-threaded cpu cores");
-		checkBoxHugePages
-				.setToolTipText("Enables huge pages with the default memory allocator");
+		checkBoxHugePages.setToolTipText("Enables huge pages");
 		checkBoxNoSplashScreen.setToolTipText("Disables splash screens");
 		checkBoxDefaultWorld.setToolTipText("No world loaded at game startup");
 		checkBoxNoLogs.setToolTipText("Do not write errors into RPT file");
@@ -656,64 +624,58 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener,
 			// update Malloc comboBox Model and Battleye
 			updateOptions();
 
+			/* Update Run Parameters */
 			updateRunParameters();
 
-			/* Additional Run Parameters */
+			/* Update Additional Run Parameters */
 			updateAdditionalRunParameters();
 		}
 
-		else if (flag == OP_ADDON_SELECTION_CHANGED || flag == OP_GROUP_CHANGED
-				|| flag == OP_ADDON_PRIORITY_CHANGED
+		else if (flag == OP_ADDON_SELECTION_CHANGED || flag == OP_GROUP_CHANGED || flag == OP_ADDON_PRIORITY_CHANGED
 				|| flag == OP_ADDON_FILES_CHANGED) {
 
+			/* Update Run Parameters */
 			updateRunParameters();
 		}
 	}
 
 	private void updateOptions() {
 
-		LauncherOptionsDTO launcherOptionsDTO = profileService
-				.getLauncherOptions();
+		LauncherOptionsDTO launcherOptionsDTO = profileService.getLauncherOptions();
 
 		/* Launcher options */
 		if (launcherOptionsDTO.getGameProfile() != null) {
-			comboBoxProfiles.setSelectedItem(launcherOptionsDTO
-					.getGameProfile());
+			comboBoxProfiles.setSelectedItem(launcherOptionsDTO.getGameProfile());
 			checkBoxProfiles.setSelected(true);
 		} else {
 			comboBoxProfiles.setSelectedIndex(0);
 		}
 
-		checkBoxShowScriptErrors.setSelected(launcherOptionsDTO
-				.isShowScriptError());
+		checkBoxShowScriptErrors.setSelected(launcherOptionsDTO.isShowScriptError());
 		checkBoxNoPause.setSelected(launcherOptionsDTO.isNoPause());
 		checkBoxFilePatching.setSelected(launcherOptionsDTO.isFilePatching());
 		checkBoxWindowMode.setSelected(launcherOptionsDTO.isWindowMode());
-		checkBoxCheckSignatures.setSelected(launcherOptionsDTO
-				.isCheckSignatures());
+		checkBoxCheckSignatures.setSelected(launcherOptionsDTO.isCheckSignatures());
 
 		checkBoxAutoRestart.setSelected(launcherOptionsDTO.isAutoRestart());
 
 		/* Performance */
 		if (launcherOptionsDTO.getMaxMemorySelection() != null) {
-			comboBoxMaxMemory.setSelectedItem(launcherOptionsDTO
-					.getMaxMemorySelection());
+			comboBoxMaxMemory.setSelectedItem(launcherOptionsDTO.getMaxMemorySelection());
 			checkBoxMaxMemory.setSelected(true);
 		} else {
 			comboBoxMaxMemory.setSelectedIndex(0);
 		}
 
 		if (launcherOptionsDTO.getCpuCountSelection() != 0) {
-			comboBoxCpuCount.setSelectedItem(Integer
-					.toString(launcherOptionsDTO.getCpuCountSelection()));
+			comboBoxCpuCount.setSelectedItem(Integer.toString(launcherOptionsDTO.getCpuCountSelection()));
 			checkBoxCpuCount.setSelected(true);
 		} else {
 			comboBoxCpuCount.setSelectedIndex(0);
 		}
 
 		if (launcherOptionsDTO.getExThreadsSelection() != null) {
-			comboBoxExThreads.setSelectedItem(launcherOptionsDTO
-					.getExThreadsSelection());
+			comboBoxExThreads.setSelectedItem(launcherOptionsDTO.getExThreadsSelection());
 			checkBoxExThreads.setSelected(true);
 		} else {
 			comboBoxExThreads.setSelectedIndex(0);
@@ -721,8 +683,7 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener,
 
 		checkBoxEnableHT.setSelected(launcherOptionsDTO.isEnableHT());
 		checkBoxHugePages.setSelected(launcherOptionsDTO.isHugePages());
-		checkBoxNoSplashScreen.setSelected(launcherOptionsDTO
-				.isNoSplashScreen());
+		checkBoxNoSplashScreen.setSelected(launcherOptionsDTO.isNoSplashScreen());
 		checkBoxDefaultWorld.setSelected(launcherOptionsDTO.isDefaultWorld());
 		checkBoxNoLogs.setSelected(launcherOptionsDTO.isNoLogs());
 
@@ -735,8 +696,7 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener,
 		if (arma3ExePath != null) {
 			File arma3ExeFile = new File(arma3ExePath);
 			if (arma3ExeFile.exists()) {// set executable location
-				textFieldArmAExecutableLocation.setText(launcherOptionsDTO
-						.getArma3ExePath());
+				textFieldArmAExecutableLocation.setText(launcherOptionsDTO.getArma3ExePath());
 			}
 			if (arma3ExeFile.getParentFile() != null) {// set Malloc
 				File parent = new File(arma3ExeFile.getParent());
@@ -763,17 +723,13 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener,
 				ComboBoxModel mallocModel = new DefaultComboBoxModel(tab);
 				comboBoxMalloc.setModel(mallocModel);
 				if (launcherOptionsDTO.getMallocSelection() != null) {
-					comboBoxMalloc.setSelectedItem(launcherOptionsDTO
-							.getMallocSelection());
+					comboBoxMalloc.setSelectedItem(launcherOptionsDTO.getMallocSelection());
 					checkBoxMalloc.setSelected(true);
-					checkBoxHugePages.setSelected(false);
-					checkBoxHugePages.setEnabled(false);
 				} else {
 					comboBoxMalloc.setSelectedIndex(0);
 				}
 			}
-			if (arma3ExeFile.getName().toLowerCase()
-					.equals(GameExecutables.BATTLEYE.getDescription())) {
+			if (arma3ExeFile.getName().toLowerCase().equals(GameExecutables.BATTLEYE.getDescription())) {
 				checkBoxEnableBattleye.setSelected(true);
 			}
 		}
@@ -830,8 +786,7 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener,
 	}
 
 	private void checkBoxShowScriptErrorsPerformed() {
-		profileService.setCheckBoxShowScriptErrors(checkBoxShowScriptErrors
-				.isSelected());
+		profileService.setCheckBoxShowScriptErrors(checkBoxShowScriptErrors.isSelected());
 		updateRunParameters();
 	}
 
@@ -841,8 +796,7 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener,
 	}
 
 	private void checkBoxNoFilePatchingPerformed() {
-		profileService.setCheckBoxFilePatching(checkBoxFilePatching
-				.isSelected());
+		profileService.setCheckBoxFilePatching(checkBoxFilePatching.isSelected());
 		updateRunParameters();
 	}
 
@@ -852,8 +806,7 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener,
 	}
 
 	private void checkBoxCheckSignaturesPerformed() {
-		profileService.setCheckBoxCheckSignatures(checkBoxCheckSignatures
-				.isSelected());
+		profileService.setCheckBoxCheckSignatures(checkBoxCheckSignatures.isSelected());
 		updateRunParameters();
 	}
 
@@ -871,27 +824,21 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener,
 		if (arma3ExeFile != null) {
 			File parent = arma3ExeFile.getParentFile();
 			if (parent != null) {
-				if (arma3ExeFile.getName().equals(
-						GameExecutables.BATTLEYE.getDescription())) {
-					
+				if (arma3ExeFile.getName().equals(GameExecutables.BATTLEYE.getDescription())) {
+
 					boolean is64bit = false;
 					if (System.getProperty("os.name").toLowerCase().contains("windows")) {
 						is64bit = (System.getenv("ProgramFiles(x86)") != null);
 					}
-				
-					if (is64bit){
-						newArma3ExePath = parent.getAbsolutePath() + "/"
-								+ GameExecutables.GAME_x64.getDescription();
+
+					if (is64bit) {
+						newArma3ExePath = parent.getAbsolutePath() + "/" + GameExecutables.GAME_x64.getDescription();
+					} else {
+						newArma3ExePath = parent.getAbsolutePath() + "/" + GameExecutables.GAME.getDescription();
 					}
-					else {
-						newArma3ExePath = parent.getAbsolutePath() + "/"
-								+ GameExecutables.GAME.getDescription();
-					}
-				} else if (arma3ExeFile.getName().equals(
-						GameExecutables.GAME.getDescription())|| arma3ExeFile.getName().equals(
-								GameExecutables.GAME_x64.getDescription())) {
-					newArma3ExePath = parent.getAbsolutePath() + "/"
-							+ GameExecutables.BATTLEYE.getDescription();
+				} else if (arma3ExeFile.getName().equals(GameExecutables.GAME.getDescription())
+						|| arma3ExeFile.getName().equals(GameExecutables.GAME_x64.getDescription())) {
+					newArma3ExePath = parent.getAbsolutePath() + "/" + GameExecutables.BATTLEYE.getDescription();
 				}
 			}
 		}
@@ -899,11 +846,9 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener,
 		if (newArma3ExePath != null) {
 			File newArma3Exe = new File(newArma3ExePath);
 			if (newArma3Exe.exists()) {
-				textFieldArmAExecutableLocation.setText(newArma3Exe
-						.getAbsolutePath());
+				textFieldArmAExecutableLocation.setText(newArma3Exe.getAbsolutePath());
 				profileService.setArmA3ExePath(newArma3Exe.getAbsolutePath());
-				JOptionPane.showMessageDialog(facade.getMainPanel(),
-						"ArmA 3 Executable Location have changed.",
+				JOptionPane.showMessageDialog(facade.getMainPanel(), "ArmA 3 Executable Location have changed.",
 						"Information", JOptionPane.INFORMATION_MESSAGE);
 			}
 		}
@@ -1002,13 +947,10 @@ public class LauncherOptionsPanel extends JPanel implements DocumentListener,
 		if (!mallocDll.isEmpty()) {
 			checkBoxMalloc.setSelected(true);
 			profileService.setMalloc(mallocDll);
-			checkBoxHugePages.setSelected(false);
-			checkBoxHugePages.setEnabled(false);
 			profileService.setHugePages(false);
 		} else {
 			checkBoxMalloc.setSelected(false);
 			profileService.setMalloc(null);
-			checkBoxHugePages.setEnabled(true);
 		}
 		updateRunParameters();
 	}

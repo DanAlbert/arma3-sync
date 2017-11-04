@@ -171,7 +171,7 @@ public class ArmA3Sync implements DataAccessConstants {
 		 * http://www.sauronsoftware.it/projects/junique/manual.php
 		 */
 		String appId = ArmA3Sync.class.getName();
-		boolean alreadyRunning;
+		boolean alreadyRunning = false;
 		try {
 			JUnique.acquireLock(appId, new MessageHandler() {
 				@Override
@@ -184,11 +184,16 @@ public class ArmA3Sync implements DataAccessConstants {
 					return null;
 				}
 			});
-			alreadyRunning = false;
-		} catch (AlreadyLockedException e) {
-			alreadyRunning = true;
+		} catch (Exception e) {
+			if (e instanceof AlreadyLockedException) {
+				System.out.println("ArmA3Sync process is already locked.");
+				alreadyRunning = true;
+			} else {
+				e.printStackTrace();
+			}
 		}
 		if (!alreadyRunning) {
+			System.out.println("Starting ArmA3Sync single instance...");
 			// Start sequence
 			SwingUtilities.invokeLater(new Runnable() {
 				@Override
@@ -199,8 +204,11 @@ public class ArmA3Sync implements DataAccessConstants {
 					facade.setSafeMode(safeMode);
 					try {
 						mainPanel = new MainPanel(facade);
+						System.out.println("Initializing ArmA3Sync GUI...");
 						mainPanel.drawGUI();
+						System.out.println("Loading user data...");
 						mainPanel.init();
+						System.out.println("Starting background operations...");
 						mainPanel.initBackGround();
 					} catch (Exception e) {
 						e.printStackTrace();
@@ -210,6 +218,7 @@ public class ArmA3Sync implements DataAccessConstants {
 				}
 			});
 		} else {
+			System.out.println("Can not start ArmA3Sync. Process is already running or locked.");
 			JUnique.sendMessage(appId, "");
 			Runtime.getRuntime().halt(1);
 		}

@@ -44,6 +44,7 @@ import fr.soe.a3s.ui.AbstractDialog;
 import fr.soe.a3s.ui.CheckBoxList;
 import fr.soe.a3s.ui.Facade;
 import fr.soe.a3s.ui.ImageResizer;
+import fr.soe.a3s.ui.repository.dialogs.progress.ProgressTestPartiaFileTransfer;
 
 public class BuildRepositoryOptionsDialog extends AbstractDialog implements
 		DataAccessConstants {
@@ -55,7 +56,6 @@ public class BuildRepositoryOptionsDialog extends AbstractDialog implements
 	private CheckBoxList checkBoxListFavoriteServers;
 	private JScrollPane scrollPane3;
 	private JButton buttonAdd1;
-	private JButton buttonRemove1;
 	private JButton buttonAdd2;
 	private JButton buttonRemove2;
 	private JButton buttonAdd3;
@@ -64,6 +64,7 @@ public class BuildRepositoryOptionsDialog extends AbstractDialog implements
 	private JComboBox<Integer> comboBoxConnections;
 	private JComboBox<String> comboBoxCompression;
 	private JComboBox<String> comboBoxPartialFileTransfer;
+	private JButton buttonTestPartialFileTransfer;
 	private JLabel labelWholeFileDownload;
 	/* Services */
 	private final ConfigurationService configurationService = new ConfigurationService();
@@ -122,6 +123,9 @@ public class BuildRepositoryOptionsDialog extends AbstractDialog implements
 						labelWholeFileDownload = new JLabel();
 						labelWholeFileDownload
 								.setText("Use HTTP partial file transfer (recommended):");
+						buttonTestPartialFileTransfer = new JButton();
+						buttonTestPartialFileTransfer.setFocusable(false);
+						buttonTestPartialFileTransfer.setText("Test");
 						comboBoxPartialFileTransfer = new JComboBox<String>();
 						ComboBoxModel comboBoxModel = new DefaultComboBoxModel(
 								new String[] { "Yes", "No" });
@@ -144,7 +148,7 @@ public class BuildRepositoryOptionsDialog extends AbstractDialog implements
 						c.fill = GridBagConstraints.BOTH;
 						c.weightx = 0.5;
 						c.weighty = 0;
-						c.gridx = 1;
+						c.gridx = 2;
 						c.gridy = 0;
 						c.insets = new Insets(5, 10, 5, 10);
 						optionsPanel.add(comboBoxConnections, c);
@@ -164,7 +168,7 @@ public class BuildRepositoryOptionsDialog extends AbstractDialog implements
 						c.fill = GridBagConstraints.BOTH;
 						c.weightx = 0.5;
 						c.weighty = 0;
-						c.gridx = 1;
+						c.gridx = 2;
 						c.gridy = 1;
 						c.insets = new Insets(5, 10, 5, 10);
 						optionsPanel.add(comboBoxCompression, c);
@@ -185,6 +189,16 @@ public class BuildRepositoryOptionsDialog extends AbstractDialog implements
 						c.weightx = 0.5;
 						c.weighty = 0;
 						c.gridx = 1;
+						c.gridy = 2;
+						c.insets = new Insets(4, 10, 4, 0);
+						optionsPanel.add(buttonTestPartialFileTransfer, c);
+					}
+					{
+						GridBagConstraints c = new GridBagConstraints();
+						c.fill = GridBagConstraints.BOTH;
+						c.weightx = 0.5;
+						c.weighty = 0;
+						c.gridx = 2;
 						c.gridy = 2;
 						c.insets = new Insets(5, 10, 5, 10);
 						optionsPanel.add(comboBoxPartialFileTransfer, c);
@@ -340,6 +354,12 @@ public class BuildRepositoryOptionsDialog extends AbstractDialog implements
 				buttonRemove3Performed();
 			}
 		});
+		buttonTestPartialFileTransfer.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				buttonTestPartialFileTransferPerformed();
+			}
+		});
 		buttonOK.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
@@ -357,6 +377,7 @@ public class BuildRepositoryOptionsDialog extends AbstractDialog implements
 				buttonCancelPerformed();
 			}
 		});
+
 		// Add Listeners
 		addWindowListener(new WindowAdapter() {
 			@Override
@@ -364,6 +385,8 @@ public class BuildRepositoryOptionsDialog extends AbstractDialog implements
 				menuExitPerformed();
 			}
 		});
+
+		getRootPane().setDefaultButton(buttonOK);
 	}
 
 	public void init() {
@@ -404,6 +427,7 @@ public class BuildRepositoryOptionsDialog extends AbstractDialog implements
 					labelWholeFileDownload.setEnabled(false);
 					comboBoxPartialFileTransfer.setSelectedIndex(0);// Yes
 					comboBoxPartialFileTransfer.setEnabled(false);
+					buttonTestPartialFileTransfer.setEnabled(false);
 				}
 			}
 		} catch (RepositoryException e) {
@@ -597,6 +621,14 @@ public class BuildRepositoryOptionsDialog extends AbstractDialog implements
 		}
 	}
 
+	private void buttonTestPartialFileTransferPerformed() {
+
+		ProgressTestPartiaFileTransfer dialog = new ProgressTestPartiaFileTransfer(
+				facade, repositoryName);
+		dialog.setVisible(true);
+		dialog.init();
+	}
+
 	@Override
 	protected void buttonOKPerformed() {
 
@@ -616,6 +648,7 @@ public class BuildRepositoryOptionsDialog extends AbstractDialog implements
 		int usePartialFileTransfer = comboBoxPartialFileTransfer
 				.getSelectedIndex();
 		if (usePartialFileTransfer == 0) {// Yes
+
 			repositoryService.setUsePartialFileTransfer(repositoryName, true);
 		} else {
 			repositoryService.setUsePartialFileTransfer(repositoryName, false);

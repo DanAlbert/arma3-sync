@@ -1,9 +1,11 @@
 package fr.soe.a3s.service.synchronization;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
 import fr.soe.a3s.constant.DownloadStatus;
+import fr.soe.a3s.dao.DataAccessConstants;
 import fr.soe.a3s.dto.sync.SyncTreeDirectoryDTO;
 import fr.soe.a3s.dto.sync.SyncTreeLeafDTO;
 import fr.soe.a3s.dto.sync.SyncTreeNodeDTO;
@@ -24,11 +26,8 @@ public class FilesSynchronizationManager {
 			totalUncompleteDiskFileSize;
 	private int totalNumberUnCompleteFiles, totalNumberCompressedFiles;
 	private long averageDownloadSpeed;
-	private long averageResponseTime;
 	private int maxActiveconnections;
-	/* TFAR & ACRE2 & Userconfig Update */
-	private boolean tfarIsUpdated = false;
-	private boolean acre2IsUpdated = false;
+	/* Userconfig Update */
 	private SyncTreeDirectoryDTO userconfigNode;
 
 	public void update() {
@@ -136,41 +135,6 @@ public class FilesSynchronizationManager {
 		}
 	}
 
-	/* TFAR & ACRE2 Update */
-
-	private void determineTFARandACREupdates() {
-
-		for (SyncTreeNodeDTO node : listFilesToUpdate) {
-			checkTFARandACREupdates(node);
-		}
-	}
-
-	private void checkTFARandACREupdates(SyncTreeNodeDTO node) {
-
-		if (node.isLeaf()) {
-			SyncTreeDirectoryDTO parent = node.getParent();
-			if (parent != null) {
-				checkTFARandACREupdates(parent);
-			}
-		} else {
-			SyncTreeDirectoryDTO directory = (SyncTreeDirectoryDTO) node;
-			if (node.getName().toLowerCase().contains("task_force_radio")) {
-				if (directory.isUpdated() || directory.isChanged()) {
-					tfarIsUpdated = true;
-				}
-			} else if (node.getName().toLowerCase().contains("acre2")) {
-				if (directory.isUpdated() || directory.isChanged()) {
-					acre2IsUpdated = true;
-				}
-			} else {
-				SyncTreeDirectoryDTO parent = node.getParent();
-				if (parent != null) {
-					checkTFARandACREupdates(parent);
-				}
-			}
-		}
-	}
-
 	/* Userconfig Update */
 
 	private void determineUserconfigUpdates() {
@@ -206,8 +170,6 @@ public class FilesSynchronizationManager {
 		}
 	}
 
-	/* Getters and Setters */
-
 	public List<SyncTreeNodeDTO> getResumedFiles() {
 
 		List<SyncTreeNodeDTO> resumedListFilesToUpdate = new ArrayList<SyncTreeNodeDTO>();
@@ -234,6 +196,23 @@ public class FilesSynchronizationManager {
 		}
 		return resumedFilesSize;
 	}
+
+	public List<SyncTreeLeafDTO> getDownloadedFiles() {
+
+		List<SyncTreeLeafDTO> list = new ArrayList<SyncTreeLeafDTO>();
+		for (SyncTreeNodeDTO node : listFilesToUpdate) {
+			if (node.isLeaf()) {
+				SyncTreeLeafDTO leaf = (SyncTreeLeafDTO) node;
+				if (leaf.isCompressed()
+						&& node.getDownloadStatus().equals(DownloadStatus.DONE)) {
+					list.add(leaf);
+				}
+			}
+		}
+		return list;
+	}
+
+	/* Getters and Setters */
 
 	public long getTotalFilesSize() {
 		return totalDownloadFilesSize;
@@ -315,28 +294,12 @@ public class FilesSynchronizationManager {
 		this.averageDownloadSpeed = averageDownloadSpeed;
 	}
 
-	public long getAverageResponseTime() {
-		return averageResponseTime;
-	}
-
-	public void setAverageResponseTime(long averageResponseTime) {
-		this.averageResponseTime = averageResponseTime;
-	}
-
 	public int getMaxActiveconnections() {
 		return maxActiveconnections;
 	}
 
 	public void setMaxActiveconnections(int maxActiveconnections) {
 		this.maxActiveconnections = maxActiveconnections;
-	}
-
-	public boolean isTfarIsUpdated() {
-		return tfarIsUpdated;
-	}
-
-	public boolean isAcre2IsUpdated() {
-		return acre2IsUpdated;
 	}
 
 	public boolean isUserconfigUpdated() {

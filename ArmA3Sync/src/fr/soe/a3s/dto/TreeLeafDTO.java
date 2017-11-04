@@ -8,7 +8,8 @@ public class TreeLeafDTO implements TreeNodeDTO {
 	private boolean optional = false;
 	private boolean duplicate = false;
 	private boolean duplicatedSelection = false;
-	private String sourceRelativePath;
+	private String sourceRelativePath = null;
+	private String sourceFilePath = null;
 	private TreeDirectoryDTO parent;
 
 	@Override
@@ -71,7 +72,11 @@ public class TreeLeafDTO implements TreeNodeDTO {
 			}
 		}
 		if (missing) {
-			stg = stg + " " + "(missing)";
+			if (sourceFilePath != null) {
+				stg = stg + " " + "(missing from " + sourceFilePath + ")";
+			} else {
+				stg = stg + " " + "(missing)";
+			}
 		}
 		if (duplicatedSelection) {
 			stg = stg + " " + "(duplicate selection)";
@@ -109,6 +114,14 @@ public class TreeLeafDTO implements TreeNodeDTO {
 
 	public void setSourceRelativePath(String sourceRelativePath) {
 		this.sourceRelativePath = sourceRelativePath;
+	}
+
+	public String getSourceFilePath() {
+		return sourceFilePath;
+	}
+
+	public void setSourceFilePath(String sourceFilePath) {
+		this.sourceFilePath = sourceFilePath;
 	}
 
 	public boolean isDuplicatedSelection() {

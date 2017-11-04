@@ -301,8 +301,9 @@ public class FirstPageTFARInstallerPanel extends WizardDialog {
 				textFieldPluginInstallationDirectory.setText(tfarPluginPath);
 			}
 		} else {
-			String tfarInstallationDirectoryPath = addonService
-					.getTFARinstallationFolder();
+			String tfarInstallationDirectoryPath = null;
+//			String tfarInstallationDirectoryPath = addonService
+//					.getTFARinstallationFolder();
 			if (tfarInstallationDirectoryPath != null) {
 				String path = tfarInstallationDirectoryPath
 						+ "/@task_force_radio/plugins";
@@ -323,8 +324,9 @@ public class FirstPageTFARInstallerPanel extends WizardDialog {
 						.setText(tfarUserconfigPath);
 			}
 		} else {
-			String tfarInstallationDirectoryPath = addonService
-					.getTFARinstallationFolder();
+			String tfarInstallationDirectoryPath = null;
+			// String tfarInstallationDirectoryPath = addonService
+			// .getTFARinstallationFolder();
 			if (tfarInstallationDirectoryPath != null) {
 				String path = tfarInstallationDirectoryPath
 						+ "/@task_force_radio/userconfig";

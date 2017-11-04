@@ -13,7 +13,7 @@ import fr.soe.a3s.controller.ObserverCountInt;
 import fr.soe.a3s.dao.DataAccessConstants;
 import fr.soe.a3s.domain.AbstractProtocole;
 import fr.soe.a3s.domain.repository.SyncTreeLeaf;
-import fr.soe.a3s.jazsync.Jazsync;
+import fr.soe.a3s.jazsyncmake.MetaFileMaker;
 
 public class RepositoryZsyncProcessor implements ObservableCountInt,
 		DataAccessConstants {
@@ -76,12 +76,17 @@ public class RepositoryZsyncProcessor implements ObservableCountInt,
 				@Override
 				public Integer call() {
 					if (!canceled) {
+						MetaFileMaker mfm = null;
 						try {
-							Jazsync.make(file, zsyncFile, url, leaf.getSha1());
+							mfm = new MetaFileMaker(file, zsyncFile, url,
+									leaf.getSha1());
 							increment();
 						} catch (IOException e) {
 							canceled = true;
 							ex = e;
+						} finally {
+							mfm = null;
+							System.gc();
 						}
 					}
 					return 0;

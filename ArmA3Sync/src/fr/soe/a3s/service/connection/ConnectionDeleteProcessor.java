@@ -1,4 +1,4 @@
-package fr.soe.a3s.dao.connection.processors;
+package fr.soe.a3s.service.connection;
 
 import java.io.IOException;
 import java.util.List;
@@ -10,8 +10,8 @@ import fr.soe.a3s.dto.sync.SyncTreeNodeDTO;
 
 public class ConnectionDeleteProcessor extends AbstractConnectionProcessor {
 
-	private final AbstractProtocole protocol;
 	private int count, totalCount;
+	private AbstractProtocole protocol = null;
 
 	public ConnectionDeleteProcessor(AbstractConnexionDAO abstractConnexionDAO,
 			List<SyncTreeNodeDTO> filesToDelete,
@@ -29,18 +29,11 @@ public class ConnectionDeleteProcessor extends AbstractConnectionProcessor {
 		this.totalCount = remoteFiles.size();
 		this.count = 0;
 
-		int count = 0;
-
 		for (RemoteFile remoteFile : remoteFiles) {
 			if (abstractConnexionDAO.isCanceled()) {
 				break;
 			} else {
-				boolean found = abstractConnexionDAO.fileExists(protocol,
-						remoteFile);
-				if (found) {
-					abstractConnexionDAO.deleteFile(remoteFile,
-							protocol.getRemotePath());
-				}
+				abstractConnexionDAO.deleteFile(remoteFile, protocol);
 				increment();
 			}
 		}

@@ -22,9 +22,8 @@ import fr.soe.a3s.ui.AbstractDialog;
 import fr.soe.a3s.ui.Facade;
 import fr.soe.a3s.ui.repository.dialogs.progress.ProgressSynchronizationDialog;
 
-public class RepositoryEditionDialog extends AbstractDialog
-		implements
-			DataAccessConstants {
+public class RepositoryEditionDialog extends AbstractDialog implements
+		DataAccessConstants {
 
 	private DescriptionPanel descriptionPanel;
 	private ProtocolPanel protocolPanel;
@@ -72,10 +71,10 @@ public class RepositoryEditionDialog extends AbstractDialog
 		this.setTitle("New repository");
 
 		/* Init Protocol Section */
-		comboBoxProtocolModel = new DefaultComboBoxModel(new String[]{
+		comboBoxProtocolModel = new DefaultComboBoxModel(new String[] {
 				ProtocolType.FTP.getDescription(),
 				ProtocolType.HTTP.getDescription(),
-				ProtocolType.HTTPS.getDescription()});
+				ProtocolType.HTTPS.getDescription() });
 		protocolPanel.init(comboBoxProtocolModel);
 
 		/* Init Connection Section */
@@ -91,10 +90,10 @@ public class RepositoryEditionDialog extends AbstractDialog
 		descriptionPanel.init(repositoryName);
 
 		/* Init Protocol Section */
-		comboBoxProtocolModel = new DefaultComboBoxModel(new String[]{
+		comboBoxProtocolModel = new DefaultComboBoxModel(new String[] {
 				ProtocolType.FTP.getDescription(),
 				ProtocolType.HTTP.getDescription(),
-				ProtocolType.HTTPS.getDescription()});
+				ProtocolType.HTTPS.getDescription() });
 		protocolPanel.init(comboBoxProtocolModel);
 
 		try {

@@ -17,7 +17,7 @@ import fr.soe.a3s.service.administration.RepositoryBuildProcessor;
 import fr.soe.a3s.ui.Facade;
 import fr.soe.a3s.ui.repository.AdminPanel;
 import fr.soe.a3s.ui.repository.dialogs.error.UnexpectedErrorDialog;
-import fr.soe.a3s.utils.ErrorPrinter;
+import fr.soe.a3s.utils.RepositoryConsoleErrorPrinter;
 
 public class RepositoryBuilder extends Thread {
 
@@ -152,7 +152,7 @@ public class RepositoryBuilder extends Thread {
 			this.adminPanel.updateRepositoryStatus(RepositoryStatus.UPDATED);
 			this.adminPanel.getRepositoryPanel().getEventsPanel()
 					.init(repositoryName);// update addons list
-			
+
 			initAdminPanelForEndBuild();
 			terminate();
 		}
@@ -169,23 +169,23 @@ public class RepositoryBuilder extends Thread {
 
 			System.out.println("Repository " + repositoryName
 					+ " - build finished with error.");
-			
+
 			this.adminPanel.getCheckProgressBar().setString("Error!");
 
 			Exception ex = errors.get(0);
 			if (ex instanceof RepositoryException | ex instanceof IOException
 					| ex instanceof WritingException) {
-				String message = ErrorPrinter.printRepositoryManagedError(
+				String message = RepositoryConsoleErrorPrinter.printRepositoryManagedError(
 						repositoryName, ex);
 				JOptionPane.showMessageDialog(facade.getMainPanel(), message,
 						"Build repository", JOptionPane.ERROR_MESSAGE);
 			} else {
-				ErrorPrinter.printRepositoryUnexpectedError(repositoryName, ex);
+				RepositoryConsoleErrorPrinter.printRepositoryUnexpectedError(repositoryName, ex);
 				UnexpectedErrorDialog dialog = new UnexpectedErrorDialog(
 						facade, "Build repository", ex, repositoryName);
 				dialog.show();
 			}
-			
+
 			initAdminPanelForEndBuild();
 			terminate();
 		}

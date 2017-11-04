@@ -114,7 +114,7 @@ public class UploadRepositoryConnectionDialog extends AbstractDialog {
 
 		try {
 			repositoryService.setRepositoryUploadProtocole(repositoryName, url,
-					port, login, password, protocolType, null,null);
+					port, login, password, protocolType, null, null);
 			repositoryService.setUploadCompressedPboFilesOnly(repositoryName,
 					optionsPanel.isSelected());
 			repositoryService.write(repositoryName);

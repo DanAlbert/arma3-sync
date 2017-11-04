@@ -27,34 +27,26 @@ public class AddonDAO {
 		}
 	}
 
-	public boolean hasDuplicate(String name) {
+	public boolean hasDuplicate(String addonKey) {
 
-		String key = name.toLowerCase();
-		if (!mapAddons.containsKey(key)) {
-			return false;
+		List<String> list = getDuplicates(addonKey);
+		if (list.size() > 1) {
+			return true;
 		} else {
-			if (name.contains("*")) {
-				return true;
-			} else {
-				key = name.toLowerCase() + "*";
-				if (mapAddons.containsKey(key)) {
-					return true;
-				}
-			}
+			return false;
 		}
-		return false;
 	}
 
-	public List<String> getDuplicates(String name) {
+	public List<String> getDuplicates(String addonKey) {
 
 		List<String> list = new ArrayList<String>();
-		for (Iterator<String> iter = mapAddons.keySet().iterator(); iter
-				.hasNext();) {
-			String key = iter.next();
-			if (key.equals(name.toLowerCase())) {
-				list.add(key);
-			} else if (key.contains(name.toLowerCase() + "*")) {
-				list.add(key);
+		Addon addon = mapAddons.get(addonKey.toLowerCase());
+		if (addon != null) {
+			for (Iterator<String> iter = mapAddons.keySet().iterator(); iter.hasNext();) {
+				String key = iter.next();
+				if (mapAddons.get(key).getName().equals(addon.getName())) {
+					list.add(key);
+				}
 			}
 		}
 		return list;

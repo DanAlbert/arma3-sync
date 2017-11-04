@@ -30,8 +30,6 @@ public class HeaderErrorDialog implements DataAccessConstants {
 				+ repositoryName
 				+ "\n"
 				+ "The server appears to not support HTTP partial file transfer."
-				+ "\n"
-				+ "Whole file transfer will be used for this session instead."
 				+ "\n\n"
 				+ "Do you want export the server response header into file to desktop ("
 				+ LOG_FILE_NAME + ")?" + "\n\n";

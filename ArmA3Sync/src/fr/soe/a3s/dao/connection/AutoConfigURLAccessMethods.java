@@ -27,13 +27,11 @@ public class AutoConfigURLAccessMethods implements DataAccessConstants {
 		String repositoryUrl = protocol.getUrl();
 		String port = protocol.getPort();
 		String login = protocol.getLogin();
-		String password = protocol.getPassword();
 		String hostname = protocol.getHostname();
 		String remotePath = protocol.getRemotePath();
 
 		if (login.equalsIgnoreCase("anonymous")) {
 			login = "";
-			password = "";
 		}
 
 		if (protocol.getPort().equals(
@@ -46,7 +44,8 @@ public class AutoConfigURLAccessMethods implements DataAccessConstants {
 			autoConfigURL = hostname + ":" + port + remotePath;
 		}
 
-		autoConfigURL = autoConfigURL + AUTOCONFIG_FILE_PATH;
+		autoConfigURL = autoConfigURL + "/" + A3S_FOlDER_NAME + "/"
+				+ AUTOCONFIG_FILE_NAME;
 
 		return autoConfigURL;
 	}

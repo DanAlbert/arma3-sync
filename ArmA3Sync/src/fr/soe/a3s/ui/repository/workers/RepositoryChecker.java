@@ -17,7 +17,7 @@ import fr.soe.a3s.ui.Facade;
 import fr.soe.a3s.ui.repository.AdminPanel;
 import fr.soe.a3s.ui.repository.dialogs.error.ErrorsListDialog;
 import fr.soe.a3s.ui.repository.dialogs.error.UnexpectedErrorDialog;
-import fr.soe.a3s.utils.ErrorPrinter;
+import fr.soe.a3s.utils.RepositoryConsoleErrorPrinter;
 
 public class RepositoryChecker extends Thread implements DataAccessConstants {
 
@@ -46,7 +46,7 @@ public class RepositoryChecker extends Thread implements DataAccessConstants {
 		// Init AdminPanel for start checking
 		initAdminPanelForStartCheck();
 		canceled = false;
-		
+
 		this.adminPanel.getCheckProgressBar().setIndeterminate(true);
 
 		repositoryCheckProcessor = new RepositoryCheckProcessor(repositoryName);
@@ -172,7 +172,7 @@ public class RepositoryChecker extends Thread implements DataAccessConstants {
 			}
 
 			this.adminPanel.init(repositoryName);
-			
+
 			initAdminPanelForEndCheck();
 			terminate();
 		}
@@ -188,26 +188,26 @@ public class RepositoryChecker extends Thread implements DataAccessConstants {
 
 			System.out.println("Repository " + repositoryName
 					+ " - synchronization finished with error.");
-			
+
 			this.adminPanel.getCheckProgressBar().setString("Error!");
 
 			Exception ex = errors.get(0);
 			if (ex instanceof RepositoryException
 					|| ex instanceof RemoteRepositoryException
 					|| ex instanceof IOException) {
-				String message = ErrorPrinter.printRepositoryManagedError(
+				String message = RepositoryConsoleErrorPrinter.printRepositoryManagedError(
 						repositoryName, ex);
 				JOptionPane.showMessageDialog(facade.getMainPanel(), message,
 						"Check repository synchronization",
 						JOptionPane.ERROR_MESSAGE);
 			} else {
-				ErrorPrinter.printRepositoryUnexpectedError(repositoryName, ex);
+				RepositoryConsoleErrorPrinter.printRepositoryUnexpectedError(repositoryName, ex);
 				UnexpectedErrorDialog dialog = new UnexpectedErrorDialog(
 						facade, "Check repository synchronization", ex,
 						repositoryName);
 				dialog.show();
 			}
-			
+
 			initAdminPanelForEndCheck();
 			terminate();
 		}

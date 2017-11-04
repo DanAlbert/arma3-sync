@@ -23,7 +23,6 @@ public class AddonsChecker extends Thread {
 	private final String repositoryName;
 	private final boolean withEvents;
 	private SyncTreeDirectoryDTO parent;
-	private String serverRangeRequestResponseHeader = null;
 	private boolean saveStateCheckBoxExactMath, saveStateCheckBoxAutoDiscover;
 	/* Test */
 	private boolean canceled;
@@ -106,8 +105,7 @@ public class AddonsChecker extends Thread {
 				downloadPanel.getProgressBarCheckForAddons().setMinimum(0);
 				downloadPanel.getProgressBarCheckForAddons().setMaximum(100);
 
-				this.serverRangeRequestResponseHeader = filesCompletionProcessor
-						.run(parent); // non blocking execution
+				filesCompletionProcessor.run(parent); // non blocking execution
 			}
 		}
 	}
@@ -245,10 +243,6 @@ public class AddonsChecker extends Thread {
 		initDownlaodPanelForEndCheck();
 
 		terminate();
-	}
-
-	public String getServerRangeRequestResponseHeader() {
-		return serverRangeRequestResponseHeader;
 	}
 
 	public void addObserverEnd(ObserverEnd obs) {

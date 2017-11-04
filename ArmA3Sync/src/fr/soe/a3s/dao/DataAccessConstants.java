@@ -28,9 +28,9 @@ public interface DataAccessConstants {
 	String PBO_ZIP_EXTENSION = ".pbo.zip";
 	String BIKEY = ".bikey";
 
-	/** FTP */
-	String UPDATE_REPOSITORY = "/ArmA3/ArmA3Sync/download";
-	String UPDATE_REPOSITORY_DEV = "/ArmA3/ArmA3Sync/development";
+	/** FTP Check for Updates */
+	String UPDATE_REPOSITORY_DIR = "ArmA3/ArmA3Sync/download";
+	String UPDATE_REPOSITORY_DEV_DIR = "ArmA3/ArmA3Sync/development";
 	String UPDTATE_REPOSITORY_ADRESS = "www.sonsofexiled.fr";
 	int UPDTATE_REPOSITORY_PORT = 21;
 	String UPDTATE_REPOSITORY_LOGIN = "anonymous";
@@ -38,17 +38,11 @@ public interface DataAccessConstants {
 
 	/** REPOSITORY */
 	String A3S_FOlDER_NAME = ".a3s";
-	String A3S_FOlDER_PATH = "/.a3s";
-	String SERVERINFO_FILE_PATH = "/.a3s/serverinfo";
-	String SYNC_FILE_PATH = "/.a3s/sync";
-	String AUTOCONFIG_FILE_PATH = "/.a3s/autoconfig";
-	String CHANGELOGS_FILE_PATH = "/.a3s/changelogs";
-	String EVENTS_FILE_PATH = "/.a3s/events";
-	String AUTOCONFIG = "autoconfig";
-	String SERVERINFO = "serverinfo";
-	String SYNC = "sync";
-	String CHANGELOGS = "changelogs";
-	String EVENTS = "events";
+	String AUTOCONFIG_FILE_NAME = "autoconfig";
+	String SERVERINFO_FILE_NAME = "serverinfo";
+	String SYNC_FILE_NAME = "sync";
+	String CHANGELOGS_FILE_NAME = "changelogs";
+	String EVENTS_FILE_NAME = "events";
 	
 	/** AUTOCONFIG EXPORT FILE */
 	String AUTOCONFIG_EXPORT_FILE_NAME = "export" + AUTOCONFIG_EXTENSION;

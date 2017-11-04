@@ -4,10 +4,10 @@ import java.io.IOException;
 
 import javax.swing.JOptionPane;
 
+import fr.soe.a3s.domain.AbstractProtocole;
 import fr.soe.a3s.exception.repository.RepositoryException;
+import fr.soe.a3s.service.ConnectionService;
 import fr.soe.a3s.service.RepositoryService;
-import fr.soe.a3s.service.connection.ConnexionService;
-import fr.soe.a3s.service.connection.ConnexionServiceFactory;
 import fr.soe.a3s.ui.AbstractProgressDialog;
 import fr.soe.a3s.ui.Facade;
 import fr.soe.a3s.ui.repository.RepositoryPanel;
@@ -25,9 +25,9 @@ import fr.soe.a3s.ui.repository.dialogs.error.UnexpectedErrorDialog;
  */
 public class ProgressConnectionAsAdminDialog extends AbstractProgressDialog {
 
-	private ConnexionService connexion;
 	private final String repositoryName;
 	/* Services */
+	private ConnectionService connexionService;
 	private final RepositoryService repositoryService = new RepositoryService();
 
 	public ProgressConnectionAsAdminDialog(Facade facade, String repositoryName) {
@@ -45,12 +45,13 @@ public class ProgressConnectionAsAdminDialog extends AbstractProgressDialog {
 			@Override
 			public void run() {
 				try {
-					connexion = ConnexionServiceFactory
-							.getServiceForRepositoryManagement(repositoryName);
-					connexion.getSync(repositoryName);
-					connexion.getServerInfo(repositoryName);
-					connexion.getChangelogs(repositoryName);
-					connexion.getEvents(repositoryName);
+					AbstractProtocole protocole = repositoryService
+							.getProtocol(repositoryName);
+					connexionService = new ConnectionService(protocole);
+					connexionService.getSync(repositoryName);
+					connexionService.getServerInfo(repositoryName);
+					connexionService.getChangelogs(repositoryName);
+					connexionService.getEvents(repositoryName);
 					// do not retrieve autoconfig file => erase online servers
 					// conf
 
@@ -67,7 +68,7 @@ public class ProgressConnectionAsAdminDialog extends AbstractProgressDialog {
 						System.out.println("Remote file Events not found.");
 					}
 				} catch (Exception e) {
-					e.printStackTrace();
+					// e.printStackTrace();
 					setVisible(false);
 					if (e instanceof RepositoryException) {
 						JOptionPane.showMessageDialog(facade.getMainPanel(),
@@ -97,8 +98,8 @@ public class ProgressConnectionAsAdminDialog extends AbstractProgressDialog {
 	protected void menuExitPerformed() {
 
 		canceled = true;
-		if (connexion != null) {
-			connexion.cancel();
+		if (connexionService != null) {
+			connexionService.cancel();
 		}
 		terminate();
 	}

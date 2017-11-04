@@ -15,13 +15,6 @@ import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.SealedObject;
 
-import fr.soe.a3s.domain.repository.AutoConfig;
-import fr.soe.a3s.domain.repository.Changelogs;
-import fr.soe.a3s.domain.repository.Events;
-import fr.soe.a3s.domain.repository.Repository;
-import fr.soe.a3s.domain.repository.ServerInfo;
-import fr.soe.a3s.domain.repository.SyncTreeDirectory;
-
 public class A3SFilesAccessor implements DataAccessConstants {
 
 	protected static final String FILE_CORRUPTED = "The file may be corrupted.";

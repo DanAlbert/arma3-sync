@@ -32,8 +32,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.RoundingMode;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.security.MessageDigest;
@@ -51,9 +49,11 @@ import java.util.Locale;
 
 import fr.soe.a3s.dao.DataAccessConstants;
 import fr.soe.a3s.dao.FileAccessMethods;
-import fr.soe.a3s.dao.connection.DataRange;
-import fr.soe.a3s.dao.connection.MyHttpConnection;
-import fr.soe.a3s.exception.HttpException;
+import fr.soe.a3s.dao.connection.RemoteFile;
+import fr.soe.a3s.dao.connection.http.DataRange;
+import fr.soe.a3s.dao.connection.http.HttpDAO;
+import fr.soe.a3s.domain.AbstractProtocole;
+import fr.soe.a3s.exception.IncompleteFileTransferException;
 
 /**
  * Target file making class
@@ -63,24 +63,22 @@ import fr.soe.a3s.exception.HttpException;
 public class FileMaker {
 
 	private final MetaFileReader mfr;
-	private final MyHttpConnection http;
-	private final ChainingHash hashtable;
-	private Configuration config;
-	private int bufferOffset;
+	private final HttpDAO httpDAO;
+	private ChainingHash hashtable;
 	private long fileOffset;
-	private final long[] fileMap;
+	private long[] fileMap;
 	private int missing;
 	private boolean rangeQueue;
 
 	private final DecimalFormat df = new DecimalFormat("#.##");
 
 	/** File existency and completion flag */
-	public int FILE_FLAG = 0;
+	// public int FILE_FLAG = 0;
 
-	public FileMaker(MetaFileReader mfr, MyHttpConnection http) {
+	public FileMaker(MetaFileReader mfr, HttpDAO httpDAO) {
 
 		this.mfr = mfr;
-		this.http = http;
+		this.httpDAO = httpDAO;
 		hashtable = mfr.getHashtable();
 		fileMap = new long[mfr.getBlockCount()];
 		Arrays.fill(fileMap, -1);
@@ -89,166 +87,39 @@ public class FileMaker {
 		df.setRoundingMode(RoundingMode.DOWN);
 	}
 
-	public void sync(File targetFile, String targetFileSha1,
-			String targetRelativeFileUrl) throws IOException, HttpException {
-
-		System.out.println("Downloading partial file: "
-				+ targetFile.getAbsolutePath());
-
-		if (targetFile.exists() && targetFileSha1 == null) {
-			targetFileSha1 = FileAccessMethods.computeSHA1(targetFile);
-		}
-
-		SHA1check(targetFile, targetFileSha1);
-
-		if (FILE_FLAG == 1) {
-			if (targetFile.length() == 0) {
-				getWholeFile(targetFile, targetRelativeFileUrl);
-			} else {
-				double complete = mapMatcher(targetFile);
-				if (complete > 0) {
-					fileMaker(targetFile, targetRelativeFileUrl);
-				} else {
-					getWholeFile(targetFile, targetRelativeFileUrl);
-				}
-			}
-		} else {
-			getWholeFile(targetFile, targetRelativeFileUrl);
-		}
-	}
-
-	public double getCompletion(File targetFile, String targetFileSha1)
-			throws IOException {
-
-		System.out.println("Determining completion for file: "
-				+ targetFile.getAbsolutePath());
-
-		if (targetFile.exists() && targetFileSha1 == null) {
-			targetFileSha1 = FileAccessMethods.computeSHA1(targetFile);
-		}
-
-		SHA1check(targetFile, targetFileSha1);
-
-		double complete = 0;
-
-		if (FILE_FLAG == 0) {
-			complete = 100;
-		} else if (FILE_FLAG == 1) {
-			if (targetFile.length() != 0) {
-				complete = mapMatcher(targetFile);
-			}
-		}
-
-		System.out.println("File complete " + complete + "%: "
-				+ targetFile.getAbsolutePath());
-
-		return complete;
-	}
-
-	/**
-	 * Method for checking consistency of a file
-	 * 
-	 * @param file
-	 *            File to check
-	 */
-	private void SHA1check(File targetFile, String targetFileSha1) {
-
-		if (targetFile.exists()) {
-			if (targetFileSha1.equals(mfr.getSha1())) {
-				System.out.println("Read " + targetFile.getName()
-						+ "verifying download...checksum matches OK\n"
-						+ "used " + mfr.getLength() + " local, fetched 0");
-			} else {
-				FILE_FLAG = 1;
-			}
-		} else {
-			FILE_FLAG = -1;
-		}
-	}
-
-	/**
-	 * Downloads a whole file
-	 * 
-	 * @throws IOException
-	 * @throws HttpException
-	 */
-	private void getWholeFile(File targetFile, String targetRelativeFileUrl)
-			throws IOException, HttpException {
-
-		// Unexpected error from partial file transfer
-		http.getHttpDAO().setOffset(0);
-		http.getHttpDAO().setExpectedFullSize(mfr.getLength());
-		http.getHttpDAO().getDownloadingLeaf().setComplete(0);
-		http.getHttpDAO().updateObserverDownloadTotalSize();
-		if (targetFile.exists()) {
-			FileAccessMethods.deleteFile(targetFile);
-		}
-		// Download whole file
-		http.openConnection(targetRelativeFileUrl);
-		http.downloadFileWithRecordProgress(targetFile);
-		http.closeConnection();
-	}
-
-	/**
-	 * URL parser, in case that metafile contains relative path
-	 * 
-	 * @param link
-	 *            an URL to parse
-	 * @return Absolute URL
-	 */
-	private String urlParser(String link) {
-
-		String newUrl = null;
-		try {
-			URL url = new URL(link);
-			String host = url.getHost().toString();
-			String pathToFile = url.getPath().toString();
-			pathToFile = pathToFile.substring(0, pathToFile.lastIndexOf("/"));
-			newUrl = "http://" + host + pathToFile + "/" + mfr.getUrl();// WARNING:!https://
-		} catch (MalformedURLException ex) {
-			System.out.println("URL in malformed format, make sure that"
-					+ " metafile contains absolute URL or pass URL of metafile"
-					+ " to jazsync by -u parameter.");
-			System.exit(1);
-		}
-		return newUrl;
-	}
-
 	/**
 	 * Method for completing file
 	 * 
 	 * @param targetFile
 	 * @param targetFileSha1
-	 * @throws HttpException
 	 * @throws Exception
 	 */
-	public void fileMaker(File targetFile, String targetRelativeFileUrl)
-			throws IOException, HttpException {
-
-		FileInputStream fis = null;
-		FileOutputStream fos = null;
+	public void fileMaker(File targetFile, RemoteFile remoteFile,
+			AbstractProtocole protocol) throws IOException {
 
 		File partFile = new File(targetFile.getParentFile() + "/"
 				+ targetFile.getName() + DataAccessConstants.PART_EXTENSION);
 
-		try {
-			double a = 10;
-			int range = 0;
-			int blockLength = 0;
-			List<DataRange> rangeList = new ArrayList<DataRange>();
-			byte[] data = null;
-			FileChannel wChannel = null;
+		int range = 0;
+		int blockLength = 0;
+		List<DataRange> rangeList = new ArrayList<DataRange>();
+		byte[] data = null;
+		long cumulatedDataTransfered = 0;
 
-			ByteBuffer buffer = ByteBuffer.allocate(mfr.getBlocksize());
+		ByteBuffer buffer = ByteBuffer.allocate(mfr.getBlocksize());
+		FileInputStream fis = null;
+		FileOutputStream fos = null;
+		FileChannel rChannel = null;
+		FileChannel wChannel = null;
+
+		try {
 			fis = new FileInputStream(targetFile);
-			FileChannel rChannel = fis.getChannel();
+			rChannel = fis.getChannel();
 			fos = new FileOutputStream(partFile);
 			wChannel = fos.getChannel();
 
-			int cumulatedBytesDownloaded = 0;
-
 			for (int i = 0; i < fileMap.length; i++) {
-				if (http.getHttpDAO().isCanceled()) {
+				if (httpDAO.isCanceled()) {
 					break;
 				}
 				fileOffset = fileMap[i];
@@ -261,20 +132,29 @@ public class FileMaker {
 					if (!rangeQueue) {
 						rangeList = rangeLookUp(i);
 						range = rangeList.size();
-						http.openConnection(targetRelativeFileUrl);
-						data = http.getResponseBody(rangeList, partFile,
-								cumulatedBytesDownloaded);
-						http.closeConnection();
+
+						long startOffset = rangeList.get(0).getStart();
+						long endOffset = rangeList.get(rangeList.size() - 1)
+								.getEnd();
+
+						System.out.println("Downloading partial file: "
+								+ partFile.getAbsolutePath() + " at range ["
+								+ startOffset + "-" + endOffset + "]");
+
+						httpDAO.connect(protocol, remoteFile, startOffset,
+								endOffset);
+						data = httpDAO.getResponseBody(remoteFile,
+								cumulatedDataTransfered, true, true);
+						httpDAO.disconnect();
 
 						if (data == null) {
 							break;
 						}
 
-						cumulatedBytesDownloaded = cumulatedBytesDownloaded
-								+ data.length;
+						cumulatedDataTransfered += data.length;
 					}
 
-					if (http.getHttpDAO().isCanceled()) {
+					if (httpDAO.isCanceled()) {
 						break;
 					}
 
@@ -300,28 +180,10 @@ public class FileMaker {
 
 			rChannel.close();
 			wChannel.close();
-			fis.close();
-			fos.close();
 
-			if (!http.getHttpDAO().isCanceled()) {
-				String actual = FileAccessMethods.computeSHA1(partFile);
-				String expected = mfr.getSha1();// targetFile SHA1
-
-				if (actual.equals(expected)) {
-					System.out
-							.println("\nverifying download...checksum matches OK for file: "
-									+ targetFile.getAbsolutePath());
-					FileAccessMethods.deleteFile(targetFile);
-					partFile.renameTo(targetFile);
-					FileAccessMethods.deleteFile(partFile);
-				} else {
-					System.out
-							.println("\nverifying download...checksum don't match for file: "
-									+ targetFile.getAbsolutePath());
-					FileAccessMethods.deleteFile(targetFile);
-					FileAccessMethods.deleteFile(partFile);
-					getWholeFile(targetFile, targetRelativeFileUrl);
-				}
+			if (!httpDAO.isCanceled()) {
+				FileAccessMethods.deleteFile(targetFile);
+				partFile.renameTo(targetFile);
 			}
 		} finally {
 			if (fis != null) {
@@ -331,6 +193,7 @@ public class FileMaker {
 				fos.close();
 			}
 			FileAccessMethods.deleteFile(partFile);
+			buffer = null;
 		}
 	}
 
@@ -402,24 +265,32 @@ public class FileMaker {
 
 		int bufferOffset = 0;
 		InputStream is = null;
+		InputStream inBuf = null;
 		long fileLength = targetFile.length();
+
+		int weakSum = 0;
+		byte[] strongSum = null;
+		byte[] backBuffer = null;
+		byte[] blockBuffer = null;
+		byte[] fileBuffer = null;
+		int mebiByte = 1048576;
+		Configuration config = null;
 
 		try {
 			is = new FileInputStream(targetFile);
-			InputStream inBuf = new BufferedInputStream(is);
+			inBuf = new BufferedInputStream(is);
 			Security.addProvider(new JarsyncProvider());
-			Configuration config = new Configuration();
+
+			config = new Configuration();
 			config.strongSum = MessageDigest.getInstance("MD4");
 			config.weakSum = new Rsum();
 			config.blockLength = mfr.getBlocksize();
 			config.strongSumLength = mfr.getChecksumBytes();
 			Generator gen = new Generator(config);
-			int weakSum;
-			byte[] strongSum;
-			byte[] backBuffer = new byte[mfr.getBlocksize()];
-			byte[] blockBuffer = new byte[mfr.getBlocksize()];
-			byte[] fileBuffer;
-			int mebiByte = 1048576;
+
+			backBuffer = new byte[mfr.getBlocksize()];
+			blockBuffer = new byte[mfr.getBlocksize()];
+
 			if (mfr.getLength() < mebiByte
 					&& mfr.getBlocksize() < mfr.getLength()) {
 				fileBuffer = new byte[(int) mfr.getLength()];
@@ -441,6 +312,11 @@ public class FileMaker {
 			//
 
 			while (fileOffset != fileLength) {
+
+				if (httpDAO.isCanceled()) {
+					break;
+				}
+
 				// System.out.println("Outer loop: " + mc.fileOffset);
 				n = inBuf.read(fileBuffer, 0, len);
 				if (firstBlock) {
@@ -462,6 +338,11 @@ public class FileMaker {
 				}
 
 				for (; bufferOffset < fileBuffer.length; bufferOffset++) {
+
+					if (httpDAO.isCanceled()) {
+						break;
+					}
+
 					newByte = fileBuffer[bufferOffset];
 					if (fileOffset + mfr.getBlocksize() > fileLength) {
 						newByte = 0;
@@ -554,6 +435,15 @@ public class FileMaker {
 			if (is != null) {
 				is.close();
 			}
+			if (inBuf != null) {
+				inBuf.close();
+			}
+			hashtable = null;
+			strongSum = null;
+			backBuffer = null;
+			blockBuffer = null;
+			fileBuffer = null;
+			config = null;
 		}
 	}
 
@@ -595,41 +485,6 @@ public class FileMaker {
 		weakSum += (rsum[2] & 0x000000FF) << 8;
 		weakSum += (rsum[3] & 0x000000FF);
 		return weakSum;
-	}
-
-	/**
-	 * Method is used to draw a progress bar of how far we are in file.
-	 * 
-	 * @param i
-	 *            How much data we already progressed (value in percents)
-	 */
-	private void progressBar(double i) {
-		if (i >= 10) {
-			for (int b = 0; b < 11; b++) {
-				System.out.print("\b");
-			}
-		}
-		if (i >= 10 && i < 20) {
-			System.out.print("#---------|");
-		} else if (i >= 20 && i < 30) {
-			System.out.print("##--------|");
-		} else if (i >= 30 && i < 40) {
-			System.out.print("###-------|");
-		} else if (i >= 40 && i < 50) {
-			System.out.print("####------|");
-		} else if (i >= 50 && i < 60) {
-			System.out.print("#####-----|");
-		} else if (i >= 60 && i < 70) {
-			System.out.print("######----|");
-		} else if (i >= 70 && i < 80) {
-			System.out.print("#######---|");
-		} else if (i >= 80 && i < 90) {
-			System.out.print("########--|");
-		} else if (i >= 90 & i < 100) {
-			System.out.print("#########-|");
-		} else if (i >= 100) {
-			System.out.print("##########|");
-		}
 	}
 
 	/**

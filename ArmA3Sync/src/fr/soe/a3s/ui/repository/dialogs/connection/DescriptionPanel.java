@@ -35,8 +35,7 @@ import fr.soe.a3s.dto.AutoConfigDTO;
 import fr.soe.a3s.dto.ProtocolDTO;
 import fr.soe.a3s.exception.CheckException;
 import fr.soe.a3s.exception.remote.RemoteAutoconfigFileNotFoundException;
-import fr.soe.a3s.service.connection.ConnexionService;
-import fr.soe.a3s.service.connection.ConnexionServiceFactory;
+import fr.soe.a3s.service.ConnectionService;
 
 public class DescriptionPanel extends JPanel {
 
@@ -50,7 +49,7 @@ public class DescriptionPanel extends JPanel {
 	private final JPopupMenu popup;
 	private final JMenuItem menuItemPaste;
 	/* Services */
-	private ConnexionService connexion = null;
+	private ConnectionService connexion = null;
 	/* Test */
 	private boolean connexionCanceled = false;
 
@@ -238,7 +237,8 @@ public class DescriptionPanel extends JPanel {
 				int index = url.lastIndexOf("/");
 				if (index != -1) {
 					String autoconfigWord = url.substring(index + 1);
-					if (!autoconfigWord.equals(DataAccessConstants.AUTOCONFIG)) {
+					if (!autoconfigWord
+							.equals(DataAccessConstants.AUTOCONFIG_FILE_NAME)) {
 						invalid = true;
 					}
 				} else {
@@ -248,8 +248,8 @@ public class DescriptionPanel extends JPanel {
 				if (invalid) {
 					JOptionPane.showMessageDialog(repositoryEditionDialog,
 							"Url must ends with " + "\""
-									+ DataAccessConstants.AUTOCONFIG + "\""
-									+ ".", "Warning",
+									+ DataAccessConstants.AUTOCONFIG_FILE_NAME
+									+ "\"" + ".", "Warning",
 							JOptionPane.WARNING_MESSAGE);
 					return;
 				}
@@ -270,8 +270,7 @@ public class DescriptionPanel extends JPanel {
 				assert (protocol != null);
 
 				try {
-					connexion = ConnexionServiceFactory
-							.getServiceForAutoconfigURLimportation(protocol);
+					connexion = new ConnectionService(protocol);
 				} catch (CheckException e) {
 					JOptionPane.showMessageDialog(repositoryEditionDialog,
 							e.getMessage(), "Error",
@@ -290,7 +289,7 @@ public class DescriptionPanel extends JPanel {
 				try {
 					AutoConfigDTO autoConfigDTO = connexion
 							.importAutoConfig(protocol);
-					
+
 					if (autoConfigDTO != null) {
 
 						labelConnection.setText("Connection success!");

@@ -5,13 +5,13 @@ import java.util.List;
 
 import fr.soe.a3s.controller.ObserverCountInt;
 import fr.soe.a3s.controller.ObserverError;
+import fr.soe.a3s.domain.AbstractProtocole;
 import fr.soe.a3s.dto.sync.SyncTreeDirectoryDTO;
 import fr.soe.a3s.exception.remote.RemoteEventsFileNotFoundException;
 import fr.soe.a3s.exception.remote.RemoteServerInfoFileNotFoundException;
 import fr.soe.a3s.exception.remote.RemoteSyncFileNotFoundException;
+import fr.soe.a3s.service.ConnectionService;
 import fr.soe.a3s.service.RepositoryService;
-import fr.soe.a3s.service.connection.ConnexionService;
-import fr.soe.a3s.service.connection.ConnexionServiceFactory;
 
 public class FilesCheckProcessor {
 
@@ -19,7 +19,7 @@ public class FilesCheckProcessor {
 	private final String repositoryName;
 	private final boolean withEvents;
 	/* Services */
-	private ConnexionService connexionService;
+	private ConnectionService connexionService;
 	private final RepositoryService repositoryService = new RepositoryService();;
 	/* observers */
 	private ObserverCountInt observerCount;// null for no recording
@@ -37,8 +37,9 @@ public class FilesCheckProcessor {
 		try {
 			repositoryService.setCheckingForAddons(repositoryName, true);
 
-			connexionService = ConnexionServiceFactory
-					.getServiceForRepositoryManagement(repositoryName);
+			AbstractProtocole protocole = repositoryService
+					.getProtocol(repositoryName);
+			connexionService = new ConnectionService(protocole);
 			connexionService.checkRepository(repositoryName);
 
 			if (repositoryService.getSync(repositoryName) == null) {
@@ -53,7 +54,7 @@ public class FilesCheckProcessor {
 					&& repositoryService.getEvents(repositoryName) == null) {
 				throw new RemoteEventsFileNotFoundException();
 			}
-			
+
 			repositoryService.updateRepository(repositoryName);
 
 			repositoryService.getRepositorySHA1Processor().addObserverCount(

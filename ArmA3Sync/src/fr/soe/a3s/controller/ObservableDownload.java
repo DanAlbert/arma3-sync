@@ -23,7 +23,5 @@ public interface ObservableDownload {
 	public void updateObserverDownloadTooManyErrors(int maxNumberOfErrors,
 			List<Exception> errors);
 
-	public void updateObserverDownloadResponseTime();
-
 	public void updateObserverDownloadConnectionLost();
 }

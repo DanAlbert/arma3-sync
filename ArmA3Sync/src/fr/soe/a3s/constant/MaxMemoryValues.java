@@ -2,7 +2,7 @@ package fr.soe.a3s.constant;
 
 public enum MaxMemoryValues {
 
-	MIN(768), MEDIUM(1024), MAX(2048), MAX64(3072);
+	MIN(1024), MAX32(2047), MAX64(3071);
 
 	private int value;
 

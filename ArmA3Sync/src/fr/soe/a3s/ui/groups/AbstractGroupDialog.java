@@ -17,6 +17,7 @@ public abstract class AbstractGroupDialog extends AbstractDialog {
 	protected JTextField textFieldGroupName;
 	protected JLabel labelGroupName;
 	protected JLabel labelWarning;
+	protected boolean complete;
 
 	public AbstractGroupDialog(Facade facade, String title, boolean modal) {
 		super(facade, title, modal);
@@ -76,5 +77,9 @@ public abstract class AbstractGroupDialog extends AbstractDialog {
 		this.setPreferredSize(new Dimension(250, this.getSize().height));
 		this.pack();
 		setLocationRelativeTo(facade.getMainPanel());
+	}
+	
+	public boolean isComplete(){
+		return this.complete;
 	}
 }

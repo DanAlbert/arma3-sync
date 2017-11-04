@@ -1,6 +1,5 @@
 package fr.soe.a3s.ui.repository.tree;
 
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Vector;
@@ -16,14 +15,25 @@ import fr.soe.a3s.dto.sync.SyncTreeNodeDTO;
 public class AddonSyncTreeModel implements TreeModel {
 
 	private SyncTreeDirectoryDTO root;
-
-	private Vector listeners = new Vector();
-
-	private List<SyncTreeNodeDTO> selectedNodes = new ArrayList<SyncTreeNodeDTO>();
+	private Vector<TreeModelListener> listeners = new Vector<TreeModelListener>();
 
 	public AddonSyncTreeModel(SyncTreeDirectoryDTO syncTreeDirectoryDTO) {
 		root = syncTreeDirectoryDTO;
 	}
+
+	/**
+	 * The only event raised by this model is TreeStructureChanged with the root as
+	 * path, i.e. the whole tree has changed.
+	 */
+	public void fireTreeStructureChanged() {
+
+		TreeModelEvent e = new TreeModelEvent(this, new Object[] { root });
+		for (TreeModelListener tml : listeners) {
+			tml.treeStructureChanged(e);
+		}
+	}
+
+	//////////////// TreeModel interface implementation ///////////////////////
 
 	@Override
 	public Object getRoot() {
@@ -68,8 +78,7 @@ public class AddonSyncTreeModel implements TreeModel {
 			List<SyncTreeNodeDTO> list = directory.getList();
 			for (int i = 0; i < list.size(); i++) {
 				if (syncTreeNodeeDTO.getName() != null) {
-					if (syncTreeNodeeDTO.getName()
-							.equals(list.get(i).getName())) {
+					if (syncTreeNodeeDTO.getName().equals(list.get(i).getName())) {
 						return i;
 					}
 				}
@@ -81,28 +90,30 @@ public class AddonSyncTreeModel implements TreeModel {
 	@Override
 	public void valueForPathChanged(TreePath path, Object value) {
 
-		SyncTreeNodeDTO syncTreeNodeDTO = (SyncTreeNodeDTO) path
-				.getLastPathComponent();
-		String newName = (String) value;
-		syncTreeNodeDTO.setName(newName);
-		int[] changedChildrenIndices = { getIndexOfChild(
-				syncTreeNodeDTO.getParent(), syncTreeNodeDTO) };
-		Object[] changedChildren = { syncTreeNodeDTO };
-		fireTreeNodesChanged(path.getParentPath(), changedChildrenIndices,
-				changedChildren);
+		System.out.println("*** valueForPathChanged : " + path + " --> " + value.toString());
+
+		// SyncTreeNodeDTO syncTreeNodeDTO = (SyncTreeNodeDTO)
+		// path.getLastPathComponent();
+		// String newName = (String) value;
+		// syncTreeNodeDTO.setName(newName);
+		// int[] changedChildrenIndices = { getIndexOfChild(syncTreeNodeDTO.getParent(),
+		// syncTreeNodeDTO) };
+		// Object[] changedChildren = { syncTreeNodeDTO };
+		// fireTreeNodesChanged(path.getParentPath(), changedChildrenIndices,
+		// changedChildren);
 	}
 
-	private void fireTreeNodesChanged(TreePath parentPath, int[] indices,
-			Object[] children) {
-		TreeModelEvent event = new TreeModelEvent(this, parentPath, indices,
-				children);
-		Iterator iterator = listeners.iterator();
-		TreeModelListener listener = null;
-		while (iterator.hasNext()) {
-			listener = (TreeModelListener) iterator.next();
-			listener.treeNodesChanged(event);
-		}
-	}
+	// private void fireTreeNodesChanged(TreePath parentPath, int[] indices,
+	// Object[] children) {
+	// TreeModelEvent event = new TreeModelEvent(this, parentPath, indices,
+	// children);
+	// Iterator iterator = listeners.iterator();
+	// TreeModelListener listener = null;
+	// while (iterator.hasNext()) {
+	// listener = (TreeModelListener) iterator.next();
+	// listener.treeNodesChanged(event);
+	// }
+	// }
 
 	@Override
 	public void removeTreeModelListener(TreeModelListener listener) {
@@ -113,5 +124,4 @@ public class AddonSyncTreeModel implements TreeModel {
 	public void addTreeModelListener(TreeModelListener listener) {
 		listeners.add(listener);
 	}
-
 }

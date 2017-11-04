@@ -1,10 +1,9 @@
-package fr.soe.a3s.dao.connection.processors;
+package fr.soe.a3s.service.connection;
 
 import java.io.File;
 import java.io.IOException;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
@@ -21,10 +20,11 @@ public class ConnectionDownloadProcessor implements DataAccessConstants {
 	private List<AbstractConnexionDAO> connexionDAOs = null;
 	private Stack<SyncTreeNodeDTO> downloadFilesStack = null;
 	private List<Exception> downloadErrors = null;
-	private IOException downloadConnectioError = null;
+	private IOException downloadConnectionError = null;
 	private int semaphore;
 	private Repository repository = null;
 	private UnZipFlowProcessor unZipFlowProcessor = null;
+	private boolean terminated;
 
 	public ConnectionDownloadProcessor(List<SyncTreeNodeDTO> filesToDownload,
 			List<AbstractConnexionDAO> connexionDAOs, Repository repository,
@@ -40,6 +40,8 @@ public class ConnectionDownloadProcessor implements DataAccessConstants {
 	}
 
 	public void run() {
+
+		this.terminated = false;
 
 		for (final AbstractConnexionDAO connexionDAO : connexionDAOs) {
 			connexionDAO.addObserverProceed(new ObserverProceed() {
@@ -57,8 +59,8 @@ public class ConnectionDownloadProcessor implements DataAccessConstants {
 								connexionDAO
 										.updateObserverDownloadActiveConnections();
 
-								File downloadedFile = downloadFile(
-										connexionDAO, node);
+								File downloadedFile = connexionDAO
+										.downloadFile(repository, node);
 
 								connexionDAO.setActiveConnection(false);
 								connexionDAO
@@ -91,7 +93,7 @@ public class ConnectionDownloadProcessor implements DataAccessConstants {
 									}
 								}
 							} catch (IOException e) {
-
+								
 								connexionDAO.setActiveConnection(false);
 								if (connexionDAO.isAcquiredSemaphore()) {
 									releaseSemaphore();
@@ -102,70 +104,22 @@ public class ConnectionDownloadProcessor implements DataAccessConstants {
 								if (!connexionDAO.isCanceled()) {
 									if (e instanceof SocketException
 											|| e instanceof SocketTimeoutException) {
-										downloadConnectioError = e;
+										downloadConnectionError = e;
 									} else if (e instanceof IOException) {
 										addDownloadError(e);
 									}
 								}
 							} finally {
-								if (downloadConnectioError != null) {
-									connexionDAO
-											.updateObserverDownloadConnectionLost();
+								if (downloadConnectionError != null) {
+									terminate(connexionDAO);
 								} else if (downloadErrors.size() > 10) {
-									connexionDAO
-											.updateObserverDownloadTooManyErrors(
-													10, downloadErrors);
+									terminate(connexionDAO);
 								} else {
 									connexionDAO.updateObserverProceed();
 								}
 							}
 						} else {// no more file to download for this DAO
-							
-							connexionDAO.setActiveConnection(false);
-							if (connexionDAO.isAcquiredSemaphore()) {
-								releaseSemaphore();
-								connexionDAO.setAcquiredSemaphore(false);
-							}
-
-							// Check if there is no more active connections
-							boolean downloadFinished = true;
-							for (final AbstractConnexionDAO connexionDAO : connexionDAOs) {
-								if (connexionDAO.isActiveConnection()) {
-									downloadFinished = false;
-									break;
-								}
-							}
-
-							// download is finished
-							if (downloadFinished) {
-								// display uncompressing progress
-								if (unZipFlowProcessor
-										.uncompressionIsFinished()) {
-									downloadErrors.addAll(unZipFlowProcessor
-											.getErrors());
-									if (downloadErrors.isEmpty()) {
-										connexionDAO
-												.updateObserverDownloadEnd();
-									} else {
-										connexionDAO
-												.updateObserverDownloadEndWithErrors(downloadErrors);
-									}
-								} else {
-									if (!unZipFlowProcessor.isStarted()) {
-										unZipFlowProcessor
-												.start(downloadErrors);
-									}
-								}
-							} else {
-								// Give semaphore to the other DAOs
-								for (final AbstractConnexionDAO connexionDAO : connexionDAOs) {
-									if (connexionDAO.isActiveConnection()
-											&& aquireSemaphore()) {
-										connexionDAO.setAcquiredSemaphore(true);
-										break;
-									}
-								}
-							}
+							terminate(connexionDAO);
 						}
 					}
 				}
@@ -178,9 +132,7 @@ public class ConnectionDownloadProcessor implements DataAccessConstants {
 			for (final AbstractConnexionDAO connexionDAO : connexionDAOs) {
 				if (!downloadFilesStack.isEmpty()) {// nb files < nb connections
 					try {
-						connexionDAO.connectToRepository(repository
-								.getProtocol());
-						connexionDAO.disconnect();
+						connexionDAO.checkConnection(repository.getProtocol());
 						final Thread t = new Thread(new Runnable() {
 							@Override
 							public void run() {
@@ -207,32 +159,6 @@ public class ConnectionDownloadProcessor implements DataAccessConstants {
 		}
 	}
 
-	private File downloadFile(final AbstractConnexionDAO connexionDAO,
-			final SyncTreeNodeDTO node) throws IOException {
-
-		final String rootDestinationPath = repository
-				.getDefaultDownloadLocation();
-
-		String destinationPath = null;
-		String remotePath = repository.getProtocol().getRemotePath();
-		String path = node.getParentRelativePath();
-		if (node.getDestinationPath() != null) {
-			destinationPath = node.getDestinationPath();
-			if (!path.isEmpty()) {
-				remotePath = remotePath + "/" + path;
-			}
-		} else {
-			destinationPath = rootDestinationPath;
-			if (!path.isEmpty()) {
-				destinationPath = rootDestinationPath + "/" + path;
-				remotePath = remotePath + "/" + path;
-			}
-		}
-
-		return connexionDAO.downloadFile(repository, remotePath,
-				destinationPath, node);
-	}
-
 	private synchronized void addDownloadError(Exception e) {
 		downloadErrors.add(e);
 	}
@@ -256,5 +182,47 @@ public class ConnectionDownloadProcessor implements DataAccessConstants {
 
 	private synchronized void releaseSemaphore() {
 		semaphore = 1;
+	}
+
+	private synchronized void terminate(AbstractConnexionDAO connexionDAO) {
+
+		if (!terminated) {
+
+			if (downloadConnectionError != null) {
+				terminated = true;
+				connexionDAO.updateObserverDownloadConnectionLost();
+			} else if (downloadErrors.size() > 10) {
+				terminated = true;
+				connexionDAO.updateObserverDownloadTooManyErrors(10,
+						downloadErrors);
+			} else {
+				// Check if there is no more active connections
+				boolean downloadFinished = true;
+				for (final AbstractConnexionDAO cDAO : connexionDAOs) {
+					if (cDAO.isActiveConnection()) {
+						downloadFinished = false;
+						break;
+					}
+				}
+
+				if (downloadFinished) {
+					terminated = true;
+					// display uncompressing progress
+					if (unZipFlowProcessor.uncompressionIsFinished()) {
+						downloadErrors.addAll(unZipFlowProcessor.getErrors());
+						if (downloadErrors.isEmpty()) {
+							connexionDAO.updateObserverDownloadEnd();
+						} else {
+							connexionDAO
+									.updateObserverDownloadEndWithErrors(downloadErrors);
+						}
+					} else {
+						if (!unZipFlowProcessor.isStarted()) {
+							unZipFlowProcessor.start(downloadErrors);
+						}
+					}
+				}
+			}
+		}
 	}
 }

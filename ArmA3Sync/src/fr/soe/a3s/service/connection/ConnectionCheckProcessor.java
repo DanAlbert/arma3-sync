@@ -1,4 +1,4 @@
-package fr.soe.a3s.dao.connection.processors;
+package fr.soe.a3s.service.connection;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -12,10 +12,10 @@ import fr.soe.a3s.dto.sync.SyncTreeNodeDTO;
 
 public class ConnectionCheckProcessor extends AbstractConnectionProcessor {
 
-	private final AbstractProtocole protocol;
 	private List<Exception> errors = null;
 	private List<RemoteFile> missingRemoteFiles = null;
 	private int count, totalCount;
+	private AbstractProtocole protocol = null;
 
 	public ConnectionCheckProcessor(AbstractConnexionDAO abstractConnexionDAO,
 			List<SyncTreeNodeDTO> filesToCheck,
@@ -23,9 +23,9 @@ public class ConnectionCheckProcessor extends AbstractConnectionProcessor {
 			AbstractProtocole protocol) {
 		super(abstractConnexionDAO, filesToCheck, isCompressedPboFilesOnly,
 				withzsync);
-		this.protocol = protocol;
 		this.errors = new ArrayList<Exception>();
 		this.missingRemoteFiles = new ArrayList<RemoteFile>();
+		this.protocol = protocol;
 	}
 
 	public void run() throws IOException {
@@ -45,9 +45,7 @@ public class ConnectionCheckProcessor extends AbstractConnectionProcessor {
 					missingRemoteFiles.add(remoteFile);
 					errors.add(new FileNotFoundException(
 							"File not found on repository: "
-									+ remoteFile
-											.getParentDirectoryRelativePath()
-									+ "/" + remoteFile.getFilename()));
+									+ remoteFile.getRelativeFilePath()));
 					abstractConnexionDAO.updateObserverCountErrors(errors
 							.size());
 				}

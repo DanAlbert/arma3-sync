@@ -23,14 +23,11 @@ public class ReportDialog extends AbstractDialog implements DataAccessConstants 
 	private final DownloadPanel downloadPanel;
 	private JTextArea textArea;
 	// Data
-	private final String repositoryName;
 	private String downloadReport;
 
-	public ReportDialog(Facade facade, String repositoryName,
-			DownloadPanel downloadPanel) {
+	public ReportDialog(Facade facade, DownloadPanel downloadPanel) {
 		super(facade, "Download", true);
 		this.downloadPanel = downloadPanel;
-		this.repositoryName = repositoryName;
 
 		{
 			buttonOK.setText("Export");

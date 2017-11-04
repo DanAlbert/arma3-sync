@@ -1,6 +1,5 @@
 package fr.soe.a3s.service.synchronization;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -8,8 +7,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import fr.soe.a3s.constant.DownloadStatus;
-import fr.soe.a3s.constant.RepositoryStatus;
 import fr.soe.a3s.controller.ObserverConnectionLost;
 import fr.soe.a3s.controller.ObserverCountInt;
 import fr.soe.a3s.controller.ObserverCountLong;
@@ -18,14 +15,10 @@ import fr.soe.a3s.controller.ObserverEnd;
 import fr.soe.a3s.controller.ObserverError;
 import fr.soe.a3s.controller.ObserverProceed;
 import fr.soe.a3s.controller.ObserverUncompress;
-import fr.soe.a3s.dao.DataAccessConstants;
-import fr.soe.a3s.dao.FileAccessMethods;
 import fr.soe.a3s.dao.connection.AbstractConnexionDAO;
-import fr.soe.a3s.dto.sync.SyncTreeLeafDTO;
-import fr.soe.a3s.dto.sync.SyncTreeNodeDTO;
+import fr.soe.a3s.domain.AbstractProtocole;
+import fr.soe.a3s.service.ConnectionService;
 import fr.soe.a3s.service.RepositoryService;
-import fr.soe.a3s.service.connection.ConnexionService;
-import fr.soe.a3s.service.connection.ConnexionServiceFactory;
 import fr.soe.a3s.utils.UnitConverter;
 
 public class FilesSynchronizationProcessor {
@@ -35,7 +28,7 @@ public class FilesSynchronizationProcessor {
 	private long startTime, deltaTimeSpeed;
 	/* Services */
 	private final RepositoryService repositoryService = new RepositoryService();
-	private ConnexionService connexionService;
+	private ConnectionService connexionService;
 	private final FilesSynchronizationManager filesManager;
 	/* observers */
 	private ObserverCountInt observerCountTotalProgress,
@@ -46,8 +39,7 @@ public class FilesSynchronizationProcessor {
 	private ObserverEnd observerEnd;// not null
 	private ObserverError observerError;// not null
 	private ObserverConnectionLost observerConnectionLost; // not null
-	private ObserverProceed observerProceedUncompress, observerProceedDelete;// not
-																				// null
+	private ObserverProceed observerProceedUncompress;// not null
 
 	public FilesSynchronizationProcessor(String repositoryName,
 			FilesSynchronizationManager filesManager) {
@@ -79,9 +71,10 @@ public class FilesSynchronizationProcessor {
 				numberOfConnections = numberOfClientConnections;
 			}
 
-			connexionService = ConnexionServiceFactory
-					.getServiceForFilesSynchronization(repositoryName,
-							numberOfConnections);
+			AbstractProtocole protocole = repositoryService
+					.getProtocol(repositoryName);
+			connexionService = new ConnectionService(numberOfConnections,
+					protocole);
 
 			for (AbstractConnexionDAO connect : connexionService
 					.getConnexionDAOs()) {
@@ -102,11 +95,6 @@ public class FilesSynchronizationProcessor {
 					public void updateTotalSize() {
 						filesManager.update();
 						executeUpdateTotalSize(filesManager.getTotalFilesSize());
-					}
-
-					@Override
-					public void updateResponseTime(long value) {
-						executeUpdateResponseTime(value);
 					}
 
 					@Override
@@ -170,30 +158,19 @@ public class FilesSynchronizationProcessor {
 						}
 					});
 
-			// Start uncompressing in background already downloaded .pbo.zip
+			// Start by uncompressing in background already downloaded .pbo.zip
 			// files
-			for (SyncTreeNodeDTO node : filesManager.getListFilesToUpdate()) {
-				if (node.isLeaf()) {
-					SyncTreeLeafDTO leaf = (SyncTreeLeafDTO) node;
-					if (leaf.isCompressed()
-							&& node.getDownloadStatus().equals(
-									DownloadStatus.DONE)) {
-						File parentDirectory = new File(
-								leaf.getDestinationPath());
-						File zipFile = new File(parentDirectory + "/"
-								+ leaf.getName()
-								+ DataAccessConstants.ZIP_EXTENSION);
-						if (zipFile.exists()) {
-							connexionService.getUnZipFlowProcessor()
-									.unZipAsynchronously(zipFile);
-						}
-					}
-				}
-			}
+			connexionService.unZip(repositoryName,
+					filesManager.getDownloadedFiles());
 
+			// Delete extra local file
+			connexionService.deleteExtraLocalFiles(repositoryName,
+					filesManager.getListFilesToDelete());
+
+			// Set total file size already downloaded
 			executeUpdateTotalSize(filesManager.getTotalFilesSize());
 
-			// Start synchronization
+			// Start/Resume synchronization
 			startTime = System.nanoTime();
 			deltaTimeSpeed = startTime;
 			connexionService.synchronize(repositoryName,
@@ -313,13 +290,6 @@ public class FilesSynchronizationProcessor {
 		}
 	}
 
-	private synchronized void executeUpdateResponseTime(long value) {
-
-		// Report
-		filesManager.setAverageResponseTime((filesManager
-				.getAverageResponseTime() + value) / 2);
-	}
-
 	private void executeUpdateUncompressStart() {
 
 		if (observerProceedUncompress != null) {
@@ -338,9 +308,6 @@ public class FilesSynchronizationProcessor {
 
 		repositoryService.setDownloading(repositoryName, false);
 
-		/* Delete extra files */
-		deleteExtraFiles();
-
 		/* Generate Report */
 		String report = generateReport("Download finished successfully.");
 		repositoryService.setReport(repositoryName, report);
@@ -353,32 +320,12 @@ public class FilesSynchronizationProcessor {
 
 		repositoryService.setDownloading(repositoryName, false);
 
-		/* Delete extra files */
-		deleteExtraFiles();
-
 		/* Generate Report */
 		String report = generateReport(message, errors);
 		repositoryService.setReport(repositoryName, report);
 
 		/* End */
 		observerError.error(errors);
-	}
-
-	private void deleteExtraFiles() {
-
-		/* Delete extra files */
-		observerProceedDelete.proceed();
-		for (SyncTreeNodeDTO node : filesManager.getListFilesToDelete()) {
-			String path = node.getDestinationPath() + "/" + node.getName();
-			if (path != null) {
-				File file = new File(path);
-				if (file.isFile()) {
-					FileAccessMethods.deleteFile(file);
-				} else if (file.isDirectory()) {
-					FileAccessMethods.deleteDirectory(file);
-				}
-			}
-		}
 	}
 
 	private void executeConnectionLost() {
@@ -409,21 +356,12 @@ public class FilesSynchronizationProcessor {
 		String endDate = "Download finished on: " + new Date().toLocaleString();
 
 		// Server Connection
-		long averageResponseTime = Math.round(filesManager
-				.getAverageResponseTime() / Math.pow(10, 6));
-		String avgRespTime = "unavailable";
-		if (averageResponseTime == 0) {
-			avgRespTime = "1 ms";
-		} else if (averageResponseTime > 0) {
-			avgRespTime = Long.toString(averageResponseTime) + " ms";
-		}
 		String avgDlSpeed = "unavailable";
 		if (filesManager.getAverageDownloadSpeed() > 0) {
 			avgDlSpeed = UnitConverter.convertSpeed(filesManager
 					.getAverageDownloadSpeed());
 		}
 		String serverConnectionInfo = "Server connection:" + "\n"
-				+ "- Average response time: " + avgRespTime + "\n"
 				+ "- Average download speed: " + avgDlSpeed + "\n"
 				+ "- Number of active connections used: "
 				+ filesManager.getMaxActiveconnections();
@@ -593,9 +531,5 @@ public class FilesSynchronizationProcessor {
 
 	public void addObserverProceedUncompress(ObserverProceed obs) {
 		this.observerProceedUncompress = obs;
-	}
-
-	public void addObserverProceedDelete(ObserverProceed obs) {
-		this.observerProceedDelete = obs;
 	}
 }

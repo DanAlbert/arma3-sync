@@ -154,7 +154,7 @@ public class RepositoryDAO implements DataAccessConstants {
 		assert (repository != null);
 
 		String path = repository.getPath();
-		String syncPath = path + "/" + SYNC_FILE_PATH;
+		String syncPath = path + "/" + A3S_FOlDER_NAME + "/" + SYNC_FILE_NAME;
 		File file = new File(syncPath);
 		SyncTreeDirectory sync = (SyncTreeDirectory) A3SFilesAccessor
 				.read(file);
@@ -166,7 +166,8 @@ public class RepositoryDAO implements DataAccessConstants {
 		assert (repository != null);
 
 		String path = repository.getPath();
-		String serverInfoPath = path + "/" + SERVERINFO_FILE_PATH;
+		String serverInfoPath = path + "/" + A3S_FOlDER_NAME + "/"
+				+ SERVERINFO_FILE_NAME;
 		File file = new File(serverInfoPath);
 		ServerInfo serverInfo = (ServerInfo) A3SFilesAccessor.read(file);
 		return serverInfo;
@@ -177,7 +178,8 @@ public class RepositoryDAO implements DataAccessConstants {
 		assert (repository != null);
 
 		String path = repository.getPath();
-		String changelogsPath = path + "/" + CHANGELOGS_FILE_PATH;
+		String changelogsPath = path + "/" + A3S_FOlDER_NAME + "/"
+				+ CHANGELOGS_FILE_NAME;
 		File file = new File(changelogsPath);
 		Changelogs changelogs = (Changelogs) A3SFilesAccessor.read(file);
 		return changelogs;
@@ -188,7 +190,8 @@ public class RepositoryDAO implements DataAccessConstants {
 		assert (repository != null);
 
 		String path = repository.getPath();
-		String autocOnfigPath = path + "/" + AUTOCONFIG_FILE_PATH;
+		String autocOnfigPath = path + "/" + A3S_FOlDER_NAME + "/"
+				+ AUTOCONFIG_FILE_NAME;
 		File file = new File(autocOnfigPath);
 		AutoConfig autoconfig = (AutoConfig) A3SFilesAccessor.read(file);
 		return autoconfig;
@@ -197,7 +200,8 @@ public class RepositoryDAO implements DataAccessConstants {
 	public Events readEvents(Repository repository) throws IOException {
 
 		String path = repository.getPath();
-		String eventsPath = path + "/" + EVENTS_FILE_PATH;
+		String eventsPath = path + "/" + A3S_FOlDER_NAME + "/"
+				+ EVENTS_FILE_NAME;
 		File file = new File(eventsPath);
 		Events events = (Events) A3SFilesAccessor.read(file);
 		return events;
@@ -210,8 +214,8 @@ public class RepositoryDAO implements DataAccessConstants {
 		Events events = repository.getEvents();
 		if (events != null) {
 			String path = repository.getPath();
-			File a3sFolder = new File(path + A3S_FOlDER_PATH);
-			File file = new File(a3sFolder, EVENTS);
+			File a3sFolder = new File(path + "/" + A3S_FOlDER_NAME);
+			File file = new File(a3sFolder, EVENTS_FILE_NAME);
 			try {
 				a3sFolder.mkdir();
 				if (!a3sFolder.exists()) {

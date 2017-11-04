@@ -401,8 +401,14 @@ public class SyncPanel extends JPanel implements UIConstants {
 		listEvents.setListData(tab);
 
 		model.fireTableDataChanged();
-		scrollPane1.updateUI();
-		scrollPane2.updateUI();
+
+		SwingUtilities.invokeLater(new Runnable() {
+			@Override
+			public void run() {
+				scrollPane1.updateUI();
+				scrollPane2.updateUI();
+			}
+		});
 
 		// Re-adjust columns size
 		List<Integer> columnIndexes = new ArrayList<Integer>();

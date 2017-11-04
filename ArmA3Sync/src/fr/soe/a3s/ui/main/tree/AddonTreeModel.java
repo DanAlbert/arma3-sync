@@ -1,7 +1,5 @@
 package fr.soe.a3s.ui.main.tree;
 
-import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Vector;
 
@@ -13,16 +11,28 @@ import javax.swing.tree.TreePath;
 import fr.soe.a3s.dto.TreeDirectoryDTO;
 import fr.soe.a3s.dto.TreeNodeDTO;
 
-
 public class AddonTreeModel implements TreeModel {
 
 	private TreeDirectoryDTO root;
-	private Vector listeners = new Vector();
-	private List<TreeNodeDTO> selectedNodes = new ArrayList<TreeNodeDTO>();
+	private Vector<TreeModelListener> listeners = new Vector<TreeModelListener>();
 
 	public AddonTreeModel(TreeDirectoryDTO treeDirectoryDTO) {
 		root = treeDirectoryDTO;
 	}
+
+	/**
+	 * The only event raised by this model is TreeStructureChanged with the root as
+	 * path, i.e. the whole tree has changed.
+	 */
+	public void fireTreeStructureChanged() {
+
+		TreeModelEvent e = new TreeModelEvent(this, new Object[] { root });
+		for (TreeModelListener tml : listeners) {
+			tml.treeStructureChanged(e);
+		}
+	}
+
+	//////////////// TreeModel interface implementation ///////////////////////
 
 	@Override
 	public Object getRoot() {
@@ -51,7 +61,7 @@ public class AddonTreeModel implements TreeModel {
 
 	@Override
 	public boolean isLeaf(Object node) {
-		TreeNodeDTO	treeNodeDTO = (TreeNodeDTO) node;
+		TreeNodeDTO treeNodeDTO = (TreeNodeDTO) node;
 		if (treeNodeDTO.isLeaf()) {
 			return true;
 		} else {
@@ -61,12 +71,12 @@ public class AddonTreeModel implements TreeModel {
 
 	@Override
 	public int getIndexOfChild(Object parent, Object child) {
-		if (parent!=null && parent instanceof TreeDirectoryDTO){
+		if (parent != null && parent instanceof TreeDirectoryDTO) {
 			TreeDirectoryDTO directory = (TreeDirectoryDTO) parent;
 			TreeNodeDTO treeNodeeDTO = (TreeNodeDTO) child;
 			List<TreeNodeDTO> list = directory.getList();
 			for (int i = 0; i < list.size(); i++) {
-				if (treeNodeeDTO.getName()!=null){
+				if (treeNodeeDTO.getName() != null) {
 					if (treeNodeeDTO.getName().equals(list.get(i).getName())) {
 						return i;
 					}
@@ -79,28 +89,30 @@ public class AddonTreeModel implements TreeModel {
 	@Override
 	public void valueForPathChanged(TreePath path, Object value) {
 
-		TreeNodeDTO treeNodeDTO = (TreeNodeDTO) path
-				.getLastPathComponent();
-		String newName = (String) value;
-		treeNodeDTO.setName(newName);
-		int[] changedChildrenIndices = { getIndexOfChild(treeNodeDTO
-				.getParent(), treeNodeDTO) };
-		Object[] changedChildren = { treeNodeDTO };
-		fireTreeNodesChanged(path.getParentPath(), changedChildrenIndices,
-				changedChildren);
+		System.out.println("*** valueForPathChanged : " + path + " --> " + value.toString());
+
+		// TreeNodeDTO treeNodeDTO = (TreeNodeDTO) path.getLastPathComponent();
+		// String newName = (String) value;
+		// treeNodeDTO.setName(newName);
+		// int[] changedChildrenIndices = { getIndexOfChild(treeNodeDTO.getParent(),
+		// treeNodeDTO) };
+		// Object[] changedChildren = { treeNodeDTO };
+		// fireTreeNodesChanged(path.getParentPath(), changedChildrenIndices,
+		// changedChildren);
 	}
 
-	private void fireTreeNodesChanged(TreePath parentPath, int[] indices,
-			Object[] children) {
-		TreeModelEvent event = new TreeModelEvent(this, parentPath, indices,
-				children);
-		Iterator iterator = listeners.iterator();
-		TreeModelListener listener = null;
-		while (iterator.hasNext()) {
-			listener = (TreeModelListener) iterator.next();
-			listener.treeNodesChanged(event);
-		}
-	}
+	// private void fireTreeNodesChanged(TreePath parentPath, int[] indices,
+	// Object[] children) {
+	//
+	// TreeModelEvent event = new TreeModelEvent(this, parentPath, indices,
+	// children);
+	// Iterator iterator = listeners.iterator();
+	// TreeModelListener listener = null;
+	// while (iterator.hasNext()) {
+	// listener = (TreeModelListener) iterator.next();
+	// listener.treeNodesChanged(event);
+	// }
+	// }
 
 	@Override
 	public void addTreeModelListener(TreeModelListener listener) {
@@ -110,36 +122,5 @@ public class AddonTreeModel implements TreeModel {
 	@Override
 	public void removeTreeModelListener(TreeModelListener listener) {
 		listeners.remove(listener);
-	}
-
-	public void removeNodeFromParent(TreeNodeDTO oldNode) {
-		oldNode.getParent().removeTreeNode(oldNode);
-	}
-
-	public void insertNodeInto(TreeNodeDTO node, TreeNodeDTO parent, int i) {
-		TreeDirectoryDTO treeDirectoryDTO = (TreeDirectoryDTO) parent;
-		treeDirectoryDTO.getList().add(i, node);
-	}
-	
-	public void updateSelectedState(List<TreeNodeDTO> selectedNodes){
-		this.selectedNodes = selectedNodes;
-		for (TreeNodeDTO treeNodeDTO:root.getList()){
-			updateSelectedState(treeNodeDTO);
-		}
-	}
-	
-	private void updateSelectedState(TreeNodeDTO treeNodeDTO){
-		if (treeNodeDTO.isLeaf()){
-			if (selectedNodes.contains(treeNodeDTO)){
-				treeNodeDTO.setSelected(true);
-			}else {
-				treeNodeDTO.setSelected(false);
-			}
-		}else {
-			TreeDirectoryDTO treeDirectoryDTO = (TreeDirectoryDTO) treeNodeDTO;
-			for (TreeNodeDTO t:treeDirectoryDTO.getList()){
-				updateSelectedState(t);
-			}
-		}
 	}
 }

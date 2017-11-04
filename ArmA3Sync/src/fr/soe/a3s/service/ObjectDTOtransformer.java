@@ -368,11 +368,8 @@ public class ObjectDTOtransformer {
 		syncTreeLeafDTO.setUpdated(syncTreeLeaf.isUpdated());
 		syncTreeLeafDTO.setDeleted(syncTreeLeaf.isDeleted());
 		syncTreeLeafDTO.setCompressed(syncTreeLeaf.isCompressed());
-		String remoteSHA1 = syncTreeLeaf.getSha1();
-		String localSHA1 = syncTreeLeaf.getLocalSHA1();
-		syncTreeLeafDTO.setLocalSHA1(localSHA1);
 		syncTreeLeafDTO.setSha1(syncTreeLeaf.getSha1());
-		syncTreeLeafDTO.setDestinationPath(syncTreeLeaf.getDestinationPath());
+		syncTreeLeafDTO.setLocalSHA1(syncTreeLeaf.getLocalSHA1());
 		return syncTreeLeafDTO;
 	}
 

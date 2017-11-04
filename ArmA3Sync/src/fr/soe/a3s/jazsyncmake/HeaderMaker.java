@@ -30,8 +30,6 @@ import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
-
-import fr.soe.a3s.jazsync.SHA1;
 /**
  * Simple class for creating headers for metafile
  * @author Tomáš Hlavni�?ka
@@ -59,7 +57,6 @@ SHA-1: 5944ec77b9b0f2d6b8212d142970117f5801430a
     private String ZURL="Z-URL: "; 
     private String SHA1="SHA-1: ";
     private String ZMAP2="Z-Map2: ";
-    private SHA1 sha1;
 
     private int seq_num=1;
     private int rsum_bytes=4;

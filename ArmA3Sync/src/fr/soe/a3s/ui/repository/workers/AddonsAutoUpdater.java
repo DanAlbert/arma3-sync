@@ -68,12 +68,13 @@ public class AddonsAutoUpdater extends Thread {
 				observerError.error(errors);
 			}
 		});
-		addonsDownloader.addObserverConnectionLost(new ObserverConnectionLost() {
-			@Override
-			public void lost() {
-				observerConnectionLost.lost();
-			}
-		});
+		addonsDownloader
+				.addObserverConnectionLost(new ObserverConnectionLost() {
+					@Override
+					public void lost() {
+						observerConnectionLost.lost();
+					}
+				});
 
 		addonsChecker.run();
 	}
@@ -109,8 +110,8 @@ public class AddonsAutoUpdater extends Thread {
 	public void addObserverError(ObserverError obs) {
 		this.observerError = obs;
 	}
-	
-	public void addObserverConnectionLost(ObserverConnectionLost obs){
+
+	public void addObserverConnectionLost(ObserverConnectionLost obs) {
 		this.observerConnectionLost = obs;
 	}
 }

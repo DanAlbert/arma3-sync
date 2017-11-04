@@ -23,7 +23,7 @@
       USA
  */
 
-package fr.soe.a3s.dao.connection;
+package fr.soe.a3s.dao.connection.http;
 
 /**
  * Block range
@@ -46,19 +46,26 @@ public class DataRange {
 	 * @return Range of data in stream
 	 */
 	public String getRange() {
-		return start + "-" + end;
+		if (end == -1) {
+			return start + "-";
+		} else {
+			return start + "-" + end;
+		}
 	}
 
-	/**
-	 * Returns offset where block starts in the complete file
-	 * 
-	 * @return Offset where block starts
-	 */
 	public long getStart() {
 		return start;
 	}
 
 	public long getEnd() {
 		return end;
+	}
+
+	public boolean isPartial() {
+		if (start == 0 && end == -1) {
+			return false;
+		} else {
+			return true;
+		}
 	}
 }

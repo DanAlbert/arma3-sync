@@ -74,7 +74,7 @@ public class ExtractProgressDialog extends AbstractProgressDialog {
 
 		this.setVisible(false);
 		this.canceled = true;
-		this.commonService.cancel();
+		this.commonService.cancelBikeys();
 		this.dispose();
 	}
 }

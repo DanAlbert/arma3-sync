@@ -46,7 +46,7 @@ import fr.soe.a3s.ui.repository.dialogs.error.UnexpectedErrorDialog;
 import fr.soe.a3s.ui.repository.workers.RepositoryBuilder;
 import fr.soe.a3s.ui.repository.workers.RepositoryChecker;
 import fr.soe.a3s.ui.repository.workers.RepositoryUploader;
-import fr.soe.a3s.utils.ErrorPrinter;
+import fr.soe.a3s.utils.RepositoryConsoleErrorPrinter;
 import fr.soe.a3s.utils.UnitConverter;
 
 public class AdminPanel extends JPanel implements UIConstants {
@@ -644,7 +644,7 @@ public class AdminPanel extends JPanel implements UIConstants {
 					Exception ex = errors.get(0);
 					facade.getMainPanel().recoverFromTray();
 					if (ex instanceof CheckException) {
-						String message = ErrorPrinter
+						String message = RepositoryConsoleErrorPrinter
 								.printRepositoryManagedError(repositoryName, ex);
 						JOptionPane.showMessageDialog(facade.getMainPanel(),
 								message, "Repository upload",
@@ -652,13 +652,13 @@ public class AdminPanel extends JPanel implements UIConstants {
 					} else if (ex instanceof RepositoryException
 							|| ex instanceof LoadingException
 							|| ex instanceof IOException) {
-						String message = ErrorPrinter
+						String message = RepositoryConsoleErrorPrinter
 								.printRepositoryManagedError(repositoryName, ex);
 						JOptionPane.showMessageDialog(facade.getMainPanel(),
 								message, "Repository upload",
 								JOptionPane.ERROR_MESSAGE);
 					} else {
-						String message = ErrorPrinter
+						String message = RepositoryConsoleErrorPrinter
 								.printRepositoryUnexpectedError(repositoryName,
 										ex);
 						UnexpectedErrorDialog dialog = new UnexpectedErrorDialog(

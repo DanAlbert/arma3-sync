@@ -81,7 +81,7 @@ public class ProfileDAO implements DataAccessConstants {
 			}
 			String message = "Failed to write file: "
 					+ FileAccessMethods.getCanonicalPath(profileFile);
-			throw new WritingException(e.getMessage());
+			throw new WritingException(message + "\n" + e.getMessage());
 		} finally {
 			if (backupFile.exists()) {
 				FileAccessMethods.deleteFile(backupFile);

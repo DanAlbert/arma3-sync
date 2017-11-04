@@ -2,23 +2,21 @@ package fr.soe.a3s.ui.repository.dialogs.progress;
 
 import javax.swing.JOptionPane;
 
-import fr.soe.a3s.constant.ProtocolType;
-import fr.soe.a3s.dto.ProtocolDTO;
-import fr.soe.a3s.dto.RepositoryDTO;
+import fr.soe.a3s.domain.AbstractProtocole;
 import fr.soe.a3s.exception.CheckException;
 import fr.soe.a3s.exception.repository.RepositoryException;
+import fr.soe.a3s.service.ConnectionService;
 import fr.soe.a3s.service.RepositoryService;
-import fr.soe.a3s.service.connection.ConnexionService;
-import fr.soe.a3s.service.connection.ConnexionServiceFactory;
 import fr.soe.a3s.ui.AbstractProgressDialog;
 import fr.soe.a3s.ui.Facade;
 
 public class ProgressUploadEventsDialog extends AbstractProgressDialog {
 
-	private ConnexionService connexion;
 	private final String repositoryName;
 	private Thread t;
+	private AbstractProtocole uploadProtocol;
 	/* Service */
+	private ConnectionService connexion;
 	private final RepositoryService repositoryService = new RepositoryService();
 
 	public ProgressUploadEventsDialog(Facade facade, String repositoryName) {
@@ -27,22 +25,12 @@ public class ProgressUploadEventsDialog extends AbstractProgressDialog {
 	}
 
 	public void init() {
-		
+
 		try {
-			// 1. Check repository upload protocole
-			RepositoryDTO repositoryDTO = repositoryService
-					.getRepository(repositoryName);
-			ProtocolDTO protocoleDTO = repositoryDTO.getProtocoleDTO();
-			ProtocolType protocolType = protocoleDTO.getProtocolType();
-			ProtocolDTO uploadProtocoleDTO = repositoryDTO
-					.getUploadProtocoleDTO();
-			if (uploadProtocoleDTO == null
-					&& protocolType.equals(ProtocolType.FTP)) {
-				repositoryService.setRepositoryUploadProtocole(repositoryName,
-						protocoleDTO.getUrl(), protocoleDTO.getPort(),
-						protocoleDTO.getLogin(), protocoleDTO.getPassword(),
-						protocolType, null, null);
-			} else if (uploadProtocoleDTO == null) {
+			uploadProtocol = repositoryService
+					.getUploadProtocol(repositoryName);
+
+			if (uploadProtocol == null) {
 				String message = "Please use the upload options to configure a connection.";
 				throw new CheckException(message);
 			}
@@ -62,8 +50,7 @@ public class ProgressUploadEventsDialog extends AbstractProgressDialog {
 			@Override
 			public void run() {
 				try {
-					connexion = ConnexionServiceFactory
-							.getServiceForRepositoryUpload(repositoryName);
+					connexion = new ConnectionService(uploadProtocol);
 					connexion.upLoadEvents(repositoryName);
 					setVisible(false);
 					JOptionPane.showMessageDialog(

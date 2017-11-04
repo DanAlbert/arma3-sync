@@ -1,7 +1,6 @@
 package fr.soe.a3s.dao.repository;
 
 import java.io.File;
-import java.io.IOException;
 import java.text.CharacterIterator;
 import java.text.StringCharacterIterator;
 import java.util.ArrayList;
@@ -62,31 +61,28 @@ public class RepositoryBuildProcessor implements DataAccessConstants,
 	private ObserverText observerText;
 	private ObserverCountInt observerCount;
 
-	/** Cancel build */
-	private boolean canceled = false;
-	private final IOException ex = null;
-
 	public void init(Repository repository) {
 		this.repository = repository;
 	}
 
 	@SuppressWarnings("unchecked")
-	public void run() throws IOException, RuntimeException {
+	public void run() throws Exception {
 
 		assert (repository != null);
 		assert (repository.getPath() != null);
 		assert (new File(repository.getPath()).exists());
 
 		// Read previous sync file
-		File oldSyncFile = new File(repository.getPath() + SYNC_FILE_PATH);
+		File oldSyncFile = new File(repository.getPath() + "/"
+				+ A3S_FOlDER_NAME + "/" + SYNC_FILE_NAME);
 		SyncTreeDirectory oldSync = null;
 		if (oldSyncFile.exists()) {
 			oldSync = (SyncTreeDirectory) A3SFilesAccessor.read(oldSyncFile);
 		}
 
 		// Read previous serverInfo file
-		File oldServerInfoFile = new File(repository.getPath()
-				+ SERVERINFO_FILE_PATH);
+		File oldServerInfoFile = new File(repository.getPath() + "/"
+				+ A3S_FOlDER_NAME + "/" + SERVERINFO_FILE_NAME);
 		ServerInfo oldServerInfo = null;
 		if (oldServerInfoFile.exists()) {
 			oldServerInfo = (ServerInfo) A3SFilesAccessor
@@ -94,8 +90,8 @@ public class RepositoryBuildProcessor implements DataAccessConstants,
 		}
 
 		// Read previous changelogs file
-		File oldChangelogsFile = new File(repository.getPath()
-				+ CHANGELOGS_FILE_PATH);
+		File oldChangelogsFile = new File(repository.getPath() + "/"
+				+ A3S_FOlDER_NAME + "/" + CHANGELOGS_FILE_NAME);
 		Changelogs oldChangelogs = null;
 		if (oldChangelogsFile.exists()) {
 			oldChangelogs = (Changelogs) A3SFilesAccessor
@@ -103,14 +99,15 @@ public class RepositoryBuildProcessor implements DataAccessConstants,
 		}
 
 		// Read previous events file
-		File oldEventsFile = new File(repository.getPath() + EVENTS_FILE_PATH);
+		File oldEventsFile = new File(repository.getPath() + "/"
+				+ A3S_FOlDER_NAME + "/" + EVENTS_FILE_NAME);
 		Events oldEvents = null;
 		if (oldEventsFile.exists()) {
 			oldEvents = (Events) A3SFilesAccessor.read(oldEventsFile);
 		}
 
 		/* Remove .a3s folder */
-		File folderA3S = new File(repository.getPath() + A3S_FOlDER_PATH);
+		File folderA3S = new File(repository.getPath() + "/" + A3S_FOlDER_NAME);
 		if (folderA3S.exists()) {
 			boolean deleted = FileAccessMethods.deleteDirectory(folderA3S);
 			if (!deleted) {
@@ -122,7 +119,7 @@ public class RepositoryBuildProcessor implements DataAccessConstants,
 		final SyncTreeDirectory sync = new SyncTreeDirectory(
 				SyncTreeDirectory.RACINE, null);
 		File[] subFiles = (new File(repository.getPath()).listFiles());
-		if (subFiles!=null){
+		if (subFiles != null) {
 			for (File f : subFiles) {
 				generateSync(repository.getExcludedFilesFromBuild(), sync, f);
 			}
@@ -330,33 +327,35 @@ public class RepositoryBuildProcessor implements DataAccessConstants,
 		}
 
 		/* Write files */
-		File a3sFolder = new File(repository.getPath() + A3S_FOlDER_PATH);
+		File a3sFolder = new File(repository.getPath() + "/" + A3S_FOlDER_NAME);
 		a3sFolder.mkdir();
 		if (!a3sFolder.exists()) {
 			throw new CreateDirectoryException(a3sFolder);
 		}
 
 		// Write Sync file
-		File syncFile = new File(repository.getPath() + SYNC_FILE_PATH);
+		File syncFile = new File(repository.getPath() + "/" + A3S_FOlDER_NAME
+				+ "/" + SYNC_FILE_NAME);
 		A3SFilesAccessor.write(sync, syncFile);
 
 		// Write ServerInfo file
-		File serverInfoFile = new File(repository.getPath()
-				+ SERVERINFO_FILE_PATH);
+		File serverInfoFile = new File(repository.getPath() + "/"
+				+ A3S_FOlDER_NAME + "/" + SERVERINFO_FILE_NAME);
 		A3SFilesAccessor.write(serverInfo, serverInfoFile);
 
 		// Write Changelogs file
-		File changelogsFile = new File(repository.getPath()
-				+ CHANGELOGS_FILE_PATH);
+		File changelogsFile = new File(repository.getPath() + "/"
+				+ A3S_FOlDER_NAME + "/" + CHANGELOGS_FILE_NAME);
 		A3SFilesAccessor.write(changelogs, changelogsFile);
 
 		// Write AutoConfig file
-		File autoConfigFile = new File(repository.getPath()
-				+ AUTOCONFIG_FILE_PATH);
+		File autoConfigFile = new File(repository.getPath() + "/"
+				+ A3S_FOlDER_NAME + "/" + AUTOCONFIG_FILE_NAME);
 		A3SFilesAccessor.write(autoConfig, autoConfigFile);
 
 		// Write Events file
-		File eventsFile = new File(repository.getPath() + EVENTS_FILE_PATH);
+		File eventsFile = new File(repository.getPath() + "/" + A3S_FOlDER_NAME
+				+ "/" + EVENTS_FILE_NAME);
 		A3SFilesAccessor.write(events, eventsFile);
 	}
 
@@ -540,7 +539,6 @@ public class RepositoryBuildProcessor implements DataAccessConstants,
 
 	public void cancel() {
 
-		this.canceled = true;
 		if (repositorySHA1Processor != null) {
 			repositorySHA1Processor.cancel();
 		}

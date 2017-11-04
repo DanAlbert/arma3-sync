@@ -19,7 +19,8 @@ public class ConnectionLostDialog extends AbstractDialog {
 	private int delay = 5;
 	private boolean reconnect = true;
 
-	public ConnectionLostDialog(Facade facade, String repositoryName,String title) {
+	public ConnectionLostDialog(Facade facade, String repositoryName,
+			String title) {
 		super(facade, title, true);
 		this.setResizable(false);
 

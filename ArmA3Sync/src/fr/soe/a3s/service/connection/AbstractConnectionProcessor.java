@@ -1,4 +1,4 @@
-package fr.soe.a3s.dao.connection.processors;
+package fr.soe.a3s.service.connection;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -6,12 +6,14 @@ import java.util.List;
 import fr.soe.a3s.dao.DataAccessConstants;
 import fr.soe.a3s.dao.connection.AbstractConnexionDAO;
 import fr.soe.a3s.dao.connection.RemoteFile;
+import fr.soe.a3s.domain.AbstractProtocole;
 import fr.soe.a3s.domain.Http;
 import fr.soe.a3s.dto.sync.SyncTreeDirectoryDTO;
 import fr.soe.a3s.dto.sync.SyncTreeLeafDTO;
 import fr.soe.a3s.dto.sync.SyncTreeNodeDTO;
 
-public abstract class AbstractConnectionProcessor implements DataAccessConstants {
+public abstract class AbstractConnectionProcessor implements
+		DataAccessConstants {
 
 	private List<SyncTreeNodeDTO> filesToExtract = null;
 	private boolean compressedPboFilesOnly = false;
@@ -36,7 +38,8 @@ public abstract class AbstractConnectionProcessor implements DataAccessConstants
 			if (abstractConnexionDAO.isCanceled()) {
 				break;
 			} else {
-				String parentDirectoryRelativePath = node.getParentRelativePath();
+				String parentDirectoryRelativePath = node
+						.getParentRelativePath();
 				if (node.isLeaf()) {
 					SyncTreeLeafDTO leaf = (SyncTreeLeafDTO) node;
 					if (leaf.isCompressed()) {

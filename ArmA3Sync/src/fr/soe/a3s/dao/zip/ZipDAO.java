@@ -26,55 +26,39 @@ public class ZipDAO implements DataAccessConstants {
 	 * @param zipFile
 	 * @throws Exception
 	 */
-	public void unZip(File zipFile) throws IOException {
+	public void unZip(File zipFile) throws Exception {
 
 		System.out.println("Uncompressing file: " + zipFile.getAbsolutePath());
 
 		this.active = true;
 
-		final File targetFile = new File(zipFile.getParentFile()
-				.getAbsolutePath()
-				+ "/"
-				+ zipFile.getName().substring(
-						0,
-						zipFile.getName().length()
-								- DataAccessConstants.ZIP_EXTENSION.length()));
+		final File targetFile = new File(zipFile.getParentFile().getAbsolutePath() + "/" + zipFile.getName()
+				.substring(0, zipFile.getName().length() - DataAccessConstants.ZIP_EXTENSION.length()));
 
-		ZipInputStream zis = null;
-		FileOutputStream fos = null;
+		int index = zipFile.getName().lastIndexOf(".");
+		String extension = "";
+		if (index != -1) {
+			extension = zipFile.getName().substring(index);
+		}
 
-		try {
-			int index = zipFile.getName().lastIndexOf(".");
-			String extension = "";
-			if (index != -1) {
-				extension = zipFile.getName().substring(index);
+		if (!zipFile.exists()) {
+			throw new FileNotFoundException("File not found on disk: " + zipFile.getAbsolutePath());
+
+		} else if (!extension.equals(DataAccessConstants.ZIP_EXTENSION)) {
+			throw new IOException("Can not unzip file - bad file extension");
+		} else {
+			if (targetFile.exists()) {
+				FileAccessMethods.deleteFile(targetFile);
 			}
 
-			if (!zipFile.exists()) {
-				throw new FileNotFoundException("File not found on disk: "
-						+ zipFile.getAbsolutePath());
+			ZipInputStream zis = null;
+			FileOutputStream fos = null;
 
-			} else if (extension.equals(DataAccessConstants.ZIP_EXTENSION)) {
-
-				if (targetFile.exists()) {
-					FileAccessMethods.deleteFile(targetFile);
-				}
-
-				/*
-				 * SevenZFile sevenZFile = new SevenZFile(sevenZipFile);
-				 * SevenZArchiveEntry entry = sevenZFile.getNextEntry();
-				 * 
-				 * FileOutputStream out = new FileOutputStream(targetFile);
-				 * byte[] buffer = new byte[1024]; int len; while (((len =
-				 * sevenZFile.read(buffer)) > 0) && !canceled) {
-				 * out.write(buffer, 0, len); }
-				 * 
-				 * sevenZFile.close(); out.close();
-				 */
-
+			try {
 				zis = new ZipInputStream(new FileInputStream(zipFile));
-				ZipEntry ze = zis.getNextEntry();
+				zis.getNextEntry();
 				fos = new FileOutputStream(targetFile);
+
 				byte[] buffer = new byte[BUFFER_SIZE];
 				int len;
 				while ((len = zis.read(buffer)) > 0 && !canceled) {
@@ -85,32 +69,36 @@ public class ZipDAO implements DataAccessConstants {
 				zis.closeEntry();
 				zis.close();
 
-			} else {
-				throw new IOException("Can not unzip file: "
-						+ zipFile.getAbsolutePath());
+				this.active = false;
+
+			} catch (Exception e) {
+				this.active = false;
+				if (!canceled) {
+					FileAccessMethods.deleteFile(zipFile);
+					String message = "Failed to unzip file: " + zipFile.getAbsolutePath();
+					System.out.println(message);
+					e.printStackTrace();
+					if (e.getMessage() == null) {
+						throw new IOException(message);
+					} else {
+						throw new IOException(message + "\n" + e.getMessage());
+					}
+				}
+			} finally {
+				if (zis != null) {
+					zis.close();
+				}
+				if (fos != null) {
+					fos.close();
+				}
+				if (canceled) {
+					FileAccessMethods.deleteFile(targetFile);
+				} else {
+					FileAccessMethods.deleteFile(zipFile);
+				}
 			}
-		} catch (IOException e) {
-			FileAccessMethods.deleteFile(targetFile);
-			e.printStackTrace();
-			String message = "Failed to unzip file: "
-					+ zipFile.getAbsolutePath();
-			if (e.getMessage() == null) {
-				throw new IOException(message);
-			} else {
-				throw new IOException(message + "\n" + e.getMessage());
-			}
-		} finally {
-			if (zis != null) {
-				zis.close();
-			}
-			if (fos != null) {
-				fos.close();
-			}
-			if (!canceled) {
-				FileAccessMethods.deleteFile(zipFile);
-			}
-			this.active = false;
 		}
+
 	}
 
 	/**
@@ -121,50 +109,34 @@ public class ZipDAO implements DataAccessConstants {
 	 * @return
 	 * @throws Exception
 	 */
-	public long zip(File sourceFile) throws IOException {
+	public long zip(File sourceFile) throws Exception {
 
 		this.active = true;
 		long compressedFileSize = 0;
 
 		FileOutputStream fos = null;
 		ZipOutputStream zos = null;
+		FileInputStream in = null;
 
-		try {
-			if (!sourceFile.exists()) {
-				throw new FileNotFoundException("File not found on disk: "
-						+ sourceFile.getAbsolutePath());
-			} else {
+		if (!sourceFile.exists()) {
+			throw new FileNotFoundException("File not found on disk: " + sourceFile.getAbsolutePath());
+		} else {
 
-				final File zipFile = new File(sourceFile.getParentFile()
-						.getAbsolutePath()
-						+ "/"
-						+ sourceFile.getName()
-						+ DataAccessConstants.ZIP_EXTENSION);
+			final File zipFile = new File(sourceFile.getParentFile().getAbsolutePath() + "/" + sourceFile.getName()
+					+ DataAccessConstants.ZIP_EXTENSION);
 
-				if (zipFile.exists()) {
-					FileAccessMethods.deleteFile(zipFile);
-				}
+			if (zipFile.exists()) {
+				FileAccessMethods.deleteFile(zipFile);
+			}
 
-				/*
-				 * BufferedInputStream instream = new BufferedInputStream( new
-				 * FileInputStream(sourceFile)); SevenZOutputFile sevenZOutput =
-				 * new SevenZOutputFile( sevenZipFile); SevenZArchiveEntry entry
-				 * = sevenZOutput.createArchiveEntry( sourceFile,
-				 * sourceFile.getName()); sevenZOutput.putArchiveEntry(entry);
-				 * byte[] buffer = new byte[1024]; int len; while (((len =
-				 * instream.read(buffer)) > 0) && !canceled) {
-				 * sevenZOutput.write(buffer, 0, len); }
-				 * 
-				 * sevenZOutput.closeArchiveEntry(); sevenZOutput.close();
-				 * instream.close();
-				 */
-
+			try {
 				fos = new FileOutputStream(zipFile);
 				zos = new ZipOutputStream(fos);
 				ZipEntry ze = new ZipEntry(sourceFile.getName());
 				zos.putNextEntry(ze);
 				zos.setLevel(Deflater.BEST_COMPRESSION);
-				FileInputStream in = new FileInputStream(sourceFile);
+				in = new FileInputStream(sourceFile);
+
 				byte[] buffer = new byte[BUFFER_SIZE];
 				int len;
 				while ((len = in.read(buffer)) > 0 && !canceled) {
@@ -172,6 +144,7 @@ public class ZipDAO implements DataAccessConstants {
 				}
 
 				in.close();
+				fos.close();
 				zos.closeEntry();
 				zos.close();
 
@@ -181,26 +154,34 @@ public class ZipDAO implements DataAccessConstants {
 				} else {
 					compressedFileSize = zipFile.length();
 				}
+
+				this.active = false;
+
+			} catch (Exception e) {
+				this.active = false;
+				if (!canceled) {
+					String message = "Failed to zip file: " + sourceFile.getAbsolutePath();
+					System.out.println(message);
+					e.printStackTrace();
+					if (e.getMessage() == null) {
+						throw new IOException(message);
+					} else {
+						throw new IOException(message + "\n" + e.getMessage());
+					}
+				}
+			} finally {
+				if (in != null) {
+					in.close();
+				}
+				if (zos != null) {
+					zos.close();
+				}
+				if (fos != null) {
+					fos.close();
+				}
 			}
-			return compressedFileSize;
-		} catch (IOException e) {
-			e.printStackTrace();
-			String message = "Failed to zip file: "
-					+ sourceFile.getAbsolutePath();
-			if (e.getMessage() == null) {
-				throw new IOException(message);
-			} else {
-				throw new IOException(message + "\n" + e.getMessage());
-			}
-		} finally {
-			if (zos != null) {
-				zos.close();
-			}
-			if (fos != null) {
-				fos.close();
-			}
-			this.active = false;
 		}
+		return compressedFileSize;
 	}
 
 	public boolean isActive() {

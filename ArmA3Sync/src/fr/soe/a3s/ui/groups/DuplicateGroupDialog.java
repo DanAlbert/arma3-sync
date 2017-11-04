@@ -51,6 +51,7 @@ public class DuplicateGroupDialog extends AbstractGroupDialog {
 					.getList()) {
 				duplicate(directory, n);
 			}
+			this.complete = true;
 			this.dispose();
 		}
 	}
@@ -76,11 +77,13 @@ public class DuplicateGroupDialog extends AbstractGroupDialog {
 
 	@Override
 	protected void buttonCancelPerformed() {
+		this.complete = false;
 		this.dispose();
 	}
 
 	@Override
 	protected void menuExitPerformed() {
+		this.complete = false;
 		this.dispose();
 	}
 }

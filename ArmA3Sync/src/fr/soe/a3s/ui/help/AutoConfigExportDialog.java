@@ -217,7 +217,7 @@ public class AutoConfigExportDialog extends AbstractDialog {
 		File destinationFolder = new File(path);
 		if (!destinationFolder.exists()) {
 			JOptionPane.showMessageDialog(facade.getMainPanel(),
-					"Destination directory does not exists.",
+					"Destination directory does not exist.",
 					"Export auto-config", JOptionPane.ERROR_MESSAGE);
 			return;
 		}

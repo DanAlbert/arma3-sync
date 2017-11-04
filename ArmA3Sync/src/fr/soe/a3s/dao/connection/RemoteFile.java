@@ -11,6 +11,8 @@ public class RemoteFile {
 		this.filename = filename;
 		this.parentDirectoryRelativePath = parentDirectoryRelativePath;
 		this.isDirectory = isDirectory;
+		assert (this.filename != null);
+		assert (this.parentDirectoryRelativePath != null);
 	}
 
 	public String getFilename() {
@@ -23,5 +25,9 @@ public class RemoteFile {
 
 	public boolean isDirectory() {
 		return isDirectory;
+	}
+
+	public String getRelativeFilePath() {
+		return parentDirectoryRelativePath + "/" + filename;
 	}
 }

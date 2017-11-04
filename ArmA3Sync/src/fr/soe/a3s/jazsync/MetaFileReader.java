@@ -29,13 +29,9 @@ package fr.soe.a3s.jazsync;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
-
-import fr.soe.a3s.dao.connection.MyHttpConnection;
-import fr.soe.a3s.exception.HttpException;
 
 /**
  * Class used to read metafile
@@ -78,20 +74,12 @@ public class MetaFileReader {
 	/**
 	 * Metafile constructor
 	 * 
-	 * @param httpURLConnection
-	 * 
 	 * @param args
 	 *            Arguments
-	 * @throws HttpException
-	 * @throws Exception
+	 * @throws IOException
 	 */
-	public MetaFileReader(String relativeZsyncFileUrl, MyHttpConnection http)
-			throws IOException, HttpException {
+	public MetaFileReader(byte[] mfBytes) throws IOException {
 
-		http.openConnection(relativeZsyncFileUrl);
-		http.getResponseHeader();
-		byte[] mfBytes = http.getResponseBody();
-		http.closeConnection();
 		downloadedMetafile = 0;
 		blockNum = 0;
 		if (mfBytes != null) {
@@ -101,6 +89,7 @@ public class MetaFileReader {
 					/ (double) mf_blocksize);
 			fillHashTable(mfBytes);
 		}
+		mfBytes = null;
 	}
 
 	/**
@@ -114,6 +103,7 @@ public class MetaFileReader {
 	 * @throws IOException
 	 */
 	private boolean parseHeader(String s) throws IOException {
+
 		String subs;
 		int colonIndex;
 		if (s.equals("")) {
@@ -220,6 +210,7 @@ public class MetaFileReader {
 	 * array and saves offset where headers end and blocksums starts.
 	 */
 	private void readChecksums() {
+
 		long length = metafile.length();
 		if (metafile.length() > Integer.MAX_VALUE) {
 			System.out.println("Metafile is too large");
@@ -265,6 +256,7 @@ public class MetaFileReader {
 	 *            Byte array with bytes of whole metafile
 	 */
 	private void fillHashTable(byte[] checksums) {
+
 		int i = 16;
 		// spocteme velikost hashtable podle poctu bloku dat
 		while ((2 << (i - 1)) > blockNum && i > 4) {

@@ -18,8 +18,8 @@ public class UnZipFlowProcessor implements ObservableUncompress {
 	private ObserverUncompress observerUncompress;
 	private int count, totalCount;
 	private boolean started = false;
-
-	private boolean canceled;
+	private boolean canceled = false;
+	private boolean terminated = false;
 
 	public UnZipFlowProcessor() {
 		for (int i = 0; i < Runtime.getRuntime().availableProcessors(); i++) {
@@ -78,13 +78,7 @@ public class UnZipFlowProcessor implements ObservableUncompress {
 							}
 						}
 
-						if (uncompressionIsFinished() && started && !canceled) {
-							if (errors.isEmpty()) {
-								observerUncompress.end();
-							} else {
-								observerUncompress.error(errors);
-							}
-						}
+						terminate();
 					}
 				});
 				t.start();
@@ -119,6 +113,20 @@ public class UnZipFlowProcessor implements ObservableUncompress {
 
 	private synchronized void addError(Exception e) {
 		errors.add(e);
+	}
+
+	private synchronized void terminate() {
+
+		if (!terminated) {
+			if (uncompressionIsFinished() && started && !canceled) {
+				terminated = true;
+				if (errors.isEmpty()) {
+					observerUncompress.end();
+				} else {
+					observerUncompress.error(errors);
+				}
+			}
+		}
 	}
 
 	public synchronized boolean uncompressionIsFinished() {

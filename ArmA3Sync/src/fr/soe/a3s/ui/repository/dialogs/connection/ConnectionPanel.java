@@ -213,7 +213,9 @@ public class ConnectionPanel extends JPanel {
 				.replaceAll(ProtocolType.HTTP.getPrompt(), "")
 				.replaceAll(ProtocolType.HTTPS.getPrompt(), "")
 				.replaceAll(ProtocolType.SOCKS4.getPrompt(), "")
-				.replaceAll(ProtocolType.SOCKS5.getPrompt(), "");
+				.replaceAll(ProtocolType.SOCKS5.getPrompt(), "")
+				.replaceAll(ProtocolType.HTTP_WEBDAV.getPrompt(), "")
+				.replaceAll(ProtocolType.HTTPS_WEBDAV.getPrompt(), "");
 		if (url.length() > test.length()) {
 			int index = url.length() - test.length();
 			url = url.substring(index);

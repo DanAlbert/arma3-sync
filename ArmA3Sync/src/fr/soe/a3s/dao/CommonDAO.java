@@ -15,7 +15,7 @@ import fr.soe.a3s.exception.WritingException;
 public class CommonDAO implements DataAccessConstants {
 
 	/* Test */
-	private boolean canceled = false;
+	private boolean bikeysExtractionCanceled = false;
 	/* Data */
 	private List<File> extractedBikeyFiles = null;
 
@@ -80,7 +80,7 @@ public class CommonDAO implements DataAccessConstants {
 
 	private void extractBikeyFiles(File file) {
 
-		if (!canceled) {
+		if (!bikeysExtractionCanceled) {
 			if (file.isDirectory()) {
 				File[] subFiles = file.listFiles();
 				if (subFiles != null) {
@@ -108,7 +108,7 @@ public class CommonDAO implements DataAccessConstants {
 		fWo.close();
 	}
 
-	public void cancel() {
-		this.canceled = true;
+	public void cancelBikeys() {
+		this.bikeysExtractionCanceled = true;
 	}
 }

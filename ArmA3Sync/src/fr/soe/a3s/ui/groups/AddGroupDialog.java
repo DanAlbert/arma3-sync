@@ -61,17 +61,20 @@ public class AddGroupDialog extends AbstractGroupDialog {
 			directory.setName(textFieldGroupName.getText());
 			directory.setParent(treeDirectoryDTO);
 			treeDirectoryDTO.addTreeNode(directory);
+			this.complete = true;
 			this.dispose();
 		}
 	}
 
 	@Override
 	protected void buttonCancelPerformed() {
+		this.complete = false;
 		this.dispose();
 	}
 
 	@Override
 	protected void menuExitPerformed() {
+		this.complete = false;
 		this.dispose();
 	}
 }

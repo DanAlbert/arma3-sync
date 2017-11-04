@@ -130,8 +130,8 @@ public class CommonService {
 				destinationDirectoryPath);
 	}
 
-	public void cancel() {
-		commonDAO.cancel();
+	public void cancelBikeys() {
+		commonDAO.cancelBikeys();
 	}
 
 	public String getWiki() {

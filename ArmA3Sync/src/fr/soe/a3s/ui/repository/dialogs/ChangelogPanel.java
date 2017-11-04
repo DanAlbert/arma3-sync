@@ -86,11 +86,11 @@ public class ChangelogPanel extends JFrame implements UIConstants {
 					.createEtchedBorder(BevelBorder.LOWERED));
 			this.add(scrollpane, BorderLayout.CENTER);
 		}
-		
+
 		this.pack();
 		this.setMinimumSize(new Dimension(400, 400));
 		this.setLocationRelativeTo(facade.getMainPanel());
-		
+
 		buttonSwitch.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {

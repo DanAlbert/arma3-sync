@@ -46,21 +46,28 @@ import javax.swing.UIManager;
 import javax.swing.plaf.ColorUIResource;
 
 import net.jimmc.jshortcut.JShellLink;
+
+import org.dom4j.DocumentException;
+
 import fr.soe.a3s.constant.CheckRepositoriesFrequency;
 import fr.soe.a3s.constant.DefaultProfileName;
 import fr.soe.a3s.constant.MinimizationType;
+import fr.soe.a3s.constant.ProtocolType;
+import fr.soe.a3s.dao.DataAccessConstants;
+import fr.soe.a3s.domain.AbstractProtocole;
+import fr.soe.a3s.domain.Ftp;
 import fr.soe.a3s.domain.configration.LauncherOptions;
 import fr.soe.a3s.dto.configuration.PreferencesDTO;
-import fr.soe.a3s.exception.FtpException;
+import fr.soe.a3s.exception.CheckException;
 import fr.soe.a3s.exception.LoadingException;
 import fr.soe.a3s.exception.WritingException;
 import fr.soe.a3s.service.CommonService;
 import fr.soe.a3s.service.ConfigurationService;
+import fr.soe.a3s.service.ConnectionService;
 import fr.soe.a3s.service.LaunchService;
 import fr.soe.a3s.service.PreferencesService;
 import fr.soe.a3s.service.ProfileService;
 import fr.soe.a3s.service.RepositoryService;
-import fr.soe.a3s.service.connection.FtpService;
 import fr.soe.a3s.ui.Facade;
 import fr.soe.a3s.ui.UIConstants;
 import fr.soe.a3s.ui.help.AboutDialog;
@@ -153,7 +160,7 @@ public class MainPanel extends JFrame implements UIConstants {
 		menuGroups.add(menuItemDuplicateGroup);
 		menuGroups.add(menuItemRenameGroup);
 		menuGroups.add(menuItemRemoveGroup);
-		menuBar.add(menuGroups);
+		//menuBar.add(menuGroups);
 
 		menuTools = new JMenu("Tools");
 		menuBar.add(menuTools);
@@ -979,12 +986,23 @@ public class MainPanel extends JFrame implements UIConstants {
 
 		System.out.println("Checking for updates...");
 
-		FtpService ftpService = new FtpService(1);
-		String availableVersion = null;
+		String url = DataAccessConstants.UPDTATE_REPOSITORY_ADRESS;
+		String port = Integer
+				.toString(DataAccessConstants.UPDTATE_REPOSITORY_PORT);
+		String login = DataAccessConstants.UPDTATE_REPOSITORY_LOGIN;
+		String password = DataAccessConstants.UPDTATE_REPOSITORY_PASS;
+		ProtocolType protocolType = ProtocolType.FTP;
 
+		AbstractProtocole protocol = new Ftp(url, port, login, password,
+				protocolType);
+
+		String availableVersion = null;
 		try {
-			availableVersion = ftpService.checkForUpdates(facade.isDevMode());
-		} catch (FtpException e) {
+			ConnectionService connectionService = new ConnectionService(
+					protocol);
+			availableVersion = connectionService.checkForUpdates(
+					facade.isDevMode(), protocol);
+		} catch (CheckException | DocumentException | IOException e) {
 			System.out.println(e.getMessage());
 			if (withInfoMessage) {
 				JOptionPane.showMessageDialog(facade.getMainPanel(),

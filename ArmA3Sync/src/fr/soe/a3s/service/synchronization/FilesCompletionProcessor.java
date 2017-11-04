@@ -7,10 +7,10 @@ import fr.soe.a3s.controller.ObserverCountInt;
 import fr.soe.a3s.controller.ObserverEnd;
 import fr.soe.a3s.controller.ObserverError;
 import fr.soe.a3s.dao.connection.AbstractConnexionDAO;
+import fr.soe.a3s.domain.AbstractProtocole;
 import fr.soe.a3s.dto.sync.SyncTreeDirectoryDTO;
+import fr.soe.a3s.service.ConnectionService;
 import fr.soe.a3s.service.RepositoryService;
-import fr.soe.a3s.service.connection.ConnexionService;
-import fr.soe.a3s.service.connection.ConnexionServiceFactory;
 
 public class FilesCompletionProcessor {
 
@@ -18,7 +18,7 @@ public class FilesCompletionProcessor {
 	private final String repositoryName;
 	/* Services */
 	private final RepositoryService repositoryService = new RepositoryService();
-	private ConnexionService connexionService;
+	private ConnectionService connexionService;
 	/* observers */
 	private ObserverCountInt observerCount;// null for no recording
 	private ObserverEnd observerEnd;// not null
@@ -28,31 +28,31 @@ public class FilesCompletionProcessor {
 		this.repositoryName = repositoryName;
 	}
 
-	public String run(SyncTreeDirectoryDTO parent) {
+	public void run(SyncTreeDirectoryDTO parent) {
 
 		assert (parent != null);
 
-		String serverRangeRequestResponseHeader = null;
 		try {
 			repositoryService.setCheckingForAddons(repositoryName, true);
 
 			// Determine number of connections to use
-			int numberOfServerInfoConnections = repositoryService
+			int numberOfConnections = repositoryService
 					.getServerInfoNumberOfConnections(repositoryName);
 
-			if (numberOfServerInfoConnections == 0) {
-				numberOfServerInfoConnections = 1;
+			if (numberOfConnections == 0) {
+				numberOfConnections = 1;
 			}
 
-			if (numberOfServerInfoConnections > Runtime.getRuntime()
+			if (numberOfConnections > Runtime.getRuntime()
 					.availableProcessors()) {
-				numberOfServerInfoConnections = Runtime.getRuntime()
+				numberOfConnections = Runtime.getRuntime()
 						.availableProcessors();
 			}
 
-			connexionService = ConnexionServiceFactory
-					.getServiceForFilesSynchronization(repositoryName,
-							numberOfServerInfoConnections);
+			AbstractProtocole protocole = repositoryService
+					.getProtocol(repositoryName);
+			connexionService = new ConnectionService(numberOfConnections,
+					protocole);
 
 			for (AbstractConnexionDAO connect : connexionService
 					.getConnexionDAOs()) {
@@ -76,15 +76,13 @@ public class FilesCompletionProcessor {
 				});
 			}
 
-			serverRangeRequestResponseHeader = connexionService
-					.determineFilesCompletion(repositoryName, parent);
+			connexionService.determineFilesCompletion(repositoryName, parent);
 
 		} catch (Exception e) {
 			List<Exception> errors = new ArrayList<Exception>();
 			errors.add(e);
 			executeError(errors);
 		}
-		return serverRangeRequestResponseHeader;
 	}
 
 	private void executeUpdate(int value) {

@@ -16,8 +16,6 @@ public interface ObserverDownload {
 
 	public void end();
 
-	public void updateResponseTime(long responseTime);
-
 	public void error(List<Exception> errors);
 
 	public void updateCancelTooManyErrors(int value, List<Exception> errors);

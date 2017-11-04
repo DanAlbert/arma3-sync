@@ -8,13 +8,11 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import javax.swing.JOptionPane;
-import javax.swing.SwingUtilities;
 
-import fr.soe.a3s.dto.RepositoryDTO;
+import fr.soe.a3s.domain.AbstractProtocole;
 import fr.soe.a3s.exception.repository.RepositoryException;
+import fr.soe.a3s.service.ConnectionService;
 import fr.soe.a3s.service.RepositoryService;
-import fr.soe.a3s.service.connection.ConnexionService;
-import fr.soe.a3s.service.connection.ConnexionServiceFactory;
 import fr.soe.a3s.ui.AbstractProgressDialog;
 import fr.soe.a3s.ui.Facade;
 import fr.soe.a3s.ui.repository.dialogs.error.UnexpectedErrorDialog;
@@ -22,7 +20,7 @@ import fr.soe.a3s.ui.repository.dialogs.error.UnexpectedErrorDialog;
 public class ProgressSynchronizationDialog extends AbstractProgressDialog {
 
 	private final RepositoryService repositoryService = new RepositoryService();
-	private ConnexionService connexion = null;
+	private ConnectionService connexionService = null;
 	private Thread t = null;
 
 	public ProgressSynchronizationDialog(Facade facade) {
@@ -39,9 +37,10 @@ public class ProgressSynchronizationDialog extends AbstractProgressDialog {
 			@Override
 			public void run() {
 				try {
-					connexion = ConnexionServiceFactory
-							.getServiceForRepositoryManagement(repositoryName);
-					connexion.checkRepository(repositoryName);
+					AbstractProtocole protocole = repositoryService
+							.getProtocol(repositoryName);
+					connexionService = new ConnectionService(protocole);
+					connexionService.checkRepository(repositoryName);
 				} catch (Exception e) {
 					setVisible(false);
 					if (e instanceof RepositoryException) {
@@ -65,8 +64,11 @@ public class ProgressSynchronizationDialog extends AbstractProgressDialog {
 				}
 
 				System.out.println("Synchronization with repositories done.");
-				
-				/* Update local repositories info with remote a3s folder content changed */
+
+				/*
+				 * Update local repositories info with remote a3s folder content
+				 * changed
+				 */
 				repositoryService.updateRepository(repositoryName);
 
 				facade.getMainPanel().updateTabs(OP_REPOSITORY_CHANGED);
@@ -98,9 +100,11 @@ public class ProgressSynchronizationDialog extends AbstractProgressDialog {
 							public Integer call() {
 								try {
 									if (!canceled) {
-										connexion = ConnexionServiceFactory
-												.getServiceForRepositoryManagement(repositoryName);
-										connexion
+										AbstractProtocole protocole = repositoryService
+												.getProtocol(repositoryName);
+										connexionService = new ConnectionService(
+												protocole);
+										connexionService
 												.checkRepository(repositoryName);
 									}
 								} catch (Exception e) {
@@ -131,8 +135,11 @@ public class ProgressSynchronizationDialog extends AbstractProgressDialog {
 
 					System.out
 							.println("Synchronization with repositories done.");
-					
-					/* Update local repositories info with remote a3s folder content changed */
+
+					/*
+					 * Update local repositories info with remote a3s folder
+					 * content changed
+					 */
 					for (final String repositoryName : repositoryNames) {
 						repositoryService.updateRepository(repositoryName);
 					}
@@ -152,8 +159,8 @@ public class ProgressSynchronizationDialog extends AbstractProgressDialog {
 		System.out.println("Synchronization with repositories canceled.");
 		this.setVisible(false);
 		canceled = true;
-		if (connexion != null) {
-			connexion.cancel();
+		if (connexionService != null) {
+			connexionService.cancel();
 		}
 		terminate();
 	}

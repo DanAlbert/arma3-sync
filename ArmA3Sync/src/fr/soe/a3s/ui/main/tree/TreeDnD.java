@@ -23,15 +23,14 @@ import java.awt.event.MouseEvent;
 import java.io.IOException;
 import java.util.List;
 
-import javax.swing.JOptionPane;
 import javax.swing.JTree;
 import javax.swing.SwingUtilities;
 import javax.swing.tree.TreePath;
 
+import fr.soe.a3s.constant.ModsetType;
 import fr.soe.a3s.dto.TreeDirectoryDTO;
 import fr.soe.a3s.dto.TreeLeafDTO;
 import fr.soe.a3s.dto.TreeNodeDTO;
-import fr.soe.a3s.service.ProfileService;
 import fr.soe.a3s.ui.Facade;
 import fr.soe.a3s.ui.UIConstants;
 
@@ -50,12 +49,13 @@ public class TreeDnD implements UIConstants {
 	private boolean isLeftClick = false;
 
 	public TreeDnD(JTree arbre1, JTree arbre2, Facade facade) {
+
+		this.facade = facade;
 		this.arbre1 = arbre1;
 		this.arbre2 = arbre2;
 		ds1 = new TreeDragSource(arbre1, DnDConstants.ACTION_MOVE);
 		ds2 = new TreeDragSource(arbre2, DnDConstants.ACTION_MOVE);
 		dt = new TreeDropTarget(arbre2);
-		this.facade = facade;
 		this.arbre1.setDragEnabled(true);
 		this.arbre2.setDragEnabled(true);
 		this.arbre1.addMouseListener(new MouseAdapter() {
@@ -149,7 +149,6 @@ public class TreeDnD implements UIConstants {
 		public void dragDropEnd(DragSourceDropEvent dsde) {
 			// System.out.println("Drop Action End: " + dsde.getDropAction());
 		}
-
 	}
 
 	/**
@@ -189,6 +188,8 @@ public class TreeDnD implements UIConstants {
 		@Override
 		public void drop(DropTargetDropEvent dtde) {
 
+			TreeDirectoryDTO newTreeNode = null;
+
 			if (oldPaths == null) {
 				dtde.rejectDrop();
 				return;
@@ -197,60 +198,43 @@ public class TreeDnD implements UIConstants {
 			TreeNodeDTO oldTreeNodeDTO = (TreeNodeDTO) oldPaths[0]
 					.getLastPathComponent();
 
-			TreeNodeDTO newTreeNode = null;
-			if (newPath == null) {
-				newTreeNode = (TreeNodeDTO) tree.getModel().getRoot();
+			if (newPath == null || !oldTreeNodeDTO.isLeaf()) {
+				newTreeNode = (TreeDirectoryDTO) tree.getModel().getRoot();
+				newPath = new TreePath(tree.getModel().getRoot());
 				if (oldTreeNodeDTO.isLeaf()) {
 					dtde.rejectDrop();
 					return;
 				}
 			} else {
-				newTreeNode = (TreeNodeDTO) newPath.getLastPathComponent();
-			}
-
-			if (oldTreeNodeDTO.getName().equals(newTreeNode.getName())) {
-				dtde.rejectDrop();
-				return;
-			}
-
-			if (oldTreeNodeDTO.getParent() == null) {
-				dtde.rejectDrop();
-				return;
-			}
-
-			if (newTreeNode.getParent() != null) {
-				if (oldTreeNodeDTO.getParent().getName()
-						.equals(newTreeNode.getParent().getName())) {
-					dtde.rejectDrop();
-					return;
+				TreeNodeDTO node = (TreeNodeDTO) newPath.getLastPathComponent();
+				if (node.isLeaf()) {
+					newTreeNode = node.getParent();
+					if (newTreeNode == null) {
+						dtde.rejectDrop();
+						return;
+					}
+					newPath = newPath.getParentPath();
+				} else {
+					newTreeNode = (TreeDirectoryDTO) node;
 				}
 			}
 
-			/*
-			 * TreeDirectoryDTO checkedTypeModsetTreeNode = newTreeNode
-			 * .getParent(); while (checkedTypeModsetTreeNode != null) { if
-			 * (checkedTypeModsetTreeNode.getModsetType() != null) { JOptionPane
-			 * .showMessageDialog( facade.getMainPanel(),
-			 * "Repository modset and Event modset can't be modified.",
-			 * "Addon group", JOptionPane.INFORMATION_MESSAGE); return; }
-			 * checkedTypeModsetTreeNode = checkedTypeModsetTreeNode
-			 * .getParent(); }
-			 */
+			ModsetType modsetType = newTreeNode.getModsetType();
+			TreeDirectoryDTO newTreeNodeParent = newTreeNode.getParent();
 
-			if (newTreeNode.isLeaf()) {
-				newTreeNode = newTreeNode.getParent();
-				newPath = newPath.getParentPath();
-				if (newTreeNode == null) {
-					dtde.rejectDrop();
-					return;
-				}
+			while (newTreeNodeParent != null && modsetType == null) {
+				modsetType = newTreeNodeParent.getModsetType();
+				newTreeNodeParent = newTreeNodeParent.getParent();
+			}
+
+			if (modsetType != null) {
+				dtde.rejectDrop();
+				return;
 			}
 
 			if (!oldTreeNodeDTO.isLeaf()) {
-				newTreeNode = (TreeNodeDTO) tree.getModel().getRoot();
 				TreeDirectoryDTO targetDirectory = (TreeDirectoryDTO) newTreeNode;
 				TreeDirectoryDTO sourceDirectory = (TreeDirectoryDTO) oldTreeNodeDTO;
-				boolean contains = false;
 				for (TreeNodeDTO treeNodeDTO : targetDirectory.getList()) {
 					if (!treeNodeDTO.isLeaf()
 							&& treeNodeDTO.getName().equals(
@@ -262,14 +246,9 @@ public class TreeDnD implements UIConstants {
 
 				TreeDirectoryDTO newTreeDirectory = new TreeDirectoryDTO();
 				newTreeDirectory.setName(sourceDirectory.getName());
-				newTreeDirectory.setSelected(false);
 				newTreeDirectory.setParent(targetDirectory);
-				newTreeDirectory.setModsetRepositoryName(sourceDirectory
-						.getModsetRepositoryName());
-				newTreeDirectory.setModsetType(sourceDirectory.getModsetType());
 				targetDirectory.addTreeNode(newTreeDirectory);
 				duplicateDirectory(sourceDirectory, newTreeDirectory);
-				dtde.dropComplete(true);
 			} else {
 				TreeDirectoryDTO targetDirectory = (TreeDirectoryDTO) newTreeNode;
 				for (int i = 0; i < oldPaths.length; i++) {
@@ -277,7 +256,6 @@ public class TreeDnD implements UIConstants {
 							.getLastPathComponent();
 					if (oldTreeNodeDTO.isLeaf()) {
 						TreeLeafDTO sourceTreeLeaf = (TreeLeafDTO) oldTreeNodeDTO;
-						boolean contains = false;
 						for (TreeNodeDTO treeNodeDTO : targetDirectory
 								.getList()) {
 							if (treeNodeDTO.isLeaf()
@@ -289,20 +267,16 @@ public class TreeDnD implements UIConstants {
 						}
 						TreeLeafDTO newTreeLeaf = new TreeLeafDTO();
 						newTreeLeaf.setName(sourceTreeLeaf.getName());
-						newTreeLeaf.setSelected(false);
 						newTreeLeaf.setParent(targetDirectory);
 						targetDirectory.addTreeNode(newTreeLeaf);
-						if (oldPaths[i].toString().contains("racine2")) {
-							TreeDirectoryDTO parent = oldTreeNodeDTO
-									.getParent();
-							parent.removeTreeNode(oldTreeNodeDTO);
-						}
-						dtde.dropComplete(true);
 					}
 				}
 			}
 
-			facade.getAddonsPanel().getGroupManager().dragAndDrop(oldTreeNodeDTO.isLeaf(),newPath);
+			dtde.dropComplete(true);
+
+			facade.getAddonsPanel().getGroupManager()
+					.dragAndDrop(oldTreeNodeDTO.isLeaf(), newPath);
 
 			oldPaths = null;
 			newPath = null;
@@ -324,13 +298,6 @@ public class TreeDnD implements UIConstants {
 					TreeDirectoryDTO duplicateTreedDirectory2 = new TreeDirectoryDTO();
 					duplicateTreedDirectory2.setName(treeDirectory2.getName());
 					duplicateTreedDirectory2.setParent(duplicateDirectory);
-					duplicateTreedDirectory2.setSelected(treeDirectory2
-							.isSelected());
-					duplicateTreedDirectory2
-							.setModsetRepositoryName(treeDirectory2
-									.getModsetRepositoryName());
-					duplicateTreedDirectory2.setModsetType(treeDirectory2
-							.getModsetType());
 					duplicateDirectory.addTreeNode(duplicateTreedDirectory2);
 					duplicateDirectory(treeDirectory2, duplicateTreedDirectory2);
 				}
@@ -340,7 +307,6 @@ public class TreeDnD implements UIConstants {
 		private TreeLeafDTO duplicateLeaf(TreeLeafDTO treeLeafDTO) {
 			TreeLeafDTO duplicateTreeLeaf = new TreeLeafDTO();
 			duplicateTreeLeaf.setName(treeLeafDTO.getName());
-			duplicateTreeLeaf.setSelected(treeLeafDTO.isSelected());
 			return duplicateTreeLeaf;
 		}
 
@@ -351,7 +317,6 @@ public class TreeDnD implements UIConstants {
 		@Override
 		public void dragExit(DropTargetEvent arg0) {
 		}
-
 	}
 
 	/**

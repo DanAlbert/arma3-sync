@@ -269,9 +269,9 @@ public class RepositoryService extends ObjectDTOtransformer implements
 
 		Repository repository = repositoryDAO.getMap().get(repositoryName);
 		if (repository != null) {
-			if (!repository.isUpdating()){
+			if (!repository.isUpdating()) {
 				repository.setUpdating(true);
-				
+
 				/**/
 				if (repository.getServerInfo() != null) {
 					repository.getHiddenFolderPath().addAll(
@@ -281,7 +281,7 @@ public class RepositoryService extends ObjectDTOtransformer implements
 								.getServerInfo().getNumberOfConnections());
 					}
 				}
-				
+
 				/**/
 				if (repository.getAutoConfig() != null) {
 
@@ -309,8 +309,8 @@ public class RepositoryService extends ObjectDTOtransformer implements
 								favoriteServerNewList2
 										.setIpAddress(favoriteServerList2
 												.getIpAddress());
-								favoriteServerNewList2.setPort(favoriteServerList2
-										.getPort());
+								favoriteServerNewList2
+										.setPort(favoriteServerList2.getPort());
 								favoriteServerNewList2
 										.setPassword(favoriteServerList2
 												.getPassword());
@@ -332,7 +332,8 @@ public class RepositoryService extends ObjectDTOtransformer implements
 						}
 					}
 
-					configurationDAO.getConfiguration().updateFavoriteServers(newList2);
+					configurationDAO.getConfiguration().updateFavoriteServers(
+							newList2);
 				}
 
 				/**/
@@ -341,7 +342,8 @@ public class RepositoryService extends ObjectDTOtransformer implements
 				if (serverInfo != null) {
 					if (repository.getRevision() == serverInfo.getRevision()) {
 						repositoryStatus = RepositoryStatus.OK;
-					} else if (repository.getRevision() < serverInfo.getRevision()) {
+					} else if (repository.getRevision() < serverInfo
+							.getRevision()) {
 						if (serverInfo.isRepositoryContentUpdated()) {
 							repositoryStatus = RepositoryStatus.UPDATED;
 						} else {
@@ -377,14 +379,14 @@ public class RepositoryService extends ObjectDTOtransformer implements
 				}
 				// Set Repository Synchronization Status
 				repository.setRepositorySyncStatus(repositoryStatus);
-				
+
 				repository.setUpdating(false);
 			}
 		}
 	}
 
 	public void buildRepository(String repositoryName)
-			throws RepositoryException, IOException, RuntimeException {
+			throws RepositoryException, IOException, Exception {
 
 		Repository repository = repositoryDAO.getMap().get(repositoryName);
 		if (repository == null) {
@@ -1346,6 +1348,28 @@ public class RepositoryService extends ObjectDTOtransformer implements
 		if (repository != null) {
 			repository.setCheckingForAddons(value);
 		}
+	}
+
+	public AbstractProtocole getProtocol(String repositoryName)
+			throws RepositoryNotFoundException {
+
+		Repository repository = repositoryDAO.getMap().get(repositoryName);
+		if (repository == null) {
+			throw new RepositoryNotFoundException(repositoryName);
+		}
+
+		return repository.getProtocol();
+	}
+
+	public AbstractProtocole getUploadProtocol(String repositoryName)
+			throws RepositoryNotFoundException {
+
+		Repository repository = repositoryDAO.getMap().get(repositoryName);
+		if (repository == null) {
+			throw new RepositoryNotFoundException(repositoryName);
+		}
+
+		return repository.getUploadProtocole();
 	}
 
 	public void setRepositoryUploadProtocole(String repositoryName, String url,

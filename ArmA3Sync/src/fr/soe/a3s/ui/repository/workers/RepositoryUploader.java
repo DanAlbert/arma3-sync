@@ -1,9 +1,7 @@
 package fr.soe.a3s.ui.repository.workers;
 
-import java.io.IOException;
 import java.util.List;
 
-import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
 import fr.soe.a3s.controller.ObserverConnectionLost;
@@ -13,15 +11,9 @@ import fr.soe.a3s.controller.ObserverEnd;
 import fr.soe.a3s.controller.ObserverError;
 import fr.soe.a3s.controller.ObserverText;
 import fr.soe.a3s.dao.DataAccessConstants;
-import fr.soe.a3s.exception.CheckException;
-import fr.soe.a3s.exception.LoadingException;
-import fr.soe.a3s.exception.repository.RepositoryException;
 import fr.soe.a3s.service.administration.RepositoryUploadProcessor;
 import fr.soe.a3s.ui.Facade;
 import fr.soe.a3s.ui.repository.AdminPanel;
-import fr.soe.a3s.ui.repository.dialogs.ConnectionLostDialog;
-import fr.soe.a3s.ui.repository.dialogs.error.UnexpectedErrorDialog;
-import fr.soe.a3s.utils.ErrorPrinter;
 import fr.soe.a3s.utils.UnitConverter;
 
 public class RepositoryUploader extends Thread implements DataAccessConstants {
@@ -265,10 +257,10 @@ public class RepositoryUploader extends Thread implements DataAccessConstants {
 		if (!canceled) {
 
 			canceled = true;
-			
+
 			System.out.println("Repository: " + repositoryName
 					+ " - connection lost.");
-			
+
 			adminPanel.getUploadrogressBar().setString("Error!");
 
 			initAdminPanelForEndUpload();

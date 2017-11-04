@@ -60,8 +60,8 @@ public class UploadEventsConnectionDialog extends AbstractDialog {
 		this.repositoryName = repositoryName;
 
 		/* Init Protocol Section */
-		comboBoxProtocolModel = new DefaultComboBoxModel(
-				new String[] { ProtocolType.FTP.getDescription() });
+		comboBoxProtocolModel = new DefaultComboBoxModel(new String[] {
+				ProtocolType.FTP.getDescription()});
 		protocolPanel.init(comboBoxProtocolModel);
 
 		/* Init Connection Section */

@@ -87,7 +87,7 @@ public interface UIConstants {
 			.getDefaultToolkit()
 			.getImage(
 					java.lang.ClassLoader
-							.getSystemResource("resources/pictures/system/sync16x16.png"));
+							.getSystemResource("resources/pictures/system/refresh16x16.png"));
 
 	Image TOP = Toolkit
 			.getDefaultToolkit()

@@ -76,7 +76,6 @@ import fr.soe.a3s.ui.UIConstants;
 import fr.soe.a3s.ui.repository.dialogs.ConnectionLostDialog;
 import fr.soe.a3s.ui.repository.dialogs.DownloadSettingsDialog;
 import fr.soe.a3s.ui.repository.dialogs.ReportDialog;
-import fr.soe.a3s.ui.repository.dialogs.error.HeaderErrorDialog;
 import fr.soe.a3s.ui.repository.dialogs.error.UnexpectedErrorDialog;
 import fr.soe.a3s.ui.repository.tree.AddonSyncTreeModel;
 import fr.soe.a3s.ui.repository.tree.CheckTreeCellRendererRepository;
@@ -86,7 +85,7 @@ import fr.soe.a3s.ui.repository.workers.AddonsChecker;
 import fr.soe.a3s.ui.repository.workers.AddonsDownloader;
 import fr.soe.a3s.ui.repository.workers.EventExtractor;
 import fr.soe.a3s.ui.repository.workers.UserconfigUpdater;
-import fr.soe.a3s.utils.ErrorPrinter;
+import fr.soe.a3s.utils.RepositoryConsoleErrorPrinter;
 import fr.soe.a3s.utils.UnitConverter;
 
 /**
@@ -102,46 +101,47 @@ import fr.soe.a3s.utils.UnitConverter;
 public class DownloadPanel extends JPanel implements UIConstants {
 
 	private Facade facade;
+	private String repositoryName;
 	private RepositoryPanel repositoryPanel;
-	private JProgressBar progressBarCheckForAddons, progressBarDownloadAddons,
-			progressBarDownloadSingleAddon;
+
 	private JTree arbre;
+	private TreePath selectedTreePath;
 	private JScrollPane tableScrollPane;
+	private JPopupMenu popup;
+
+	private JButton buttonCheckForAddonsStart, buttonCheckForAddonsCancel;
+	private JButton buttonDownloadStart, buttonDownloadPause, buttonDownloadCancel, buttonDownloadReport;
+	private JButton buttonSettings;
+
+	private JComboBox comBoxDestinationFolder;
+	private JCheckBox checkBoxSelectAll, checkBoxExpandAll, checkBoxExactMatch, checkBoxAutoDiscover;
+	private JMenuItem menuItemHideExtraLocalContent, menuItemShowExtraLocalContent;
+	private JProgressBar progressBarCheckForAddons, progressBarDownloadAddons, progressBarDownloadSingleAddon;
+
+	private JLabel labelCheckForAddonsStatus;
 	private JLabel labelTotalFilesSize, labelTotalFilesSizeValue;
 	private JLabel labelTotalFilesUpdatedValue, labeltTotalFilesDeletedValue;
 	private JLabel labelSpeed, labelSpeedValue;
 	private JLabel labelDownloaded, labelDownloadedValue;
 	private JLabel labelRemainingTime, labelRemainingTimeValue;
 	private JLabel labelDownloadStatus;
-	private JButton buttonCheckForAddonsStart, buttonCheckForAddonsCancel;
-	private JButton buttonDownloadStart, buttonDownloadPause,
-			buttonDownloadCancel, buttonDownloadReport;
-	private JButton buttonSettings;
-	private JComboBox comBoxDestinationFolder;
-	private String repositoryName;
-	private JLabel labelCheckForAddonsStatus;
-	private TreePath arbreTreePath;
-	private JCheckBox checkBoxSelectAll;
-	private JCheckBox checkBoxExpandAll;
-	private JCheckBox checkBoxUpdated;
-	private JCheckBox checkBoxExactMatch;
-	private JCheckBox checkBoxAutoDiscover;
-	private JPopupMenu popup;
-	private JMenuItem menuItemHideExtraLocalContent;
-	private JMenuItem menuItemShowExtraLocalContent;
 	private JLabel labelActiveConnections;
 	private JLabel labelActiveConnectionsValue;
+
 	/* Data */
 	private SyncTreeDirectoryDTO racine = null;
 	private String eventName = null;
+
 	/* Const */
 	private static final int PROGRESSBAR_HEIGHT = 18;
 	public static final Color GREEN = new Color(45, 125, 45);
+
 	/* Services */
 	private final RepositoryService repositoryService = new RepositoryService();
 	private final ProfileService profileService = new ProfileService();
 	private final LaunchService launchService = new LaunchService();
 	private final FilesSynchronizationManager filesManager = new FilesSynchronizationManager();
+
 	/* Workers */
 	private AddonsChecker addonsChecker;
 	private AddonsDownloader addonsDownloader;
@@ -157,8 +157,7 @@ public class DownloadPanel extends JPanel implements UIConstants {
 
 		JPanel panel1 = new JPanel();
 		JPanel panel2 = new JPanel();
-		JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,
-				panel1, panel2);
+		JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, panel1, panel2);
 		splitPane.setOneTouchExpandable(false);
 		flattenSplitPane(splitPane);
 		this.add(splitPane, BorderLayout.CENTER);
@@ -171,8 +170,7 @@ public class DownloadPanel extends JPanel implements UIConstants {
 			JLabel labelCheckForAddons = new JLabel("Check for Addons");
 			checkForAddonsLabelPanel.add(labelCheckForAddons);
 			labelCheckForAddonsStatus = new JLabel();
-			labelCheckForAddonsStatus.setFont(labelCheckForAddonsStatus
-					.getFont().deriveFont(Font.ITALIC));
+			labelCheckForAddonsStatus.setFont(labelCheckForAddonsStatus.getFont().deriveFont(Font.ITALIC));
 			labelCheckForAddonsStatus.setForeground(GREEN);
 			checkForAddonsLabelPanel.add(labelCheckForAddonsStatus);
 			vBox.add(checkForAddonsLabelPanel);
@@ -181,8 +179,7 @@ public class DownloadPanel extends JPanel implements UIConstants {
 			JPanel checkForAddonsProgressBarPanel = new JPanel();
 			checkForAddonsProgressBarPanel.setLayout(new BorderLayout());
 			progressBarCheckForAddons = new JProgressBar();
-			checkForAddonsProgressBarPanel.add(progressBarCheckForAddons,
-					BorderLayout.CENTER);
+			checkForAddonsProgressBarPanel.add(progressBarCheckForAddons, BorderLayout.CENTER);
 			vBox.add(checkForAddonsProgressBarPanel);
 		}
 		{
@@ -195,11 +192,9 @@ public class DownloadPanel extends JPanel implements UIConstants {
 			Box hBox = Box.createHorizontalBox();
 			hBox.add(buttonCheckForAddonsStart);
 			hBox.add(buttonCheckForAddonsCancel);
-			ImageIcon addIcon = new ImageIcon(
-					ImageResizer.resizeToScreenResolution(CHECK));
+			ImageIcon addIcon = new ImageIcon(ImageResizer.resizeToScreenResolution(CHECK));
 			buttonCheckForAddonsStart.setIcon(addIcon);
-			ImageIcon cancelIcon = new ImageIcon(
-					ImageResizer.resizeToScreenResolution(DELETE));
+			ImageIcon cancelIcon = new ImageIcon(ImageResizer.resizeToScreenResolution(DELETE));
 			buttonCheckForAddonsCancel.setIcon(cancelIcon);
 			checkForAddonsControls.add(hBox, BorderLayout.EAST);
 			vBox.add(checkForAddonsControls);
@@ -208,8 +203,8 @@ public class DownloadPanel extends JPanel implements UIConstants {
 		{
 			JPanel filesPanel = new JPanel();
 			filesPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
-			filesPanel.setBorder(BorderFactory.createTitledBorder(
-					BorderFactory.createEtchedBorder(), "Repository changes"));
+			filesPanel.setBorder(
+					BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "Repository changes"));
 			vBox.add(filesPanel);
 			Box vBox2 = Box.createVerticalBox();
 			filesPanel.add(vBox2);
@@ -226,8 +221,7 @@ public class DownloadPanel extends JPanel implements UIConstants {
 			}
 			vBox2.add(Box.createVerticalStrut(10));
 			{
-				JLabel totalFilesDeleted = new JLabel(
-						"Total files to delete : ");
+				JLabel totalFilesDeleted = new JLabel("Total files to delete : ");
 				totalFilesDeleted.setForeground(Color.BLUE);
 				labeltTotalFilesDeletedValue = new JLabel();
 				labeltTotalFilesDeletedValue.setForeground(Color.BLUE);
@@ -256,8 +250,7 @@ public class DownloadPanel extends JPanel implements UIConstants {
 			JLabel labelDownload = new JLabel("Download Addons");
 			downloadLabelPanel.add(labelDownload);
 			labelDownloadStatus = new JLabel();
-			labelDownloadStatus.setFont(labelDownloadStatus.getFont()
-					.deriveFont(Font.ITALIC));
+			labelDownloadStatus.setFont(labelDownloadStatus.getFont().deriveFont(Font.ITALIC));
 			labelDownloadStatus.setForeground(GREEN);
 			downloadLabelPanel.add(labelDownloadStatus);
 			vBox.add(downloadLabelPanel);
@@ -266,16 +259,14 @@ public class DownloadPanel extends JPanel implements UIConstants {
 			JPanel downloadProgressBarPanel = new JPanel();
 			downloadProgressBarPanel.setLayout(new BorderLayout());
 			progressBarDownloadAddons = new JProgressBar();
-			downloadProgressBarPanel.add(progressBarDownloadAddons,
-					BorderLayout.CENTER);
+			downloadProgressBarPanel.add(progressBarDownloadAddons, BorderLayout.CENTER);
 			vBox.add(downloadProgressBarPanel);
 		}
 		{
 			JPanel downloadProgressBarPanel = new JPanel();
 			downloadProgressBarPanel.setLayout(new BorderLayout());
 			progressBarDownloadSingleAddon = new JProgressBar();
-			downloadProgressBarPanel.add(progressBarDownloadSingleAddon,
-					BorderLayout.CENTER);
+			downloadProgressBarPanel.add(progressBarDownloadSingleAddon, BorderLayout.CENTER);
 			vBox.add(downloadProgressBarPanel);
 		}
 		{
@@ -294,17 +285,13 @@ public class DownloadPanel extends JPanel implements UIConstants {
 			hBox.add(buttonDownloadPause);
 			hBox.add(buttonDownloadCancel);
 			hBox.add(buttonDownloadReport);
-			ImageIcon addIcon = new ImageIcon(
-					ImageResizer.resizeToScreenResolution(START));
+			ImageIcon addIcon = new ImageIcon(ImageResizer.resizeToScreenResolution(START));
 			buttonDownloadStart.setIcon(addIcon);
-			ImageIcon pauseIcon = new ImageIcon(
-					ImageResizer.resizeToScreenResolution(PAUSE));
+			ImageIcon pauseIcon = new ImageIcon(ImageResizer.resizeToScreenResolution(PAUSE));
 			buttonDownloadPause.setIcon(pauseIcon);
-			ImageIcon cancelIcon = new ImageIcon(
-					ImageResizer.resizeToScreenResolution(DELETE));
+			ImageIcon cancelIcon = new ImageIcon(ImageResizer.resizeToScreenResolution(DELETE));
 			buttonDownloadCancel.setIcon(cancelIcon);
-			ImageIcon reportIcon = new ImageIcon(
-					ImageResizer.resizeToScreenResolution(REPORT));
+			ImageIcon reportIcon = new ImageIcon(ImageResizer.resizeToScreenResolution(REPORT));
 			buttonDownloadReport.setIcon(reportIcon);
 			downloadControls.add(hBox, BorderLayout.EAST);
 			vBox.add(downloadControls);
@@ -313,8 +300,8 @@ public class DownloadPanel extends JPanel implements UIConstants {
 
 		JPanel progressPanel = new JPanel();
 		progressPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
-		progressPanel.setBorder(BorderFactory.createTitledBorder(
-				BorderFactory.createEtchedBorder(), "Progress monitor"));
+		progressPanel
+				.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "Progress monitor"));
 		panel1.add(progressPanel, BorderLayout.CENTER);
 		vBox = Box.createVerticalBox();
 		progressPanel.add(vBox, BorderLayout.NORTH);
@@ -374,12 +361,9 @@ public class DownloadPanel extends JPanel implements UIConstants {
 		panel2.add(vBox, BorderLayout.NORTH);
 		{
 			JPanel defaultDownloadLocationPanel = new JPanel();
-			defaultDownloadLocationPanel.setLayout(new FlowLayout(
-					FlowLayout.LEFT));
-			JLabel labelDefaultDestinationDirectoryPanel = new JLabel(
-					"Default destination folder");
-			defaultDownloadLocationPanel
-					.add(labelDefaultDestinationDirectoryPanel);
+			defaultDownloadLocationPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
+			JLabel labelDefaultDestinationDirectoryPanel = new JLabel("Default destination folder");
+			defaultDownloadLocationPanel.add(labelDefaultDestinationDirectoryPanel);
 			vBox.add(defaultDownloadLocationPanel);
 		}
 		{
@@ -387,8 +371,7 @@ public class DownloadPanel extends JPanel implements UIConstants {
 			locationPanel.setLayout(new BorderLayout());
 			comBoxDestinationFolder = new JComboBox();
 			comBoxDestinationFolder.setFocusable(false);
-			comBoxDestinationFolder.setPreferredSize(new Dimension(this
-					.getWidth(), 25));
+			comBoxDestinationFolder.setPreferredSize(new Dimension(this.getWidth(), 25));
 			locationPanel.add(comBoxDestinationFolder, BorderLayout.CENTER);
 			vBox.add(locationPanel);
 		}
@@ -448,48 +431,41 @@ public class DownloadPanel extends JPanel implements UIConstants {
 		{
 			JPanel addonsPanel = new JPanel();
 			addonsPanel.setLayout(new BorderLayout());
-			AddonSyncTreeModel addonSyncTreeModel = new AddonSyncTreeModel(
-					racine);
+			AddonSyncTreeModel addonSyncTreeModel = new AddonSyncTreeModel(racine);
 			arbre = new JTree(addonSyncTreeModel);
 			arbre.setRootVisible(false);
 			arbre.setEditable(false);
 			arbre.setShowsRootHandles(true);
 			arbre.setToggleClickCount(0);
-			arbre.getSelectionModel().setSelectionMode(
-					TreeSelectionModel.SINGLE_TREE_SELECTION);
+			arbre.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
 			tableScrollPane = new JScrollPane(arbre);
-			addonsPanel.setBorder(BorderFactory.createTitledBorder(
-					BorderFactory.createEtchedBorder(), "Repository content"));
+			addonsPanel.setBorder(
+					BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "Repository content"));
 			addonsPanel.add(tableScrollPane, BorderLayout.CENTER);
 			panel2.add(addonsPanel, BorderLayout.CENTER);
 
 			Font fontArbre = UIManager.getFont("Tree.font");
 			FontMetrics metrics = arbre.getFontMetrics(fontArbre);
-			int fontHeight = metrics.getAscent() + metrics.getDescent()
-					+ metrics.getLeading();
+			int fontHeight = metrics.getAscent() + metrics.getDescent() + metrics.getLeading();
 			arbre.setRowHeight(fontHeight);
 
 			MyRendererRepository myRendererRepository = new MyRendererRepository();
 			arbre.setCellRenderer(myRendererRepository);
-			CheckTreeCellRendererRepository renderer = new CheckTreeCellRendererRepository(
-					myRendererRepository);
+			CheckTreeCellRendererRepository renderer = new CheckTreeCellRendererRepository(myRendererRepository);
 			arbre.setCellRenderer(renderer);
 		}
 
 		/**/
 
-		progressBarCheckForAddons.setPreferredSize(new Dimension(panel1
-				.getPreferredSize().width, PROGRESSBAR_HEIGHT));
-		progressBarDownloadAddons.setPreferredSize(new Dimension(panel1
-				.getPreferredSize().width, PROGRESSBAR_HEIGHT));
-		progressBarDownloadSingleAddon.setPreferredSize(new Dimension(panel1
-				.getPreferredSize().width, PROGRESSBAR_HEIGHT));
+		progressBarCheckForAddons.setPreferredSize(new Dimension(panel1.getPreferredSize().width, PROGRESSBAR_HEIGHT));
+		progressBarDownloadAddons.setPreferredSize(new Dimension(panel1.getPreferredSize().width, PROGRESSBAR_HEIGHT));
+		progressBarDownloadSingleAddon
+				.setPreferredSize(new Dimension(panel1.getPreferredSize().width, PROGRESSBAR_HEIGHT));
 
 		/* Right clic menu */
 		popup = new JPopupMenu();
 
-		menuItemHideExtraLocalContent = new JMenuItem(
-				"Hide  extra local content");
+		menuItemHideExtraLocalContent = new JMenuItem("Hide  extra local content");
 		menuItemHideExtraLocalContent.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent evt) {
@@ -499,8 +475,7 @@ public class DownloadPanel extends JPanel implements UIConstants {
 		menuItemHideExtraLocalContent.setActionCommand("Hide");
 		popup.add(menuItemHideExtraLocalContent);
 
-		menuItemShowExtraLocalContent = new JMenuItem(
-				"Show extra local content");
+		menuItemShowExtraLocalContent = new JMenuItem("Show extra local content");
 		menuItemShowExtraLocalContent.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent evt) {
@@ -522,8 +497,7 @@ public class DownloadPanel extends JPanel implements UIConstants {
 
 			@Override
 			public void popupMenuWillBecomeVisible(PopupMenuEvent arg0) {
-				SyncTreeNodeDTO syncTreeNodeDTO = (SyncTreeNodeDTO) arbre
-						.getLastSelectedPathComponent();
+				SyncTreeNodeDTO syncTreeNodeDTO = (SyncTreeNodeDTO) arbre.getLastSelectedPathComponent();
 				menuItemHideExtraLocalContent.setEnabled(false);
 				menuItemShowExtraLocalContent.setEnabled(false);
 				if (syncTreeNodeDTO == null) {
@@ -562,24 +536,24 @@ public class DownloadPanel extends JPanel implements UIConstants {
 		arbre.addTreeExpansionListener(new TreeExpansionListener() {
 			@Override
 			public void treeExpanded(TreeExpansionEvent event) {
-				onArbre2Expanded();
+				onArbreExpanded();
 			}
 
 			@Override
 			public void treeCollapsed(TreeExpansionEvent event) {
-				onArbre2Collapsed();
+				onArbreCollapsed();
 			}
 		});
 		arbre.addTreeSelectionListener(new TreeSelectionListener() {
 			@Override
 			public void valueChanged(TreeSelectionEvent arg0) {
-				arbreTreePath = arbre.getSelectionPath();
+				selectedTreePath = arbre.getSelectionPath();
 			}
 		});
 		arbre.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
-				if (arbreTreePath == null) {
+				if (selectedTreePath == null) {
 					return;
 				}
 				if (SwingUtilities.isRightMouseButton(e)) {
@@ -632,7 +606,7 @@ public class DownloadPanel extends JPanel implements UIConstants {
 		buttonCheckForAddonsStart.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				buttonCheckForAddonsStartPerformed(true);
+				buttonCheckForAddonsStartPerformed();
 			}
 		});
 		buttonCheckForAddonsCancel.addActionListener(new ActionListener() {
@@ -685,10 +659,8 @@ public class DownloadPanel extends JPanel implements UIConstants {
 		buttonDownloadReport.setToolTipText("View download report");
 		checkBoxSelectAll.setToolTipText("Select All");
 		checkBoxExpandAll.setToolTipText("Expand All");
-		checkBoxAutoDiscover
-				.setToolTipText("Auto-discover addons within all destination folders");
-		checkBoxExactMatch
-				.setToolTipText("Exact match repository content against default destination folder");
+		checkBoxAutoDiscover.setToolTipText("Auto-discover addons within all destination folders");
+		checkBoxExactMatch.setToolTipText("Exact match repository content against default destination folder");
 	}
 
 	public void init(String repositoryName, String eventName) {
@@ -713,8 +685,7 @@ public class DownloadPanel extends JPanel implements UIConstants {
 
 	private void selectionPerformed() {
 
-		SyncTreeNodeDTO syncTreeNodeDTO = (SyncTreeNodeDTO) arbre
-				.getLastSelectedPathComponent();
+		SyncTreeNodeDTO syncTreeNodeDTO = (SyncTreeNodeDTO) arbre.getLastSelectedPathComponent();
 
 		if (syncTreeNodeDTO == null) {
 			return;
@@ -750,22 +721,15 @@ public class DownloadPanel extends JPanel implements UIConstants {
 
 		if (!repositoryService.isDownloading(repositoryName)) {
 			filesManager.update();
-			labelTotalFilesSizeValue.setText(UnitConverter
-					.convertSize(filesManager.getTotalFilesSize()));
+			labelTotalFilesSizeValue.setText(UnitConverter.convertSize(filesManager.getTotalFilesSize()));
 		}
 
-		SwingUtilities.invokeLater(new Runnable() {
-			@Override
-			public void run() {
-				arbre.updateUI();
-			}
-		});
+		arbre.updateUI();
 	}
 
 	private void hidePerformed() {
 
-		SyncTreeNodeDTO syncTreeNodeDTO = (SyncTreeNodeDTO) arbre
-				.getLastSelectedPathComponent();
+		SyncTreeNodeDTO syncTreeNodeDTO = (SyncTreeNodeDTO) arbre.getLastSelectedPathComponent();
 
 		SyncTreeDirectoryDTO directory = (SyncTreeDirectoryDTO) syncTreeNodeDTO;
 		String relativePath = directory.getName();
@@ -778,13 +742,12 @@ public class DownloadPanel extends JPanel implements UIConstants {
 		repositoryService.addFilesToHide(relativePath, repositoryName);
 
 		// Check for Addons
-		buttonCheckForAddonsStartPerformed(false);
+		buttonCheckForAddonsStartPerformed();
 	}
 
 	private void showPerformed() {
 
-		SyncTreeNodeDTO syncTreeNodeDTO = (SyncTreeNodeDTO) arbre
-				.getLastSelectedPathComponent();
+		SyncTreeNodeDTO syncTreeNodeDTO = (SyncTreeNodeDTO) arbre.getLastSelectedPathComponent();
 
 		SyncTreeDirectoryDTO directory = (SyncTreeDirectoryDTO) syncTreeNodeDTO;
 		String relativePath = directory.getName();
@@ -797,7 +760,7 @@ public class DownloadPanel extends JPanel implements UIConstants {
 		repositoryService.removeFilesToHide(relativePath, repositoryName);
 
 		// Check for Addons
-		buttonCheckForAddonsStartPerformed(false);
+		buttonCheckForAddonsStartPerformed();
 	}
 
 	private void defaultFolderDestinationSelection() {
@@ -818,8 +781,7 @@ public class DownloadPanel extends JPanel implements UIConstants {
 
 		ComboBoxModel model = new DefaultComboBoxModel(tab);
 		comBoxDestinationFolder.setModel(model);
-		String path = repositoryService
-				.getDefaultDownloadLocation(repositoryName);
+		String path = repositoryService.getDefaultDownloadLocation(repositoryName);
 
 		if (path == null && model.getSize() > 0) {
 			comBoxDestinationFolder.setSelectedIndex(0);
@@ -849,10 +811,9 @@ public class DownloadPanel extends JPanel implements UIConstants {
 		if (path != null && !"".equals(path)) {
 			File directory = new File(path);
 			if (directory != null) {
-				File arma3ExeFile = new File(directory.getAbsolutePath() + "/"
-						+ GameExecutables.GAME.getDescription());
-				File arma3ServerExeFile = new File(directory.getAbsolutePath()
-						+ "/" + GameExecutables.WIN_SERVER.getDescription());
+				File arma3ExeFile = new File(directory.getAbsolutePath() + "/" + GameExecutables.GAME.getDescription());
+				File arma3ServerExeFile = new File(
+						directory.getAbsolutePath() + "/" + GameExecutables.WIN_SERVER.getDescription());
 				if (arma3ExeFile.exists() || arma3ServerExeFile.exists()) {
 					isArmA3Directory = true;
 				}
@@ -875,49 +836,32 @@ public class DownloadPanel extends JPanel implements UIConstants {
 		}
 	}
 
-	private void buttonCheckForAddonsStartPerformed(
-			final boolean showHeaderWarningMessage) {
+	private void buttonCheckForAddonsStartPerformed() {
 
 		if (repositoryService.isCheckingForAddons(repositoryName)) {
 			return;
 		}
 
 		if (comBoxDestinationFolder.getSelectedItem() == null) {
-			String message = "Repository name: " + repositoryName + "\n"
-					+ "Default destination folder is empty!";
+			String message = "Repository name: " + repositoryName + "\n" + "Default destination folder is empty!";
 			if (comBoxDestinationFolder.getModel().getSize() == 0) {
-				message = message + "\n"
-						+ "Please checkout addon search directories" + "\n"
+				message = message + "\n" + "Please checkout addon search directories" + "\n"
 						+ "from Addon Options panel.";
 			}
-			displayMessage(message, "Check for Addons",
-					JOptionPane.WARNING_MESSAGE);
+			displayMessage(message, "Check for Addons", JOptionPane.WARNING_MESSAGE);
 		} else {
-			String defaultDownloadLocation = (String) comBoxDestinationFolder
-					.getSelectedItem();
-			repositoryService.setDefaultDownloadLocation(repositoryName,
-					defaultDownloadLocation);
-			checkForAddons(showHeaderWarningMessage, false);
+			String defaultDownloadLocation = (String) comBoxDestinationFolder.getSelectedItem();
+			repositoryService.setDefaultDownloadLocation(repositoryName, defaultDownloadLocation);
+			checkForAddons(false);
 		}
 	}
 
-	private void checkForAddons(final boolean showHeaderWarningMessage,
-			final boolean statusInError) {
+	private void checkForAddons(final boolean statusInError) {
 
-		addonsChecker = new AddonsChecker(facade, repositoryName,
-				eventName != null, this);
+		addonsChecker = new AddonsChecker(facade, repositoryName, eventName != null, this);
 		addonsChecker.addObserverEnd(new ObserverEnd() {
 			@Override
 			public void end() {
-
-				String hearder = addonsChecker
-						.getServerRangeRequestResponseHeader();
-				if (hearder != null && showHeaderWarningMessage) {
-					facade.getMainPanel().openRepository(repositoryName, true);
-					HeaderErrorDialog dialog = new HeaderErrorDialog(facade,
-							"Check for Addons", hearder, repositoryName);
-					dialog.show();
-				}
 
 				updateArbre(addonsChecker.getParent());
 
@@ -927,8 +871,7 @@ public class DownloadPanel extends JPanel implements UIConstants {
 					updateStatusOK();
 				}
 
-				facade.getAddonsPanel().getGroupManager()
-						.updateGroupModsets(repositoryName);
+				facade.getAddonsPanel().getGroupManager().updateGroupModsets(repositoryName);
 
 				addonsChecker = null;
 				System.gc();
@@ -939,19 +882,14 @@ public class DownloadPanel extends JPanel implements UIConstants {
 			public void error(List<Exception> errors) {
 
 				Exception ex = errors.get(0);
-				if (ex instanceof RepositoryException
-						|| ex instanceof CheckException
-						|| ex instanceof RemoteRepositoryException
-						|| ex instanceof IOException) {
-					String message = ErrorPrinter.printRepositoryManagedError(
-							repositoryName, ex);
-					displayMessage(message, "Check for Addons",
-							JOptionPane.ERROR_MESSAGE);
+				if (ex instanceof RepositoryException || ex instanceof CheckException
+						|| ex instanceof RemoteRepositoryException || ex instanceof IOException) {
+					String message = RepositoryConsoleErrorPrinter.printRepositoryManagedError(repositoryName, ex);
+					displayMessage(message, "Check for Addons", JOptionPane.ERROR_MESSAGE);
 				} else {
-					ErrorPrinter.printRepositoryUnexpectedError(repositoryName,
-							ex);
-					UnexpectedErrorDialog dialog = new UnexpectedErrorDialog(
-							facade, "Check for Addons", ex, repositoryName);
+					RepositoryConsoleErrorPrinter.printRepositoryUnexpectedError(repositoryName, ex);
+					UnexpectedErrorDialog dialog = new UnexpectedErrorDialog(facade, "Check for Addons", ex,
+							repositoryName);
 					dialog.show();
 				}
 
@@ -971,8 +909,7 @@ public class DownloadPanel extends JPanel implements UIConstants {
 
 		/* Update repository revision and status */
 		repositoryService.updateRepositoryRevision(repositoryName);
-		repositoryService.setRepositorySyncStatus(repositoryName,
-				RepositoryStatus.OK);
+		repositoryService.setRepositorySyncStatus(repositoryName, RepositoryStatus.OK);
 		facade.getMainPanel().updateTabs(OP_REPOSITORY_CHANGED);
 	}
 
@@ -980,8 +917,7 @@ public class DownloadPanel extends JPanel implements UIConstants {
 
 		/* Reset repository revision and status */
 		repositoryService.resetRepositoryRevision(repositoryName);
-		repositoryService.setRepositorySyncStatus(repositoryName,
-				RepositoryStatus.ERROR);
+		repositoryService.setRepositorySyncStatus(repositoryName, RepositoryStatus.ERROR);
 		facade.getMainPanel().updateTabs(OP_REPOSITORY_CHANGED);
 	}
 
@@ -1003,15 +939,11 @@ public class DownloadPanel extends JPanel implements UIConstants {
 			return;
 		}
 
-		if ((launchService.isArmA3Running() || launchService
-				.isArmA3ServerRunning())) {
-			String message = "Repository name: "
-					+ repositoryName
-					+ "\n"
-					+ "ArmA 3 is currently running. \n "
+		if ((launchService.isArmA3Running() || launchService.isArmA3ServerRunning())) {
+			String message = "Repository name: " + repositoryName + "\n" + "ArmA 3 is currently running. \n "
 					+ "Update of files may failed if these files are currently in use.";
-			int ok = JOptionPane.showConfirmDialog(facade.getMainPanel(),
-					message, "Download", JOptionPane.WARNING_MESSAGE);
+			int ok = JOptionPane.showConfirmDialog(facade.getMainPanel(), message, "Download",
+					JOptionPane.WARNING_MESSAGE);
 			if (ok != 0) {
 				return;
 			}
@@ -1028,26 +960,21 @@ public class DownloadPanel extends JPanel implements UIConstants {
 		boolean ok = true;
 
 		if (comBoxDestinationFolder.getSelectedItem() == null) {
-			String message = "Repository name: " + repositoryName + "\n"
-					+ "Default destination folder is empty!";
+			String message = "Repository name: " + repositoryName + "\n" + "Default destination folder is empty!";
 			if (comBoxDestinationFolder.getModel().getSize() == 0) {
-				message = message + "\n"
-						+ "Please checkout addon search directories" + "\n"
+				message = message + "\n" + "Please checkout addon search directories" + "\n"
 						+ "from Addon Options panel.";
 			}
 			displayMessage(message, "Download", JOptionPane.WARNING_MESSAGE);
 			ok = false;
 		} else {
-			String defaultDownloadLocation = (String) comBoxDestinationFolder
-					.getSelectedItem();
-			repositoryService.setDefaultDownloadLocation(repositoryName,
-					defaultDownloadLocation);
+			String defaultDownloadLocation = (String) comBoxDestinationFolder.getSelectedItem();
+			repositoryService.setDefaultDownloadLocation(repositoryName, defaultDownloadLocation);
 
 			// Add default download location to addon search directory list
 			List<String> list = profileService.getAddonSearchDirectoryPaths();
 			if (!list.contains(defaultDownloadLocation)) {
-				profileService
-						.addAddonSearchDirectoryPath(defaultDownloadLocation);
+				profileService.addAddonSearchDirectoryPath(defaultDownloadLocation);
 				facade.getMainPanel().updateTabs(OP_ADDON_FILES_CHANGED);
 			}
 
@@ -1056,10 +983,9 @@ public class DownloadPanel extends JPanel implements UIConstants {
 				for (String filePath : list) {
 					File file = new File(filePath);
 					if (!file.exists()) {
-						String message = "Repository name: " + repositoryName
-								+ "\n" + "File does not exists: " + filePath;
-						displayMessage(message, "Download",
-								JOptionPane.ERROR_MESSAGE);
+						String message = "Repository name: " + repositoryName + "\n"
+								+ "Destination directory does not exist: " + filePath;
+						displayMessage(message, "Download", JOptionPane.ERROR_MESSAGE);
 						ok = false;
 						break;
 					}
@@ -1067,11 +993,9 @@ public class DownloadPanel extends JPanel implements UIConstants {
 			} else {
 				File file = new File(defaultDownloadLocation);
 				if (!file.exists()) {
-					String message = "Repository name: " + repositoryName
-							+ "\n" + "File does not exists: "
-							+ defaultDownloadLocation;
-					displayMessage(message, "Download",
-							JOptionPane.ERROR_MESSAGE);
+					String message = "Repository name: " + repositoryName + "\n"
+							+ "Destination directory does not exist: " + defaultDownloadLocation;
+					displayMessage(message, "Download", JOptionPane.ERROR_MESSAGE);
 					ok = false;
 				}
 			}
@@ -1083,12 +1007,9 @@ public class DownloadPanel extends JPanel implements UIConstants {
 						Path path = new File(filePath).toPath();
 						boolean canWrite = Files.isWritable(path);
 						if (!canWrite) {
-							String message = "Repository name: "
-									+ repositoryName + "\n"
-									+ "Write permission is denied on: "
-									+ filePath;
-							displayMessage(message, "Download",
-									JOptionPane.ERROR_MESSAGE);
+							String message = "Repository name: " + repositoryName + "\n"
+									+ "Write permission is denied on: " + filePath;
+							displayMessage(message, "Download", JOptionPane.ERROR_MESSAGE);
 							ok = false;
 							break;
 						}
@@ -1097,11 +1018,9 @@ public class DownloadPanel extends JPanel implements UIConstants {
 					Path path = new File(defaultDownloadLocation).toPath();
 					boolean canWrite = Files.isWritable(path);
 					if (!canWrite) {
-						String message = "Repository name: " + repositoryName
-								+ "\n" + "Write permission is denied on: "
+						String message = "Repository name: " + repositoryName + "\n" + "Write permission is denied on: "
 								+ defaultDownloadLocation;
-						displayMessage(message, "Download",
-								JOptionPane.ERROR_MESSAGE);
+						displayMessage(message, "Download", JOptionPane.ERROR_MESSAGE);
 						ok = false;
 					}
 				}
@@ -1112,30 +1031,26 @@ public class DownloadPanel extends JPanel implements UIConstants {
 
 	private void downloadAddons() {
 
-		addonsDownloader = new AddonsDownloader(facade, repositoryName,
-				filesManager, this);
+		addonsDownloader = new AddonsDownloader(facade, repositoryName, filesManager, this);
 		addonsDownloader.addObserverEnd(new ObserverEnd() {
 			@Override
 			public void end() {
 
 				/* Show end message */
 				facade.getMainPanel().recoverFromTray();
-				String message = "Repository name: " + repositoryName + "\n"
-						+ "Download is finished.";
-				displayMessage(message, "Download",
-						JOptionPane.INFORMATION_MESSAGE);
+				String message = "Repository name: " + repositoryName + "\n" + "Download is finished.";
+				displayMessage(message, "Download", JOptionPane.INFORMATION_MESSAGE);
 
 				/* Check for Userconfig Update */
 				if (filesManager.isUserconfigUpdated()) {
-					userconfigUpdater = new UserconfigUpdater(facade,
-							repositoryName, false, filesManager);
+					userconfigUpdater = new UserconfigUpdater(facade, repositoryName, false, filesManager);
 					userconfigUpdater.run();
 				}
 
 				facade.getMainPanel().updateTabs(OP_ADDON_FILES_CHANGED);
 
 				// Check for Addons
-				checkForAddons(false, false);
+				checkForAddons(false);
 
 				addonsDownloader = null;
 				System.gc();
@@ -1147,15 +1062,11 @@ public class DownloadPanel extends JPanel implements UIConstants {
 
 				facade.getMainPanel().recoverFromTray();
 				for (Exception ex : errors) {
-					if (ex instanceof RepositoryException
-							|| ex instanceof CheckException
-							|| ex instanceof RemoteRepositoryException
-							|| ex instanceof IOException) {
-						ErrorPrinter.printRepositoryManagedError(
-								repositoryName, ex);
+					if (ex instanceof RepositoryException || ex instanceof CheckException
+							|| ex instanceof RemoteRepositoryException || ex instanceof IOException) {
+						RepositoryConsoleErrorPrinter.printRepositoryManagedError(repositoryName, ex);
 					} else {
-						ErrorPrinter.printRepositoryUnexpectedError(
-								repositoryName, ex);
+						RepositoryConsoleErrorPrinter.printRepositoryUnexpectedError(repositoryName, ex);
 					}
 				}
 
@@ -1164,32 +1075,30 @@ public class DownloadPanel extends JPanel implements UIConstants {
 				}
 
 				// Check for Addons
-				checkForAddons(false, true);
+				checkForAddons(true);
 
 				addonsDownloader = null;
 				System.gc();
 			}
 		});
-		addonsDownloader
-				.addObserverConnectionLost(new ObserverConnectionLost() {
-					@Override
-					public void lost() {
-						facade.getMainPanel().recoverFromTray();
-						ConnectionLostDialog dialog = new ConnectionLostDialog(
-								facade, repositoryName, "Download");
-						dialog.init();
-						dialog.setVisible(true);
-						if (!dialog.reconnect()) {
-							// Reset tree
-							updateStatusError();
-							updateArbre(null);
-							addonsDownloader = null;
-							System.gc();
-						} else {
-							addonsDownloader.run();
-						}
-					}
-				});
+		addonsDownloader.addObserverConnectionLost(new ObserverConnectionLost() {
+			@Override
+			public void lost() {
+				facade.getMainPanel().recoverFromTray();
+				ConnectionLostDialog dialog = new ConnectionLostDialog(facade, repositoryName, "Download");
+				dialog.init();
+				dialog.setVisible(true);
+				if (!dialog.reconnect()) {
+					// Reset tree
+					updateStatusError();
+					updateArbre(null);
+					addonsDownloader = null;
+					System.gc();
+				} else {
+					addonsDownloader.run();
+				}
+			}
+		});
 
 		addonsDownloader.setDaemon(true);
 		addonsDownloader.start();
@@ -1197,8 +1106,7 @@ public class DownloadPanel extends JPanel implements UIConstants {
 
 	private void buttonDownloadPausePerformed() {
 
-		if (addonsDownloader != null
-				&& repositoryService.isDownloading(repositoryName)) {
+		if (addonsDownloader != null && repositoryService.isDownloading(repositoryName)) {
 			addonsDownloader.pause();
 			// addonsDownloader must not be set null => cancel action would
 			// failed
@@ -1210,7 +1118,7 @@ public class DownloadPanel extends JPanel implements UIConstants {
 		if (addonsDownloader != null) {
 			addonsDownloader.cancel();
 			addonsDownloader = null;
-			checkForAddons(false, false);
+			checkForAddons(false);
 		}
 	}
 
@@ -1222,8 +1130,7 @@ public class DownloadPanel extends JPanel implements UIConstants {
 
 		facade.getMainPanel().openRepository(repositoryName, true);
 		String downloadReport = repositoryService.getReport(repositoryName);
-		ReportDialog reportPanel = new ReportDialog(facade, repositoryName,
-				this);
+		ReportDialog reportPanel = new ReportDialog(facade, this);
 		reportPanel.init(downloadReport);
 		reportPanel.setVisible(true);
 	}
@@ -1233,7 +1140,7 @@ public class DownloadPanel extends JPanel implements UIConstants {
 	}
 
 	public void synchronyse() {
-		buttonCheckForAddonsStartPerformed(true);
+		buttonCheckForAddonsStartPerformed();
 	}
 
 	public void autoUpdatePerformed(final ObserverEnd obs) {
@@ -1243,8 +1150,7 @@ public class DownloadPanel extends JPanel implements UIConstants {
 			return;
 		}
 
-		if ((launchService.isArmA3Running() || launchService
-				.isArmA3ServerRunning())) {
+		if ((launchService.isArmA3Running() || launchService.isArmA3ServerRunning())) {
 			obs.end();
 			return;
 		}
@@ -1258,25 +1164,21 @@ public class DownloadPanel extends JPanel implements UIConstants {
 	private void autoUpdate(final ObserverEnd obs) {
 
 		addonsChecker = new AddonsChecker(facade, repositoryName, false, this);
-		addonsDownloader = new AddonsDownloader(facade, repositoryName,
-				filesManager, this);
-		addonsAutoUpdater = new AddonsAutoUpdater(repositoryName,
-				addonsChecker, addonsDownloader, this);
+		addonsDownloader = new AddonsDownloader(facade, repositoryName, filesManager, this);
+		addonsAutoUpdater = new AddonsAutoUpdater(repositoryName, addonsChecker, addonsDownloader, this);
 
 		addonsAutoUpdater.addObserverEnd(new ObserverEnd() {
 			@Override
 			public void end() {
 
 				if (filesManager.isUserconfigUpdated()) {
-					userconfigUpdater = new UserconfigUpdater(facade,
-							repositoryName, true, filesManager);
+					userconfigUpdater = new UserconfigUpdater(facade, repositoryName, true, filesManager);
 					userconfigUpdater.run();
 				}
 
 				facade.getMainPanel().updateTabs(OP_ADDON_FILES_CHANGED);
 
-				facade.getAddonsPanel().getGroupManager()
-						.updateGroupModsets(repositoryName);
+				facade.getAddonsPanel().getGroupManager().updateGroupModsets(repositoryName);
 
 				updateStatusOK();
 
@@ -1290,15 +1192,11 @@ public class DownloadPanel extends JPanel implements UIConstants {
 			public void error(List<Exception> errors) {
 
 				for (Exception ex : errors) {
-					if (ex instanceof RepositoryException
-							|| ex instanceof CheckException
-							|| ex instanceof RemoteRepositoryException
-							|| ex instanceof IOException) {
-						ErrorPrinter.printRepositoryManagedError(
-								repositoryName, ex);
+					if (ex instanceof RepositoryException || ex instanceof CheckException
+							|| ex instanceof RemoteRepositoryException || ex instanceof IOException) {
+						RepositoryConsoleErrorPrinter.printRepositoryManagedError(repositoryName, ex);
 					} else {
-						ErrorPrinter.printRepositoryUnexpectedError(
-								repositoryName, ex);
+						RepositoryConsoleErrorPrinter.printRepositoryUnexpectedError(repositoryName, ex);
 					}
 				}
 
@@ -1309,25 +1207,23 @@ public class DownloadPanel extends JPanel implements UIConstants {
 				System.gc();
 			}
 		});
-		addonsAutoUpdater
-				.addObserverConnectionLost(new ObserverConnectionLost() {
-					@Override
-					public void lost() {
-						facade.getMainPanel().recoverFromTray();
-						ConnectionLostDialog dialog = new ConnectionLostDialog(
-								facade, repositoryName, "Download");
-						dialog.init();
-						dialog.setVisible(true);
-						if (!dialog.reconnect()) {
-							updateStatusError();
-							updateArbre(null);
-							addonsDownloader = null;
-							System.gc();
-						} else {
-							addonsDownloader.run();
-						}
-					}
-				});
+		addonsAutoUpdater.addObserverConnectionLost(new ObserverConnectionLost() {
+			@Override
+			public void lost() {
+				facade.getMainPanel().recoverFromTray();
+				ConnectionLostDialog dialog = new ConnectionLostDialog(facade, repositoryName, "Download");
+				dialog.init();
+				dialog.setVisible(true);
+				if (!dialog.reconnect()) {
+					updateStatusError();
+					updateArbre(null);
+					addonsDownloader = null;
+					System.gc();
+				} else {
+					addonsDownloader.run();
+				}
+			}
+		});
 
 		addonsAutoUpdater.setDaemon(true);
 		addonsAutoUpdater.start();
@@ -1335,11 +1231,7 @@ public class DownloadPanel extends JPanel implements UIConstants {
 
 	private void buttonSettingsPerformed() {
 
-		String defaultDestinationPath = repositoryService
-				.getDefaultDownloadLocation(repositoryName);
-
-		DownloadSettingsDialog advancedConfigurationPanel = new DownloadSettingsDialog(
-				facade, repositoryName, this);
+		DownloadSettingsDialog advancedConfigurationPanel = new DownloadSettingsDialog(facade, repositoryName, this);
 		buttonSettings.setEnabled(false);
 		advancedConfigurationPanel.init();
 		advancedConfigurationPanel.setVisible(true);
@@ -1359,18 +1251,9 @@ public class DownloadPanel extends JPanel implements UIConstants {
 		}
 
 		filesManager.update();
-		labelTotalFilesSizeValue.setText(UnitConverter.convertSize(filesManager
-				.getTotalFilesSize()));
+		labelTotalFilesSizeValue.setText(UnitConverter.convertSize(filesManager.getTotalFilesSize()));
 
-		int numberRowShown = arbre.getRowCount();
-		arbre.setVisibleRowCount(numberRowShown);
-		arbre.setPreferredSize(arbre.getPreferredScrollableViewportSize());
-		SwingUtilities.invokeLater(new Runnable() {
-			@Override
-			public void run() {
-				arbre.updateUI();
-			}
-		});
+		arbre.updateUI();
 	}
 
 	private void checkBoxExpandAllPerformed() {
@@ -1420,8 +1303,7 @@ public class DownloadPanel extends JPanel implements UIConstants {
 	private void getPathDirectories(TreePath path, Set<TreePath> paths) {
 
 		if (path != null) {
-			SyncTreeNodeDTO syncTreeNodeDTO = (SyncTreeNodeDTO) path
-					.getLastPathComponent();
+			SyncTreeNodeDTO syncTreeNodeDTO = (SyncTreeNodeDTO) path.getLastPathComponent();
 			if (!syncTreeNodeDTO.isLeaf()) {
 				SyncTreeDirectoryDTO directory = (SyncTreeDirectoryDTO) syncTreeNodeDTO;
 				paths.add(path);
@@ -1434,39 +1316,45 @@ public class DownloadPanel extends JPanel implements UIConstants {
 
 	public void updateArbre(SyncTreeDirectoryDTO newRacine) {
 
-		eventExctractor = new EventExtractor(newRacine, eventName,
-				repositoryName);
+		// System.out.println("Updating DownloadPanel arbre...");
+
+		arbre.setEnabled(false);
+
+		eventExctractor = new EventExtractor(newRacine, eventName, repositoryName);
 		racine = eventExctractor.run();
 		filesManager.setParent(racine);
 		filesManager.update();
-		labelTotalFilesSizeValue.setText(UnitConverter.convertSize(filesManager
-				.getTotalFilesSize()));
-		labelTotalFilesUpdatedValue.setText(Integer.toString(filesManager
-				.getTotalFilesUpdated()));
-		labeltTotalFilesDeletedValue.setText(Integer.toString(filesManager
-				.getTotalFilesDeleted()));
+		labelTotalFilesSizeValue.setText(UnitConverter.convertSize(filesManager.getTotalFilesSize()));
+		labelTotalFilesUpdatedValue.setText(Integer.toString(filesManager.getTotalFilesUpdated()));
+		labeltTotalFilesDeletedValue.setText(Integer.toString(filesManager.getTotalFilesDeleted()));
 		checkBoxExpandAll.setSelected(false);
 		checkBoxSelectAll.setSelected(false);
+
+		arbre.removeAll();
+		AddonSyncTreeModel addonSyncTreeModel = new AddonSyncTreeModel(racine);
+		arbre.setModel(addonSyncTreeModel);
+		if (racine != null) {
+			addonSyncTreeModel.fireTreeStructureChanged();
+		}
+
+		int numberRowShown = arbre.getRowCount();
+		arbre.setVisibleRowCount(numberRowShown);
+		arbre.setPreferredSize(arbre.getPreferredScrollableViewportSize());
 
 		SwingUtilities.invokeLater(new Runnable() {
 			@Override
 			public void run() {
-				arbre.setEnabled(false);
-				arbre.removeAll();
-				AddonSyncTreeModel addonSyncTreeModel = new AddonSyncTreeModel(
-						racine);
-				arbre.setModel(addonSyncTreeModel);
-				int numberRowShown = arbre.getRowCount();
-				arbre.setVisibleRowCount(numberRowShown);
-				arbre.setPreferredSize(arbre
-						.getPreferredScrollableViewportSize());
 				arbre.updateUI();
-				arbre.setEnabled(true);
 			}
 		});
+
+		arbre.setEnabled(true);
+
+		// System.out.println("Updating DownloadPanel arbre done...");
 	}
 
-	private void onArbre2Expanded() {
+	private void onArbreExpanded() {
+
 		int numberRowShown = arbre.getRowCount();
 		arbre.setVisibleRowCount(numberRowShown);
 		arbre.setPreferredSize(arbre.getPreferredScrollableViewportSize());
@@ -1474,7 +1362,8 @@ public class DownloadPanel extends JPanel implements UIConstants {
 		arbre.setSelectionPath(null);
 	}
 
-	private void onArbre2Collapsed() {
+	private void onArbreCollapsed() {
+
 		int numberRowShown = arbre.getRowCount();
 		arbre.setVisibleRowCount(numberRowShown);
 		arbre.setPreferredSize(arbre.getPreferredScrollableViewportSize());
@@ -1483,6 +1372,7 @@ public class DownloadPanel extends JPanel implements UIConstants {
 	}
 
 	private void selectAllAscending(SyncTreeNodeDTO syncTreeNodeDTO) {
+
 		if (syncTreeNodeDTO != null) {
 			syncTreeNodeDTO.setSelected(true);
 			SyncTreeNodeDTO parent = syncTreeNodeDTO.getParent();
@@ -1491,6 +1381,7 @@ public class DownloadPanel extends JPanel implements UIConstants {
 	}
 
 	private void unselectAllAscending(SyncTreeNodeDTO syncTreeNodeDTO) {
+
 		if (syncTreeNodeDTO != null) {
 			syncTreeNodeDTO.setSelected(false);
 			SyncTreeNodeDTO parent = syncTreeNodeDTO.getParent();
@@ -1499,6 +1390,7 @@ public class DownloadPanel extends JPanel implements UIConstants {
 	}
 
 	private void selectAllDescending(SyncTreeNodeDTO syncTreeNodeDTO) {
+
 		syncTreeNodeDTO.setSelected(true);
 		if (!syncTreeNodeDTO.isLeaf()) {
 			SyncTreeDirectoryDTO syncTreeDirectoryDTO = (SyncTreeDirectoryDTO) syncTreeNodeDTO;
@@ -1509,6 +1401,7 @@ public class DownloadPanel extends JPanel implements UIConstants {
 	}
 
 	private void deselectAllDescending(SyncTreeNodeDTO syncTreeNodeDTO) {
+
 		syncTreeNodeDTO.setSelected(false);
 		if (!syncTreeNodeDTO.isLeaf()) {
 			SyncTreeDirectoryDTO syncTreeDirectoryDTO = (SyncTreeDirectoryDTO) syncTreeNodeDTO;

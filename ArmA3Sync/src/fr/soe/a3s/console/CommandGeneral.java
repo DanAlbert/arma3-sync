@@ -8,28 +8,34 @@ import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.util.List;
 
+import org.dom4j.DocumentException;
+
+import fr.soe.a3s.constant.ProtocolType;
 import fr.soe.a3s.controller.ObserverConnectionLost;
 import fr.soe.a3s.controller.ObserverCountInt;
 import fr.soe.a3s.controller.ObserverEnd;
 import fr.soe.a3s.controller.ObserverError;
 import fr.soe.a3s.controller.ObserverProceed;
 import fr.soe.a3s.controller.ObserverText;
+import fr.soe.a3s.dao.DataAccessConstants;
+import fr.soe.a3s.domain.AbstractProtocole;
+import fr.soe.a3s.domain.Ftp;
 import fr.soe.a3s.dto.sync.SyncTreeDirectoryDTO;
 import fr.soe.a3s.dto.sync.SyncTreeLeafDTO;
 import fr.soe.a3s.dto.sync.SyncTreeNodeDTO;
-import fr.soe.a3s.exception.FtpException;
+import fr.soe.a3s.exception.CheckException;
 import fr.soe.a3s.exception.WritingException;
 import fr.soe.a3s.exception.remote.RemoteRepositoryException;
 import fr.soe.a3s.exception.repository.RepositoryException;
 import fr.soe.a3s.service.CommonService;
+import fr.soe.a3s.service.ConnectionService;
 import fr.soe.a3s.service.administration.RepositoryBuildProcessor;
 import fr.soe.a3s.service.administration.RepositoryCheckProcessor;
-import fr.soe.a3s.service.connection.FtpService;
 import fr.soe.a3s.service.synchronization.FilesCheckProcessor;
 import fr.soe.a3s.service.synchronization.FilesCompletionProcessor;
 import fr.soe.a3s.service.synchronization.FilesSynchronizationManager;
 import fr.soe.a3s.service.synchronization.FilesSynchronizationProcessor;
-import fr.soe.a3s.utils.ErrorPrinter;
+import fr.soe.a3s.utils.RepositoryConsoleErrorPrinter;
 import fr.soe.a3s.utils.UnitConverter;
 
 public class CommandGeneral {
@@ -121,9 +127,9 @@ public class CommandGeneral {
 			Exception ex = errors.get(0);
 			if (ex instanceof RepositoryException | ex instanceof IOException
 					| ex instanceof WritingException) {
-				ErrorPrinter.printRepositoryManagedError(repositoryName, ex);
+				RepositoryConsoleErrorPrinter.printRepositoryManagedError(repositoryName, ex);
 			} else {
-				ErrorPrinter.printRepositoryUnexpectedError(repositoryName, ex);
+				RepositoryConsoleErrorPrinter.printRepositoryUnexpectedError(repositoryName, ex);
 			}
 
 			observerEndBuild.end();
@@ -212,9 +218,9 @@ public class CommandGeneral {
 			if (ex instanceof RepositoryException
 					|| ex instanceof RemoteRepositoryException
 					|| ex instanceof IOException) {
-				ErrorPrinter.printRepositoryManagedError(repositoryName, ex);
+				RepositoryConsoleErrorPrinter.printRepositoryManagedError(repositoryName, ex);
 			} else {
-				ErrorPrinter.printRepositoryUnexpectedError(repositoryName, ex);
+				RepositoryConsoleErrorPrinter.printRepositoryUnexpectedError(repositoryName, ex);
 			}
 
 			observerEndCheck.end();
@@ -326,10 +332,10 @@ public class CommandGeneral {
 					+ repositoryName + " finished with errors:");
 			for (Exception ex : errors) {
 				if (ex instanceof IOException) {
-					ErrorPrinter
+					RepositoryConsoleErrorPrinter
 							.printRepositoryManagedError(repositoryName, ex);
 				} else {
-					ErrorPrinter.printRepositoryUnexpectedError(repositoryName,
+					RepositoryConsoleErrorPrinter.printRepositoryUnexpectedError(repositoryName,
 							ex);
 				}
 			}
@@ -503,13 +509,6 @@ public class CommandGeneral {
 					}
 				});
 				filesSynchronizationProcessor
-						.addObserverProceedDelete(new ObserverProceed() {
-							@Override
-							public void proceed() {
-								executeProceedDelete();
-							}
-						});
-				filesSynchronizationProcessor
 						.addObserverError(new ObserverError() {
 							@Override
 							public void error(List<Exception> errors) {
@@ -534,10 +533,6 @@ public class CommandGeneral {
 					value = v;
 					System.out.println("Download complete: " + value + " %");
 				}
-			}
-
-			private void executeProceedDelete() {
-				System.out.println("Deleting extra local files...");
 			}
 
 			private void executeEnd() {
@@ -610,11 +605,23 @@ public class CommandGeneral {
 
 	protected void checkForUpdates(boolean devMode) {
 
-		FtpService ftpService = new FtpService();
+		String url = DataAccessConstants.UPDTATE_REPOSITORY_ADRESS;
+		String port = Integer
+				.toString(DataAccessConstants.UPDTATE_REPOSITORY_PORT);
+		String login = DataAccessConstants.UPDTATE_REPOSITORY_LOGIN;
+		String password = DataAccessConstants.UPDTATE_REPOSITORY_PASS;
+		ProtocolType protocolType = ProtocolType.FTP;
+
+		AbstractProtocole protocol = new Ftp(url, port, login, password,
+				protocolType);
+
 		String availableVersion = null;
 		try {
-			availableVersion = ftpService.checkForUpdates(devMode);
-		} catch (FtpException e) {
+			ConnectionService connectionService = new ConnectionService(
+					protocol);
+			availableVersion = connectionService.checkForUpdates(devMode,
+					protocol);
+		} catch (CheckException | DocumentException | IOException e) {
 			System.out.println(e.getMessage());
 			return;
 		}

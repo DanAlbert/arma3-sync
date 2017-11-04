@@ -77,8 +77,8 @@ public class OnlinePanel extends JPanel implements UIConstants {
 		this.add(vertBox1, BorderLayout.CENTER);
 
 		JPanel containerPanel = new JPanel();
-		containerPanel.setBorder(BorderFactory.createTitledBorder(
-				BorderFactory.createEtchedBorder(), "Favorite servers"));
+		containerPanel
+				.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "Favorite servers"));
 		vertBox1.add(containerPanel);
 		containerPanel.setLayout(new BorderLayout());
 
@@ -92,8 +92,7 @@ public class OnlinePanel extends JPanel implements UIConstants {
 		tableServers.getTableHeader().setReorderingAllowed(false);
 		tableServers.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		jScrollPane1 = new JScrollPane(tableServers);
-		jScrollPane1.setBorder(BorderFactory
-				.createEtchedBorder(BevelBorder.LOWERED));
+		jScrollPane1.setBorder(BorderFactory.createEtchedBorder(BevelBorder.LOWERED));
 		containerPanel.add(jScrollPane1, BorderLayout.CENTER);
 
 		TableColumn col1 = tableServers.getColumnModel().getColumn(1);
@@ -106,8 +105,7 @@ public class OnlinePanel extends JPanel implements UIConstants {
 		// Adapt cells Height to font height
 		Font fontTable = UIManager.getFont("Table.font");
 		FontMetrics metrics = tableServers.getFontMetrics(fontTable);
-		int fontHeight = metrics.getAscent() + metrics.getDescent()
-				+ metrics.getLeading();
+		int fontHeight = metrics.getAscent() + metrics.getDescent() + metrics.getLeading();
 		tableServers.setRowHeight(fontHeight);
 
 		comboBoxModsets = new JComboBox();
@@ -118,13 +116,11 @@ public class OnlinePanel extends JPanel implements UIConstants {
 		Box vertBox2 = Box.createVerticalBox();
 		vertBox2.add(Box.createVerticalStrut(25));
 		buttonAdd = new JButton();
-		ImageIcon addIcon = new ImageIcon(
-				ImageResizer.resizeToScreenResolution(ADD));
+		ImageIcon addIcon = new ImageIcon(ImageResizer.resizeToScreenResolution(ADD));
 		buttonAdd.setIcon(addIcon);
 		vertBox2.add(buttonAdd);
 		buttonDelete = new JButton();
-		ImageIcon deleteIcon = new ImageIcon(
-				ImageResizer.resizeToScreenResolution(DELETE));
+		ImageIcon deleteIcon = new ImageIcon(ImageResizer.resizeToScreenResolution(DELETE));
 		buttonDelete.setIcon(deleteIcon);
 		vertBox2.add(buttonDelete);
 		this.add(vertBox2, BorderLayout.EAST);
@@ -153,8 +149,7 @@ public class OnlinePanel extends JPanel implements UIConstants {
 						String ipAddress = (String) model.getValueAt(i, 1);
 						int port = 0;
 						try {
-							port = Integer.parseInt((String) model.getValueAt(
-									i, 2));
+							port = Integer.parseInt((String) model.getValueAt(i, 2));
 						} catch (NumberFormatException e) {
 						}
 						String password = (String) model.getValueAt(i, 3);
@@ -200,8 +195,7 @@ public class OnlinePanel extends JPanel implements UIConstants {
 
 	public void update(int flag) {
 
-		if (flag == OP_PROFILE_CHANGED || flag == OP_REPOSITORY_CHANGED
-				|| flag == OP_GROUP_CHANGED) {
+		if (flag == OP_PROFILE_CHANGED || flag == OP_REPOSITORY_CHANGED || flag == OP_GROUP_CHANGED) {
 			updateTableServers(flag);
 			facade.getMainPanel().updateTabs(OP_ONLINE_CHANGED);
 		}
@@ -212,8 +206,7 @@ public class OnlinePanel extends JPanel implements UIConstants {
 		isModifying = true;
 		tableServers.setEnabled(false);
 
-		List<FavoriteServerDTO> favoriteServersDTO = configurationService
-				.getFavoriteServers();
+		List<FavoriteServerDTO> favoriteServersDTO = configurationService.getFavoriteServers();
 		model.setDataSize(favoriteServersDTO.size());
 		Iterator<FavoriteServerDTO> iter = favoriteServersDTO.iterator();
 		int i = 0;
@@ -266,8 +259,7 @@ public class OnlinePanel extends JPanel implements UIConstants {
 
 	private void buttonAddPerformed() {
 
-		List<FavoriteServerDTO> list = configurationService
-				.getFavoriteServers();
+		List<FavoriteServerDTO> list = configurationService.getFavoriteServers();
 		FavoriteServerDTO favoriteServerDTO = new FavoriteServerDTO();
 		favoriteServerDTO.setName("New Server");
 		favoriteServerDTO.setIpAddress("0.0.0.0");
@@ -306,10 +298,8 @@ public class OnlinePanel extends JPanel implements UIConstants {
 		}
 
 		if (index < list.size()) {
-			if (list.get(index).getName()
-					.equals(configurationService.getServerName())) {
+			if (list.get(index).getName().equals(configurationService.getServerName())) {
 				configurationService.setServerName(null);
-				facade.getMainPanel().updateTabs(OP_ADDON_SELECTION_CHANGED);
 			}
 			list.remove(index);
 		}
@@ -319,19 +309,18 @@ public class OnlinePanel extends JPanel implements UIConstants {
 		if (index != 0) {
 			tableServers.setRowSelectionInterval(index - 1, index - 1);
 		}
+
 		facade.getMainPanel().updateTabs(OP_ONLINE_CHANGED);
 	}
 
 	private List<String> getModsetList() {
 
-		List<RepositoryDTO> repositoryDTOs = repositoryService
-				.getRepositories();
+		List<RepositoryDTO> repositoryDTOs = repositoryService.getRepositories();
 
 		List<String> list = new ArrayList<String>();
 		for (RepositoryDTO repositoryDTO : repositoryDTOs) {
 			list.add(repositoryDTO.getName());
-			List<EventDTO> list2 = repositoryService.getEvents(repositoryDTO
-					.getName());
+			List<EventDTO> list2 = repositoryService.getEvents(repositoryDTO.getName());
 			for (EventDTO eventDTO : list2) {
 				list.add(eventDTO.getName());
 			}
@@ -354,8 +343,7 @@ public class OnlinePanel extends JPanel implements UIConstants {
 
 		Collections.sort(list);
 
-		ComboBoxModel modsetsModel = new DefaultComboBoxModel(
-				new String[] { "" });
+		ComboBoxModel modsetsModel = new DefaultComboBoxModel(new String[] { "" });
 		comboBoxModsets.setModel(modsetsModel);
 		for (String stg : list) {
 			comboBoxModsets.addItem(stg);
@@ -363,8 +351,7 @@ public class OnlinePanel extends JPanel implements UIConstants {
 	}
 
 	class MyTableModel extends AbstractTableModel {
-		private final String[] columnNames = { "Description", "IP Addresse",
-				"Port", "Password", "Join with modset" };
+		private final String[] columnNames = { "Description", "IP Addresse", "Port", "Password", "Join with modset" };
 
 		private Object[][] data = {};
 
@@ -389,9 +376,9 @@ public class OnlinePanel extends JPanel implements UIConstants {
 		}
 
 		/*
-		 * JTable uses this method to determine the default renderer/ editor for
-		 * each cell. If we didn't implement this method, then the last column
-		 * would contain text ("true"/"false"), rather than a check box.
+		 * JTable uses this method to determine the default renderer/ editor for each
+		 * cell. If we didn't implement this method, then the last column would contain
+		 * text ("true"/"false"), rather than a check box.
 		 */
 		@Override
 		public Class getColumnClass(int c) {
@@ -409,8 +396,7 @@ public class OnlinePanel extends JPanel implements UIConstants {
 		}
 
 		/*
-		 * Don't need to implement this method unless your table's data can
-		 * change.
+		 * Don't need to implement this method unless your table's data can change.
 		 */
 		@Override
 		public void setValueAt(Object value, int row, int col) {

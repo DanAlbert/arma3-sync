@@ -7,14 +7,12 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import javax.swing.SwingUtilities;
-
 import fr.soe.a3s.constant.RepositoryStatus;
 import fr.soe.a3s.controller.ObserverEnd;
+import fr.soe.a3s.domain.AbstractProtocole;
 import fr.soe.a3s.dto.RepositoryDTO;
+import fr.soe.a3s.service.ConnectionService;
 import fr.soe.a3s.service.RepositoryService;
-import fr.soe.a3s.service.connection.ConnexionService;
-import fr.soe.a3s.service.connection.ConnexionServiceFactory;
 import fr.soe.a3s.ui.Facade;
 import fr.soe.a3s.ui.UIConstants;
 import fr.soe.a3s.ui.main.dialogs.InfoUpdatedRepositoryDialog;
@@ -45,10 +43,12 @@ public class TaskCheckRepositories extends TimerTask implements UIConstants {
 				@Override
 				public Integer call() {
 					try {
-						ConnexionService connexion = ConnexionServiceFactory
-								.getServiceForRepositoryManagement(repositoryDTO
-										.getName());
-						connexion.checkRepository(repositoryDTO.getName());
+						AbstractProtocole protocole = repositoryService
+								.getProtocol(repositoryDTO.getName());
+						ConnectionService connexionService = new ConnectionService(
+								protocole);
+						connexionService.checkRepository(repositoryDTO
+								.getName());
 					} catch (Exception e) {
 						System.out.println("Error when checking repository "
 								+ repositoryDTO.getName() + ":" + "\n"
@@ -68,16 +68,16 @@ public class TaskCheckRepositories extends TimerTask implements UIConstants {
 			System.out
 					.println("Checking repositories has been anormaly interrupted.");
 		}
-		
+
 		executor.shutdownNow();
-	
+
 		System.out.println("Checking repositories done.");
-		
+
 		/* Update local repositories info with remote a3s folder content changed */
 		for (RepositoryDTO repositoryDTO : list) {
 			repositoryService.updateRepository(repositoryDTO.getName());
 		}
-		
+
 		facade.getMainPanel().updateTabs(OP_REPOSITORY_CHANGED);
 
 		/* Get updated repositories */

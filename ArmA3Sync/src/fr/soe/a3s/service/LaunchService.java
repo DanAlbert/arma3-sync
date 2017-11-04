@@ -44,16 +44,14 @@ public class LaunchService {
 
 	public void checkArmA3ExecutableLocation() throws LaunchException {
 
-		String profileName = configurationDAO.getConfiguration()
-				.getProfileName();
+		String profileName = configurationDAO.getConfiguration().getProfileName();
 		Profile profile = profileDAO.getMap().get(profileName);
 		String arma3ExePath = null;
 		if (profile != null) {
 			arma3ExePath = profile.getLauncherOptions().getArma3ExePath();
 		}
 
-		if (arma3ExePath == null || "".equals(arma3ExePath)
-				|| !(new File(arma3ExePath)).exists()) {
+		if (arma3ExePath == null || "".equals(arma3ExePath) || !(new File(arma3ExePath)).exists()) {
 			throw new LaunchException(
 					"ArmA 3 Executable location is wrong or missing.\nPlease checkout Launcher Options panel.");
 		}
@@ -61,10 +59,8 @@ public class LaunchService {
 
 	public void checkAllinArmALocation() throws LaunchException {
 
-		String allInArmaPath = configurationDAO.getConfiguration()
-				.getAiaOptions().getAllinArmaPath();
-		String gameVersion = configurationDAO.getConfiguration()
-				.getGameVersion();
+		String allInArmaPath = configurationDAO.getConfiguration().getAiaOptions().getAllinArmaPath();
+		String gameVersion = configurationDAO.getConfiguration().getGameVersion();
 		if (gameVersion.equals(GameVersions.ARMA3_AIA.getDescription())) {
 			if (allInArmaPath == null || "".equals(allInArmaPath)) {
 				throw new LaunchException("@AllinArma is missing.");
@@ -75,8 +71,7 @@ public class LaunchService {
 	public void launchExternalApplications() {
 
 		Configuration configuration = configurationDAO.getConfiguration();
-		List<ExternalApplication> apps = configuration
-				.getExternalApplications();
+		List<ExternalApplication> apps = configuration.getExternalApplications();
 
 		List<Callable<Integer>> runnables = new ArrayList<Callable<Integer>>();
 
@@ -87,25 +82,21 @@ public class LaunchService {
 				if (executableFile.exists()) {
 					String executableName = executableFile.getName();
 					if (!launcherDAO.isApplicationRunning(executableName)) {
-						String runParameters = externalApplication
-								.getParameters();
-						StringTokenizer stk = new StringTokenizer(
-								runParameters, " ");
+						String runParameters = externalApplication.getParameters();
+						StringTokenizer stk = new StringTokenizer(runParameters, " ");
 						List<String> params = new ArrayList<String>();
 						while (stk.hasMoreTokens()) {
 							String param = stk.nextToken().trim();
 							params.add(param);
 						}
-						Callable<Integer> c = launcherDAO.call(executableName,
-								launchPath, params);
+						Callable<Integer> c = launcherDAO.call(executableName, launchPath, params);
 						runnables.add(c);
 					}
 				}
 			}
 		}
 		if (apps.size() > 0) {
-			ExecutorService executor = Executors
-					.newFixedThreadPool(apps.size());
+			ExecutorService executor = Executors.newFixedThreadPool(apps.size());
 			for (Callable<Integer> c : runnables) {
 				executor.submit(c);
 				executor.shutdown();
@@ -114,9 +105,8 @@ public class LaunchService {
 	}
 
 	public boolean isArmA3Running() {
-		if (!launcherDAO.isApplicationRunning(GameExecutables.GAME
-				.getDescription()) && !launcherDAO.isApplicationRunning(GameExecutables.GAME_x64
-						.getDescription())) {
+		if (!launcherDAO.isApplicationRunning(GameExecutables.GAME.getDescription())
+				&& !launcherDAO.isApplicationRunning(GameExecutables.GAME_x64.getDescription())) {
 			return false;
 		} else {
 			return true;
@@ -124,11 +114,8 @@ public class LaunchService {
 	}
 
 	public boolean isArmA3ServerRunning() {
-		if (!launcherDAO.isApplicationRunning(GameExecutables.WIN_SERVER
-				.getDescription())
-				&& !launcherDAO
-						.isApplicationRunning(GameExecutables.WIN_SERVER_x64
-								.getDescription())) {
+		if (!launcherDAO.isApplicationRunning(GameExecutables.WIN_SERVER.getDescription())
+				&& !launcherDAO.isApplicationRunning(GameExecutables.WIN_SERVER_x64.getDescription())) {
 			return false;
 		} else {
 			return true;
@@ -136,8 +123,7 @@ public class LaunchService {
 	}
 
 	private boolean isSteamRunning() {
-		if (!launcherDAO.isApplicationRunning(GameExecutables.STEAM
-				.getDescription())) {
+		if (!launcherDAO.isApplicationRunning(GameExecutables.STEAM.getDescription())) {
 			return false;
 		} else {
 			return true;
@@ -155,10 +141,9 @@ public class LaunchService {
 
 	public void launchArmA3() {
 
-		String profileName = configurationDAO.getConfiguration()
-				.getProfileName();
+		String profileName = configurationDAO.getConfiguration().getProfileName();
 		Profile profile = profileDAO.getMap().get(profileName);
-		String arma3ExePath = null;
+
 		if (profile != null) {
 			LauncherOptions launcherOptions = profile.getLauncherOptions();
 
@@ -175,8 +160,7 @@ public class LaunchService {
 			ExecutorService executor = Executors.newSingleThreadExecutor();
 			List<Callable<Integer>> runnables = new ArrayList<Callable<Integer>>();
 			String executableName = new File(arma3Path).getName();
-			Callable<Integer> c = launcherDAO.call2(executableName, arma3Path,
-					params, launcherOptions);
+			Callable<Integer> c = launcherDAO.call2(executableName, arma3Path, params, launcherOptions);
 			runnables.add(c);
 			executor.submit(c);
 			executor.shutdown();
@@ -191,10 +175,8 @@ public class LaunchService {
 		File file = new File(arma3CfgPath);
 		if (file.exists()) {
 			try {
-				DataInputStream fRo = new DataInputStream(new FileInputStream(
-						file));
-				BufferedReader d = new BufferedReader(
-						new InputStreamReader(fRo));
+				DataInputStream fRo = new DataInputStream(new FileInputStream(file));
+				BufferedReader d = new BufferedReader(new InputStreamReader(fRo));
 				String ligne = "";
 				List<String> list = new ArrayList<String>();
 				boolean record = true;
@@ -248,78 +230,6 @@ public class LaunchService {
 		return params;
 	}
 
-	public List<String> getMissingAddons() {
-
-		Configuration configuration = configurationDAO.getConfiguration();
-		List<String> missingAddonNames = new ArrayList<String>();
-
-		String profileName = configuration.getProfileName();
-		Profile profile = profileDAO.getMap().get(profileName);
-		if (profile != null) {
-			TreeDirectory racine = profile.getTree();
-			List<String> addonNames = new ArrayList<String>();
-			getSelectedAddonNames(racine, addonNames);
-			if (addonNames.size() != 0) {
-				Iterator<String> iterator = addonNames.iterator();
-				while (iterator.hasNext()) {
-					String addonName = iterator.next();
-					Addon addon = addonDAO.getMap()
-							.get(addonName.toLowerCase());
-					if (addon == null) {
-						missingAddonNames.add(addonName);
-					}
-				}
-			}
-		}
-
-		return missingAddonNames;
-	}
-
-	public List<String> getDuplicatedAddons() {
-
-		Configuration configuration = configurationDAO.getConfiguration();
-		List<String> duplicatedAddonNames = new ArrayList<String>();
-
-		String profileName = configuration.getProfileName();
-		Profile profile = profileDAO.getMap().get(profileName);
-		if (profile != null) {
-			TreeDirectory racine = profile.getTree();
-			List<String> addonNames = new ArrayList<String>();
-			getSelectedAddonNames(racine, addonNames);
-			List<String> list = new ArrayList<String>();
-			if (addonNames.size() != 0) {
-				Iterator<String> iterator = addonNames.iterator();
-				while (iterator.hasNext()) {
-					String addonName = iterator.next();
-					Addon addon = addonDAO.getMap()
-							.get(addonName.toLowerCase());
-					if (addon != null) {
-						String name = addonName.replaceAll("\\*", "");
-						list.add(name);
-					}
-				}
-			}
-			for (int i = 0; i < list.size(); i++) {
-				int count = 0;
-				String name = list.get(i);
-				for (int j = 0; j < list.size(); j++) {
-					if (name.equals(list.get(j))) {
-						count++;
-					}
-				}
-				if (count > 1) {
-					for (String addonName : addonNames) {
-						if (addonName.replaceAll("\\*", "").equals(name)) {
-							duplicatedAddonNames.add(addonName);
-						}
-					}
-				}
-			}
-		}
-
-		return duplicatedAddonNames;
-	}
-
 	public List<String> getRunParameters() {
 
 		List<String> params = new ArrayList<String>();
@@ -329,7 +239,7 @@ public class LaunchService {
 		Profile profile = profileDAO.getMap().get(profileName);
 
 		if (profile == null) {
-			return null;
+			return params;
 		}
 
 		/* Launcher options */
@@ -404,8 +314,7 @@ public class LaunchService {
 		}
 
 		/* Mods selection */
-		List<String> listAddonNamesByPriority = profile
-				.getAddonNamesByPriority();
+		List<String> listAddonNamesByPriority = profile.getAddonNamesByPriority();
 		TreeDirectory racine = profile.getTree();
 
 		List<String> selectedAddonNames = new ArrayList<String>();
@@ -435,15 +344,15 @@ public class LaunchService {
 		}
 
 		/*
-		 * Get the corresponding ordered list of Addon. Duplicate object for
-		 * setting the path later
+		 * Get the corresponding ordered list of Addon. Duplicate object for setting the
+		 * path later
 		 */
 		List<Addon> addons = new ArrayList<Addon>();
 		for (String name : runListAddonNamesToLowerCase) {
 			Addon addon = addonDAO.getMap().get(name);
 			if (addon != null) {// may happen if addon is not present into
 				// available addons list
-				Addon clone = new Addon(addon.getName(), addon.getPath());
+				Addon clone = new Addon(addon.getKey(), addon.getName(), addon.getPath());
 				addons.add(clone);
 			}
 		}
@@ -453,8 +362,7 @@ public class LaunchService {
 
 		if (arma3ExePath != null) {
 			if (new File(arma3ExePath).getParentFile() != null) {
-				String parentArma3ExePath = new File(arma3ExePath)
-						.getParentFile().getAbsolutePath().toLowerCase();
+				String parentArma3ExePath = new File(arma3ExePath).getParentFile().getAbsolutePath().toLowerCase();
 				for (Addon addon : addons) {
 					String path = addon.getPath().toLowerCase();
 					addon.setAtArmA3InstallRoot(false);
@@ -475,8 +383,7 @@ public class LaunchService {
 				continue;
 			}
 			Addon addon = addons.get(i);
-			List<Addon> list1 = ordererAddonListByPath
-					.get(ordererAddonListByPath.size() - 1);
+			List<Addon> list1 = ordererAddonListByPath.get(ordererAddonListByPath.size() - 1);
 			if (list1.get(0).getPath().equals(addon.getPath())) {
 				list1.add(addon);
 			} else {
@@ -501,8 +408,7 @@ public class LaunchService {
 					if (path.isEmpty()) {
 						mods = mods + "-mod=" + addon.getName() + ";";
 					} else {
-						mods = mods + "-mod=" + path + "\\" + addon.getName()
-								+ ";";
+						mods = mods + "-mod=" + path + "\\" + addon.getName() + ";";
 					}
 				}
 			}
@@ -519,57 +425,47 @@ public class LaunchService {
 
 		/* Build runParameters */
 		/* AllinArma */
-		if (configuration.getGameVersion().equals(
-				GameVersions.ARMA3_AIA.getDescription())) {
+		if (configuration.getGameVersion().equals(GameVersions.ARMA3_AIA.getDescription())) {
 			AiAOptions aiAOptions = configuration.getAiaOptions();
 			String path = aiAOptions.getAllinArmaPath();
 
 			if (path != null && arma3ExePath != null) {
 				path = path.toLowerCase();
-				String parentArma3ExePath = new File(arma3ExePath)
-						.getParentFile().getAbsolutePath().toLowerCase();
-				if (path.contains(parentArma3ExePath)
-						&& !path.equals(parentArma3ExePath)) {
+				String parentArma3ExePath = new File(arma3ExePath).getParentFile().getAbsolutePath().toLowerCase();
+				if (path.contains(parentArma3ExePath) && !path.equals(parentArma3ExePath)) {
 					path = path.substring(parentArma3ExePath.length() + 1);
 				}
 				/*
 				 * @AllInArma\ProductDummies;%_ARMA1_PATH%\DBE1;%_ARMA1_PATH%;@
-				 * AllInArma\A1Dummies;
-				 * %_ARMA2_PATH%;%_ARMA2OA_PATH%;%_ARMA2OA_PATH%\Expansion ;
-				 * %_TKOH_PATH%;@A1A2ObjectMerge;%_ARMA3_PATH%;@AllInArma\Core;
+				 * AllInArma\A1Dummies; %_ARMA2_PATH%;%_ARMA2OA_PATH%;%_ARMA2OA_PATH%\Expansion
+				 * ; %_TKOH_PATH%;@A1A2ObjectMerge;%_ARMA3_PATH%;@AllInArma\Core;
 				 * 
 				 * @AllInArma\PostA3"
 				 */
 
 				String allInArma = " -mod=" + path + "\\ProductDummies" + ";";
 
-				if (aiAOptions.getArmaPath() != null
-						&& !"".equals(aiAOptions.getArmaPath())) {
-					allInArma = allInArma + aiAOptions.getArmaPath() + "\\DBE1"
-							+ ";";
+				if (aiAOptions.getArmaPath() != null && !"".equals(aiAOptions.getArmaPath())) {
+					allInArma = allInArma + aiAOptions.getArmaPath() + "\\DBE1" + ";";
 				}
 
 				allInArma = allInArma + path + "\\A1Dummies" + ";";
 
-				if (aiAOptions.getArma2Path() != null
-						&& !"".equals(aiAOptions.getArma2Path())) {
+				if (aiAOptions.getArma2Path() != null && !"".equals(aiAOptions.getArma2Path())) {
 					allInArma = allInArma + aiAOptions.getArma2Path() + ";";
 				}
 
-				if (aiAOptions.getArma2OAPath() != null
-						&& !"".equals(aiAOptions.getArma2OAPath())) {
-					allInArma = allInArma + aiAOptions.getArma2OAPath() + ";"
-							+ aiAOptions.getArma2OAPath() + "\\Expansion" + ";";
+				if (aiAOptions.getArma2OAPath() != null && !"".equals(aiAOptions.getArma2OAPath())) {
+					allInArma = allInArma + aiAOptions.getArma2OAPath() + ";" + aiAOptions.getArma2OAPath()
+							+ "\\Expansion" + ";";
 				}
 
-				if (aiAOptions.getTohPath() != null
-						&& !"".equals(aiAOptions.getTohPath())) {
+				if (aiAOptions.getTohPath() != null && !"".equals(aiAOptions.getTohPath())) {
 					allInArma = allInArma + aiAOptions.getTohPath() + ";";
 				}
 
-				allInArma = allInArma + "@A1A2ObjectMerge;@A2OAPondFix;"
-						+ parentArma3ExePath + ";" + path + "\\Core" + ";"
-						+ path + "\\PostA3" + ";";
+				allInArma = allInArma + "@A1A2ObjectMerge;@A2OAPondFix;" + parentArma3ExePath + ";" + path + "\\Core"
+						+ ";" + path + "\\PostA3" + ";";
 
 				// String allInArma = " -mod=" + path + "\\ProductDummies" + ";"
 				// + aiAOptions.getArmaPath() + "\\DBE1" + ";" + path
@@ -588,15 +484,13 @@ public class LaunchService {
 	private List<String> getAdditionalParameters() {
 
 		List<String> params = new ArrayList<String>();
-		String profileName = configurationDAO.getConfiguration()
-				.getProfileName();
+		String profileName = configurationDAO.getConfiguration().getProfileName();
 		Profile profile = profileDAO.getMap().get(profileName);
 		if (profile != null) {
 			String additionalParameters = profile.getAdditionalParameters();
 			if (additionalParameters != null) {
 				if (!additionalParameters.isEmpty()) {
-					StringTokenizer stk = new StringTokenizer(
-							additionalParameters, " ");
+					StringTokenizer stk = new StringTokenizer(additionalParameters, " ");
 					int nbParameters = stk.countTokens();
 					for (int i = 0; i < nbParameters; i++) {
 						String param = stk.nextToken().trim();
@@ -613,8 +507,7 @@ public class LaunchService {
 		return params;
 	}
 
-	private void getSelectedAddonNames(TreeDirectory treeDirectory,
-			List<String> addonNames) {
+	private void getSelectedAddonNames(TreeDirectory treeDirectory, List<String> addonNames) {
 
 		for (TreeNode treeNode : treeDirectory.getList()) {
 			if (treeNode instanceof TreeLeaf) {

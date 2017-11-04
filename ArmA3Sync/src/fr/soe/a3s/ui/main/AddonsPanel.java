@@ -75,28 +75,29 @@ public class AddonsPanel extends JPanel implements UIConstants {
 
 	private Facade facade;
 	private JScrollPane availableAddonsScrollPane, addonGroupsPanelScrollPane;
-	private JTree arbre1;
-	private JTree arbre2;
+	private JTree arbre1, arbre2;
 	private JCheckBox checkBoxTree, checkBoxList;
-	private TreeDirectoryDTO racine1;
-	private TreeDirectoryDTO racine2;
-	private AddonTreeModel addonTreeModel1, addonTreeModel2;
 	private JPopupMenu popup;
 	private TreeDnD treeDnD;
 	private JMenuItem menuItemAddGroup, menuItemDuplicate, menuItemRename,
 			menuItemRemove;
-	private TreePath arbre2TreePath;
-	private JButton buttonRefresh;
-	private TreePath arbre2NewTreePath;
-	private JCheckBox checkBoxSelectAll;
-	private JCheckBox checkBoxExpandAll;
-	private JButton buttonModsets;
+	private JButton buttonRefresh, buttonModsets;
+	private JCheckBox checkBoxSelectAll, checkBoxExpandAll;
+
+	private enum Selection {
+		EMPTY, SINGLE, MULTIPLE
+	}
+
+	// Data
+	private TreeDirectoryDTO racine1 = null;
+	private TreeDirectoryDTO racine2 = null;
+
 	// Manager
 	private final GroupManager groupManager = new GroupManager();
+
 	// Services
 	private final ConfigurationService configurationService = new ConfigurationService();
 	private final ProfileService profileService = new ProfileService();
-	private final LaunchService launchService = new LaunchService();
 	private final AddonService addonService = new AddonService();
 	private final RepositoryService repositoryService = new RepositoryService();
 
@@ -107,93 +108,108 @@ public class AddonsPanel extends JPanel implements UIConstants {
 
 		JPanel controlPanel = new JPanel();
 		controlPanel.setLayout(new GridLayout(1, 2));
-		JPanel controlPanel1 = new JPanel();
-		controlPanel1.setLayout(new FlowLayout(FlowLayout.LEFT));
-		JPanel controlPanel2 = new JPanel();
-		controlPanel2.setLayout(new FlowLayout(FlowLayout.LEFT));
-		controlPanel.add(controlPanel1);
-		controlPanel.add(controlPanel2);
+		{
+			JPanel controlPanel1 = new JPanel();
+			controlPanel1.setLayout(new FlowLayout(FlowLayout.LEFT));
+			JPanel controlPanel2 = new JPanel();
+			controlPanel2.setLayout(new FlowLayout(FlowLayout.LEFT));
+			controlPanel.add(controlPanel1);
+			controlPanel.add(controlPanel2);
+			{
+				checkBoxTree = new JCheckBox("Tree");
+				checkBoxTree.setFocusable(false);
+				checkBoxList = new JCheckBox("List");
+				checkBoxList.setFocusable(false);
+				ButtonGroup groupCheckBox = new ButtonGroup();
+				groupCheckBox.add(checkBoxTree);
+				groupCheckBox.add(checkBoxList);
+				buttonRefresh = new JButton("Refresh");
+				buttonRefresh.setFocusable(false);
+				buttonRefresh.setContentAreaFilled(false);
+				buttonRefresh.setBorderPainted(false);
+				ImageIcon refreshIcon = new ImageIcon(REFRESH);
+				buttonRefresh.setIcon(refreshIcon);
+				controlPanel1.add(checkBoxTree);
+				controlPanel1.add(checkBoxList);
+				controlPanel1.add(buttonRefresh);
 
-		checkBoxTree = new JCheckBox("Tree");
-		checkBoxTree.setFocusable(false);
-		checkBoxList = new JCheckBox("List");
-		checkBoxList.setFocusable(false);
-		ButtonGroup groupCheckBox = new ButtonGroup();
-		groupCheckBox.add(checkBoxTree);
-		groupCheckBox.add(checkBoxList);
-		buttonRefresh = new JButton("Refresh");
-		buttonRefresh.setFocusable(false);
-		buttonRefresh.setContentAreaFilled(false);
-		buttonRefresh.setBorderPainted(false);
-		ImageIcon refreshIcon = new ImageIcon(REFRESH);
-		buttonRefresh.setIcon(refreshIcon);
-		controlPanel1.add(checkBoxTree);
-		controlPanel1.add(checkBoxList);
-		controlPanel1.add(buttonRefresh);
+				checkBoxSelectAll = new JCheckBox("Select All");
+				checkBoxSelectAll.setFocusable(false);
+				checkBoxExpandAll = new JCheckBox("Expand All");
+				checkBoxExpandAll.setFocusable(false);
+				buttonModsets = new JButton("Modsets");
+				buttonModsets.setFocusable(false);
+				buttonModsets.setContentAreaFilled(false);
+				buttonModsets.setBorderPainted(false);
 
-		checkBoxSelectAll = new JCheckBox("Select All");
-		checkBoxSelectAll.setFocusable(false);
-		checkBoxExpandAll = new JCheckBox("Expand All");
-		checkBoxExpandAll.setFocusable(false);
-		buttonModsets = new JButton("Modsets");
-		buttonModsets.setFocusable(false);
-		buttonModsets.setContentAreaFilled(false);
-		buttonModsets.setBorderPainted(false);
-
-		ImageIcon checkIcon = new ImageIcon(CHECK);
-		buttonModsets.setIcon(checkIcon);
-		controlPanel2.add(checkBoxSelectAll);
-		controlPanel2.add(checkBoxExpandAll);
-		controlPanel2.add(buttonModsets);
-
+				ImageIcon checkIcon = new ImageIcon(ADD);
+				buttonModsets.setIcon(checkIcon);
+				controlPanel2.add(checkBoxSelectAll);
+				controlPanel2.add(checkBoxExpandAll);
+				controlPanel2.add(buttonModsets);
+			}
+		}
 		this.add(controlPanel, BorderLayout.NORTH);
 
 		JPanel mainPanel = new JPanel();
 		mainPanel.setLayout(new GridLayout(1, 2));
 		mainPanel.setFocusable(false);
 
-		addonTreeModel1 = new AddonTreeModel(racine1);
-		arbre1 = new JTree(addonTreeModel1);
-		arbre1.setRootVisible(false);
-		arbre1.setEditable(false);
-		arbre1.setLargeModel(true);
-		arbre1.getSelectionModel().setSelectionMode(
-				TreeSelectionModel.DISCONTIGUOUS_TREE_SELECTION);
-		arbre1.setBorder(BorderFactory.createBevelBorder(BevelBorder.LOWERED));
-		availableAddonsScrollPane = new JScrollPane(arbre1);
-		availableAddonsScrollPane.setBorder(BorderFactory.createTitledBorder(
-				BorderFactory.createEtchedBorder(), "Available Addons"));
-		mainPanel.add(availableAddonsScrollPane);
+		{
+			AddonTreeModel addonTreeModel = new AddonTreeModel(racine1);
+			arbre1 = new JTree(addonTreeModel);
+			arbre1.setRootVisible(false);
+			arbre1.setEditable(false);
+			arbre1.setLargeModel(true);
+			arbre1.getSelectionModel().setSelectionMode(
+					TreeSelectionModel.DISCONTIGUOUS_TREE_SELECTION);
+			arbre1.setBorder(BorderFactory
+					.createBevelBorder(BevelBorder.LOWERED));
+			availableAddonsScrollPane = new JScrollPane(arbre1);
+			availableAddonsScrollPane.setBorder(BorderFactory
+					.createTitledBorder(BorderFactory.createEtchedBorder(),
+							"Available Addons"));
+			mainPanel.add(availableAddonsScrollPane);
 
-		Font fontArbre = UIManager.getFont("Tree.font");
-		FontMetrics metrics = arbre1.getFontMetrics(fontArbre);
-		int fontHeight = metrics.getAscent() + metrics.getDescent()
-				+ metrics.getLeading();
-		arbre1.setRowHeight(fontHeight);
+			Font fontArbre = UIManager.getFont("Tree.font");
+			FontMetrics metrics = arbre1.getFontMetrics(fontArbre);
+			int fontHeight = metrics.getAscent() + metrics.getDescent()
+					+ metrics.getLeading();
+			arbre1.setRowHeight(fontHeight);
 
-		MyRenderer myRenderer = new MyRenderer();
-		arbre1.setCellRenderer(myRenderer);
+			MyRenderer myRenderer = new MyRenderer();
+			arbre1.setCellRenderer(myRenderer);
+		}
+		{
+			AddonTreeModel addonTreeModel = new AddonTreeModel(racine2);
+			arbre2 = new JTree(addonTreeModel);
+			arbre2.setRootVisible(false);
+			arbre2.setEditable(false);
+			arbre2.setShowsRootHandles(true);
+			arbre2.setLargeModel(true);
+			arbre2.setToggleClickCount(0);
+			arbre2.getSelectionModel().setSelectionMode(
+					TreeSelectionModel.DISCONTIGUOUS_TREE_SELECTION);
+			arbre2.setBorder(BorderFactory
+					.createBevelBorder(BevelBorder.LOWERED));
+			addonGroupsPanelScrollPane = new JScrollPane(arbre2);
+			addonGroupsPanelScrollPane.setBorder(BorderFactory
+					.createTitledBorder(BorderFactory.createEtchedBorder(),
+							"Addon Groups"));
+			mainPanel.add(addonGroupsPanelScrollPane);
+			this.add(mainPanel, BorderLayout.CENTER);
 
-		addonTreeModel2 = new AddonTreeModel(racine2);
-		arbre2 = new JTree(addonTreeModel2);
-		arbre2.setRootVisible(false);
-		arbre2.setEditable(false);
-		arbre2.setShowsRootHandles(true);
-		arbre2.setLargeModel(true);
-		arbre2.setToggleClickCount(0);
-		arbre2.getSelectionModel().setSelectionMode(
-				TreeSelectionModel.DISCONTIGUOUS_TREE_SELECTION);
-		arbre2.setBorder(BorderFactory.createBevelBorder(BevelBorder.LOWERED));
-		addonGroupsPanelScrollPane = new JScrollPane(arbre2);
-		addonGroupsPanelScrollPane.setBorder(BorderFactory.createTitledBorder(
-				BorderFactory.createEtchedBorder(), "Addon Groups"));
-		mainPanel.add(addonGroupsPanelScrollPane);
-		this.add(mainPanel, BorderLayout.CENTER);
+			Font fontArbre = UIManager.getFont("Tree.font");
+			FontMetrics metrics = arbre2.getFontMetrics(fontArbre);
+			int fontHeight = metrics.getAscent() + metrics.getDescent()
+					+ metrics.getLeading();
+			arbre2.setRowHeight(fontHeight);
 
-		arbre2.setRowHeight(fontHeight);
-
-		CheckTreeCellRenderer renderer = new CheckTreeCellRenderer(myRenderer);
-		arbre2.setCellRenderer(renderer);
+			MyRenderer myRenderer = new MyRenderer();
+			CheckTreeCellRenderer renderer = new CheckTreeCellRenderer(
+					myRenderer);
+			arbre2.setCellRenderer(renderer);
+		}
 
 		/* TreeDnD */
 		treeDnD = new TreeDnD(arbre1, arbre2, facade);
@@ -253,39 +269,131 @@ public class AddonsPanel extends JPanel implements UIConstants {
 
 			@Override
 			public void popupMenuWillBecomeVisible(PopupMenuEvent arg0) {
-				TreeNodeDTO[] nodes = getSelectedNode();
+				TreeNodeDTO[] nodes = getSelectedNodes();
+
+				Selection selection = Selection.EMPTY;
 				if (nodes != null) {
-					if (nodes.length > 0) {
-						if (nodes[0].isLeaf()) {
+					if (nodes.length == 1) {
+						selection = Selection.SINGLE;
+					} else if (nodes.length > 1) {
+						selection = Selection.MULTIPLE;
+					}
+				}
+
+				if (selection.equals(Selection.EMPTY)) {
+					// no selection => only enable Add group
+					menuItemAddGroup.setEnabled(true);
+					menuItemDuplicate.setEnabled(false);
+					menuItemRename.setEnabled(false);
+					menuItemRemove.setEnabled(false);
+				} else if (selection.equals(Selection.SINGLE)) {
+					boolean isLeaf = nodes[0].isLeaf();
+					if (isLeaf) {
+						TreeLeafDTO leaf = (TreeLeafDTO) nodes[0];
+
+						ModsetType modsetType = leaf.getParent()
+								.getModsetType();
+						TreeDirectoryDTO parent = leaf.getParent().getParent();
+
+						while (parent != null && modsetType == null) {
+							modsetType = parent.getModsetType();
+							parent = parent.getParent();
+						}
+
+						if (modsetType == null) {
 							menuItemAddGroup.setEnabled(true);
 							menuItemDuplicate.setEnabled(false);
 							menuItemRename.setEnabled(false);
 							menuItemRemove.setEnabled(true);
-						} else if (!nodes[0].isLeaf()) {
-							TreeDirectoryDTO directortDTO = (TreeDirectoryDTO) nodes[0];
-							if (directortDTO.getModsetType() == null) {
+						} else {
+							menuItemAddGroup.setEnabled(false);
+							menuItemDuplicate.setEnabled(false);
+							menuItemRename.setEnabled(false);
+							menuItemRemove.setEnabled(false);
+						}
+					} else {
+						TreeDirectoryDTO directory = (TreeDirectoryDTO) nodes[0];
+
+						ModsetType modsetType = directory.getModsetType();
+
+						if (modsetType != null) {
+							menuItemAddGroup.setEnabled(false);
+							menuItemDuplicate.setEnabled(false);
+							menuItemRename.setEnabled(false);
+							menuItemRemove.setEnabled(true);
+						} else {
+							TreeDirectoryDTO parent = directory.getParent();
+
+							while (parent != null && modsetType == null) {
+								modsetType = parent.getModsetType();
+								parent = parent.getParent();
+							}
+
+							if (modsetType == null) {
 								menuItemAddGroup.setEnabled(true);
 								menuItemDuplicate.setEnabled(true);
 								menuItemRename.setEnabled(true);
 								menuItemRemove.setEnabled(true);
 							} else {
 								menuItemAddGroup.setEnabled(false);
-								menuItemDuplicate.setEnabled(true);
+								menuItemDuplicate.setEnabled(false);
 								menuItemRename.setEnabled(false);
-								menuItemRemove.setEnabled(true);
+								menuItemRemove.setEnabled(false);
 							}
 						}
-					} else {
-						menuItemAddGroup.setEnabled(true);
-						menuItemDuplicate.setEnabled(false);
-						menuItemRename.setEnabled(false);
-						menuItemRemove.setEnabled(false);
 					}
-				} else {
-					menuItemAddGroup.setEnabled(true);
+				} else if (selection.equals(Selection.MULTIPLE)) {
+					// multiple selection => only enable Remove
+					menuItemAddGroup.setEnabled(false);
 					menuItemDuplicate.setEnabled(false);
 					menuItemRename.setEnabled(false);
-					menuItemRemove.setEnabled(false);
+					menuItemRemove.setEnabled(true);
+
+					List<TreeNodeDTO> list = new ArrayList<TreeNodeDTO>();
+
+					for (int i = 0; i < nodes.length; i++) {
+						TreeNodeDTO node = (TreeNodeDTO) nodes[i];
+						boolean isLeaf = node.isLeaf();
+						if (isLeaf) {
+							TreeLeafDTO leaf = (TreeLeafDTO) node;
+
+							ModsetType modsetType = leaf.getParent()
+									.getModsetType();
+							TreeDirectoryDTO parent = leaf.getParent()
+									.getParent();
+
+							while (parent != null && modsetType == null) {
+								modsetType = parent.getModsetType();
+								parent = parent.getParent();
+							}
+
+							if (modsetType == null) {
+								list.add(node);
+							}
+						} else {
+							TreeDirectoryDTO directory = (TreeDirectoryDTO) node;
+							ModsetType modsetType = directory.getModsetType();
+
+							if (modsetType != null) {
+								list.add(node);
+							} else {
+								TreeDirectoryDTO parent = directory.getParent();
+
+								while (parent != null && modsetType == null) {
+									modsetType = parent.getModsetType();
+									parent = parent.getParent();
+								}
+
+								if (modsetType == null) {
+									list.add(node);
+								}
+							}
+						}
+					}
+
+					if (list.isEmpty()) {
+						menuItemRemove.setEnabled(false);
+					}
 				}
 			}
 		});
@@ -304,9 +412,10 @@ public class AddonsPanel extends JPanel implements UIConstants {
 			@Override
 			public void mouseClicked(MouseEvent e) {
 
-				arbre2TreePath = arbre2.getPathForLocation(e.getX(), e.getY());
+				TreePath treePath = arbre2.getPathForLocation(e.getX(),
+						e.getY());
 
-				if (arbre2TreePath == null) {
+				if (treePath == null) {
 					arbre2.setSelectionPath(null);
 
 					arbre2.setEnabled(false);
@@ -328,7 +437,7 @@ public class AddonsPanel extends JPanel implements UIConstants {
 
 				int hotspot = new JCheckBox().getPreferredSize().width;
 
-				if (e.getX() > arbre2.getPathBounds(arbre2TreePath).x + hotspot) {
+				if (e.getX() > arbre2.getPathBounds(treePath).x + hotspot) {
 					return;
 				} else {
 					groupManager.select();
@@ -451,20 +560,17 @@ public class AddonsPanel extends JPanel implements UIConstants {
 				arbre1.setShowsRootHandles(false);
 			}
 
-			/* Display available addons */
-			reloadAvailableAddons();
+			/* Load available addons */
+			loadAvailableAddons();
 
-			/* Display addon groups */
-			reloadAddonGroups();
-		}
-
-		else if (flag == OP_ADDON_SELECTION_CHANGED) {
-
-			refreshAddonGroups();
+			/* Load addon groups */
+			loadAddonGroups();
 		}
 	}
 
-	private void reloadAvailableAddons() {
+	private void loadAvailableAddons() {
+
+		// System.out.println("Updating AddonsPanel arbre1...");
 
 		arbre1.setEnabled(false);
 
@@ -476,32 +582,52 @@ public class AddonsPanel extends JPanel implements UIConstants {
 		}
 
 		arbre1.removeAll();
-		addonTreeModel1 = new AddonTreeModel(racine1);
-		arbre1.setModel(addonTreeModel1);
+		AddonTreeModel addonTreeModel = new AddonTreeModel(racine1);
+		arbre1.setModel(addonTreeModel);
+		addonTreeModel.fireTreeStructureChanged();
+
 		int numberRowShown = arbre1.getRowCount();
 		arbre1.setVisibleRowCount(numberRowShown);
 		arbre1.setPreferredSize(arbre1.getPreferredScrollableViewportSize());
 
-		arbre1.updateUI();
+		SwingUtilities.invokeLater(new Runnable() {
+			@Override
+			public void run() {
+				arbre1.updateUI();
+			}
+		});
+
 		arbre1.setEnabled(true);
+
+		// System.out.println("Updating AddonsPanel arbre1 done...");
 	}
 
-	private void reloadAddonGroups() {
+	private void loadAddonGroups() {
+
+		// System.out.println("Updating AddonsPanel arbre2...");
 
 		arbre2.setEnabled(false);
 
 		racine2 = profileService.getAddonGroups();
-		addonService.resolveDuplicates(racine2);
+		addonService.resolveAddonGroups(racine2);
 		profileService.setAddonGroups(racine2);
 
-		arbre2.removeAll();
-		addonTreeModel2 = new AddonTreeModel(racine2);
-		arbre2.setModel(addonTreeModel2);
+		addonService.checkMissingAddons(racine2, new ArrayList<String>());
+		addonService.checkDuplicateAddons(racine2, racine1);
+		addonService.checkDuplicateAddonsSelection(racine2,
+				new ArrayList<String>());
 
-		highlightMissingAddonsSelection();
-		highlightDuplicatedAddons();
-		highlightDuplicatedAddonsSelection();
-		expandAddonGroups();
+		arbre2.removeAll();
+		AddonTreeModel addonTreeModel = new AddonTreeModel(racine2);
+		arbre2.setModel(addonTreeModel);
+		addonTreeModel.fireTreeStructureChanged();
+
+		Set<TreePath> expandedTreePaths = new HashSet<TreePath>();
+		getPathsForInitialExpansion(new TreePath(arbre2.getModel().getRoot()),
+				expandedTreePaths);
+		for (TreePath treePath : expandedTreePaths) {
+			arbre2.expandPath(treePath);
+		}
 
 		int numberRowShown = arbre2.getRowCount();
 		arbre2.setVisibleRowCount(numberRowShown);
@@ -512,17 +638,36 @@ public class AddonsPanel extends JPanel implements UIConstants {
 			arbre2.setToolTipText(null);
 		}
 
-		arbre2.updateUI();
+		SwingUtilities.invokeLater(new Runnable() {
+			@Override
+			public void run() {
+				arbre2.updateUI();
+			}
+		});
+
 		arbre2.setEnabled(true);
+
+		// System.out.println("Updating AddonsPanel arbre2 done...");
 	}
 
 	private void refreshAddonGroups() {
 
 		arbre2.setEnabled(false);
 
-		highlightMissingAddonsSelection();
-		highlightDuplicatedAddons();
-		highlightDuplicatedAddonsSelection();
+		addonService.checkMissingAddons(racine2, new ArrayList<String>());
+		addonService.checkDuplicateAddons(racine2, racine1);
+		addonService.checkDuplicateAddonsSelection(racine2,
+				new ArrayList<String>());
+
+		Set<TreePath> expandedTreePaths = new HashSet<TreePath>();
+		getExpandedTreePaths(new TreePath(arbre2.getModel().getRoot()),
+				expandedTreePaths);
+
+		((AddonTreeModel) arbre2.getModel()).fireTreeStructureChanged();
+
+		for (TreePath treePath : expandedTreePaths) {
+			arbre2.expandPath(treePath);
+		}
 
 		int numberRowShown = arbre2.getRowCount();
 		arbre2.setVisibleRowCount(numberRowShown);
@@ -533,144 +678,18 @@ public class AddonsPanel extends JPanel implements UIConstants {
 			arbre2.setToolTipText(null);
 		}
 
-		arbre2.updateUI();
+		SwingUtilities.invokeLater(new Runnable() {
+			@Override
+			public void run() {
+				arbre2.updateUI();
+			}
+		});
+
 		arbre2.setEnabled(true);
 	}
 
-	private void highlightMissingAddonsSelection() {
-
-		List<String> missingAddonNames = launchService.getMissingAddons();
-		for (TreeNodeDTO treeNodeDTO : racine2.getList()) {
-			markAsMissing(treeNodeDTO, missingAddonNames);
-		}
-	}
-
-	private void markAsMissing(TreeNodeDTO treeNodeDTO, List<String> addonNames) {
-
-		if (treeNodeDTO.isLeaf()) {
-			TreeLeafDTO leaf = (TreeLeafDTO) treeNodeDTO;
-			if (addonNames.contains(treeNodeDTO.getName())) {
-				leaf.setMissing(true);
-			} else {
-				leaf.setMissing(false);
-			}
-		} else {
-			TreeDirectoryDTO treeDirectoryDTO = (TreeDirectoryDTO) treeNodeDTO;
-			for (TreeNodeDTO t : treeDirectoryDTO.getList()) {
-				markAsMissing(t, addonNames);
-			}
-		}
-	}
-
-	public void highlightDuplicatedAddons() {
-
-		for (TreeNodeDTO treeNodeDTO : racine2.getList()) {
-			markAsDuplicated(treeNodeDTO);
-		}
-	}
-
-	private void markAsDuplicated(TreeNodeDTO treeNodeDTO) {
-
-		if (treeNodeDTO.isLeaf()) {
-			TreeLeafDTO leaf = (TreeLeafDTO) treeNodeDTO;
-			boolean duplicated = addonService.hasDuplicate(treeNodeDTO
-					.getName());
-			leaf.setDuplicate(duplicated);
-			if (duplicated) {
-				findSourceRelativePath(leaf, racine1);
-			} else {
-				leaf.setSourceRelativePath(null);
-			}
-		} else {
-			TreeDirectoryDTO treeDirectoryDTO = (TreeDirectoryDTO) treeNodeDTO;
-			for (TreeNodeDTO t : treeDirectoryDTO.getList()) {
-				markAsDuplicated(t);
-			}
-		}
-	}
-
-	private void findSourceRelativePath(TreeLeafDTO leafDTO,
-			TreeNodeDTO treeNodeDTO) {
-
-		if (treeNodeDTO.isLeaf()) {
-			TreeLeafDTO leaf = (TreeLeafDTO) treeNodeDTO;
-			if (leaf.getName().equalsIgnoreCase(leafDTO.getName())) {
-				TreeNodeDTO parent = leaf.getParent();
-				String path = null;
-				while (parent != null) {
-					if (!parent.getName().contains("racine")) {
-						if (path == null) {
-							path = parent.getName();
-						} else {
-							path = parent.getName() + "/" + path;
-						}
-					}
-					parent = parent.getParent();
-				}
-				leafDTO.setSourceRelativePath(path);
-			}
-		} else {
-			TreeDirectoryDTO treeDirectoryDTO = (TreeDirectoryDTO) treeNodeDTO;
-			for (TreeNodeDTO t : treeDirectoryDTO.getList()) {
-				findSourceRelativePath(leafDTO, t);
-			}
-		}
-	}
-
-	private void highlightDuplicatedAddonsSelection() {
-
-		List<String> duplicatedAddonNames = launchService.getDuplicatedAddons();
-		for (TreeNodeDTO treeNodeDTO : racine2.getList()) {
-			markAsDuplicatedSelection(treeNodeDTO, duplicatedAddonNames);
-		}
-	}
-
-	private void markAsDuplicatedSelection(TreeNodeDTO treeNodeDTO,
-			List<String> duplicatedAddonNames) {
-
-		if (treeNodeDTO.isLeaf()) {
-			TreeLeafDTO leaf = (TreeLeafDTO) treeNodeDTO;
-			if (leaf.isSelected()
-					&& duplicatedAddonNames.contains(treeNodeDTO.getName())) {
-				leaf.setDuplicatedSelection(true);
-			} else {
-				leaf.setDuplicatedSelection(false);
-			}
-		} else {
-			TreeDirectoryDTO treeDirectoryDTO = (TreeDirectoryDTO) treeNodeDTO;
-			for (TreeNodeDTO t : treeDirectoryDTO.getList()) {
-				markAsDuplicatedSelection(t, duplicatedAddonNames);
-			}
-		}
-	}
-
-	/*
-	 * public void expand(TreePath path) { if (path != null) { TreeNodeDTO
-	 * treeNodeDTO = (TreeNodeDTO) path.getLastPathComponent(); if
-	 * (!treeNodeDTO.isLeaf()) { arbre2.expandPath(path); } } }
-	 */
-
-	/*
-	 * public void expandGroup(String folderName) {
-	 * 
-	 * for (TreeNodeDTO node : racine2.getList()) { if
-	 * (node.getName().equals(folderName)) { arbre2.expandPath((new
-	 * TreePath(arbre2.getModel().getRoot())) .pathByAddingChild(node)); break;
-	 * } } }
-	 */
-
-	public void expandAddonGroups() {
-
-		arbre2.setEnabled(false);
-		Set<TreePath> paths = new HashSet<TreePath>();
-		expandAddonGroups(new TreePath(arbre2.getModel().getRoot()), paths);
-		for (TreePath treePath : paths) {
-			arbre2.expandPath(treePath);
-		}
-		arbre2.setEnabled(true);
-	}
-
-	private void expandAddonGroups(TreePath path, Set<TreePath> paths) {
+	private void getPathsForInitialExpansion(TreePath path,
+			Set<TreePath> expandedTreePaths) {
 
 		if (path != null) {
 			TreeNodeDTO treeNodeDTO = (TreeNodeDTO) path.getLastPathComponent();
@@ -691,23 +710,33 @@ public class AddonsPanel extends JPanel implements UIConstants {
 					}
 				}
 				if (nbSelectedNodes != 0 && nbSelectedNodes != nbNodes) {
-					paths.add(path);
+					expandedTreePaths.add(path);
 				} else if (nbSelectedNodes != 0 && nbMissingNodes != 0) {
-					paths.add(path);
+					expandedTreePaths.add(path);
 				}
 
 				for (TreeNodeDTO child : treeDirectoryDTO.getList()) {
-					expandAddonGroups(path.pathByAddingChild(child), paths);
+					getPathsForInitialExpansion(path.pathByAddingChild(child),
+							expandedTreePaths);
 				}
 			}
 		}
 	}
 
-	public void expand(TreePath path) {
+	private void getExpandedTreePaths(TreePath path,
+			Set<TreePath> expandedTreePaths) {
+
 		if (path != null) {
 			TreeNodeDTO treeNodeDTO = (TreeNodeDTO) path.getLastPathComponent();
 			if (!treeNodeDTO.isLeaf()) {
-				arbre2.expandPath(path);
+				TreeDirectoryDTO directory = (TreeDirectoryDTO) treeNodeDTO;
+				if (arbre2.isExpanded(path)) {
+					expandedTreePaths.add(path);
+				}
+				for (TreeNodeDTO child : directory.getList()) {
+					getExpandedTreePaths(path.pathByAddingChild(child),
+							expandedTreePaths);
+				}
 			}
 		}
 	}
@@ -784,7 +813,7 @@ public class AddonsPanel extends JPanel implements UIConstants {
 		}
 	}
 
-	private TreeNodeDTO[] getSelectedNode() {
+	private TreeNodeDTO[] getSelectedNodes() {
 
 		TreePath[] paths = arbre2.getSelectionPaths();
 		if (paths == null) {
@@ -817,12 +846,12 @@ public class AddonsPanel extends JPanel implements UIConstants {
 
 	private void checkBoxTreeSelectionPerformed() {
 		configurationService.setViewModeTree(true);
-		reloadAvailableAddons();
+		loadAvailableAddons();
 	}
 
 	private void checkBoxListSelectionPerformed() {
 		configurationService.setViewModeTree(false);
-		reloadAvailableAddons();
+		loadAvailableAddons();
 	}
 
 	private void buttonRefreshPerformed() {
@@ -938,138 +967,214 @@ public class AddonsPanel extends JPanel implements UIConstants {
 
 			profileService.setAddonGroups(racine2);
 			refreshAddonGroups();
-			if (isLeaf) {
-				expand(newPath);
-			}
+			arbre2.expandPath(newPath);
 			facade.getMainPanel().updateTabs(OP_GROUP_CHANGED);
 		}
 
 		public void addGroup() {
 
-			TreeNodeDTO[] treeNodeDTOs = getSelectedNode();
+			TreeNodeDTO[] treeNodeDTOs = getSelectedNodes();
+			boolean complete = false;
+			TreePath treePath = null;
 
 			if (treeNodeDTOs == null) {
+
 				AddGroupDialog addGroupPanel = new AddGroupDialog(facade,
 						racine2);
 				addGroupPanel.init();
 				addGroupPanel.setVisible(true);
+				complete = addGroupPanel.isComplete();
+
 			} else if (treeNodeDTOs.length != 0) {
 				TreeNodeDTO node = treeNodeDTOs[0];
+				treePath = arbre2.getSelectionPath();
+
 				if (node.isLeaf()) {
-					TreeDirectoryDTO directory = node.getParent();
-					AddGroupDialog addGroupPanel = new AddGroupDialog(facade,
-							directory);
-					addGroupPanel.init();
-					addGroupPanel.setVisible(true);
+					TreeLeafDTO leaf = (TreeLeafDTO) node;
+
+					ModsetType modsetType = leaf.getParent().getModsetType();
+					TreeDirectoryDTO parent = leaf.getParent().getParent();
+
+					while (parent != null && modsetType == null) {
+						modsetType = parent.getModsetType();
+						parent = parent.getParent();
+					}
+
+					if (modsetType == null) {
+						TreeDirectoryDTO directory = node.getParent();
+						AddGroupDialog addGroupPanel = new AddGroupDialog(
+								facade, directory);
+						addGroupPanel.init();
+						addGroupPanel.setVisible(true);
+						complete = addGroupPanel.isComplete();
+					}
 				} else {
 					TreeDirectoryDTO directory = (TreeDirectoryDTO) node;
-					AddGroupDialog addGroupPanel = new AddGroupDialog(facade,
-							directory);
-					addGroupPanel.init();
-					addGroupPanel.setVisible(true);
+
+					ModsetType modsetType = directory.getModsetType();
+					TreeDirectoryDTO parent = directory.getParent();
+
+					while (parent != null && modsetType == null) {
+						modsetType = parent.getModsetType();
+						parent = parent.getParent();
+					}
+
+					if (modsetType == null) {
+						AddGroupDialog addGroupPanel = new AddGroupDialog(
+								facade, directory);
+						addGroupPanel.init();
+						addGroupPanel.setVisible(true);
+						complete = addGroupPanel.isComplete();
+					}
 				}
 			}
 
-			profileService.setAddonGroups(racine2);
-			refreshAddonGroups();
-			facade.getMainPanel().updateTabs(OP_GROUP_CHANGED);
+			if (complete) {
+				profileService.setAddonGroups(racine2);
+				refreshAddonGroups();
+				arbre2.expandPath(treePath);
+				facade.getMainPanel().updateTabs(OP_GROUP_CHANGED);
+			}
 		}
 
 		public void duplicateGroup() {
 
-			TreeNodeDTO[] nodes = getSelectedNode();
+			TreeNodeDTO[] nodes = getSelectedNodes();
+			boolean complete = false;
+
 			if (nodes == null) {
 				return;
-			}
-			if (nodes.length == 0) {
+			} else if (nodes.length == 0) {
 				return;
-			}
-			if (!nodes[0].isLeaf()) {
-				TreeNodeDTO selectedNodeDTO = nodes[0];
-				DuplicateGroupDialog duplicateGroupPanel = new DuplicateGroupDialog(
-						facade, racine2, selectedNodeDTO);
-				duplicateGroupPanel.init();
-				duplicateGroupPanel.setVisible(true);
+			} else if (!nodes[0].isLeaf()) {
+				TreeDirectoryDTO directory = (TreeDirectoryDTO) nodes[0];
+
+				ModsetType modsetType = directory.getModsetType();
+				TreeDirectoryDTO parent = directory.getParent();
+
+				while (parent != null && modsetType == null) {
+					modsetType = parent.getModsetType();
+					parent = parent.getParent();
+				}
+
+				if (modsetType == null) {
+					DuplicateGroupDialog duplicateGroupPanel = new DuplicateGroupDialog(
+							facade, directory.getParent(), directory);
+					duplicateGroupPanel.init();
+					duplicateGroupPanel.setVisible(true);
+					complete = duplicateGroupPanel.isComplete();
+				}
 			}
 
-			profileService.setAddonGroups(racine2);
-			refreshAddonGroups();
-			facade.getMainPanel().updateTabs(OP_GROUP_CHANGED);
+			if (complete) {
+				profileService.setAddonGroups(racine2);
+				refreshAddonGroups();
+				facade.getMainPanel().updateTabs(OP_GROUP_CHANGED);
+			}
 		}
 
 		public void renameGroup() {
 
-			TreeNodeDTO[] nodes = getSelectedNode();
+			TreeNodeDTO[] nodes = getSelectedNodes();
+			boolean complete = false;
+
 			if (nodes == null) {
 				return;
-			}
-			if (nodes.length == 0) {
+			} else if (nodes.length == 0) {
 				return;
-			}
-			if (!nodes[0].isLeaf()) {
-				TreeNodeDTO selectedNodeDTO = nodes[0];
-				/* Repository modset and Event modset can't be renamed */
-				TreeDirectoryDTO directoryDTO = (TreeDirectoryDTO) selectedNodeDTO;
-				ModsetType modsetType = directoryDTO.getModsetType();
+			} else if (!nodes[0].isLeaf()) {
+				TreeDirectoryDTO directory = (TreeDirectoryDTO) nodes[0];
+
+				ModsetType modsetType = directory.getModsetType();
+				TreeDirectoryDTO parent = directory.getParent();
+
+				while (parent != null && modsetType == null) {
+					modsetType = parent.getModsetType();
+					parent = parent.getParent();
+				}
+
 				if (modsetType == null) {
 					RenameGroupDialog renameGroupPanel = new RenameGroupDialog(
-							facade, racine2, selectedNodeDTO);
+							facade, directory.getParent(), directory);
 					renameGroupPanel.init();
 					renameGroupPanel.setVisible(true);
-				} else {
-					JOptionPane
-							.showMessageDialog(
-									facade.getMainPanel(),
-									"Repository modset and Event modset can't be renamed.",
-									"Addon group",
-									JOptionPane.INFORMATION_MESSAGE);
 				}
 			}
 
-			profileService.setAddonGroups(racine2);
-			refreshAddonGroups();
-			facade.getMainPanel().updateTabs(OP_GROUP_CHANGED);
+			if (complete) {
+				profileService.setAddonGroups(racine2);
+				refreshAddonGroups();
+				facade.getMainPanel().updateTabs(OP_GROUP_CHANGED);
+			}
 		}
 
 		public void removeGroup() {
 
-			TreeNodeDTO[] nodes = getSelectedNode();
+			TreeNodeDTO[] nodes = getSelectedNodes();
 			if (nodes == null) {
 				return;
-			}
-			if (nodes.length == 0) {
+			} else if (nodes.length == 0) {
 				return;
-			}
+			} else {
+				List<TreeNodeDTO> list = new ArrayList<TreeNodeDTO>();
 
-			for (int i = 0; i < nodes.length; i++) {
-				TreeNodeDTO parent = nodes[i].getParent();
-				if (parent != null) {
-					if (configurationService.getDefaultModset()!=null){
-						if (configurationService.getDefaultModset().equals(
-								nodes[i].getName())) {
-							configurationService.setDefautlModset(null);
+				for (int i = 0; i < nodes.length; i++) {
+					TreeNodeDTO node = (TreeNodeDTO) nodes[i];
+					boolean isLeaf = node.isLeaf();
+					if (isLeaf) {
+						TreeLeafDTO leaf = (TreeLeafDTO) node;
+
+						ModsetType modsetType = leaf.getParent()
+								.getModsetType();
+						TreeDirectoryDTO parent = leaf.getParent().getParent();
+
+						while (parent != null && modsetType == null) {
+							modsetType = parent.getModsetType();
+							parent = parent.getParent();
+						}
+
+						if (modsetType == null) {
+							list.add(node);
+						}
+					} else {
+						TreeDirectoryDTO directory = (TreeDirectoryDTO) node;
+						ModsetType modsetType = directory.getModsetType();
+
+						if (modsetType != null) {
+							list.add(node);
+						} else {
+							TreeDirectoryDTO parent = directory.getParent();
+
+							while (parent != null && modsetType == null) {
+								modsetType = parent.getModsetType();
+								parent = parent.getParent();
+							}
+
+							if (modsetType == null) {
+								list.add(node);
+							}
 						}
 					}
-					((TreeDirectoryDTO) parent).removeTreeNode(nodes[i]);
 				}
-			}
 
-			arbre2.clearSelection();
-			profileService.setAddonGroups(racine2);
-			boolean contains = false;
-			for (int i = 0; i < nodes.length; i++) {
-				if (!nodes[i].isLeaf()) {
-					contains = true;
-					break;
+				for (int i = 0; i < list.size(); i++) {
+					TreeNodeDTO node = list.get(i);
+					TreeNodeDTO parent = node.getParent();
+					if (parent != null) {
+						if (configurationService.getDefaultModset() != null) {
+							if (configurationService.getDefaultModset().equals(
+									nodes[i].getName())) {
+								configurationService.setDefautlModset(null);
+							}
+						}
+						((TreeDirectoryDTO) parent).removeTreeNode(node);
+					}
 				}
-			}
-			if (contains) {
-				reloadAddonGroups();
-			} else {
+
+				profileService.setAddonGroups(racine2);
 				refreshAddonGroups();
+				facade.getMainPanel().updateTabs(OP_GROUP_CHANGED);
 			}
-
-			facade.getMainPanel().updateTabs(OP_GROUP_CHANGED);
 		}
 
 		public void select() {
@@ -1111,6 +1216,7 @@ public class AddonsPanel extends JPanel implements UIConstants {
 			}
 
 			profileService.setAddonGroups(racine2);
+			refreshAddonGroups();
 			facade.getMainPanel().updateTabs(OP_ADDON_SELECTION_CHANGED);
 		}
 
@@ -1123,6 +1229,7 @@ public class AddonsPanel extends JPanel implements UIConstants {
 			}
 
 			profileService.setAddonGroups(racine2);
+			refreshAddonGroups();
 			facade.getMainPanel().updateTabs(OP_ADDON_SELECTION_CHANGED);
 		}
 
@@ -1134,6 +1241,7 @@ public class AddonsPanel extends JPanel implements UIConstants {
 					TreeDirectoryDTO treeDirectoryDTO = treeDirectoryDTO = (TreeDirectoryDTO) node;
 					selectAllDescending(treeDirectoryDTO);
 					profileService.setAddonGroups(racine2);
+					refreshAddonGroups();
 					break;
 				}
 			}
@@ -1143,7 +1251,9 @@ public class AddonsPanel extends JPanel implements UIConstants {
 				boolean updated) {
 
 			onAddGroupFromRepository(repositoryNames, updated);
-			reloadAddonGroups();
+			addonService.resolveAddonGroups(racine2);
+			profileService.setAddonGroups(racine2);
+			refreshAddonGroups();
 			facade.getMainPanel().updateTabs(OP_GROUP_CHANGED);
 		}
 
@@ -1174,15 +1284,14 @@ public class AddonsPanel extends JPanel implements UIConstants {
 					setSelectedPaths(directory, selectdAddonPaths);
 				}
 			}
-
-			addonService.resolveDuplicates(racine2);
-			profileService.setAddonGroups(racine2);
 		}
 
 		public void addGroupFromEvents(List<EventDTO> eventDTOs, boolean updated) {
 
 			onAddGroupFromEvents(eventDTOs, updated);
-			reloadAddonGroups();
+			addonService.resolveAddonGroups(racine2);
+			profileService.setAddonGroups(racine2);
+			refreshAddonGroups();
 			facade.getMainPanel().updateTabs(OP_GROUP_CHANGED);
 		}
 
@@ -1222,9 +1331,6 @@ public class AddonsPanel extends JPanel implements UIConstants {
 				}
 				setSelectedPaths(directory, selectdAddonPaths);
 			}
-
-			addonService.resolveDuplicates(racine2);
-			profileService.setAddonGroups(racine2);
 		}
 
 		public void updateGroupModsets(String updateRepositoryName) {
@@ -1279,9 +1385,9 @@ public class AddonsPanel extends JPanel implements UIConstants {
 
 			onAddGroupFromEvents(eventGroupModsets, true);
 
-			reloadAddonGroups();
-
-			facade.getMainPanel().updateTabs(OP_GROUP_CHANGED);
+			addonService.resolveAddonGroups(racine2);
+			profileService.setAddonGroups(racine2);
+			refreshAddonGroups();
 
 			System.out.println("Addon groups update done.");
 		}

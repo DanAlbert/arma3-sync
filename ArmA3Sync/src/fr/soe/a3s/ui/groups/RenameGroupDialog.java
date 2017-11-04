@@ -43,17 +43,20 @@ public class RenameGroupDialog extends AbstractGroupDialog {
 				}
 			}
 			selectedTreeNodeDTO.setName(groupName);
+			this.complete = true;
 			this.dispose();
 		}
 	}
 
 	@Override
 	protected void buttonCancelPerformed() {
+		this.complete = false;
 		this.dispose();
 	}
 
 	@Override
 	protected void menuExitPerformed() {
+		this.complete = false;
 		this.dispose();
 	}
 }

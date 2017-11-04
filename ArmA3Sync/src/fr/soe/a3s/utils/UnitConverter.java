@@ -7,20 +7,20 @@ public class UnitConverter {
 	public static String convertSize(long size) {
 
 		String response = "";
-		if (size >= Math.pow(1024, 3)) {// GB
-			double value = size / Math.pow(1024, 3);
+		if (size >= Math.pow(10, 9)) {// GB
+			double value = size / Math.pow(10, 9);
 			value = ((int) (value * 100.0)) / 100.0;
 			response = Double.toString(value) + " GB";
-		} else if (size >= Math.pow(1024, 2)) {// MB
-			double value = size / Math.pow(1024, 2);
+		} else if (size >= Math.pow(10, 6)) {// MB
+			double value = size / Math.pow(10, 6);
 			value = ((int) (value * 100.0)) / 100.0;
 			response = Double.toString(value) + " MB";
-		} else if (size >= Math.pow(1024, 1)) {// KB
-			double value = size / Math.pow(1024, 1);
+		} else if (size >= Math.pow(10, 3)) {// KB
+			double value = size / Math.pow(10, 3);
 			value = ((int) (value * 100.0)) / 100.0;
 			response = Double.toString(value) + " KB";
 		} else {// B
-			double value = size / Math.pow(1024, 0);
+			double value = size / Math.pow(10, 0);
 			value = ((int) (value * 100.0)) / 100.0;
 			response = Double.toString(value) + " B";
 		}

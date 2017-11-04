@@ -85,6 +85,10 @@ public abstract class AbstractProtocole implements Serializable {
 		return remotePath;
 	}
 
+	public String getHostUrl() {
+		return protocolType.getPrompt() + getHostname() + ":" + port + getRemotePath();
+	}
+
 	public void checkData() throws CheckException {
 
 		if ("".equals(getUrl()) || getUrl() == null) {
