@@ -1,0 +1,12 @@
+<?xml version="1.0" ?> 
+<?eclipse.ant.import?>
+<project name="ArmA3SyncJar" default="create-jar">
+  <target name="create-jar" description="Create Jar file">
+        <jar jarfile="ArmA3Sync.jar" basedir="bin" includes="**/*.class" >
+        	<zipgroupfileset dir="resources/lib" includes="**/*.jar" />
+	        <manifest>
+    		    <attribute name="Main-Class" value="fr.soe.a3s.main.ArmA3Sync" />
+		    </manifest>
+        </jar>
+  </target>
+</project>
