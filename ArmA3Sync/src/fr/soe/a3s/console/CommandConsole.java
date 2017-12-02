@@ -23,9 +23,11 @@ import fr.soe.a3s.service.RepositoryService;
 public class CommandConsole extends CommandGeneral {
 
 	private boolean devMode = false;
+	private Scanner stdin = null;
 
 	public CommandConsole(boolean devMode) {
 		this.devMode = devMode;
+		this.stdin = new Scanner(System.in);
 	}
 
 	public void displayCommands() {
@@ -57,11 +59,9 @@ public class CommandConsole extends CommandGeneral {
 	}
 
 	public void execute() {
-
-		Scanner c = new Scanner(System.in);
 		System.out.println("");
 		System.out.print("Please enter a command = ");
-		String command = c.nextLine().trim();
+		String command = stdin.nextLine().trim();
 
 		if (command.equalsIgnoreCase(ConsoleCommands.VERSION.toString())) {
 			displayVersion();
@@ -185,13 +185,11 @@ public class CommandConsole extends CommandGeneral {
 		System.out.println("");
 		System.out.println("Create a new repository");
 
-		Scanner c = new Scanner(System.in);
-
 		// Set Name
 		String name = "";
 		do {
 			System.out.print("Enter repository name: ");
-			name = c.nextLine();
+			name = stdin.nextLine();
 
 			List<String> forbiddenCharactersList = new ArrayList<String>();
 			forbiddenCharactersList.add("/");
@@ -223,7 +221,7 @@ public class CommandConsole extends CommandGeneral {
 		boolean protocolIsWrong = true;
 		do {
 			System.out.print("Enter repository protocol FTP, HTTP or HTTPS: ");
-			String prot = c.nextLine().toUpperCase();
+			String prot = stdin.nextLine().toUpperCase();
 			if (prot.equals(ProtocolType.FTP.getDescription())) {
 				protocol = ProtocolType.FTP.getDescription();
 				protocolIsWrong = false;
@@ -247,7 +245,7 @@ public class CommandConsole extends CommandGeneral {
 					+ ProtocolType.HTTP.getDefaultPort() + " "
 					+ "default HTTP, " + ProtocolType.HTTPS.getDefaultPort()
 					+ " " + "default HTTPS): ");
-			port = c.nextLine();
+			port = stdin.nextLine();
 			if (port.isEmpty()) {
 				if (protocol.equals(ProtocolType.FTP.getDescription())) {
 					port = ProtocolType.FTP.getDefaultPort();
@@ -276,18 +274,18 @@ public class CommandConsole extends CommandGeneral {
 		do {
 			System.out.print("Enter user login (enter " + "'anonymous'"
 					+ " for public access): ");
-			login = c.nextLine();
+			login = stdin.nextLine();
 		} while (login.isEmpty());
 
 		// Set Password
 		System.out.print("Enter user password (leave blank if no password): ");
-		String password = c.nextLine();
+		String password = stdin.nextLine();
 
 		// Set Repository Url
 		String url = "";
 		do {
 			System.out.print("Enter repository url: ");
-			url = c.nextLine();
+			url = stdin.nextLine();
 
 			if (!url.isEmpty()) {
 				// Remove prompt
@@ -308,7 +306,7 @@ public class CommandConsole extends CommandGeneral {
 		do {
 			System.out
 					.print("Enter main folder location (leave blank to pass): ");
-			path = c.nextLine();
+			path = stdin.nextLine();
 			if (path.isEmpty()) {
 				folderLocationIsWrong = false;
 			} else if (!new File(path).exists()
@@ -355,13 +353,11 @@ public class CommandConsole extends CommandGeneral {
 		System.out.println("");
 		System.out.println("Build repository");
 
-		Scanner c = new Scanner(System.in);
-
 		System.out.print("Enter repository name: ");
-		String name = c.nextLine();
+		String name = stdin.nextLine();
 		while (name.isEmpty()) {
 			System.out.print("Enter repository name: ");
-			name = c.nextLine();
+			name = stdin.nextLine();
 		}
 
 		/* Load Repositories */
@@ -383,7 +379,7 @@ public class CommandConsole extends CommandGeneral {
 				boolean folderLocationIsWrong = true;
 				do {
 					System.out.print("Enter repository main folder location: ");
-					path = c.nextLine();
+					path = stdin.nextLine();
 					if (path.isEmpty()) {
 						folderLocationIsWrong = true;
 					} else if (!new File(path).exists()
@@ -411,7 +407,7 @@ public class CommandConsole extends CommandGeneral {
 			try {
 				System.out
 						.print("Set maximum number of client connections (1-10): ");
-				numberOfConnections = c.nextLine();
+				numberOfConnections = stdin.nextLine();
 				n = Integer.parseInt(numberOfConnections);
 				if (!(n >= 1 && n <= 10)) {
 					numberOfConnectionsIsWrong = true;
@@ -430,7 +426,7 @@ public class CommandConsole extends CommandGeneral {
 		boolean addCompressedPbo = false;
 		do {
 			System.out.print("Add compressed pbo files (yes/no): ");
-			String line = c.nextLine();
+			String line = stdin.nextLine();
 			if (line.equalsIgnoreCase("YES")) {
 				addCompressedPbo = true;
 				addCompressedPboIsWrong = false;
@@ -456,7 +452,7 @@ public class CommandConsole extends CommandGeneral {
 				do {
 					System.out
 							.print("Use HTTP partial file transfer (yes/no): ");
-					String line = c.nextLine();
+					String line = stdin.nextLine();
 					if (line.equalsIgnoreCase("YES")) {
 						partialFileTransfer = true;
 						partialFileTransferIsWrong = false;
@@ -484,7 +480,7 @@ public class CommandConsole extends CommandGeneral {
 		do {
 			System.out
 					.print("Add file path to exclude from build (leave blank to pass): ");
-			excludedFilePath = c.nextLine();
+			excludedFilePath = stdin.nextLine();
 			if (excludedFilePath.isEmpty()) {
 				excludedFilePathIsWrong = false;
 			} else if (!(new File(excludedFilePath)).exists()) {
@@ -504,7 +500,7 @@ public class CommandConsole extends CommandGeneral {
 		do {
 			System.out
 					.print("Add folder path to exclude extra local content when sync (leave blank to pass): ");
-			excludedFolderFromSync = c.nextLine();
+			excludedFolderFromSync = stdin.nextLine();
 			if (excludedFolderFromSync.isEmpty()) {
 				excludedFolderFromSyncIsWrong = false;
 			} else if (!(new File(excludedFolderFromSync)).exists()) {
@@ -551,13 +547,11 @@ public class CommandConsole extends CommandGeneral {
 		System.out.println("");
 		System.out.println("Check repository");
 
-		Scanner c = new Scanner(System.in);
-
 		System.out.print("Enter repository name: ");
-		String repositoryName = c.nextLine();
+		String repositoryName = stdin.nextLine();
 		while (repositoryName.isEmpty()) {
 			System.out.print("Enter repository name: ");
-			repositoryName = c.nextLine();
+			repositoryName = stdin.nextLine();
 		}
 
 		/* Load Repositories */
@@ -588,13 +582,11 @@ public class CommandConsole extends CommandGeneral {
 		System.out.println("");
 		System.out.println("Delete repository");
 
-		Scanner c = new Scanner(System.in);
-
 		System.out.print("Enter repository name: ");
-		String name = c.nextLine();
+		String name = stdin.nextLine();
 		while (name.isEmpty()) {
 			System.out.print("Enter repository name: ");
-			name = c.nextLine();
+			name = stdin.nextLine();
 		}
 
 		/* Load Repositories */
@@ -630,13 +622,11 @@ public class CommandConsole extends CommandGeneral {
 		System.out.println("");
 		System.out.println("Synchronize with repository");
 
-		Scanner c = new Scanner(System.in);
-
 		System.out.print("Enter repository name: ");
-		String repositoryName = c.nextLine();
+		String repositoryName = stdin.nextLine();
 		while (repositoryName.isEmpty()) {
 			System.out.print("Enter repository name: ");
-			repositoryName = c.nextLine();
+			repositoryName = stdin.nextLine();
 		}
 
 		/* Load Repositories */
@@ -655,7 +645,7 @@ public class CommandConsole extends CommandGeneral {
 		String destinationFolderPath = "";
 		do {
 			System.out.print("Enter destination folder path: ");
-			destinationFolderPath = c.nextLine();
+			destinationFolderPath = stdin.nextLine();
 			if (destinationFolderPath.isEmpty()) {
 				destinationFolderIsWrong = true;
 			} else if (!new File(destinationFolderPath).exists()) {
@@ -672,7 +662,7 @@ public class CommandConsole extends CommandGeneral {
 		do {
 			System.out
 					.print("Perform Exact file matching (yes/no, choosing yes will erase all extra files into the target folder): ");
-			withExactMatch = c.nextLine();
+			withExactMatch = stdin.nextLine();
 			if (withExactMatch.isEmpty()) {
 				withExactMatchIsWrong = true;
 			} else if (!(withExactMatch.equalsIgnoreCase("yes") || withExactMatch
@@ -711,19 +701,17 @@ public class CommandConsole extends CommandGeneral {
 		System.out.println("");
 		System.out.println("Extract *.bikey files");
 
-		Scanner c = new Scanner(System.in);
-
 		String sourceDirectoryPath = "";
 		do {
 			System.out
 					.print("Enter source directory to search for *.bikey files: ");
-			sourceDirectoryPath = c.nextLine();
+			sourceDirectoryPath = stdin.nextLine();
 		} while (sourceDirectoryPath.isEmpty());
 
 		String targetDirectoryPath = "";
 		do {
 			System.out.print("Enter target directory to copy *.bikey files: ");
-			targetDirectoryPath = c.nextLine();
+			targetDirectoryPath = stdin.nextLine();
 		} while (targetDirectoryPath.isEmpty());
 
 		/* Proceed with command */
